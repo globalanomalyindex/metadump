@@ -1,0 +1,8 @@
+{"wireMagic": "pb3", "pens": [{}], "wsWinStyles": [{}], "wpWinPositions": [{}],
+ "events": [
+  {"tStartMs": 0, "dDurationMs": 5200, "id": 1, "wpWinPosId": 1, "wsWinStyleId": 1},
+  {"tStartMs": 160, "dDurationMs": 3040, "wWinId": 1, "segs": [{"utf8": "so"}, {"utf8": " today", "tOffsetMs": 320}, {"utf8": " we're", "tOffsetMs": 640}]},
+  {"tStartMs": 2010, "dDurationMs": 3190, "wWinId": 1, "aAppend": 1, "segs": [{"utf8": "\n"}]},
+  {"tStartMs": 2020, "dDurationMs": 3180, "wWinId": 1, "segs": [{"utf8": "looking"}, {"utf8": " at", "tOffsetMs": 400}, {"utf8": " easing", "tOffsetMs": 700}]},
+  {"tStartMs": 9000, "dDurationMs": 2000, "wWinId": 1, "segs": [{"utf8": "after a pause"}]}
+ ]}

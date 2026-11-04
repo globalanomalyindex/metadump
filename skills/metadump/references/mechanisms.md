@@ -4,7 +4,9 @@ A meta dump has no fixed template. During charting you group the consumers' ques
 
 Pick a mechanism by the question it answers, not by the domain. "What words should I use, and which mean the same thing?" is a lexicon whether the task is a carton, a REST API or a jingle.
 
-Contents: Lexicon · Senses · Bindings · Invariant/variable contract · Conditional grammar · Forbidden shortcuts · Motif vs transferable relationship · Cue → descriptor · Parameters · Exemplars · Tensions · Influences and analogies · Candidate pools · Layers · Variant catalog · Search vocabulary · Detectable signals · Engineering set (seams, test list, examples, API surface, error taxonomy, library facts, budgets, environment) · Prompt recipes
+Prefer mechanisms that hold objective, specific data (measured parameters, scraped facts, timelines, transcripts, observed exemplars, library facts) over ones that only hold the builder's opinions. Where a section needs a choice nobody has made, put it in the section's options area (`schema.md` §3), labeled as an option.
+
+Contents: Lexicon · Senses · Bindings · Invariant/variable contract · Conditional grammar · Forbidden shortcuts · Motif vs transferable relationship · Cue → descriptor · Parameters · Exemplars · Tensions · Influences and analogies · Candidate pools · Layers · Variant catalog · Search vocabulary · Detectable signals · Scraped facts · Timeline · Transcript · Moodboard · Engineering set (seams, test list, examples, API surface, error taxonomy, library facts, budgets, environment) · Prompt recipes
 
 ---
 
@@ -93,7 +95,7 @@ Cross-modal entries (imagined taste, sound, texture) must carry `modality` and `
 "p-radius-card": {"term": "card corner radius", "v": 22, "unit": "px", "range": [20, 28], "status": "illustrative", "tier": 2, "prov": "proposed", "text": "..."}
 ```
 
-Covers design tokens, sampled hex values (`status: "photo sample"`), BPM and bar counts, word counts, status codes, timeouts, performance budgets. `status` says how binding the number is.
+Covers design tokens, sampled hex values (`status: "photo sample"`, `method: "pixel-sample"`), BPM and bar counts, word counts, status codes, timeouts, performance budgets. `status` says where the number came from and how firm it is (`measured`, `photo sample`, `illustrative`). A measured or sourced value is a fact to consult; an `illustrative` one is a starting point that lives in the options area.
 
 ### Exemplars
 
@@ -125,7 +127,62 @@ Covers design tokens, sampled hex values (`status: "photo sample"`), BPM and bar
 
 ### Detectable signals
 
-**Answers:** how to recognize the style or requirement in an output. "High prevalence of rounded rectangles and capsules", "subject line ≤ 45 characters", "no network imports". These feed `checks`.
+**Answers:** how to recognize the style or requirement in an output. "High prevalence of rounded rectangles and capsules", "subject line ≤ 45 characters", "no network imports". These feed the review prompts in `checks`, which a consumer may run as a self-review.
+
+### Scraped facts (quote + where)
+
+**Answers:** "what does this page actually say?" Facts, numbers, names, dates and definitions taken from a fetched page, each with a short quote and the place it came from, so a consumer can trust it and find it again. Built by the `scrape` ticket from `webpages.py` chunks.
+
+```json
+"lf-pmma-transmission": {"term": "PMMA light transmission", "tier": 2, "prov": "researched", "src": ["s-optics-guide"], "method": "scraped",
+  "where": {"url": "https://optics.example/guides/acrylic-light", "heading_path": ["Acrylic light guides", "Measured transmission"], "chunk": 2},
+  "v": 92, "unit": "% at 3 mm", "text": "Cast acrylic transmits about 92% of visible light at 3 mm thickness."}
+```
+
+The source record carries the URL, title, fetched date and a quote of 25 words or fewer from that chunk. Paraphrased opinion from a page is `inferred`, not `researched`.
+
+### Timeline
+
+**Answers:** "how long, how fast, and with what curve?" Timed motion segments and holds measured from a video or animation: timecodes, frame numbers, fps and where it came from (`fps_source`), durations in frames and milliseconds, stepped timing (on ones, twos, threes) and the closest named easing with a fit error. Built by the `watch` ticket from `video.py timing`.
+
+```json
+"tl-logo-reveal": {"kind": "timeline", "term": "logo reveal timing", "tier": 2, "prov": "reference_observed", "src": ["r2"], "method": "frame-diff",
+  "window": {"start_tc": "00:00:03.000", "end_tc": "00:00:05.000"}, "fps": 24, "fps_source": "declared",
+  "segments": [{"kind": "motion", "start_tc": "00:00:03.125", "end_tc": "00:00:03.792", "frames": 16, "duration_ms": 667, "stepped": "on twos",
+                "easing": {"best": "ease-in-out", "fit_error": 0.021}},
+               {"kind": "hold", "start_tc": "00:00:03.792", "end_tc": "00:00:04.500", "frames": 17, "duration_ms": 708}],
+  "text": "The logo eases in over 16 frames, animated on twos, then holds for about 0.7 s."}
+```
+
+Read durations as plus or minus one frame. Easing is an estimate from cumulative frame change; say so when you pass it on.
+
+### Transcript
+
+**Answers:** "what does the video say, and when?" A clean transcript (paragraphs with start and end timecodes, speaker when known) and the cues behind it, with rolling auto-caption repeats removed. In the dump, keep a `transcript` entry (language, track kind, length, a summary) plus `cue` entries for the passages the query log needs, each with a quote of 25 words or fewer; the full text stays in the work dir.
+
+```json
+"tr-talk": {"kind": "transcript", "term": "talk transcript", "tier": 3, "prov": "researched", "src": ["v-talk"], "method": "transcribed",
+  "language": "en", "track": "manual", "duration": 1260.0, "words": 2900,
+  "text": "A 21-minute talk on motion design; the timing advice is in 00:04:10-00:09:30."},
+"cue-stagger": {"kind": "cue", "term": "stagger interval", "tier": 2, "prov": "researched", "src": ["v-talk"], "method": "transcribed",
+  "start_tc": "00:06:02.400", "end_tc": "00:06:07.100", "speaker": null, "quote": "we stagger each card by about fifty milliseconds",
+  "text": "The speaker staggers list items by roughly 50 ms."}
+```
+
+### Moodboard (image manifest + palette + what-I-see notes)
+
+**Answers:** "what do the references look like, in measurable terms?" Collected images (from references, scraped pages and video frames) with where each came from, measured palettes, and what an agent saw looking at it. Built by the `moodboard` ticket from `images.py`, which also writes `metadumps/<slug>.moodboard.html` beside the dump.
+
+```json
+"mb-shelf-1": {"kind": "media", "media": "image", "term": "freezer shelf photo", "tier": 2, "prov": "reference_observed", "src": ["i-shelf"],
+  "method": "pixel-sample", "width": 4032, "height": 3024,
+  "palette": [{"hex": "#1E64C8", "share": 0.41}, {"hex": "#F0C814", "share": 0.12}],
+  "text": "Saturated cobalt carton faces with a warm yellow price band; measured, not printed values."},
+"mb-shelf-1-seen": {"term": "cartons read matte", "tier": 3, "prov": "reference_observed", "src": ["i-shelf"], "method": "visual",
+  "text": "Soft diffuse highlights on the carton faces; no specular hotspots."}
+```
+
+Measured palette values get `method: "pixel-sample"`; what an agent sees with the Read tool gets `method: "visual"`. A user-supplied image is `reference_observed`; one found on the web is `researched`.
 
 ---
 

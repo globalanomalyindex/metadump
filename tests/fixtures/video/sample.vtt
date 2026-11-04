@@ -1,0 +1,24 @@
+WEBVTT - fixture with settings, voices and markup
+Kind: captions
+Language: en
+
+STYLE
+::cue { color: yellow }
+
+NOTE this block is a comment
+and spans two lines
+
+intro
+00:00:01.000 --> 00:00:04.000 align:start position:10% line:0
+<v Roger Bingham>We are in New York City &amp; it is <i>cold</i>.
+
+00:04.500 --> 00:06.250
+<v.loud Neil>Two lines here,
+<c.yellow>and markup</c> to strip.
+
+3
+00:00:07.000 --> 00:00:09.500 size:50%
+Words <00:00:07.500><c>with</c><00:00:08.000><c> inline</c> times &lt;3
+
+00:01:00.000 --> 00:01:02.000
+Final cue&nbsp;here.

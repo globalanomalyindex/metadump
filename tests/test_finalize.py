@@ -571,5 +571,79 @@ class AutoTier1Route(unittest.TestCase):
         self.assertEqual(len(out2["routing"]), len(out["routing"]))
 
 
+class MediaTicketsAndSources(unittest.TestCase):
+    """0.2.0: scrape/watch/moodboard tickets, video/image sources, the method field, consult-not-obey wording."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def merge(self, shards):
+        write_work(self.tmp, shards)
+        return finalize.merge_workdir(self.tmp)
+
+    def test_evidence_tickets_may_mint_researched_and_reference_observed_only(self):
+        for ttype in ("scrape", "watch", "moodboard"):
+            draft, report = self.merge({
+                "15-%s.json" % ttype: {"ticket": {"id": "t", "type": ttype},
+                                       "sections": {"motion": {"m-a-%s" % ttype: entry("a", prov="researched"),
+                                                               "m-b-%s" % ttype: entry("b", prov="reference_observed"),
+                                                               "m-c-%s" % ttype: entry("c", prov="user_stated")}}}})
+            sec = draft["motion"]
+            self.assertEqual(sec["m-a-%s" % ttype]["prov"], "researched", ttype)
+            self.assertEqual(sec["m-b-%s" % ttype]["prov"], "reference_observed", ttype)
+            self.assertEqual(sec["m-c-%s" % ttype]["prov"], "reference_observed", ttype)
+            self.assertIn("prov_over_ceiling", codes(report["fixes"]))
+            self.assertNotIn("unknown_ticket_type", codes(report["warnings"]))
+
+    def test_video_and_image_sources_back_both_evidence_provenances(self):
+        d = base_dump()
+        d["sources"]["v1"] = {"kind": "video", "url": "https://www.youtube.com/watch?v=abcDEF12345", "title": "talk",
+                              "fetched": "2026-11-04", "origin": "web"}
+        d["sources"]["i1"] = {"kind": "image", "path": "refs/shelf.jpg", "title": "shelf", "origin": "user"}
+        d["palette"]["c-web"] = {"term": "ease out", "tier": 2, "prov": "researched", "src": ["v1"], "text": "x", "method": "frame-diff"}
+        d["palette"]["c-ref"] = {"term": "shelf blue", "tier": 2, "prov": "reference_observed", "src": ["i1"], "text": "x", "method": "pixel-sample"}
+        out, report = finalize.build_dump(d)
+        self.assertEqual(out["palette"]["c-web"]["prov"], "researched")
+        self.assertEqual(out["palette"]["c-ref"]["prov"], "reference_observed")
+        self.assertEqual(report["errors"], [])
+        self.assertNotIn("unknown_method", codes(report["warnings"]))
+
+    def test_web_found_media_cannot_be_reference_observed(self):
+        d = base_dump()
+        d["sources"]["v1"] = {"kind": "video", "url": "https://video.example/x", "title": "found", "origin": "web"}
+        d["palette"]["c-x"] = {"term": "x", "tier": 2, "prov": "reference_observed", "src": ["v1"], "text": "x"}
+        out, report = finalize.build_dump(d)
+        self.assertEqual(out["palette"]["c-x"]["prov"], "researched")
+        self.assertIn("prov_origin_mismatch", codes(report["fixes"]))
+
+    def test_unknown_method_warns_but_does_not_block(self):
+        d = base_dump()
+        d["palette"]["c-amber"]["method"] = "vibes"
+        out, report = finalize.build_dump(d)
+        self.assertEqual(report["errors"], [])
+        self.assertIn("unknown_method", codes(report["warnings"]))
+        self.assertEqual(out["palette"]["c-amber"]["method"], "vibes")
+
+    def test_free_text_method_from_older_dumps_is_left_alone(self):
+        d = base_dump()
+        d["palette"]["c-amber"]["method"] = "multiply the layer colors channel by channel"
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("unknown_method", codes(report["warnings"]))
+
+    def test_known_methods_are_accepted(self):
+        for m in ("scraped", "transcribed", "frame-diff", "pixel-sample", "visual", "measured", "researched-doc"):
+            d = base_dump()
+            d["palette"]["c-amber"]["method"] = m
+            _, report = finalize.build_dump(d)
+            self.assertNotIn("unknown_method", codes(report["warnings"]), m)
+
+    def test_head_reads_as_relevance_not_obligation(self):
+        _, out, _ = finalize.finish(base_dump())
+        head = json.dumps(out["routing"][0]) + json.dumps(out["manifest"]["how_to_read"])
+        self.assertNotIn("must be expressed", head)
+        self.assertNotIn("constrains", head)
+        self.assertIn("relevan", out["routing"][0]["when"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -27,7 +27,7 @@ Three charted plans across very different tasks, to calibrate how a section plan
 | `search_vocabulary` | search vocabulary, not_meant as negative keywords | job 5 |
 | `influences` | motif vs transferable relationship (tier 3–4) | jobs 2, 3 (keep new work original) |
 
-**Roster:** prompt · 2 observe (2 photos each) · 3 research (brand's own statements, packaging-design lineage, search vocabulary) · 9 specialists · lexicon · exclusion · 2 normalize · synthesis · audit · 6 verify.
+**Roster:** prompt · 2 observe (2 photos each) · 1 scrape (the brand's own product pages) · 2 research (packaging-design lineage, search vocabulary) · 1 moodboard (the shelf photos plus the scraped product shots, with measured band palettes) · 9 specialists · lexicon · exclusion · 2 normalize · synthesis · audit · 6 verify.
 **Exports:** `image.generic` + `image.flux2` (declared), `llm_brief` for copy, `search`.
 
 ---
@@ -83,4 +83,4 @@ Before any user decision, every example is `inferred`, so the oracle route has n
 | `arc` | tensions, conditional grammar per scene | draft, check |
 | `exclusions` | anti-keywords: not_wanted "it was all a dream", "storm as metaphor for grief" (instead: a specific mundane task), noise words | check |
 
-**Exports:** `llm_brief` (Must / Should / Say instead / Unknowns) and `briefs.scene_writer` for a multi-agent drafting workflow.
+**Exports:** `llm_brief` (Core / Also relevant / Say instead / Open / Options) and `briefs.scene_writer` for a multi-agent drafting workflow.

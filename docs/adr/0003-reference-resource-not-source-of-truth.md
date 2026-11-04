@@ -1,0 +1,13 @@
+# A meta dump is a resource to consult, not a source of truth to obey
+
+Version 0.1 framed the dump as rules: tier 1 "must be expressed", checks were gates with a forced revision pass. Two A/B tests showed where that goes wrong. When the dump carried correct objective knowledge (SDXL negative-prompt facts, the optics behind a bad render), consumers did clearly better (`ab-tests/2026-11-04-luminous/results.md`: +1.75 and +1.5 points). When it carried a wrong concrete prescriptive value (pale web tokens that contradicted its own tier-1 "color inside the material"), consumers followed the number over the prose and over the user's intent, and lost, harder with the smaller model (`ab-tests/2026-11-04-player-haiku/results.md`; summary in `ab-tests/README.md`). The value was never in obedience; it was in specifics the model would otherwise guess.
+
+We decided the dump is an abundant resource of objective information, put on paper, that consumers consult. The user's prompt and the model's judgment decide; the dump supplies exact values, real references, measurements, timings, transcripts and sourced facts. Building it is part of the value, because it forces structure and specifics. Concretely: tiers mean relevance, not obligation; `checks` stay under the same key (with `severity`) for compatibility but are optional review prompts that never force a revision; create mode weights collection of objective, sourced data over prescriptive design decisions; `proposed` entries live in an options area and exports phrase them as choices; the verify pass reports whether any concrete value pulled against a tier-1 objective entry. Provenance ranking and the honesty rules for stating facts stay, because they are what make "objective first" possible.
+
+We rejected keeping the rules and only fixing dump quality (the contradiction would recur whenever a builder guesses a number), stripping every concrete value out (the specifics are exactly what helped), and adding stricter gates (the failure was over-compliance, not under-compliance).
+
+## Consequences
+
+- Wording across the skill changes register: "must" for consumers becomes guidance ("most relevant", "worth reviewing"); finalize's generated head reads "relevance, not rules". Dumps built before 0.2.0 still validate; `check` reports their head wording as `layout_stale` until rebuilt.
+- Create mode gains evidence tickets (`scrape`, `watch`, `moodboard`) and a `method` field so measured, transcribed and scraped specifics carry how they were taken.
+- A consumer that deviates from a dump entry is not failing; it should say what it chose differently when that matters to the user.

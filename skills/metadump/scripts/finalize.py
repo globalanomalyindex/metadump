@@ -28,11 +28,15 @@ PROV_RANK = {
 TIERS = (1, 2, 3, 4)
 TIER1_CAP = 12
 MANIFEST_REQUIRED = ["schema", "slug", "version", "created", "prompt"]
-# Which source kinds can back which provenance.
+# Which source kinds can back which provenance. Video and image sources back either one: a video or image
+# the user supplied is reference_observed, one found on the web is researched (sources say which in `origin`).
 PROV_SOURCE_KINDS = {
-    "researched": {"web", "doc"},
-    "reference_observed": {"reference", "dump"},
+    "researched": {"web", "doc", "video", "image"},
+    "reference_observed": {"reference", "dump", "video", "image"},
 }
+MEDIA_SOURCE_KINDS = {"video", "image"}
+# How an entry was obtained. Free-ish: unknown values only warn.
+METHODS = {"scraped", "transcribed", "frame-diff", "pixel-sample", "visual", "measured", "researched-doc"}
 ANTI_KINDS = ("not_meant", "not_wanted")
 
 
@@ -109,6 +113,13 @@ def _source_kinds(entry, sources):
     return {sources[s].get("kind") for s in entry.get("src", []) or [] if isinstance(sources.get(s), dict)}
 
 
+def _web_found_media_only(entry, sources):
+    """True when every source that could back reference_observed is a video/image the build found on the web."""
+    backing = [sources[s] for s in entry.get("src", []) or []
+               if isinstance(sources.get(s), dict) and sources[s].get("kind") in PROV_SOURCE_KINDS["reference_observed"]]
+    return bool(backing) and all(b.get("kind") in MEDIA_SOURCE_KINDS and b.get("origin") == "web" for b in backing)
+
+
 def _in_prompt(text, prompt):
     t = _norm(text)
     return bool(t) and t in _norm(prompt)
@@ -148,6 +159,15 @@ def _validate_entries(out, report):
             entry["prov"] = "inferred"
             _note(report, "fixes", "prov_needs_source", ptr,
                   "%s needs a src of kind %s; demoted to inferred" % (prov, "/".join(sorted(needed))))
+        if entry["prov"] == "reference_observed" and _web_found_media_only(entry, sources):
+            entry["prov"] = "researched"
+            _note(report, "fixes", "prov_origin_mismatch", ptr,
+                  "reference_observed needs a user-supplied source; its video/image sources have origin 'web'; set to researched")
+        method = entry.get("method")
+        # Token-like values are provenance methods; older dumps used `method` for free-text procedures, left alone.
+        if isinstance(method, str) and method not in METHODS and re.match(r"^[A-Za-z][\w.-]*$", method):
+            _note(report, "warnings", "unknown_method", ptr,
+                  "method '%s' is not one of %s (kept as is)" % (method, ", ".join(sorted(METHODS))))
         if entry["prov"] == "user_stated":
             inherited_ok = entry.get("inherited") and "dump" in _source_kinds(entry, sources)
             if not (_in_prompt(entry.get("anchor", ""), prompt) or entry.get("decided_in") or inherited_ok):
@@ -168,7 +188,7 @@ def _validate_entries(out, report):
             _validate_anti_keyword(entry, ptr, report)
     if len(tier1) > TIER1_CAP:
         _note(report, "warnings", "tier1_over_cap", "",
-              "%d tier-1 entries (cap %d): over-constraint risk; demote the least defining" % (len(tier1), TIER1_CAP))
+              "%d tier-1 entries (cap %d): too many to read as the most relevant; demote the least defining" % (len(tier1), TIER1_CAP))
     return seen
 
 
@@ -363,7 +383,7 @@ def _how_to_read(fname, head_lines):
     return [
         "1. Read the head first: the first %d lines hold manifest, essence and routing (Read limit=%d, or jq '{manifest, essence, routing}' %s)." % (head_lines, head_lines, fname),
         "2. Pick the route for your job and run its jq: jq '<routing[i].jq>' %s" % fname,
-        "3. Also pull what constrains your scope: jq '.anti_keywords, .checks' %s" % fname,
+        "3. Also pull the anti-keywords and review prompts (checks) for your scope: jq '.anti_keywords, .checks' %s" % fname,
         "4. Look up any term (lowercase): jq '.index[\"<term>\"]' %s  -> hits give id + path; not_meant lists senses to avoid." % fname,
         "5. Grep works too: every entry is one line, so grep -n '<word>' %s returns whole entries." % fname,
     ]
@@ -419,6 +439,10 @@ TICKET_PROVS = {
     "prompt": _DERIVED_ONLY | {"user_stated"},
     "observe": _DERIVED_ONLY | {"reference_observed"},
     "research": _DERIVED_ONLY | {"researched"},
+    # Evidence from pages, videos and images: researched when found on the web, reference_observed when the user supplied it.
+    "scrape": _DERIVED_ONLY | {"researched", "reference_observed"},
+    "watch": _DERIVED_ONLY | {"researched", "reference_observed"},
+    "moodboard": _DERIVED_ONLY | {"researched", "reference_observed"},
     "specialist": _DERIVED_ONLY,
     "lexicon": _DERIVED_ONLY,
     "exclusion": _DERIVED_ONLY,
@@ -586,11 +610,11 @@ AUTO_TIER1_JOB = "always first: the defining tier-1 entries"
 
 
 def _add_tier1_route(out):
-    """Every consumer must express tier 1, so give it a route of its own, rebuilt on every build."""
+    """Tier 1 is what the task is most about, so it gets a route of its own, rebuilt on every build."""
     out["routing"] = [r for r in out["routing"] if not (isinstance(r, dict) and r.get("auto"))]
     paths = [ptr for _eid, ptr, entry, _h in iter_entries(out) if entry.get("tier") == 1]
     if paths:
-        out["routing"].insert(0, {"job": AUTO_TIER1_JOB, "when": "pull before every job: tier 1 must be expressed",
+        out["routing"].insert(0, {"job": AUTO_TIER1_JOB, "when": "pull first for any job: the most relevant entries (relevance, not rules)",
                                   "auto": True, "paths": paths})
 
 

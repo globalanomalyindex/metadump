@@ -5,3 +5,5 @@ __pycache__/
 skills/metadump-workspace/
 skills/metadump/evals/results/
 .scratch/
+.playwright-mcp/
+.impeccable/

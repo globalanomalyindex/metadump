@@ -1,0 +1,87 @@
+{
+ "playabilityStatus": {
+  "status": "OK"
+ },
+ "videoDetails": {
+  "videoId": "abcDEF12345",
+  "title": "Easing curves explained",
+  "lengthSeconds": "212",
+  "author": "Motion Lab",
+  "channelId": "UC123",
+  "shortDescription": "How easing works.\n\n0:00 Intro\n0:45 Linear motion\n1:30 Ease out\n2:50 Overshoot",
+  "keywords": [
+   "easing",
+   "animation"
+  ],
+  "viewCount": "1234",
+  "isLiveContent": false
+ },
+ "microformat": {
+  "playerMicroformatRenderer": {
+   "publishDate": "2024-05-01",
+   "uploadDate": "2024-04-30",
+   "category": "Education",
+   "lengthSeconds": "212",
+   "isFamilySafe": true
+  }
+ },
+ "captions": {
+  "playerCaptionsTracklistRenderer": {
+   "captionTracks": [
+    {
+     "baseUrl": "https://www.youtube.com/api/timedtext?v=abcDEF12345&lang=en&kind=asr",
+     "name": {
+      "simpleText": "English (auto-generated)"
+     },
+     "languageCode": "en",
+     "kind": "asr",
+     "vssId": "a.en",
+     "isTranslatable": true
+    },
+    {
+     "baseUrl": "https://www.youtube.com/api/timedtext?v=abcDEF12345&lang=en-GB",
+     "name": {
+      "runs": [
+       {
+        "text": "English (United Kingdom)"
+       }
+      ]
+     },
+     "languageCode": "en-GB",
+     "vssId": ".en-GB",
+     "isTranslatable": true
+    },
+    {
+     "baseUrl": "https://www.youtube.com/api/timedtext?v=abcDEF12345&lang=de",
+     "name": {
+      "simpleText": "German"
+     },
+     "languageCode": "de",
+     "vssId": ".de"
+    }
+   ]
+  }
+ },
+ "streamingData": {
+  "adaptiveFormats": [
+   {
+    "itag": 137,
+    "mimeType": "video/mp4; codecs=\"avc1.640028\"",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+   },
+   {
+    "itag": 298,
+    "mimeType": "video/mp4; codecs=\"avc1.4d4020\"",
+    "width": 1280,
+    "height": 720,
+    "fps": 60
+   },
+   {
+    "itag": 140,
+    "mimeType": "audio/mp4; codecs=\"mp4a.40.2\""
+   }
+  ]
+ }
+}

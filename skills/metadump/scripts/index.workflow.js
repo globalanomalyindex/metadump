@@ -1,13 +1,13 @@
 export const meta = {
   name: 'metadump-index',
-  description: 'Fan out a meta dump build: evidence, specialists, normalize, synthesis + build, audit and dry-run verify, then gap rounds',
-  whenToUse: 'Called by the metadump skill in create mode, after charting, with args {skill_dir, work_dir, slug, depth, max_rounds, tickets[]}',
+  description: 'Fan out a meta dump build: evidence (references, research, pages, videos, images), specialists, normalize, synthesis + build, audit and dry-run verify, then gap rounds',
+  whenToUse: 'Called by the metadump skill in create mode, after charting, with args {skill_dir, work_dir, slug, depth, max_rounds, tickets[]} (ticket types: observe, research, scrape, watch, moodboard, inherit, specialist, lexicon, exclusion)',
   phases: [
-    { title: 'Evidence', detail: 'observe references, research, inherit earlier dumps' },
+    { title: 'Evidence', detail: 'observe references, research, scrape pages, watch videos, collect images into a moodboard, inherit earlier dumps' },
     { title: 'Specialists', detail: 'one per section, plus lexicon and exclusion' },
     { title: 'Normalize', detail: 'merge synonyms, resolve conflicts, cap tier 1' },
-    { title: 'Synthesis', detail: 'essence, routing, exports, checks; finalize build' },
-    { title: 'Verify', detail: 'audit plus one dry-run consumer per routed job' },
+    { title: 'Synthesis', detail: 'essence, routing, exports, review prompts; finalize build' },
+    { title: 'Verify', detail: 'audit plus one dry-run consumer per routed job, with a contradiction pass' },
     { title: 'Gaps', detail: 'gap tickets for tier-1/2 guesses, then another round' },
   ],
 }
@@ -27,15 +27,22 @@ const BRIEFS = `${SKILL}/references/briefs.md`
 // Entries per shard by depth. Without a budget, workers write everything they can think of
 // (the first lite smoke test produced 212 entries, ~3x the plan). Mirrors create.md.
 const BUDGETS = {
-  lite: { research: '8-12', specialist: '12-20', lexicon: '10-15', exclusion: '10-15', observe: '10-20', inherit: 'as needed' },
-  standard: { research: '10-20', specialist: '20-35', lexicon: '15-30', exclusion: '15-25', observe: '20-35', inherit: 'as needed' },
-  deep: { research: '15-30', specialist: '30-50', lexicon: '25-45', exclusion: '20-35', observe: '30-50', inherit: 'as needed' },
+  lite: { research: '8-12', specialist: '12-20', lexicon: '10-15', exclusion: '10-15', observe: '10-20', inherit: 'as needed',
+    scrape: '8-15', watch: '8-15', moodboard: '6-12' },
+  standard: { research: '10-20', specialist: '20-35', lexicon: '15-30', exclusion: '15-25', observe: '20-35', inherit: 'as needed',
+    scrape: '15-25', watch: '15-30', moodboard: '10-20' },
+  deep: { research: '15-30', specialist: '30-50', lexicon: '25-45', exclusion: '20-35', observe: '30-50', inherit: 'as needed',
+    scrape: '25-40', watch: '25-45', moodboard: '15-30' },
 }
 const budgetFor = type => (BUDGETS[DEPTH] || BUDGETS.standard)[type]
 const SCHEMA = `${SKILL}/references/schema.md`
 const FINALIZE = `python3 ${SKILL}/scripts/finalize.py`
 
-const WAVE_OF = { inherit: 1, observe: 1, research: 1, specialist: 2, lexicon: 2, exclusion: 2 }
+const WAVE_OF = { inherit: 1, observe: 1, research: 1, scrape: 1, watch: 1, moodboard: 1, specialist: 2, lexicon: 2, exclusion: 2 }
+// Moodboard tickets collect the images that scrape and watch tickets write, so they start once the rest of the evidence is in.
+const COLLECTS_EVIDENCE = new Set(['moodboard'])
+// Gap rounds may add evidence (facts from outside) as well as specialist work.
+const GAP_EVIDENCE = new Set(['research', 'scrape', 'watch'])
 const ENGINE = new Set(['prompt', 'normalize', 'synthesis', 'audit', 'verify', 'gaps'])
 const work = A.tickets.filter(t => t && t.id && t.type && !ENGINE.has(t.type))
 const wave1 = work.filter(t => (t.wave || WAVE_OF[t.type] || 2) === 1)
@@ -73,6 +80,14 @@ const VERIFY = {
         type: 'object',
         properties: { decision: { type: 'string' }, tier: { type: 'number' }, section: { type: 'string' }, query: { type: 'string' } },
         required: ['decision', 'tier'],
+      },
+    },
+    contradictions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { value_id: { type: 'string' }, against_id: { type: 'string' }, why: { type: 'string' } },
+        required: ['value_id', 'against_id'],
       },
     },
     misses: { type: 'array', items: { type: 'string' } },
@@ -122,7 +137,9 @@ const count = receipts => receipts.filter(Boolean).reduce((n, r) => n + (r.n_ent
 let total = 0
 if (wave1.length) {
   phase('Evidence')
-  const r = await runTickets(wave1, 'Evidence')
+  const first = wave1.filter(t => !COLLECTS_EVIDENCE.has(t.type))
+  const after = wave1.filter(t => COLLECTS_EVIDENCE.has(t.type))
+  const r = [...(first.length ? await runTickets(first, 'Evidence') : []), ...(after.length ? await runTickets(after, 'Evidence') : [])]
   total += count(r)
   log(`evidence: ${r.filter(Boolean).length}/${wave1.length} tickets, ${count(r)} entries`)
 }
@@ -171,27 +188,31 @@ while (true) {
   const audit = LITE ? null : outcomes[0]
   const verified = outcomes.slice(auditCall.length).filter(Boolean)
   results.audits.push(audit)
-  results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, misses: (v.misses || []).length })))
+  results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, contradictions: (v.contradictions || []).length, misses: (v.misses || []).length })))
 
-  const tier12 = verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))
+  // A concrete value that pulls against a tier-1 objective entry is a tier-1 gap (the A/B tests' failure mode).
+  const contradictions = verified.flatMap(v => (v.contradictions || []).map(c => ({
+    job: v.job, decision: `contradiction: ${c.value_id} pulls against ${c.against_id}${c.why ? ` (${c.why})` : ''}`, tier: 1,
+  })))
+  const tier12 = [...contradictions, ...verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))]
   const missing = (audit && audit.missing_clauses) || []
-  log(`round ${round}: ${tier12.length} tier-1/2 guesses across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
+  log(`round ${round}: ${tier12.length} tier-1/2 gaps (${contradictions.length} contradictions) across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
   results.remaining_gaps = [...tier12, ...missing.map(clause => ({ decision: `untraced prompt clause: ${clause}`, tier: 1 }))]
   if (round >= MAX_ROUNDS || (!tier12.length && !missing.length)) break
 
   phase('Gaps')
   const plan = await agent(`${opener(`gaps-r${round}`, 'gaps', `Round ${round}. Write ticket files only (no shard), named ${WORK}/tickets/6<N>-gap-<section>-r${round + 1}.md with N 0-9 unused so far.`)}
 
-Verify guesses at tier 1-2 (JSON): ${JSON.stringify(tier12)}
+Verify guesses at tier 1-2 and contradictions (JSON): ${JSON.stringify(tier12)}
 Untraced prompt clauses (JSON): ${JSON.stringify(missing)}
-Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist or research), or {"tickets": []}.`,
+Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist, research, scrape or watch), or {"tickets": []}.`,
     { label: `gaps:r${round}`, phase: 'Gaps', schema: GAPS })
-  const gapTickets = ((plan && plan.tickets) || []).filter(t => t.id && (t.type === 'specialist' || t.type === 'research'))
+  const gapTickets = ((plan && plan.tickets) || []).filter(t => t.id && (t.type === 'specialist' || GAP_EVIDENCE.has(t.type)))
   results.gap_tickets.push(...gapTickets.map(t => t.id))
   if (!gapTickets.length) break
 
-  const research = gapTickets.filter(t => t.type === 'research')
-  const special = gapTickets.filter(t => t.type !== 'research')
+  const research = gapTickets.filter(t => GAP_EVIDENCE.has(t.type))
+  const special = gapTickets.filter(t => !GAP_EVIDENCE.has(t.type))
   let added = 0
   if (research.length) added += count(await runTickets(research, 'Gaps'))
   if (special.length) added += count(await runTickets(special, 'Gaps'))

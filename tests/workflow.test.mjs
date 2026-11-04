@@ -151,3 +151,84 @@ test('stopping with tier-1/2 guesses hands them to the main loop as remaining ga
   assert.equal(result.remaining_gaps.length, 4) // 2 guesses x 2 verified jobs
   assert.match(result.next, /open_questions/)
 })
+
+// ---------------------------------------------------------------- 0.2.0: pages, videos, images
+const MEDIA = [
+  { id: '15-scrape-docs', type: 'scrape' },
+  { id: '16-watch-talk', type: 'watch' },
+  { id: '17-moodboard', type: 'moodboard' },
+  { id: '20-research-lineage', type: 'research' },
+  { id: '30-composition', type: 'specialist' },
+  { id: '75-exclusion', type: 'exclusion' },
+]
+
+test('scrape, watch and moodboard tickets run in the evidence phase before specialists', async () => {
+  const { labels, calls } = await runWith({ ...ARGS, tickets: MEDIA }, standard({ guessesByRound: {} }))
+  const spec = labels.indexOf('specialist:30-composition')
+  for (const l of ['scrape:15-scrape-docs', 'watch:16-watch-talk', 'moodboard:17-moodboard']) {
+    assert.ok(labels.includes(l), `missing ${l}`)
+    assert.ok(labels.indexOf(l) < spec, `${l} should run before specialists`)
+    assert.equal(calls.find(c => c.label === l).opts.phase, 'Evidence')
+  }
+})
+
+test('moodboard tickets start after the scrape and watch tickets whose images they collect', async () => {
+  const { labels } = await runWith({ ...ARGS, tickets: MEDIA }, standard({ guessesByRound: {} }))
+  const mood = labels.indexOf('moodboard:17-moodboard')
+  assert.ok(labels.indexOf('scrape:15-scrape-docs') < mood)
+  assert.ok(labels.indexOf('watch:16-watch-talk') < mood)
+  assert.ok(labels.indexOf('research:20-research-lineage') < mood)
+})
+
+test('media evidence tickets carry an entry budget for every depth', async () => {
+  const want = {
+    lite: { scrape: '8-15', watch: '8-15', moodboard: '6-12' },
+    standard: { scrape: '15-25', watch: '15-30', moodboard: '10-20' },
+    deep: { scrape: '25-40', watch: '25-45', moodboard: '15-30' },
+  }
+  for (const depth of Object.keys(want)) {
+    const { calls } = await runWith({ ...ARGS, depth, tickets: MEDIA }, standard({ guessesByRound: {} }))
+    for (const [type, budget] of Object.entries(want[depth])) {
+      const call = calls.find(c => c.label.startsWith(`${type}:`))
+      assert.match(call.prompt, new RegExp(`Entry budget: ${budget} entries`), `${depth} ${type}`)
+      assert.match(call.prompt, new RegExp(`"${type}" section of /skill/references/briefs\\.md`))
+    }
+  }
+})
+
+test('a gap round may add scrape or watch evidence tickets', async () => {
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('gaps')) return { tickets: [{ id: '61-gap-scrape-r2', type: 'scrape' }, { id: '62-gap-motion-r2', type: 'specialist' }] }
+    return standard()(label, prompt)
+  }
+  const { labels } = await runWith(ARGS, behaviour)
+  assert.ok(labels.includes('scrape:61-gap-scrape-r2'))
+  assert.ok(labels.indexOf('scrape:61-gap-scrape-r2') < labels.indexOf('specialist:62-gap-motion-r2'))
+})
+
+test('meta phases describe the new evidence and review prompts', () => {
+  const { meta } = load()
+  const evidence = meta.phases.find(p => p.title === 'Evidence').detail
+  for (const word of ['pages', 'videos', 'images']) assert.match(evidence, new RegExp(word))
+  assert.match(meta.phases.find(p => p.title === 'Synthesis').detail, /review prompts/)
+})
+
+test('verify contradictions count as tier-1 gaps and reach the gap planner', async () => {
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('verify')) {
+      const round = Number((prompt.match(/Round (\d+)/) || [0, 1])[1])
+      return { job: label, guesses: [], misses: [], lookups: 2,
+        contradictions: round === 1 ? [{ value_id: 'p-tint-alpha', against_id: 'inv-color-inside', why: 'pale' }] : [] }
+    }
+    return standard({ guessesByRound: {} })(label, prompt)
+  }
+  const { result, calls } = await runWith({ ...ARGS, depth: 'lite' }, behaviour)
+  assert.equal(result.remaining_gaps.length, 2) // one contradiction x 2 verified jobs
+  assert.match(result.remaining_gaps[0].decision, /contradiction: p-tint-alpha/)
+  assert.equal(result.remaining_gaps[0].tier, 1)
+  const std = await runWith(ARGS, behaviour)
+  const gaps = std.calls.find(c => c.label === 'gaps:r1')
+  assert.ok(gaps, 'a contradiction alone should trigger a gap round')
+  assert.match(gaps.prompt, /inv-color-inside/)
+  assert.ok(calls.find(c => c.label.startsWith('verify')).opts.schema.properties.contradictions)
+})
