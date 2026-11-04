@@ -1,0 +1,10 @@
+{
+  "name": "metadump",
+  "version": "0.1.0",
+  "description": "takes a prompt (plus photos or files if you have them) and turns it into a meta dump: one big self-indexing JSON chest of tiered keywords, anti-keywords, descriptions, patterns, references and sources that any skill or subagent can search like a search engine while it works.",
+  "author": { "name": "christopher robin fiore", "url": "https://github.com/globalanomalyindex" },
+  "homepage": "https://github.com/globalanomalyindex/metadump",
+  "repository": "https://github.com/globalanomalyindex/metadump",
+  "license": "MIT",
+  "keywords": ["metadata", "meta dump", "keywords", "anti-keywords", "context engineering", "art direction", "tdd", "subagents"]
+}

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: apple-rounded-ui-rebuild
+expected_outcome: |
+  A meta dump that passes finalize.py check, with parameter entries (radii, spacing, motion timings) marked illustrative rather than official, component and state coverage, accessibility checks, anti-keywords against inconsistent radii and gratuitous blur, routes for SwiftUI and web implementation, and no claim to be Apple's official values.

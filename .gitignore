@@ -1,0 +1,7 @@
+.DS_Store
+__pycache__/
+*.pyc
+**/metadumps/.work/
+skills/metadump-workspace/
+skills/metadump/evals/results/
+.scratch/

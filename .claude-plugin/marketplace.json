@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "metadump",
+  "owner": { "name": "christopher robin fiore", "url": "https://github.com/globalanomalyindex" },
+  "description": "the metadump plugin: treat AI like a search engine by giving it a meta dump to search.",
+  "plugins": [
+    {
+      "name": "metadump",
+      "source": "./",
+      "description": "build and use meta dumps, self-indexing JSON chests of task knowledge for any project and any skill.",
+      "category": "productivity",
+      "keywords": ["metadata", "meta dump", "context engineering"]
+    }
+  ]
+}

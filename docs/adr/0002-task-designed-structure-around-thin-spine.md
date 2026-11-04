@@ -1,0 +1,3 @@
+# Task-designed structure around a thin spine, not a fixed schema
+
+Meta dumps must serve any domain (visual design, coding, TDD, engineering), and the user's best example earned its quality from sections shaped to its subject, not a generic template. We decided only the spine (manifest, essence, routing table, anti-keywords, and provenance plus tier on every entry) is shared; every other section is designed per task during create mode. We rejected a fixed domain-agnostic schema because it forces irrelevant sections (a `color_system` for a REST API) and flattens task-specific mechanisms. Consumers rely on the routing table, not section names, to find what they need.

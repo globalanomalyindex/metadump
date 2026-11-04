@@ -1,0 +1,7 @@
+---
+type: llm
+focus: trace
+weight: 1
+---
+
+The result matches this description: An engineering meta dump that passes finalize.py check, with domain vocabulary, input grammar, invariants with variable fields, examples, seams, a test list queue and API surface; library facts only as researched entries with doc sources; a not_meant anti-keyword for unit conversion; no file paths or code; and routes a TDD loop can use (next test, oracle, after green).
