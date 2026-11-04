@@ -66,6 +66,18 @@ _Avoid_: ban, blocklist entry
 An optional review prompt derived from objective entries ("highlights read white, not tinted") that a consumer may run on its own output as a self-review. Kept under the `checks` key, with its `severity`, for compatibility; a check never forces a revision, and a consumer may deviate and say why.
 _Avoid_: gate, requirement, must-pass test
 
+**Task ladder**:
+The chain from the disciplines a task belongs to down to its exact specifics (UX and UI design → e-commerce interfaces → product cards and carts → this shopping component → its values), recorded in the essence and followed by the dump's sections. Each level is a **rung**. Charting identifies the task and lays the ladder before anything else.
+_Avoid_: hierarchy, taxonomy, breakdown
+
+**Discipline primer**:
+What a senior practitioner of one of the task's disciplines knows that applies to it (named principles, laws, heuristics, standards, vocabulary, common mistakes, dos and don'ts), written into the dump from the model's own knowledge and confirmed against sources.
+_Avoid_: rules, guidelines, best practices
+
+**Distillation**:
+Turning a named reference ("Apple's UI", screenshots, a codebase) into brand-agnostic understanding: measurements, descriptions, patterns noticed, principles, and dos and don'ts, so another agent can understand, recreate and imagine the feel without copying anything.
+_Avoid_: copying, cloning, recreation, scraping
+
 **Collected entry**:
 An entry the build gathered rather than thought up: the user's words (`user_stated`), what references show (`reference_observed`) or what a fetched source says (`researched`). Everything else is derived: the build's own `inferred` and `proposed` thinking, and `unknown`. Only collected entries reach tier 1.
 _Avoid_: fact, ground truth, verified

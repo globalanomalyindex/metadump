@@ -8,6 +8,8 @@ Three charted plans across very different tasks, to calibrate how a section plan
 
 **Depth:** deep (four references, several consumers).
 
+**Task and ladder:** packaging design, graphic design, typography, food photography and retail shelf design → frozen-food packaging → this brand's carton system → one flavor's front → band hexes, type sizes, photo crop. The primer covers shelf legibility at distance, hierarchy on a pack face, and food-photo conventions; the photos are distilled into brand-agnostic bands, proportions and type behavior, not copied.
+
 **Destination jobs:** understand the design system · write image prompts for new flavors in the same system · lay out a new carton front · write on-pack copy in the same voice · produce search/alt-text metadata · check a new design against the system.
 
 **Query log (excerpt):** What sits above what on a meal front? (1) · Which corner holds the brand mark, and is it fixed? (2) · How many color bands, and do their widths mean anything? (2) · What colors are the bands per flavor, as photographed? (2) · Is the carton glossy or matte? (2) · What type style is the product name? (1) · What must a new flavor keep, and what may change? (1) · Which words does the copy use for protein/calories? (2) · What does "Counter" not mean? (1)
@@ -35,6 +37,8 @@ Three charted plans across very different tasks, to calibrate how a section plan
 ## B. Engineering, test-first: "build a CLI that converts Markdown recipes into a shopping list, TDD"
 
 **Depth:** standard. No references.
+
+**Task and ladder:** software design, testing practice and CLI design → test-driven development → this tool's test plan and seams → its cases, oracles and exit codes. The primer covers red-green-refactor, test lists, one behavior per test, fakes at boundaries, and CLI conventions (stdout for data, stderr for errors, nonzero exits).
 
 **Destination jobs:** understand the task · write the spec/ticket list · implement a ticket · pick the next test · get a test's expected value (oracle) · check a diff after green.
 
@@ -70,6 +74,8 @@ Before any user decision, every example is `inferred`, so the oracle route has n
 ## C. Writing, non-visual: "a 2,000-word literary short story about a lighthouse keeper's last night, in the spirit of Raymond Carver"
 
 **Depth:** standard. No references.
+
+**Task and ladder:** fiction craft → literary minimalism → this story's arc and scenes → its sentences and dialogue. The primer covers scene and summary, show and tell, omission, and point of view; Carver is distilled into transferable relationships (compression, omission, plain diction), not imitated.
 
 **Destination jobs:** understand the story · draft a scene · write dialogue · revise a paragraph · check a draft against the dump.
 

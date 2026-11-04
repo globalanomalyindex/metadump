@@ -166,6 +166,24 @@ class Validation(unittest.TestCase):
         self.assertEqual(report["errors"], [])
         self.assertEqual(out["palette"]["options"], {"_about": "options, not requirements"})
 
+    def test_a_dump_that_never_identified_its_task_warns(self):
+        _, report = finalize.build_dump(base_dump())
+        self.assertIn("no_task_ladder", codes(report["warnings"]))
+
+    def test_a_task_with_disciplines_and_a_ladder_does_not_warn(self):
+        d = base_dump()
+        d["essence"]["task"] = {"is": "a poster (print graphic design)",
+                                "disciplines": ["graphic design", "typography", "print production"],
+                                "ladder": ["graphic design", "poster design", "calm matte amber poster", "palette and paper values"]}
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("no_task_ladder", codes(report["warnings"]))
+
+    def test_a_ladder_needs_disciplines_and_more_than_one_rung(self):
+        d = base_dump()
+        d["essence"]["task"] = {"is": "a poster", "disciplines": [], "ladder": ["poster"]}
+        _, report = finalize.build_dump(d)
+        self.assertIn("no_task_ladder", codes(report["warnings"]))
+
     def test_tier_1_entry_without_anchor_is_demoted_to_tier_2(self):
         d = base_dump()
         d["sources"]["s-web"] = {"kind": "web", "url": "https://example.com/amber", "title": "Amber light"}

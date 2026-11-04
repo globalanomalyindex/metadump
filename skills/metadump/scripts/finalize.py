@@ -254,6 +254,11 @@ def _validate_spine(out, report):
         _note(report, "errors", "manifest_field_missing", "/manifest/version", "version must be an integer")
     if not out["essence"].get("one_sentence"):
         _note(report, "errors", "essence_field_missing", "/essence/one_sentence", "essence needs one_sentence")
+    task = out["essence"].get("task") or {}
+    if not (isinstance(task, dict) and task.get("disciplines") and len(task.get("ladder") or []) >= 2):
+        _note(report, "warnings", "no_task_ladder", "/essence/task",
+              "identify the task first: essence.task needs `is`, the `disciplines` it belongs to, and a `ladder` from those "
+              "disciplines down to this task's specifics, so the dump carries what practitioners know, not just the artifact")
     if not isinstance(out["routing"], list):
         _note(report, "errors", "bad_routing", "/routing", "routing must be a list of routes")
         out["routing"] = []

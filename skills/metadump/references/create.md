@@ -27,7 +27,7 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets covering the facets between them + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 (2 when verify finds narrowings) | 20–35K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
+| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 (2 when verify finds narrowings) | 20–35K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
 | `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
 | `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 90–150K+ tokens, still routed | ~4–7M, 1–2 h (estimate) |
 
@@ -56,8 +56,18 @@ Pick the depth from the request. State one line before fan-out, e.g. "Standard d
 
 Charting decides the dump's shape. Do it in the main loop, carefully: everything downstream is only as good as the plan.
 
+**Start by identifying the task, then break it down from abstract to specific.** Name what the task is and which disciplines it belongs to, then lay a **ladder** from those disciplines down to this task's exact values. A shopping component is UX design, UI design, interaction design, e-commerce, accessibility and front-end work. Its ladder runs UX and UI → e-commerce interfaces → product cards and carts → a compact, minimal, modern shopping component → its spacing, type, color and timing values. A TDD task is software design and testing practice → test-driven development → this module's test plan → its seams, cases and oracles. Every rung gets its keywords, human descriptors, principles, sources, patterns, and dos and don'ts, from the model's own knowledge and from research. The top rungs carry what a practitioner of the discipline knows (principles, laws, heuristics, standards), so the dump brings that knowledge to every task instead of leaving it to a separate rule-based skill. The specific rungs carry the qualities, references and numbers.
+
+**Distill, don't copy.** When the user names a brand, product or site ("Apple's UI") or supplies screenshots, the dump turns them into brand-agnostic understanding: measurements, proportions, materials, motion, density, tone, the patterns noticed, the principles behind them, and what to do and not do. Another agent can then understand the feel, recreate it and imagine new work in it without copying anything. Brand names stay in sources and influences, never in the descriptions a consumer will reuse.
+
 ```markdown
 # Map: <slug>
+
+## Task
+<!-- what the task is, the disciplines it belongs to, and the ladder from those disciplines down to this task's specifics. This becomes essence.task. -->
+- Is: a shopping component (a UI component for buying a product)
+- Disciplines: UX design, UI design, interaction design, e-commerce, accessibility, front-end engineering
+- Ladder: UX and UI design → e-commerce interfaces → product cards, carts and quick-add patterns → a compact, minimal, modern shopping component → its spacing, type, color, states and timing values
 
 ## Destination: consumer jobs
 <!-- 4–12 jobs the dump must serve. Infer from the prompt and the project (what tools/skills exist: image generation? a codebase? tests? a CMS?). Always include "understand the task" and "check an output". These become routing jobs. -->
@@ -82,7 +92,7 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 - "shopping component": product card with quick add (default) / mini cart with quantity and checkout / product list with filters / checkout summary
 
 ## Research facets
-<!-- for each key quality and object in the prompt, which facets the research tickets cover: vocabulary and human descriptors, principles and heuristics, exemplars (brands, products, sites, codebases, works, people) with what transfers, patterns and anti-patterns, needs of the people involved, specifics, decision points. Lite: two tickets split the facets; standard: one or two facets per ticket. -->
+<!-- for each rung of the ladder and each key quality in the prompt, which facets the research tickets cover. The top rungs get a discipline primer (principles, laws, heuristics, standards, vocabulary, common mistakes); the lower rungs get exemplars, patterns, needs and specifics. Facets: vocabulary and human descriptors, principles and heuristics, exemplars (brands, products, sites, codebases, works, people) with what transfers, patterns and anti-patterns, needs of the people involved, specifics, decision points. Lite: one primer ticket for the discipline rungs and one ticket for the specific rungs; standard: one or two rungs or facets per ticket. -->
 
 ## Decision points
 <!-- the choices the work will face, each with its options; the dump gives options, tradeoffs and sources, the consumer decides. Design: density vs breathing room, one product vs a list. TDD: which test first, where the seam goes, outside-in vs inside-out, when to refactor. -->
@@ -133,7 +143,7 @@ How to choose the evidence tickets:
 - Every dump gets a `lexicon` ticket that is also the associations pass: what the model knows around the task (human descriptors, adjacent concepts, associated brands, works and people, metaphors, moods) written down as seed material.
 
 How to choose the section plan for any domain:
-1. Start from the destination jobs and the query log, never from a template. A REST API dump has no `palette`; a carton dump has no `error_model`.
+1. Start from the task's ladder, the destination jobs and the query log, never from a template. Sections usually run from the top of the ladder to the bottom: the disciplines' principles first (`ux_principles`), then the domain's patterns (`commerce_patterns`), then this artifact (`card_anatomy`, `look_and_feel`), then its values. A REST API dump has no `palette`; a carton dump has no `error_model`.
 2. For each cluster of questions, ask which mechanism answers it (see `mechanisms.md`). One section may use several.
 3. Name sections the way a practitioner of that domain would (`verse_form`, `seams`, `macro_bands`, `subject_lines`).
 4. Survival rule: drop any section no job or query needs. Breadth comes from the query log, not from symmetry.
