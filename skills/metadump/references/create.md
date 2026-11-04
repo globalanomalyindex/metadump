@@ -68,6 +68,7 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 - Is: a shopping component (a UI component for buying a product)
 - Disciplines: UX design, UI design, interaction design, e-commerce, accessibility, front-end engineering
 - Ladder: UX and UI design → e-commerce interfaces → product cards, carts and quick-add patterns → a compact, minimal, modern shopping component → its spacing, type, color, states and timing values
+- Job (the user's whole job, end to end): find → compare → choose a variant → add → review the bag → check out. The default reading covers all of it.
 
 ## Destination: consumer jobs
 <!-- 4–12 jobs the dump must serve. Infer from the prompt and the project (what tools/skills exist: image generation? a codebase? tests? a CMS?). Always include "understand the task" and "check an output". These become routing jobs. -->
@@ -89,7 +90,7 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 
 ## Readings
 <!-- when the request's scope allows several readings, list them all with what each includes, and pick a default without dropping the others. They go into essence.readings. Collapsing to one reading is how a dump narrows a request. -->
-- "shopping component": product card with quick add (default) / mini cart with quantity and checkout / product list with filters / checkout summary
+- "shopping component": product card with quick add and a mini cart that reaches checkout (default, covers the whole job) / mini cart with quantity and checkout / product list with filters / checkout summary
 
 ## Research facets
 <!-- for each rung of the ladder and each key quality in the prompt, which facets the research tickets cover. The top rungs get a discipline primer (principles, laws, heuristics, standards, vocabulary, common mistakes); the lower rungs get exemplars, patterns, needs and specifics. Facets: vocabulary and human descriptors, principles and heuristics, exemplars (brands, products, sites, codebases, works, people) with what transfers, patterns and anti-patterns, needs of the people involved, specifics, decision points. Lite: one primer ticket for the discipline rungs and one ticket for the specific rungs; standard: one or two rungs or facets per ticket. -->
@@ -231,6 +232,7 @@ Don't paste the dump into the chat.
 
 ## 9. Resume and expand
 
+- **After a widening round,** run verify once more on the rebuilt dump (the Workflow script does). Without Workflow, do it yourself: anything it still finds goes to `open_questions` with a default.
 - **Interrupted run:** tickets whose shard exists are done. Rerun only the missing ones, then continue from the first incomplete wave. With the Workflow tool, resume with `resumeFromRunId` so finished agents (discover included) replay from cache. Otherwise a discover ticket is done when `discovered/<id>.json` exists: rebuild its kept picks from that record with the same caps, and rerun only the found jobs whose shard is missing.
 - **Expand an existing dump:** treat the old dump as a reference: add an `inherit` ticket (shard `05-inherit-<name>`), set `manifest.derived_from`, chart only the new jobs and gaps, and build into a new version. Inherited entries keep their provenance; the new prompt wins conflicts.
 - **Rebuild a hand-made dump** (like a dump made before this skill existed): same as expand. Its entries come in as `inherited` with their original claims capped by what the old file can actually support; anything without provenance arrives as `inferred`.

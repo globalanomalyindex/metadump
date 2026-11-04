@@ -174,8 +174,17 @@ class Validation(unittest.TestCase):
         d = base_dump()
         d["essence"]["task"] = {"is": "a poster (print graphic design)",
                                 "disciplines": ["graphic design", "typography", "print production"],
-                                "ladder": ["graphic design", "poster design", "calm matte amber poster", "palette and paper values"]}
+                                "ladder": ["graphic design", "poster design", "calm matte amber poster", "palette and paper values"],
+                                "job": ["notice it across a room", "read the title", "take in the mood"]}
         _, report = finalize.build_dump(d)
+        self.assertNotIn("no_task_ladder", codes(report["warnings"]))
+        self.assertNotIn("no_task_job", codes(report["warnings"]))
+
+    def test_a_task_without_the_users_whole_job_warns(self):
+        d = base_dump()
+        d["essence"]["task"] = {"is": "a poster", "disciplines": ["graphic design"], "ladder": ["graphic design", "this poster"]}
+        _, report = finalize.build_dump(d)
+        self.assertIn("no_task_job", codes(report["warnings"]))
         self.assertNotIn("no_task_ladder", codes(report["warnings"]))
 
     def test_a_ladder_needs_disciplines_and_more_than_one_rung(self):

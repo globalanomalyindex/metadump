@@ -348,6 +348,41 @@ class Manifest(unittest.TestCase):
         self.assertEqual(cands[0]["source"]["page"], "https://x.example/post")
 
 
+class PageImageNoise(unittest.TestCase):
+    """0.5.1: images from scraped pages skip logos, icons and blank single-color images."""
+
+    def test_logos_icons_and_sprites_are_not_candidates(self):
+        page = {"url": "https://kit.example/cards", "user_supplied": False, "metadata": {"title": "Cards"},
+                "images": [{"src": "https://kit.example/img/kendo-ui-logo.svg", "alt": "Kendo UI for Angular", "in_main": True},
+                           {"src": "https://kit.example/img/a.png", "alt": "Telerik logo", "in_main": True},
+                           {"src": "https://kit.example/icons/cart.svg", "alt": "", "in_main": True},
+                           {"src": "https://kit.example/ui-sprite.png", "alt": "", "in_main": True},
+                           {"src": "https://kit.example/shots/card-grid.jpg", "alt": "compact product card grid", "width": 900, "in_main": True}]}
+        cands = images.page_image_candidates(page, max_per_page=12, min_size=64)
+        self.assertEqual([c["url"] for c in cands], ["https://kit.example/shots/card-grid.jpg"])
+
+    def test_blank_single_color_page_images_are_skipped_with_a_reason(self):
+        work = tempfile.mkdtemp()
+        os.makedirs(os.path.join(work, "pages"))
+        white = make_png(8, 8, 2, 8, [bytes([255, 255, 255] * 8)] * 8)
+        record = {"schema": "metadump-page/1", "key": "k1", "url": "https://kit.example/cards", "user_supplied": False,
+                  "outcome": {"ok": True}, "metadata": {"title": "Cards"},
+                  "images": [{"src": "https://kit.example/blank.png", "alt": "placeholder", "width": 400, "in_main": True},
+                             {"src": "https://kit.example/grid.png", "alt": "card grid", "width": 400, "in_main": True}]}
+        with open(os.path.join(work, "pages", "k1.json"), "w") as f:
+            json.dump(record, f)
+
+        class Net:  # the network boundary
+            def fetch(self, u):
+                return {"ok": True, "body": white if u.endswith("blank.png") else blocks_png(), "content_type": "image/png"}
+
+        summary = images.collect(work, from_pages=True, fetcher=Net(), converters=[])
+        self.assertEqual(summary["added"], 1)
+        self.assertEqual([r["source"]["url"] for r in images.load_manifest(work)["images"]], ["https://kit.example/grid.png"])
+        reasons = {s["input"]: s["reason"] for s in summary["skipped"]}
+        self.assertIn("single color", reasons["https://kit.example/blank.png"])
+
+
 class FoundImages(unittest.TestCase):
     """0.3.0: images that discovery found online, collected from a found-images file."""
 

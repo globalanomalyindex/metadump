@@ -67,7 +67,7 @@ An optional review prompt derived from objective entries ("highlights read white
 _Avoid_: gate, requirement, must-pass test
 
 **Task ladder**:
-The chain from the disciplines a task belongs to down to its exact specifics (UX and UI design → e-commerce interfaces → product cards and carts → this shopping component → its values), recorded in the essence and followed by the dump's sections. Each level is a **rung**. Charting identifies the task and lays the ladder before anything else.
+The chain from the disciplines a task belongs to down to its exact specifics (UX and UI design → e-commerce interfaces → product cards and carts → this shopping component → its values), recorded in the essence and followed by the dump's sections. Each level is a **rung**. Charting identifies the task and lays the ladder before anything else, along with the user's **job**: the whole sequence of steps the people using the result go through (find, compare, choose, add, review, check out), which the default reading covers.
 _Avoid_: hierarchy, taxonomy, breakdown
 
 **Discipline primer**:

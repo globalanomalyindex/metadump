@@ -48,12 +48,13 @@ Spine first because it is what every consumer reads; lookups last because nobody
  "tensions": [{"text": "measured indulgence", "poles": ["macro labels and counts", "sauce-coated abundance"], "prov": "inferred"}],
  "task": {"is": "a frozen-meal carton front (packaging design)",
           "disciplines": ["packaging design", "graphic design", "typography", "food photography", "retail shelf design"],
-          "ladder": ["packaging and graphic design", "frozen-food packaging", "this brand's carton system", "one flavor's front", "band hexes, type sizes, photo crop"]},
+          "ladder": ["packaging and graphic design", "frozen-food packaging", "this brand's carton system", "one flavor's front", "band hexes, type sizes, photo crop"],
+          "job": ["spot it on the shelf", "recognize the brand", "find the flavor", "check protein and calories", "decide"]},
  "readings": [{"reading": "one flavor's carton front", "includes": ["photo", "bands", "title"], "default": true},
               {"reading": "the whole flavor range as a system", "includes": ["variant rules", "shelf view"], "default": false}]}
 ```
 
-`signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten. `task` identifies the task: what it is, the disciplines it belongs to, and the ladder from those disciplines down to this task's specifics; sections follow the ladder and entries may carry a `rung`. finalize warns when it's missing (`no_task_ladder`). `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
+`signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten. `task` identifies the task: what it is, the disciplines it belongs to, the ladder from those disciplines down to this task's specifics, and the user's whole `job` end to end (the steps the people using the result go through). Sections follow the ladder and entries may carry a `rung`. The default reading covers the whole job. finalize warns when the ladder is missing (`no_task_ladder`) or the job is (`no_task_job`). `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
 
 ### `routing`
 
@@ -285,7 +286,7 @@ Rejects (exit 1, dump not written): missing manifest fields or essence, bad tier
 
 Fixes (and reports): prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
 
-Warns: no task ladder (`essence.task` without disciplines and at least two rungs), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
+Warns: no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
 
 ## 14. Media entries (pages, videos, images)
 

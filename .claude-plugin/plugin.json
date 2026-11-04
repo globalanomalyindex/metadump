@@ -1,6 +1,6 @@
 {
   "name": "metadump",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "takes a prompt (plus photos, files, web pages or videos if you have them) and turns it into a meta dump: an AI brain dump in one big self-indexing JSON file. everything it collected (my words, references, research, screenshots, measurements, timings, transcripts) plus everything it knows around the task (tiered keywords, anti-keywords, readings, associations, patterns, decisions with options) that any skill or subagent can search like a search engine while it works. it figures out the task and its disciplines, breaks it down from abstract to specific, and distills references instead of copying them. it seeds the work, it doesn't narrow it. it can research, scrape and screenshot pages, watch videos and build image moodboards with nothing to install.",
   "author": {
     "name": "christopher robin fiore",

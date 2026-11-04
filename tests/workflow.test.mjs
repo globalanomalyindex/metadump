@@ -106,11 +106,15 @@ test('a failed build stops before verify so the main loop can repair it', async 
   assert.ok(!labels.some(l => l.startsWith('verify') || l.startsWith('audit')))
 })
 
-test('a gap round adding under 10% entries is synthesized but not verified again', async () => {
-  const { result, labels } = await runWith(ARGS, standard({ gapEntries: 1 }))
+test('a gap round adding under 10% entries is synthesized and verified once more, with no audit or further round', async () => {
+  const { result, labels, calls } = await runWith(ARGS, standard({ gapEntries: 1, guessesByRound: { 1: 1, 2: 2 } }))
   assert.equal(result.stop_reason, 'gap round added under 10% new entries')
   assert.ok(labels.includes('synthesis:r2'))
+  assert.equal(calls.filter(c => c.label.startsWith('verify') && /Round 2/.test(c.prompt)).length, 3)
+  assert.ok(labels.indexOf('synthesis:r2') < labels.lastIndexOf('verify:check-an-output'))
   assert.ok(!labels.includes('audit:r2'))
+  assert.ok(!labels.includes('gaps:r2'))
+  assert.equal(result.remaining_gaps.length, 6) // round 2's verify: 2 guesses x 3 jobs, handed to the main loop
 })
 
 test('no guesses and no missing clauses stops after one round', async () => {
@@ -411,8 +415,10 @@ test('a lite widening round that adds little still skips normalize, as lite alwa
     }
     return standard({ guessesByRound: {}, gapEntries: 1 })(label, prompt)
   }
-  const { labels, result } = await runWith({ ...ARGS, depth: 'lite' }, behaviour)
+  const { labels, result, calls } = await runWith({ ...ARGS, depth: 'lite' }, behaviour)
   assert.equal(result.stop_reason, 'gap round added under 10% new entries')
   assert.ok(!labels.some(l => l.startsWith('normalize')), labels.join(', '))
   assert.ok(labels.includes('synthesis:r2'))
+  assert.equal(calls.filter(c => c.label.startsWith('verify') && /Round 2/.test(c.prompt)).length, 2) // the widening is checked
+  assert.deepEqual(result.remaining_gaps, [])
 })

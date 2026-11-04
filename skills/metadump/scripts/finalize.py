@@ -259,6 +259,10 @@ def _validate_spine(out, report):
         _note(report, "warnings", "no_task_ladder", "/essence/task",
               "identify the task first: essence.task needs `is`, the `disciplines` it belongs to, and a `ladder` from those "
               "disciplines down to this task's specifics, so the dump carries what practitioners know, not just the artifact")
+    elif len(task.get("job") or []) < 2:
+        _note(report, "warnings", "no_task_job", "/essence/task/job",
+              "list the user's whole job end to end in essence.task.job (shopping: find, compare, choose, add, review the bag, "
+              "check out), so the default reading and every build can cover all of it")
     if not isinstance(out["routing"], list):
         _note(report, "errors", "bad_routing", "/routing", "routing must be a list of routes")
         out["routing"] = []

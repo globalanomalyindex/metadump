@@ -253,6 +253,36 @@ const tier1Gaps = (verified, key, describe) => verified.flatMap(v => (v[key] || 
   job: v.job, decision: `${describe(x)}${x.why ? ` (${x.why})` : ''}`, tier: 1,
 })))
 let maxRounds = MAX_ROUNDS
+
+// Dry-run each routed job against a build (plus the audit when asked); what they find becomes remaining_gaps.
+const verifyBuild = async (round, synth, withAudit) => {
+  phase('Verify')
+  const dump = synth.dump_path
+  const jobs = (synth.jobs || []).slice(0, MAX_VERIFY)
+  if ((synth.jobs || []).length > MAX_VERIFY) log(`verifying ${MAX_VERIFY} of ${synth.jobs.length} routed jobs (depth ${DEPTH} cap); the rest were not dry-run`)
+  const auditId = `96-audit-r${round}`
+  const auditCall = withAudit ? [() => agent(opener(auditId, 'audit', `Round ${round}. The built dump is ${dump}. Write exactly one file: ${WORK}/shards/${auditId}.json`),
+    { label: `audit:r${round}`, phase: 'Verify', schema: AUDIT })] : []
+  const outcomes = await parallel([
+    ...auditCall,
+    ...jobs.map(job => () => agent(opener(`verify-${slug(job)}`, 'verify',
+      `Round ${round}. The built dump is ${dump}. Your job: "${job}". Write no shard; write ${WORK}/verify/r${round}-${slug(job)}.json`),
+      { label: `verify:${slug(job)}`, phase: 'Verify', schema: VERIFY })),
+  ])
+  const audit = withAudit ? outcomes[0] : null
+  const verified = outcomes.slice(auditCall.length).filter(Boolean)
+  results.audits.push(audit)
+  results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, contradictions: (v.contradictions || []).length, narrowings: (v.narrowings || []).length, misses: (v.misses || []).length })))
+  // Structural defects are tier-1 gaps: a concrete value pulling against a tier-1 objective entry (ADR 0003), and an
+  // entry ruling out what the request plausibly includes (ADR 0005).
+  const contradictions = tier1Gaps(verified, 'contradictions', c => `contradiction: ${c.value_id} pulls against ${c.against_id}`)
+  const narrowings = tier1Gaps(verified, 'narrowings', n => `narrowing: ${n.entry_id} rules out ${n.rules_out}`)
+  const tier12 = [...contradictions, ...narrowings, ...verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))]
+  const missing = (audit && audit.missing_clauses) || []
+  log(`round ${round}: ${tier12.length} tier-1/2 gaps (${contradictions.length} contradictions, ${narrowings.length} narrowings) across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
+  results.remaining_gaps = [...tier12, ...missing.map(clause => ({ decision: `untraced prompt clause: ${clause}`, tier: 1 }))]
+  return { tier12, missing, narrowings }
+}
 const results = { rounds: 0, builds: [], verify: [], audits: [], gap_tickets: [], entries_from_receipts: total, discovery }
 let round = 1
 while (true) {
@@ -274,37 +304,11 @@ while (true) {
     log(`synthesis round ${round} did not produce a passing build; stopping so the main loop can repair it`)
     break
   }
-  const dump = synth.dump_path
-
-  phase('Verify')
-  const jobs = (synth.jobs || []).slice(0, MAX_VERIFY)
-  if ((synth.jobs || []).length > MAX_VERIFY) log(`verifying ${MAX_VERIFY} of ${synth.jobs.length} routed jobs (depth ${DEPTH} cap); the rest were not dry-run`)
-  const auditId = `96-audit-r${round}`
-  const auditCall = LITE ? [] : [() => agent(opener(auditId, 'audit', `Round ${round}. The built dump is ${dump}. Write exactly one file: ${WORK}/shards/${auditId}.json`),
-    { label: `audit:r${round}`, phase: 'Verify', schema: AUDIT })]
-  const outcomes = await parallel([
-    ...auditCall,
-    ...jobs.map(job => () => agent(opener(`verify-${slug(job)}`, 'verify',
-      `Round ${round}. The built dump is ${dump}. Your job: "${job}". Write no shard; write ${WORK}/verify/r${round}-${slug(job)}.json`),
-      { label: `verify:${slug(job)}`, phase: 'Verify', schema: VERIFY })),
-  ])
-  const audit = LITE ? null : outcomes[0]
-  const verified = outcomes.slice(auditCall.length).filter(Boolean)
-  results.audits.push(audit)
-  results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, contradictions: (v.contradictions || []).length, narrowings: (v.narrowings || []).length, misses: (v.misses || []).length })))
-
-  // Structural defects are tier-1 gaps: a concrete value pulling against a tier-1 objective entry (ADR 0003), and an
-  // entry ruling out what the request plausibly includes (ADR 0005).
-  const contradictions = tier1Gaps(verified, 'contradictions', c => `contradiction: ${c.value_id} pulls against ${c.against_id}`)
-  const narrowings = tier1Gaps(verified, 'narrowings', n => `narrowing: ${n.entry_id} rules out ${n.rules_out}`)
+  const { tier12, missing, narrowings } = await verifyBuild(round, synth, !LITE)
   if (LITE && round === 1 && narrowings.length && maxRounds < 2) {
     maxRounds = 2
     log(`lite: ${narrowings.length} narrowings found, so one widening round runs`)
   }
-  const tier12 = [...contradictions, ...narrowings, ...verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))]
-  const missing = (audit && audit.missing_clauses) || []
-  log(`round ${round}: ${tier12.length} tier-1/2 gaps (${contradictions.length} contradictions, ${narrowings.length} narrowings) across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
-  results.remaining_gaps = [...tier12, ...missing.map(clause => ({ decision: `untraced prompt clause: ${clause}`, tier: 1 }))]
   if (round >= maxRounds || (!tier12.length && !missing.length)) break
 
   phase('Gaps')
@@ -349,6 +353,8 @@ Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist,
       { label: `synthesis:r${round}`, phase: 'Synthesis', schema: SYNTH, effort: 'high' })
     results.builds.push(s2)
     results.rounds = round
+    // Check the widened dump once more (no audit, no further round): what it still finds goes to the main loop.
+    if (s2 && s2.built) await verifyBuild(round, s2, false)
     break
   }
 }

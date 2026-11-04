@@ -417,13 +417,28 @@ def origin_of(record):
     return "user" if record.get("user_supplied") else "web"
 
 
+# Words in an image's path or alt text that mark site chrome rather than content.
+NOISE_WORDS = {"logo", "logos", "icon", "icons", "sprite", "sprites", "avatar", "avatars", "favicon", "badge", "badges"}
+
+
+def _is_chrome(src, alt):
+    words = set(re.split(r"[^a-z0-9]+", (urllib.parse.urlsplit(src).path + " " + (alt or "")).lower()))
+    return bool(words & NOISE_WORDS)
+
+
+def _is_flat(data, converters, threshold=0.98):
+    """True when an image is one flat color (a blank, placeholder or spacer); unknown formats are kept."""
+    pal, _engine, _note = palette_for_bytes(data, converters, top=2)
+    return bool(pal) and pal[0].get("share", 0) >= threshold
+
+
 def page_image_candidates(page, max_per_page=12, min_size=64):
-    """Images worth collecting from one page record: http(s) sources, not tiny, in-main first."""
+    """Images worth collecting from one page record: http(s) sources, not tiny, not logos or icons, in-main first."""
     meta = page.get("metadata") or {}
     out = []
     for img in sorted(page.get("images") or [], key=lambda i: not i.get("in_main")):
         src = img.get("src")
-        if not src or not re.match(r"^https?://", src):
+        if not src or not re.match(r"^https?://", src) or _is_chrome(src, img.get("alt")):
             continue
         w, h = img.get("width"), img.get("height")
         if (w and w < min_size) or (h and h < min_size):
@@ -672,6 +687,9 @@ def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, m
                     data, why = _fetch_image(web, cand["url"])
                     if data is None:
                         skipped.append({"input": cand["url"], "reason": why})
+                        continue
+                    if _is_flat(data, chain):
+                        skipped.append({"input": cand["url"], "reason": "single color (blank, placeholder or spacer)"})
                         continue
                     add(data, cand["source"], origin or cand["origin"], alt=cand["alt"], caption=cand["caption"],
                         license=cand["license"], declared=cand["declared"])
