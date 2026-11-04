@@ -348,6 +348,54 @@ class Manifest(unittest.TestCase):
         self.assertEqual(cands[0]["source"]["page"], "https://x.example/post")
 
 
+class FoundImages(unittest.TestCase):
+    """0.3.0: images that discovery found online, collected from a found-images file."""
+
+    def setUp(self):
+        self.work = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.work, ignore_errors=True)
+
+    def test_found_images_are_web_found_and_keep_page_title_and_license(self):
+        url = "https://upload.wikimedia.org/x/shell.png"
+        found = os.path.join(self.work, "found.json")
+        with open(found, "w") as f:
+            json.dump([{"url": url, "page": "https://commons.wikimedia.org/wiki/File:Shell.png", "title": "Shell",
+                        "license": "CC BY-SA 4.0", "answers": "what the shell looks like"}], f)
+
+        class Net:  # the network boundary: serves one known PNG
+            def fetch(self, u):
+                return {"ok": True, "body": blocks_png(), "content_type": "image/png"} if u == url else {"ok": False, "reason": "http 404"}
+
+        summary = images.collect(self.work, found=found, origin="user", fetcher=Net(), converters=[])
+        man = images.load_manifest(self.work)
+        self.assertEqual(len(man["images"]), 1)
+        rec = man["images"][0]
+        self.assertEqual(rec["origin"], "web")  # found online, whatever --origin says
+        self.assertEqual(rec["prov_hint"], "researched")
+        self.assertEqual(rec["license"], "CC BY-SA 4.0")
+        self.assertEqual(rec["source"], {"kind": "url", "url": url, "page": "https://commons.wikimedia.org/wiki/File:Shell.png",
+                                         "title": "Shell"})
+        self.assertEqual(rec["palette"][0]["hex"], "#1E64C8")
+        self.assertEqual(summary["added"], 1)
+
+    def test_found_file_may_wrap_the_list_and_bad_urls_are_skipped_with_a_reason(self):
+        found = os.path.join(self.work, "found.json")
+        with open(found, "w") as f:
+            json.dump({"images": [{"url": "https://x.example/gone.png"}, {"page": "no url here"}]}, f)
+
+        class Net:
+            def fetch(self, u):
+                return {"ok": False, "reason": "http 404"}
+
+        summary = images.collect(self.work, found=found, fetcher=Net(), converters=[])
+        self.assertEqual(summary["added"], 0)
+        self.assertEqual([s["input"] for s in summary["skipped"]], ["https://x.example/gone.png"])
+        self.assertIn("404", summary["skipped"][0]["reason"])
+
+
 class Moodboard(unittest.TestCase):
     def manifest(self):
         return {"schema": "metadump-images/1", "images": [

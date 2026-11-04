@@ -1,6 +1,6 @@
 {
   "name": "metadump",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "takes a prompt (plus photos, files, web pages or videos if you have them) and turns it into a meta dump: one big self-indexing JSON chest of tiered keywords, anti-keywords, descriptions, patterns, references, sources, measurements, timings and transcripts that any skill or subagent can search like a search engine while it works. a resource to consult, not rules to obey. it can scrape pages, watch videos and build image moodboards with nothing to install.",
   "author": {
     "name": "christopher robin fiore",

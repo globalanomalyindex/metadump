@@ -595,6 +595,30 @@ class MediaTicketsAndSources(unittest.TestCase):
             self.assertIn("prov_over_ceiling", codes(report["fixes"]))
             self.assertNotIn("unknown_ticket_type", codes(report["warnings"]))
 
+    def test_found_tickets_cannot_mint_reference_observed(self):
+        draft, report = self.merge({
+            "19-watch-found-demo.json": {"ticket": {"id": "19-watch-found-demo", "type": "watch"},
+                                         "sections": {"motion": {"m-found-a": entry("a", prov="reference_observed"),
+                                                                 "m-found-b": entry("b", prov="researched")}}},
+            "11-watch-r2.json": {"ticket": {"id": "11-watch-r2", "type": "watch"},
+                                 "sections": {"motion": {"m-user-a": entry("c", prov="reference_observed")}}}})
+        sec = draft["motion"]
+        self.assertEqual(sec["m-found-a"]["prov"], "researched")
+        self.assertEqual(sec["m-found-b"]["prov"], "researched")
+        self.assertEqual(sec["m-user-a"]["prov"], "reference_observed")
+        self.assertIn("prov_over_ceiling", codes(report["fixes"]))
+
+    def test_found_tickets_sources_are_relabeled_as_found_online(self):
+        draft, report = self.merge({
+            "28-scrape-found-maker.json": {"ticket": {"id": "28-scrape-found-maker", "type": "scrape"},
+                                           "sources": {"s-maker": {"kind": "reference", "url": "https://maker.example/p", "user_supplied": True},
+                                                       "v-demo": {"kind": "video", "url": "https://v.example/a.mp4", "origin": "user"}},
+                                           "sections": {"material": {"mat-a": entry("a", prov="researched", src=["s-maker"])}}}})
+        self.assertEqual(draft["sources"]["s-maker"]["kind"], "web")
+        self.assertFalse(draft["sources"]["s-maker"].get("user_supplied"))
+        self.assertEqual(draft["sources"]["v-demo"]["origin"], "web")
+        self.assertIn("found_source_relabeled", codes(report["fixes"]))
+
     def test_video_and_image_sources_back_both_evidence_provenances(self):
         d = base_dump()
         d["sources"]["v1"] = {"kind": "video", "url": "https://www.youtube.com/watch?v=abcDEF12345", "title": "talk",

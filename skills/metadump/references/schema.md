@@ -268,11 +268,11 @@ Each ticket writes `metadumps/.work/<slug>/shards/<NN-ticket>.json`:
  "spine": {}}
 ```
 
-- `type` sets the provenance ceiling: `prompt` may mint `user_stated`; `observe` may mint `reference_observed`; `research` may mint `researched`; `scrape`, `watch` and `moodboard` may mint `researched` (found on the web) or `reference_observed` (supplied by the user); `specialist`, `lexicon`, `exclusion`, `normalize`, `synthesis`, `audit` may mint only `inferred`/`proposed`/`unknown`; `inherit` keeps whatever the earlier dump said and flags `inherited`.
+- `type` sets the provenance ceiling: `prompt` may mint `user_stated`; `observe` may mint `reference_observed`; `research` may mint `researched`; `scrape`, `watch` and `moodboard` may mint `researched` (found on the web) or `reference_observed` (supplied by the user); `specialist`, `lexicon`, `exclusion`, `normalize`, `synthesis`, `audit` may mint only `inferred`/`proposed`/`unknown`; `discover` writes no shard; the found jobs made from its picks (ids containing `-found-`) may mint only `researched` and derived provenance, and their sources are relabeled as found online (`kind: web`, media `origin: web`); `inherit` keeps whatever the earlier dump said and flags `inherited`.
 - Same id in two shards: the stronger entry wins and `aliases`/`variants`/`keywords`/`src` are unioned.
 - `normalize`, `synthesis` and `audit` shards may set `"_replace": true` on an entry (replaces it, cannot raise its prov) or write `{"_delete": true}` (removes it).
 - Only `synthesis` shards may carry `spine` (`essence`, `routing`, `exports`, `checks`).
-- Shards apply in filename order. Numbering: `01` prompt · `05` inherit · `10–19` observe, watch · `20–28` research, scrape · `29` moodboard · `30–69` specialists (`60–69` gap round) · `70` lexicon · `75` exclusion · `90–91` normalize · `95` synthesis · `96` audit · `97` repair.
+- Shards apply in filename order. Numbering: `01` prompt · `05` inherit · `07` discover (no shard) · `10–19` observe, watch (`19-watch-found-*` from discovery) · `20–28` research, scrape (`28-scrape-found-*` from discovery) · `29` moodboard (`29-moodboard-rN` for images found in a gap round) · `30–69` specialists (`60–69` gap round) · `70` lexicon · `75` exclusion · `90–91` normalize · `95` synthesis · `96` audit · `97` repair.
 
 ## 13. What finalize fixes vs rejects
 

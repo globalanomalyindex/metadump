@@ -1,6 +1,6 @@
 ---
 name: metadump
-description: Build and use meta dumps, one large self-indexing JSON file of structured task knowledge (tiered keywords, scoped anti-keywords, descriptions, palettes, patterns, references, cited research, measurements, timings, transcripts and ready-to-paste exports) created from a prompt plus optional images, files, web pages or videos, then consulted like a search index by any skill, tool or subagent. A resource to consult, not rules to obey. Create mode can scrape pages, read video captions and frames, measure animation timing and build image moodboards with no installs. Use this skill whenever the user asks for a meta dump, metadump, metadata dump, keyword or semantic taxonomy, style or art-direction metadata, SEO keyword map, or a chest of information to ground design, image generation, coding, TDD, engineering or writing work, even if they never say meta dump. Also use it automatically whenever a *.metadump.json file exists in the project or is mentioned, to pull only the slice the current step needs.
+description: Build and use meta dumps, one large self-indexing JSON file of structured task knowledge (tiered keywords, anti-keywords, descriptions, palettes, patterns, references, cited research, measurements, timings, transcripts, exports) created from a prompt plus optional images, files, web pages or videos, then consulted like a search index by any skill, tool or subagent. A resource to consult, not rules to obey. Create mode can find videos and images online, scrape pages, read video captions and frames, measure animation timing and build moodboards with no installs. Use this skill whenever the user asks for a meta dump, metadump, metadata dump, keyword or semantic taxonomy, style or art-direction metadata, SEO keyword map, or a chest of information to ground design, image generation, coding, TDD, engineering or writing work, even if they never say meta dump. Also use it automatically whenever a *.metadump.json file exists in the project or is mentioned, to pull only the slice the current step needs.
 ---
 
 # Metadump
@@ -72,9 +72,9 @@ This is the step that decides quality. Work it out carefully:
 - **Senses**: ambiguous words in the prompt, and the readings that are not meant.
 - **Layers**: the levels where properties could drift.
 - **Gaps**: what the prompt leaves open.
-- **Evidence**: where the specifics come from. A URL in the prompt → a `scrape` ticket. A video link or file → a `watch` ticket. Images or a visual task → a `moodboard` ticket. Outside facts → `research`.
+- **Evidence**: where the specifics come from. A URL in the prompt → a `scrape` ticket. A video link or file → a `watch` ticket. Images or a visual task → a `moodboard` ticket. Outside facts → `research`. Questions only seeing or hearing would answer (look, material, motion and its timing, a demo) that the references leave open → a `discover` ticket, which searches the web for videos, images and pages; the workflow turns its picks into watch and scrape jobs and moodboard images, within caps per depth. Found media is `researched`; only the user's own is `reference_observed`.
 - **Section plan**: group the questions into sections named in the task's own words, and pick a mechanism for each from `references/mechanisms.md`. A section survives only if a job or a query needs it. There is no template: a REST API dump has no palette, and a packaging dump has no error model.
-- **Roster and tickets**: one ticket file per worker. Types: `observe` (per 1–2 references), `research` (web or docs), `scrape` (pages), `watch` (videos), `moodboard` (images), `specialist` (one per section), `lexicon`, `exclusion`, `normalize`, `synthesis`, `audit`, `verify`.
+- **Roster and tickets**: one ticket file per worker. Types: `observe` (per 1–2 references), `research` (web or docs), `discover` (finds videos, images and pages), `scrape` (pages), `watch` (videos), `moodboard` (images), `specialist` (one per section), `lexicon`, `exclusion`, `normalize`, `synthesis`, `audit`, `verify`.
 
 ### 4. Write the prompt shard yourself
 `shards/01-prompt.json`: every requirement and every don't in the prompt, as `user_stated` entries quoting the prompt. It is the only ticket allowed to mint `user_stated`.
@@ -84,7 +84,7 @@ This is the step that decides quality. Work it out carefully:
 - **Without it**: run the same waves with the Agent tool, at most 8 per message, each agent given the brief opener plus its type's section of `briefs.md`.
 
 The waves are:
-1. evidence: observe, research, scrape, watch (then moodboard, which collects their images)
+1. evidence: observe, research, scrape, watch, and discover with the watch and scrape jobs made from its picks (then moodboard, which collects their images and the found ones)
 2. specialists + lexicon + exclusion
 3. normalize
 4. synthesis, which writes essence, routing, exports and review prompts (`checks`), then builds
@@ -106,6 +106,7 @@ If it exits 1, nothing was written: fix the listed errors and rerun.
 ### 7. Present
 Tell the user, briefly:
 - the path, size and depth (and the moodboard path, if one was built);
+- what discovery found and what its caps dropped, if it ran;
 - the essence sentence and the tier-1 signature;
 - the routing jobs, i.e. what any skill can now pull from it;
 - the provenance mix, i.e. how grounded it is;

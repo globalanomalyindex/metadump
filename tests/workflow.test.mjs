@@ -232,3 +232,127 @@ test('verify contradictions count as tier-1 gaps and reach the gap planner', asy
   assert.match(gaps.prompt, /inv-color-inside/)
   assert.ok(calls.find(c => c.label.startsWith('verify')).opts.schema.properties.contradictions)
 })
+
+// ---------------------------------------------------------------- 0.3.0: discovery
+const PICKS = {
+  videos: [{ url: 'https://upload.wikimedia.org/x/demo.webm', slug: 'demo', answers: 'how long the open takes', take: 'timing 0-3s' }],
+  pages: [{ url: 'https://maker.example/product', slug: 'maker', answers: 'what the shell is made of' }],
+  images: [],
+}
+const DISCOVERY = [
+  { id: '07-discover', type: 'discover' },
+  { id: '29-moodboard', type: 'moodboard' },
+  { id: '30-composition', type: 'specialist' },
+]
+const withDiscover = (picks, base = standard({ guessesByRound: {} })) => (label, prompt, opts) =>
+  label.startsWith('discover') ? picks : base(label, prompt, opts)
+
+test('a discover ticket returns picks; the watch and scrape tickets made for them run as evidence before the moodboard', async () => {
+  const { labels, calls } = await runWith({ ...ARGS, tickets: DISCOVERY }, withDiscover(PICKS))
+  const disc = calls.find(c => c.label === 'discover:07-discover')
+  assert.ok(disc, 'discover ticket runs')
+  assert.match(disc.prompt, /no shard/)
+  assert.match(disc.prompt, /discovered\/07-discover\.json/)
+  assert.ok(disc.opts.schema.properties.videos && disc.opts.schema.properties.pages && disc.opts.schema.properties.images)
+  const mood = labels.indexOf('moodboard:29-moodboard')
+  const spec = labels.indexOf('specialist:30-composition')
+  for (const l of ['watch:19-watch-found-demo', 'scrape:28-scrape-found-maker']) {
+    assert.ok(labels.includes(l), `missing ${l} in ${labels.join(', ')}`)
+    assert.ok(labels.indexOf('discover:07-discover') < labels.indexOf(l))
+    assert.ok(labels.indexOf(l) < mood, `${l} before moodboard`)
+    assert.ok(labels.indexOf(l) < spec, `${l} before specialists`)
+    assert.equal(calls.find(c => c.label === l).opts.phase, 'Evidence')
+  }
+})
+
+test('found tickets carry their URL and question, say they are web-found, and write their own shard', async () => {
+  const { calls } = await runWith({ ...ARGS, tickets: DISCOVERY }, withDiscover(PICKS))
+  const watch = calls.find(c => c.label === 'watch:19-watch-found-demo')
+  assert.match(watch.prompt, /https:\/\/upload\.wikimedia\.org\/x\/demo\.webm/)
+  assert.match(watch.prompt, /how long the open takes/)
+  assert.match(watch.prompt, /timing 0-3s/)
+  assert.match(watch.prompt, /origin: web/)
+  assert.match(watch.prompt, /researched/)
+  assert.match(watch.prompt, /never .*--reference/)
+  assert.match(watch.prompt, /shards\/19-watch-found-demo\.json/)
+  const scrape = calls.find(c => c.label === 'scrape:28-scrape-found-maker')
+  assert.match(scrape.prompt, /https:\/\/maker\.example\/product/)
+  assert.match(scrape.prompt, /origin: web/)
+  assert.match(scrape.opts.schema.required.join(), /n_entries/)
+})
+
+test('discovery caps videos, pages and images per depth, states the caps, and reports every drop by URL', async () => {
+  const many = {
+    videos: Array.from({ length: 7 }, (_, i) => ({ url: `https://v.example/${i}.mp4`, slug: `v${i}` })),
+    pages: Array.from({ length: 7 }, (_, i) => ({ url: `https://p.example/${i}`, slug: `p${i}` })),
+    images: Array.from({ length: 30 }, (_, i) => ({ url: `https://i.example/${i}.png` })),
+  }
+  const want = { lite: [1, 1, 6], standard: [3, 3, 12], deep: [5, 6, 24] }
+  for (const [depth, [videos, pages, images]] of Object.entries(want)) {
+    const { labels, calls, result } = await runWith({ ...ARGS, depth, tickets: DISCOVERY }, withDiscover(many))
+    assert.equal(labels.filter(l => l.startsWith('watch:')).length, videos, `${depth} videos`)
+    assert.equal(labels.filter(l => l.startsWith('scrape:')).length, pages, `${depth} pages`)
+    assert.equal(result.discovery.images.length, images, `${depth} images`)
+    assert.match(calls.find(c => c.label === 'discover:07-discover').prompt,
+      new RegExp(`at most ${videos} videos, ${pages} pages and ${images} images`), depth)
+    const dropped = result.discovery.dropped
+    assert.equal(dropped.length, (7 - videos) + (7 - pages) + (30 - images), `${depth} dropped`)
+    assert.ok(dropped.some(d => d.kind === 'video' && d.url === 'https://v.example/6.mp4' && d.by === '07-discover'))
+    assert.ok(dropped.some(d => d.kind === 'image' && d.url === 'https://i.example/29.png'))
+  }
+})
+
+test('found images reach the moodboard prompt, which is added if the chart planned none', async () => {
+  const withImages = { ...PICKS, images: [{ url: 'https://upload.wikimedia.org/x/shell.jpg', page: 'https://commons.wikimedia.org/wiki/File:Shell.jpg', license: 'CC BY-SA 4.0' }] }
+  const planned = await runWith({ ...ARGS, tickets: DISCOVERY }, withDiscover(withImages))
+  const board = planned.calls.find(c => c.label === 'moodboard:29-moodboard')
+  assert.match(board.prompt, /https:\/\/upload\.wikimedia\.org\/x\/shell\.jpg/)
+  assert.match(board.prompt, /CC BY-SA 4\.0/)
+  assert.match(board.prompt, /images\.py collect --work \S+ --found \S+\/images\/found-29-moodboard\.json/)
+  assert.equal(planned.labels.filter(l => l.startsWith('moodboard:')).length, 1)
+
+  const noBoard = DISCOVERY.filter(t => t.type !== 'moodboard')
+  const added = await runWith({ ...ARGS, tickets: noBoard }, withDiscover(withImages))
+  assert.ok(added.labels.includes('moodboard:29-moodboard'), added.labels.join(', '))
+  assert.ok(added.labels.indexOf('watch:19-watch-found-demo') < added.labels.indexOf('moodboard:29-moodboard'))
+
+  const none = await runWith({ ...ARGS, tickets: noBoard }, withDiscover(PICKS))
+  assert.ok(!none.labels.some(l => l.startsWith('moodboard:')), 'no images found, no moodboard added')
+})
+
+test('only one discover ticket runs per wave; an extra one is reported, not run', async () => {
+  const two = [...DISCOVERY, { id: '08-discover-more', type: 'discover' }]
+  const { labels, result } = await runWith({ ...ARGS, tickets: two }, withDiscover(PICKS))
+  assert.equal(labels.filter(l => l.startsWith('discover:')).length, 1)
+  assert.ok(labels.includes('discover:07-discover'))
+  assert.ok(result.discovery.dropped.some(d => d.kind === 'discover' && d.by === '08-discover-more'))
+})
+
+test('found ticket ids never collide with each other or with planned tickets', async () => {
+  const same = { videos: [{ url: 'https://v.example/a.mp4', slug: 'demo' }, { url: 'https://v.example/b.mp4', slug: 'demo' }], pages: [], images: [] }
+  const planned = [...DISCOVERY, { id: '19-watch-found-demo', type: 'watch' }]
+  const { labels, result } = await runWith({ ...ARGS, tickets: planned }, withDiscover(same))
+  assert.equal(labels.filter(l => l === 'watch:19-watch-found-demo').length, 1, labels.join(', '))
+  assert.deepEqual(result.discovery.found, ['19-watch-found-demo-2', '19-watch-found-demo-3'])
+})
+
+test('a gap round may run discover: its tickets run before gap specialists, and its images get their own moodboard pass', async () => {
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('gaps')) return { tickets: [{ id: '63-gap-motion-discover-r2', type: 'discover' }, { id: '64-gap-motion-r2', type: 'specialist' }] }
+    if (label.startsWith('discover')) return { videos: [{ url: 'https://v.example/open.mp4', slug: 'open-timing' }], pages: [], images: [{ url: 'https://i.example/hinge.png' }] }
+    return standard()(label, prompt)
+  }
+  const { labels, calls, result } = await runWith(ARGS, behaviour)
+  assert.match(calls.find(c => c.label === 'gaps:r1').prompt, /specialist, research, scrape, watch or discover/)
+  assert.ok(labels.includes('discover:63-gap-motion-discover-r2'), labels.join(', '))
+  const watch = calls.find(c => c.label === 'watch:19-watch-found-open-timing')
+  assert.equal(watch.opts.phase, 'Gaps')
+  assert.ok(labels.indexOf('watch:19-watch-found-open-timing') < labels.indexOf('specialist:64-gap-motion-r2'))
+  const board = calls.find(c => c.label === 'moodboard:29-moodboard-r2')
+  assert.ok(board, 'gap-round images get a moodboard pass')
+  assert.equal(board.opts.phase, 'Gaps')
+  assert.match(board.prompt, /https:\/\/i\.example\/hinge\.png/)
+  assert.match(board.prompt, /only for these new images/)
+  assert.ok(labels.indexOf('moodboard:29-moodboard-r2') < labels.indexOf('normalize:r2'))
+  assert.ok(result.discovery.found.includes('19-watch-found-open-timing'))
+})

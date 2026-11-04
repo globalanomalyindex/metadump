@@ -27,8 +27,8 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 1–2 evidence (research, or scrape/watch when the prompt names a URL or video) + 2–3 specialists + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 | 20–35K tokens | ~1–1.5M, 25–35 min (measured: 8 agents, 1.36M, 34 min) |
-| `standard` (default) | most tasks | prompt + observe per 1–2 refs + scrape per site + watch per video + moodboard for visual work + 2–4 research + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
+| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 1–2 evidence (research, or scrape/watch when the prompt names a URL or video; discover when the references leave visual or motion questions open) + 2–3 specialists + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 | 20–35K tokens | ~1–1.5M, 25–35 min (measured: 8 agents, 1.36M, 34 min) |
+| `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 2–4 research + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
 | `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 90–150K+ tokens, still routed | ~4–7M, 1–2 h (estimate) |
 
 "Tokens processed" counts every agent re-reading its context across its tool calls. It is far more than the dump's own size.
@@ -47,6 +47,8 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 | moodboard | 6–12 | 10–20 | 15–30 |
 
 Without budgets, workers write everything they can think of: the first lite run produced 212 entries against a plan of about 80.
+
+**Discovery caps** (videos for watch jobs / pages for scrape jobs / images for the moodboard, per discover ticket): lite 1 / 1 / 6, standard 3 / 3 / 12, deep 5 / 6 / 24. One discover ticket runs per wave (the chart's `07-discover`, and at most one per gap round), so a build fetches at most the caps once plus once per gap round. The Workflow script puts the caps in the discover prompt, keeps the first picks up to each cap, and lists everything it dropped (by URL) in `discovery.dropped`; an extra discover ticket in the same wave is dropped and listed too.
 
 Pick the depth from the request. State one line before fan-out, e.g. "Standard depth: ~16 agents, roughly 2–4M tokens processed, about an hour." Then proceed. Don't wait for approval unless the user asked to be consulted. The user can say "lite" or "deep" any time.
 
@@ -97,6 +99,7 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 |---|---|---|---|
 | 01-prompt | prompt | 0 (main loop) | |
 | 10-observe-r1 | observe | 1 | |
+| 07-discover | discover | 1 (its picks become 19-watch-found-* and 28-scrape-found-* jobs) | |
 | 11-watch-r2 | watch | 1 | |
 | 20-research-lineage | research | 1 | |
 | 21-scrape-brand-site | scrape | 1 | |
@@ -114,6 +117,7 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 How to choose the evidence tickets:
 - The prompt or references include a URL to a page or site → a `scrape` ticket (with `--reference` when the user supplied it).
 - A video link or a video file → a `watch` ticket (metadata, captions, frames; timing when motion matters).
+- Questions best answered by seeing or hearing something (how it looks, what it's made of, how it moves and how long that takes, a demo, a talk) that the references don't already answer → a `discover` ticket (`07-discover`). It searches the web and returns the most relevant videos, pages and images as picks; each video becomes a `watch` job and each page a `scrape` job (ids `19-watch-found-<slug>`, `28-scrape-found-<slug>`, no ticket file: the prompt carries the URL and question), which start as soon as it returns, and the images go to the moodboard. What it finds is `researched`, never `reference_observed`: the found jobs are told so, and `finalize.py` caps their shards and relabels their sources as found online regardless. Skip it when the user says to use only their references, or when nothing in the query log needs to be seen or heard.
 - Images, or a visual task (design, art direction, image generation, UI) → a `moodboard` ticket, which collects the references plus images from scraped pages and video frames.
 - Facts the task depends on that no reference holds → `research` (or `scrape`, when a known site holds them).
 
@@ -170,11 +174,11 @@ Workflow({
 })
 ```
 
-The script runs wave 1 (observe, research, scrape, watch, inherit; then moodboard, which collects their images) → wave 2 (specialists, lexicon, exclusion) → normalize → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses or contradictions remain (up to `max_rounds`). It returns the build result, verify summaries and gap tickets. Pass every ticket except `01-prompt` (already written).
+The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found images and the chart planned none) → wave 2 (specialists, lexicon, exclusion) → normalize → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses or contradictions remain (up to `max_rounds`; a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets and `discovery` (`found`, `dropped`, `images`). Pass every ticket except `01-prompt` (already written).
 
 ### Without Workflow (plain subagents)
 
-Run the same waves with the Agent tool, at most 8 calls per message (in wave 1, start `moodboard` after the other evidence tickets return). Each agent's prompt is the brief opener from `briefs.md` with `<WORK>`, `<SKILL>`, `<ID>`, `<TYPE>` filled in, plus "Follow the `<type>` section of `<SKILL>/references/briefs.md`." Wait for a wave's receipts before starting the next. Run `finalize.py merge <WORK>` between waves only if you want to look at the draft yourself; workers run it on their own.
+Run the same waves with the Agent tool, at most 8 calls per message (in wave 1, give the discover agent the caps for your depth; when it returns, keep its first picks up to each cap, note what you dropped, and run one watch or scrape agent per kept pick with id `19-watch-found-<slug>` or `28-scrape-found-<slug>`, its URL and question in the prompt, and "origin: web, never --reference"; then start `moodboard` after the other evidence, with the kept image picks saved as `images/found-29-moodboard.json` for `collect --found`). Each agent's prompt is the brief opener from `briefs.md` with `<WORK>`, `<SKILL>`, `<ID>`, `<TYPE>` filled in, plus "Follow the `<type>` section of `<SKILL>/references/briefs.md`." Wait for a wave's receipts before starting the next. Run `finalize.py merge <WORK>` between waves only if you want to look at the draft yourself; workers run it on their own.
 
 ## 7. Build, verify, loop
 
@@ -198,13 +202,14 @@ Tell the user, briefly:
 - the routing jobs (what any skill can now pull from it);
 - provenance mix (how much is user_stated / observed / researched vs inferred / proposed), so they know how much is grounded;
 - the top open questions with the defaults assumed. They can answer any time; answers become `user_stated` through use mode;
-- the moodboard path, if one was built.
+- the moodboard path, if one was built;
+- what discovery found and used (how many videos, pages and images, from where) and anything the caps dropped, so the user can ask for more.
 
 Don't paste the dump into the chat.
 
 ## 9. Resume and expand
 
-- **Interrupted run:** tickets whose shard exists are done. Rerun only the missing ones, then continue from the first incomplete wave.
+- **Interrupted run:** tickets whose shard exists are done. Rerun only the missing ones, then continue from the first incomplete wave. With the Workflow tool, resume with `resumeFromRunId` so finished agents (discover included) replay from cache. Otherwise a discover ticket is done when `discovered/<id>.json` exists: rebuild its kept picks from that record with the same caps, and rerun only the found jobs whose shard is missing.
 - **Expand an existing dump:** treat the old dump as a reference: add an `inherit` ticket (shard `05-inherit-<name>`), set `manifest.derived_from`, chart only the new jobs and gaps, and build into a new version. Inherited entries keep their provenance; the new prompt wins conflicts.
 - **Rebuild a hand-made dump** (like a dump made before this skill existed): same as expand. Its entries come in as `inherited` with their original claims capped by what the old file can actually support; anything without provenance arrives as `inferred`.
 
@@ -216,7 +221,7 @@ The evidence tickets drive three scripts in `<SKILL>/scripts/` (each has `--help
 |---|---|---|
 | `webpages.py` | fetch, clean, chunk and crawl pages (clean-room, `docs/clean-room/`); `--render` and `screenshot` through a headless browser | stdlib; a Chromium-family browser only for rendered pages and screenshots |
 | `video.py` | `info`, `captions` (cues + transcript), `frames` (with contact sheets), `timing` (motion, holds, stepped timing, easing) | stdlib for info and captions; an installed Chromium-family browser (or ffmpeg for local files) for frames and timing; yt-dlp and ffmpeg only as optional accelerators |
-| `images.py` | collect images with a manifest, measure palettes, write the moodboard | stdlib for PNG; a browser, macOS `sips` or ffmpeg to read other formats |
+| `images.py` | collect images with a manifest (including images discovery found online, `--found`), measure palettes, write the moodboard | stdlib for PNG; a browser, macOS `sips` or ffmpeg to read other formats |
 
 Nothing is installed by the skill. When a tool is missing, the scripts say what they need and exit with code 3; the ticket records that and works with what it has.
 

@@ -572,9 +572,18 @@ def _fetch_image(fetcher, url):
     return body, None
 
 
+def _found_items(path):
+    """The images in a found-images file: a JSON list, or {"images": [...]}, of {url, page, title, license}."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    items = data.get("images", []) if isinstance(data, dict) else data
+    return [i for i in items if isinstance(i, dict) and i.get("url")]
+
+
 def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, max_per_page=12, min_size=64,
-            converters=None, fetcher=None, top=6, delay=1.0):
-    """Add images to <work>/images. Returns a summary dict."""
+            converters=None, fetcher=None, top=6, delay=1.0, found=None):
+    """Add images to <work>/images. Returns a summary dict. `found` is a found-images file from discovery:
+    those images are always web-found (researched), whatever `origin` says."""
     man = load_manifest(work)
     own_chain = converters is None
     chain = default_converters() if own_chain else converters
@@ -620,6 +629,15 @@ def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, m
                         skipped.append({"input": path, "reason": "not an image"})
                     continue
                 add(data, {"kind": "file", "path": os.path.abspath(path)}, origin or "user")
+        for item in (_found_items(found) if found else []):
+            web = web or get_fetcher()
+            data, why = _fetch_image(web, item["url"])
+            if data is None:
+                skipped.append({"input": item["url"], "reason": why})
+                continue
+            source = {"kind": "url", "url": item["url"]}
+            source.update({k: item[k] for k in ("page", "title") if item.get(k)})
+            add(data, source, "web", license=item.get("license"))
         if from_pages:
             for rec_path in sorted(glob.glob(os.path.join(work, "pages", "*.json"))):
                 if rec_path.endswith((".fetch.json", "manifest.json")) or os.path.basename(rec_path).startswith("crawl-"):
@@ -678,6 +696,7 @@ def main(argv=None):
     c.add_argument("--work", required=True)
     c.add_argument("--from-pages", action="store_true", help="also collect images named in <work>/pages/ records")
     c.add_argument("--from-frames", action="store_true", help="also collect frames written by video.py under <work>/frames/")
+    c.add_argument("--found", help="JSON file of images discovery found online ([{url, page, title, license}]); always collected as found online")
     c.add_argument("--origin", choices=("user", "web"), help="override: user-supplied (reference_observed) or found online (researched)")
     c.add_argument("--max-per-page", type=int, default=12)
     c.add_argument("--min-size", type=int, default=64, help="skip page images declared smaller than this (px)")
@@ -705,7 +724,7 @@ def main(argv=None):
         return 0
     if args.cmd == "collect":
         print(json.dumps(collect(args.work, args.inputs, args.from_pages, args.from_frames, args.origin, args.max_per_page,
-                                 args.min_size, top=args.top, delay=args.delay), indent=1))
+                                 args.min_size, top=args.top, delay=args.delay, found=args.found), indent=1))
         return 0
     if args.cmd == "palette":
         chain = default_converters()

@@ -451,9 +451,33 @@ TICKET_PROVS = {
     "audit": _DERIVED_ONLY,
     "inherit": set(PROV_RANK),
 }
+# Tickets that discovery made (ids like 19-watch-found-<slug>) read what the build found online,
+# so nothing they write can be reference_observed, whatever the agent claimed.
+FOUND_TICKET_PROVS = _DERIVED_ONLY | {"researched"}
 EDITOR_TYPES = {"normalize", "synthesis", "audit"}
 UNION_FIELDS = ("aliases", "variants", "keywords", "src")
 FLAT_HOLDERS = ("anti_keywords", "open_questions")
+
+
+def _is_found_shard(name, shard):
+    tid = str((shard.get("ticket") or {}).get("id") or "")
+    return "-found-" in name or "-found-" in tid
+
+
+def _relabel_found_sources(shard, name, report):
+    """Everything a found ticket cites was found online: no user-supplied references, media origin web."""
+    for sid, src in (shard.get("sources") or {}).items():
+        if not isinstance(src, dict):
+            continue
+        changed = False
+        if src.get("kind") == "reference":
+            src["kind"], changed = "web", True
+        if src.get("user_supplied"):
+            src["user_supplied"], changed = False, True
+        if src.get("kind") in MEDIA_SOURCE_KINDS and src.get("origin") != "web":
+            src["origin"], changed = "web", True
+        if changed:
+            _note(report, "fixes", "found_source_relabeled", name, "source '%s' came from a found ticket; relabeled as found online" % sid)
 
 
 def _cap_prov(prov, allowed):
@@ -523,6 +547,9 @@ def merge_workdir(workdir):
             _note(report, "warnings", "unknown_ticket_type", name, "type '%s' treated as specialist" % ttype)
             ttype = "specialist"
         allowed = TICKET_PROVS[ttype]
+        if _is_found_shard(name, shard):
+            allowed = allowed & FOUND_TICKET_PROVS
+            _relabel_found_sources(shard, name, report)
         for sid, s in (shard.get("sources") or {}).items():
             if sid in sources and sources[sid] != s:
                 _note(report, "warnings", "source_conflict", name, "source '%s' differs from an earlier shard; kept the first" % sid)

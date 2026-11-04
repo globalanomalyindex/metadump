@@ -1,9 +1,9 @@
 export const meta = {
   name: 'metadump-index',
   description: 'Fan out a meta dump build: evidence (references, research, pages, videos, images), specialists, normalize, synthesis + build, audit and dry-run verify, then gap rounds',
-  whenToUse: 'Called by the metadump skill in create mode, after charting, with args {skill_dir, work_dir, slug, depth, max_rounds, tickets[]} (ticket types: observe, research, scrape, watch, moodboard, inherit, specialist, lexicon, exclusion)',
+  whenToUse: 'Called by the metadump skill in create mode, after charting, with args {skill_dir, work_dir, slug, depth, max_rounds, tickets[]} (ticket types: observe, research, discover, scrape, watch, moodboard, inherit, specialist, lexicon, exclusion)',
   phases: [
-    { title: 'Evidence', detail: 'observe references, research, scrape pages, watch videos, collect images into a moodboard, inherit earlier dumps' },
+    { title: 'Evidence', detail: 'observe references, research, discover videos, images and pages on the web, scrape pages, watch videos, collect images into a moodboard, inherit earlier dumps' },
     { title: 'Specialists', detail: 'one per section, plus lexicon and exclusion' },
     { title: 'Normalize', detail: 'merge synonyms, resolve conflicts, cap tier 1' },
     { title: 'Synthesis', detail: 'essence, routing, exports, review prompts; finalize build' },
@@ -38,11 +38,16 @@ const budgetFor = type => (BUDGETS[DEPTH] || BUDGETS.standard)[type]
 const SCHEMA = `${SKILL}/references/schema.md`
 const FINALIZE = `python3 ${SKILL}/scripts/finalize.py`
 
-const WAVE_OF = { inherit: 1, observe: 1, research: 1, scrape: 1, watch: 1, moodboard: 1, specialist: 2, lexicon: 2, exclusion: 2 }
+const WAVE_OF = { inherit: 1, observe: 1, research: 1, scrape: 1, watch: 1, moodboard: 1, discover: 1, specialist: 2, lexicon: 2, exclusion: 2 }
 // Moodboard tickets collect the images that scrape and watch tickets write, so they start once the rest of the evidence is in.
 const COLLECTS_EVIDENCE = new Set(['moodboard'])
-// Gap rounds may add evidence (facts from outside) as well as specialist work.
-const GAP_EVIDENCE = new Set(['research', 'scrape', 'watch'])
+// Discover tickets search the web for videos and pages worth reading and write watch and scrape tickets for them (no shard).
+const FINDS_EVIDENCE = new Set(['discover'])
+// What one discover ticket may hand on, by depth: videos (watch jobs), pages (scrape jobs), images (moodboard). Mirrors create.md.
+const DISCOVERY_CAPS = { lite: { videos: 1, pages: 1, images: 6 }, standard: { videos: 3, pages: 3, images: 12 }, deep: { videos: 5, pages: 6, images: 24 } }
+const DISCOVERY_CAP = DISCOVERY_CAPS[DEPTH] || DISCOVERY_CAPS.standard
+// Gap rounds may add evidence (facts from outside, or a discover ticket to find a video or page) as well as specialist work.
+const GAP_EVIDENCE = new Set(['research', 'scrape', 'watch', 'discover'])
 const ENGINE = new Set(['prompt', 'normalize', 'synthesis', 'audit', 'verify', 'gaps'])
 const work = A.tickets.filter(t => t && t.id && t.type && !ENGINE.has(t.type))
 const wave1 = work.filter(t => (t.wave || WAVE_OF[t.type] || 2) === 1)
@@ -104,6 +109,17 @@ const AUDIT = {
   },
   required: ['missing_clauses'],
 }
+const PICK = (props, required) => ({ type: 'array', items: { type: 'object', properties: props, required } })
+const DISCOVERED = {
+  type: 'object',
+  properties: {
+    videos: PICK({ url: { type: 'string' }, slug: { type: 'string' }, answers: { type: 'string' }, take: { type: 'string' } }, ['url', 'slug']),
+    pages: PICK({ url: { type: 'string' }, slug: { type: 'string' }, answers: { type: 'string' } }, ['url', 'slug']),
+    images: PICK({ url: { type: 'string' }, page: { type: 'string' }, title: { type: 'string' }, license: { type: 'string' }, answers: { type: 'string' } }, ['url']),
+    notes: { type: 'string' },
+  },
+  required: ['videos', 'pages', 'images'],
+}
 const GAPS = {
   type: 'object',
   properties: {
@@ -128,8 +144,72 @@ Return only the receipt or result the brief asks for, never the entries themselv
 
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'job'
 
-const runTickets = (list, phaseName) =>
-  parallel(list.map(t => () => agent(opener(t.id, t.type), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })))
+const ticketCall = (t, phaseName) => () => agent(opener(t.id, t.type), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
+const runTickets = (list, phaseName) => parallel(list.map(t => ticketCall(t, phaseName)))
+
+// ---------------------------------------------------------------- discovery
+// A found job (a watch or scrape made from a discover pick) has no ticket file: its prompt is the whole ticket.
+const foundCall = (t, phaseName) => () => agent(opener(t.id, t.type, `This ticket was made by discovery (${t.by}); there is no ticket file.
+URL: ${t.pick.url}
+Answers: ${t.pick.answers || 'see the query log in map.md'}${t.pick.take ? `\nTake: ${t.pick.take}` : ''}
+origin: web. It was found online, so its facts, frames and images are researched and every source it adds says origin: "web"; never pass --reference.
+Write exactly one file: ${WORK}/shards/${t.id}.json`), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
+
+// A moodboard told about the images discovery found (already within the caps), so it collects them as web-found.
+const boardCall = (t, images, phaseName, scope) => () => agent(opener(t.id, 'moodboard', `${scope || ''}Discovery found these images online (origin web, already within the caps). Save this JSON as ${WORK}/images/found-${t.id}.json, then run python3 ${SKILL}/scripts/images.py collect --work ${WORK} --found ${WORK}/images/found-${t.id}.json alongside your other collect commands:
+${JSON.stringify(images)}
+Write exactly one file: ${WORK}/shards/${t.id}.json`), { label: `moodboard:${t.id}`, phase: phaseName, schema: RECEIPT })
+
+const discovery = { found: [], dropped: [], images: [] }
+// Every ticket id in this build, so a found ticket never takes a planned ticket's shard.
+const takenIds = new Set(A.tickets.filter(t => t && t.id).map(t => t.id))
+const freshId = base => {
+  let id = base
+  for (let n = 2; takenIds.has(id); n += 1) id = `${base}-${n}`
+  takenIds.add(id)
+  return id
+}
+// One discover ticket per wave, so the caps are a real bound on what a wave fetches.
+const oneFinder = list => {
+  list.slice(1).forEach(t => discovery.dropped.push({ kind: 'discover', url: null, by: t.id }))
+  if (list.length > 1) log(`one discover ticket per wave: not running ${list.slice(1).map(t => t.id).join(', ')}`)
+  return list.slice(0, 1)
+}
+// The first picks of each kind up to the depth's cap, best first; the rest are reported, never silently cut.
+const KIND_OF = { videos: 'video', pages: 'page', images: 'image' }
+const keepWithinCaps = (out, by) => {
+  const kept = {}
+  const dropped = []
+  for (const list of Object.keys(KIND_OF)) {
+    const all = ((out && out[list]) || []).filter(x => x && x.url)
+    kept[list] = all.slice(0, DISCOVERY_CAP[list])
+    dropped.push(...all.slice(DISCOVERY_CAP[list]).map(x => ({ kind: KIND_OF[list], url: x.url, by })))
+  }
+  return { kept, dropped }
+}
+const foundJob = (type, prefix, by) => pick => ({ id: freshId(`${prefix}-${type}-found-${slug(pick.slug || pick.url)}`), type, pick, by })
+
+// A discover ticket, then the found jobs made from its picks, as one chain: they start as soon as it
+// returns, without waiting for the rest of the evidence.
+const discoverThenRun = (t, phaseName) => async () => {
+  const out = await agent(opener(t.id, 'discover',
+    `Write no shard and no ticket files. Record every candidate you considered in ${WORK}/discovered/${t.id}.json, then return your picks. Caps at depth ${DEPTH}: at most ${DISCOVERY_CAP.videos} videos, ${DISCOVERY_CAP.pages} pages and ${DISCOVERY_CAP.images} images.`),
+    { label: `discover:${t.id}`, phase: phaseName, schema: DISCOVERED })
+  const { kept, dropped } = keepWithinCaps(out, t.id)
+  const jobs = [...kept.videos.map(foundJob('watch', '19', t.id)), ...kept.pages.map(foundJob('scrape', '28', t.id))]
+  if (dropped.length) log(`discovery cap (depth ${DEPTH}) on ${t.id}: dropped ${dropped.length} (${dropped.map(d => d.url).join(', ')})`)
+  discovery.dropped.push(...dropped)
+  discovery.found.push(...jobs.map(j => j.id))
+  discovery.images.push(...kept.images.map(x => ({ ...x, by: t.id })))
+  return jobs.length ? parallel(jobs.map(j => foundCall(j, phaseName))) : []
+}
+
+// Evidence tickets plus at most one discover ticket (and the tickets it makes), all started together.
+const runEvidence = async (list, phaseName) => {
+  const finders = oneFinder(list.filter(t => FINDS_EVIDENCE.has(t.type)))
+  const rest = list.filter(t => !FINDS_EVIDENCE.has(t.type))
+  return (await parallel([...rest.map(t => ticketCall(t, phaseName)), ...finders.map(t => discoverThenRun(t, phaseName))])).flat()
+}
 
 const count = receipts => receipts.filter(Boolean).reduce((n, r) => n + (r.n_entries || 0), 0)
 
@@ -139,9 +219,15 @@ if (wave1.length) {
   phase('Evidence')
   const first = wave1.filter(t => !COLLECTS_EVIDENCE.has(t.type))
   const after = wave1.filter(t => COLLECTS_EVIDENCE.has(t.type))
-  const r = [...(first.length ? await runTickets(first, 'Evidence') : []), ...(after.length ? await runTickets(after, 'Evidence') : [])]
+  const r1 = await runEvidence(first, 'Evidence')
+  if (discovery.images.length && !after.length) {
+    after.push({ id: '29-moodboard', type: 'moodboard' })
+    log(`discovery found ${discovery.images.length} image URLs and the chart planned no moodboard; adding 29-moodboard to collect them`)
+  }
+  const boards = after.map(t => (discovery.images.length ? boardCall(t, discovery.images, 'Evidence') : ticketCall(t, 'Evidence')))
+  const r = [...r1, ...(boards.length ? await parallel(boards) : [])]
   total += count(r)
-  log(`evidence: ${r.filter(Boolean).length}/${wave1.length} tickets, ${count(r)} entries`)
+  log(`evidence: ${r.filter(Boolean).length}/${first.filter(t => !FINDS_EVIDENCE.has(t.type)).length + discovery.found.length + after.length} tickets (${discovery.found.length} found by discovery), ${count(r)} entries`)
 }
 if (wave2.length) {
   phase('Specialists')
@@ -150,7 +236,7 @@ if (wave2.length) {
   log(`specialists: ${r.filter(Boolean).length}/${wave2.length} tickets, ${count(r)} entries`)
 }
 
-const results = { rounds: 0, builds: [], verify: [], audits: [], gap_tickets: [], entries_from_receipts: total }
+const results = { rounds: 0, builds: [], verify: [], audits: [], gap_tickets: [], entries_from_receipts: total, discovery }
 let round = 1
 while (true) {
   results.rounds = round
@@ -205,16 +291,24 @@ while (true) {
 
 Verify guesses at tier 1-2 and contradictions (JSON): ${JSON.stringify(tier12)}
 Untraced prompt clauses (JSON): ${JSON.stringify(missing)}
-Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist, research, scrape or watch), or {"tickets": []}.`,
+Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist, research, scrape, watch or discover), or {"tickets": []}.`,
     { label: `gaps:r${round}`, phase: 'Gaps', schema: GAPS })
   const gapTickets = ((plan && plan.tickets) || []).filter(t => t.id && (t.type === 'specialist' || GAP_EVIDENCE.has(t.type)))
   results.gap_tickets.push(...gapTickets.map(t => t.id))
   if (!gapTickets.length) break
 
-  const research = gapTickets.filter(t => GAP_EVIDENCE.has(t.type))
+  const evidence = gapTickets.filter(t => GAP_EVIDENCE.has(t.type))
   const special = gapTickets.filter(t => !GAP_EVIDENCE.has(t.type))
   let added = 0
-  if (research.length) added += count(await runTickets(research, 'Gaps'))
+  if (evidence.length) {
+    const before = discovery.images.length
+    added += count(await runEvidence(evidence, 'Gaps'))
+    const fresh = discovery.images.slice(before)
+    if (fresh.length) {
+      added += count(await parallel([boardCall({ id: `29-moodboard-r${round + 1}` }, fresh, 'Gaps',
+        'Gap round: write entries only for these new images (the earlier moodboard shard covers the rest), then rerun images.py moodboard so the page shows every image.\n')]))
+    }
+  }
   if (special.length) added += count(await runTickets(special, 'Gaps'))
   log(`gap round added ${added} entries (${total ? Math.round((100 * added) / total) : 0}% of ${total})`)
   total += added

@@ -98,6 +98,10 @@ _Avoid_: subtitle line, caption line
 One still taken from a video at a timecode, recorded with its frame number and fps.
 _Avoid_: screenshot, still, thumbnail
 
+**Discovery**:
+The create-mode step that searches the web for videos, images and pages worth watching, collecting or scraping when the prompt and references leave something to be seen or heard (how it looks, how it moves, how long that takes). What it finds is a source with `researched` provenance, never a reference.
+_Avoid_: auto-references, reference search, crawling
+
 **Moodboard**:
 The HTML page beside a meta dump that shows the collected images with their sources, provenance labels and measured palettes.
 _Avoid_: mood board, gallery, collage
