@@ -4,9 +4,9 @@ A meta dump has no fixed template. During charting you group the consumers' ques
 
 Pick a mechanism by the question it answers, not by the domain. "What words should I use, and which mean the same thing?" is a lexicon whether the task is a carton, a REST API or a jingle.
 
-Prefer mechanisms that hold objective, specific data (measured parameters, scraped facts, timelines, transcripts, observed exemplars, library facts) over ones that only hold the builder's opinions. Where a section needs a choice nobody has made, put it in the section's options area (`schema.md` §3), labeled as an option.
+Prefer mechanisms that hold objective, specific data (measured parameters, scraped facts, timelines, transcripts, observed exemplars, library facts) over ones that only hold the builder's opinions, and mechanisms that widen (readings, decision points, associations, exemplars, candidate pools) over ones that narrow. A dump seeds the work: it gives the consumer more to draw on, never a smaller task. Where a section needs a choice nobody has made, put it in the section's options area (`schema.md` §3), labeled as an option, or make it a decision point.
 
-Contents: Lexicon · Senses · Bindings · Invariant/variable contract · Conditional grammar · Forbidden shortcuts · Motif vs transferable relationship · Cue → descriptor · Parameters · Exemplars · Tensions · Influences and analogies · Candidate pools · Layers · Variant catalog · Search vocabulary · Detectable signals · Scraped facts · Timeline · Transcript · Moodboard · Engineering set (seams, test list, examples, API surface, error taxonomy, library facts, budgets, environment) · Prompt recipes
+Contents: Lexicon · Senses · Readings · Decision points · Associations · Bindings · Invariant/variable contract · Conditional grammar · Forbidden shortcuts · Motif vs transferable relationship · Cue → descriptor · Parameters · Exemplars · Tensions · Influences and analogies · Candidate pools · Layers · Variant catalog · Search vocabulary · Detectable signals · Scraped facts · Timeline · Transcript · Moodboard · Engineering set (seams, test list, examples, API surface, error taxonomy, library facts, budgets, environment) · Prompt recipes
 
 ---
 
@@ -27,6 +27,18 @@ Merge near-synonyms into one entry's `aliases` (finalize indexes them). Separate
 **Answers:** which reading of an ambiguous prompt word is meant. Write as `not_meant` anti-keywords (see `schema.md` §6), one per wrong sense, plus the meant sense as the entry's `term`.
 
 Examples: "Counter" (brand, not countertop); "glass" (physical glass, not glassmorphism UI); "REST" (resource-oriented HTTP, not RPC-over-POST); "noir" (lighting mood, not crime genre); "convert" (format to list, not unit conversion).
+
+### Readings (scope senses, kept side by side)
+
+**Answers:** "what could this request be?" When the request's scope allows several readings, each one with what it includes, and which is the default. Lives in `essence.readings` (`{"reading", "includes", "default"}`), with detail entries if needed. "Shopping component": a product card with quick add (default), a mini cart with quantity and checkout, a product list with filters, a checkout summary. "Add auth": session cookies, JWT, OAuth via a provider. Keeping every reading is what stops a dump from narrowing a request; a consumer picks or combines them. Readings the build thought of are `inferred`, tier 2.
+
+### Decision points (choices with options, tradeoffs and signals)
+
+**Answers:** "what will I have to decide, and what are my options?" Each decision the work will face, with two or more options, the tradeoff of each, signals for when each fits, and sources where practitioners discuss it: `{"decision": "which test first", "options": [{"option": "simplest happy path", "fits_when": "the interface is still unknown"}, {"option": "degenerate case (empty input)", "fits_when": "the core shape is obvious"}, {"option": "riskiest behavior", "fits_when": "one unknown could sink the design"}], "src": [...]}`. Design: density vs breathing room, one product vs a list, where the accent goes. Engineering: outside-in vs inside-out, where the seam goes, when to refactor, mock or real. The dump never answers a decision point unless the user did (then it is `user_stated`); it seeds the consumer's own decision.
+
+### Associations (the brain dump)
+
+**Answers:** "what does this bring to mind?" What the model knows around the task, written down so the work can draw on it: human descriptors of each key quality (how people, not specs, talk about it), sensory and emotional words, metaphors, moods, adjacent concepts, related movements and practices, and brands, products, works or people commonly associated with it, each with what it contributes. "Minimal" in shopping: calm, quiet, considered, airy, honest, Muji, Aesop, Apple Store, Everlane, lots of white space, one accent, product-first. Tier 3–4 seed material: `inferred` from the model's own knowledge, `researched` where a fetched source backs it. Pair with Influences (what to borrow) and Motif vs transferable relationship (what not to copy).
 
 ### Bindings (adjective → object, with `never_implies`)
 
@@ -201,6 +213,7 @@ For coding, TDD and engineering dumps. Add these alongside the general mechanism
 | **Library facts** | how a dependency actually behaves | `prov: "researched"` only, with a docs source (Context7 id or URL), fetched date, and `version: null` until checked against the registry. Never mint library facts as `inferred` |
 | **Budgets** | performance or size limits | parameter with metric, threshold, how it is measured |
 | **Environment** | runtime, OS, network policy | `{"runtime": "node 22", "network": "none in v1"}` |
+| **Decision points** | the engineering choices ahead and their options | `{"decision": "where the first seam goes", "options": [{"option": "the CLI boundary", "fits_when": "the I/O contract is the risk"}, {"option": "the pure parse function", "fits_when": "the parsing rules are the risk"}], "src": [...]}`. For TDD: which test next, outside-in vs inside-out, fake or real collaborator, when to refactor. Sourced from the practice's canonical texts and current practitioners |
 | **Forbidden APIs/patterns** | what code must not do | `not_wanted` anti-keyword with `scope`, `instead`, and a `check` (`{"kind": "command", "spec": "eslint no-restricted-imports node:http"}`) |
 
 ---

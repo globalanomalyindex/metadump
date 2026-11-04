@@ -182,9 +182,9 @@ test('moodboard tickets start after the scrape and watch tickets whose images th
 
 test('media evidence tickets carry an entry budget for every depth', async () => {
   const want = {
-    lite: { scrape: '8-15', watch: '8-15', moodboard: '6-12' },
-    standard: { scrape: '15-25', watch: '15-30', moodboard: '10-20' },
-    deep: { scrape: '25-40', watch: '25-45', moodboard: '15-30' },
+    lite: { scrape: '8-15', watch: '8-15', moodboard: '10-20' },
+    standard: { scrape: '15-25', watch: '15-30', moodboard: '16-30' },
+    deep: { scrape: '25-40', watch: '25-45', moodboard: '24-45' },
   }
   for (const depth of Object.keys(want)) {
     const { calls } = await runWith({ ...ARGS, depth, tickets: MEDIA }, standard({ guessesByRound: {} }))
@@ -284,10 +284,10 @@ test('found tickets carry their URL and question, say they are web-found, and wr
 test('discovery caps videos, pages and images per depth, states the caps, and reports every drop by URL', async () => {
   const many = {
     videos: Array.from({ length: 7 }, (_, i) => ({ url: `https://v.example/${i}.mp4`, slug: `v${i}` })),
-    pages: Array.from({ length: 7 }, (_, i) => ({ url: `https://p.example/${i}`, slug: `p${i}` })),
-    images: Array.from({ length: 30 }, (_, i) => ({ url: `https://i.example/${i}.png` })),
+    pages: Array.from({ length: 12 }, (_, i) => ({ url: `https://p.example/${i}`, slug: `p${i}` })),
+    images: Array.from({ length: 40 }, (_, i) => ({ url: `https://i.example/${i}.png` })),
   }
-  const want = { lite: [1, 1, 6], standard: [3, 3, 12], deep: [5, 6, 24] }
+  const want = { lite: [1, 3, 8], standard: [3, 6, 16], deep: [5, 10, 32] }
   for (const [depth, [videos, pages, images]] of Object.entries(want)) {
     const { labels, calls, result } = await runWith({ ...ARGS, depth, tickets: DISCOVERY }, withDiscover(many))
     assert.equal(labels.filter(l => l.startsWith('watch:')).length, videos, `${depth} videos`)
@@ -296,9 +296,9 @@ test('discovery caps videos, pages and images per depth, states the caps, and re
     assert.match(calls.find(c => c.label === 'discover:07-discover').prompt,
       new RegExp(`at most ${videos} videos, ${pages} pages and ${images} images`), depth)
     const dropped = result.discovery.dropped
-    assert.equal(dropped.length, (7 - videos) + (7 - pages) + (30 - images), `${depth} dropped`)
+    assert.equal(dropped.length, (7 - videos) + (12 - pages) + (40 - images), `${depth} dropped`)
     assert.ok(dropped.some(d => d.kind === 'video' && d.url === 'https://v.example/6.mp4' && d.by === '07-discover'))
-    assert.ok(dropped.some(d => d.kind === 'image' && d.url === 'https://i.example/29.png'))
+    assert.ok(dropped.some(d => d.kind === 'image' && d.url === 'https://i.example/39.png'))
   }
 })
 
@@ -316,8 +316,13 @@ test('found images reach the moodboard prompt, which is added if the chart plann
   assert.ok(added.labels.includes('moodboard:29-moodboard'), added.labels.join(', '))
   assert.ok(added.labels.indexOf('watch:19-watch-found-demo') < added.labels.indexOf('moodboard:29-moodboard'))
 
-  const none = await runWith({ ...ARGS, tickets: noBoard }, withDiscover(PICKS))
-  assert.ok(!none.labels.some(l => l.startsWith('moodboard:')), 'no images found, no moodboard added')
+  // Pages alone earn a moodboard too: their screenshots go on it.
+  const pagesOnly = await runWith({ ...ARGS, tickets: noBoard }, withDiscover({ videos: [], pages: PICKS.pages, images: [] }))
+  assert.ok(pagesOnly.labels.includes('moodboard:29-moodboard'), pagesOnly.labels.join(', '))
+  assert.ok(pagesOnly.labels.indexOf('scrape:28-scrape-found-maker') < pagesOnly.labels.indexOf('moodboard:29-moodboard'))
+
+  const none = await runWith({ ...ARGS, tickets: noBoard }, withDiscover({ videos: [], pages: [], images: [] }))
+  assert.ok(!none.labels.some(l => l.startsWith('moodboard:')), 'nothing found, no moodboard added')
 })
 
 test('only one discover ticket runs per wave; an extra one is reported, not run', async () => {
@@ -355,4 +360,59 @@ test('a gap round may run discover: its tickets run before gap specialists, and 
   assert.match(board.prompt, /only for these new images/)
   assert.ok(labels.indexOf('moodboard:29-moodboard-r2') < labels.indexOf('normalize:r2'))
   assert.ok(result.discovery.found.includes('19-watch-found-open-timing'))
+})
+
+test('found pages are screenshotted and interpreted, not copied', async () => {
+  const { calls } = await runWith({ ...ARGS, tickets: DISCOVERY }, withDiscover(PICKS))
+  const scrape = calls.find(c => c.label === 'scrape:28-scrape-found-maker')
+  assert.match(scrape.prompt, /webpages\.py fetch \S+ --work \S+ --screenshot/)
+  assert.match(scrape.prompt, /Interpret, don't copy/)
+  const watch = calls.find(c => c.label === 'watch:19-watch-found-demo')
+  assert.doesNotMatch(watch.prompt, /--screenshot/)
+})
+
+test('verify narrowings (the dump ruling out what the request plausibly includes) become tier-1 gaps', async () => {
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('verify')) {
+      const round = Number((prompt.match(/Round (\d+)/) || [0, 1])[1])
+      return { job: label, guesses: [], misses: [], lookups: 2, contradictions: [],
+        narrowings: round === 1 ? [{ entry_id: 'an-parts-minimal', rules_out: 'a cart review and checkout', why: 'a shopping component plausibly includes them' }] : [] }
+    }
+    return standard({ guessesByRound: {} })(label, prompt)
+  }
+  // Lite normally stops after one round, but a narrowing earns it one widening round.
+  const lite = await runWith({ ...ARGS, depth: 'lite' }, behaviour)
+  const liteGaps = lite.calls.find(c => c.label === 'gaps:r1')
+  assert.ok(liteGaps, lite.labels.join(', '))
+  assert.match(liteGaps.prompt, /narrowing: an-parts-minimal rules out a cart review and checkout/)
+  assert.ok(lite.labels.includes('synthesis:r2'))
+  assert.deepEqual(lite.result.remaining_gaps, [])
+  assert.equal(lite.result.verify[0].narrowings, 1)
+  const std = await runWith(ARGS, behaviour)
+  const gaps = std.calls.find(c => c.label === 'gaps:r1')
+  assert.ok(gaps, 'a narrowing alone should trigger a gap round')
+  assert.match(gaps.prompt, /an-parts-minimal/)
+})
+
+test('a found page URL is shell-quoted in the fetch command', async () => {
+  const odd = { videos: [], pages: [{ url: "https://x.example/p?a=1&b=it's", slug: 'odd' }], images: [] }
+  const { calls } = await runWith({ ...ARGS, tickets: DISCOVERY }, withDiscover(odd))
+  const scrape = calls.find(c => c.label === 'scrape:28-scrape-found-odd')
+  assert.ok(scrape.prompt.includes("webpages.py fetch 'https://x.example/p?a=1&b=it'\\''s' --work"), scrape.prompt)
+  assert.doesNotMatch(scrape.prompt, /--render/)
+})
+
+test('a lite widening round that adds little still skips normalize, as lite always does', async () => {
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('verify')) {
+      const round = Number((prompt.match(/Round (\d+)/) || [0, 1])[1])
+      return { job: label, guesses: [], misses: [], contradictions: [],
+        narrowings: round === 1 ? [{ entry_id: 'an-parts-minimal', rules_out: 'a cart' }] : [] }
+    }
+    return standard({ guessesByRound: {}, gapEntries: 1 })(label, prompt)
+  }
+  const { labels, result } = await runWith({ ...ARGS, depth: 'lite' }, behaviour)
+  assert.equal(result.stop_reason, 'gap round added under 10% new entries')
+  assert.ok(!labels.some(l => l.startsWith('normalize')), labels.join(', '))
+  assert.ok(labels.includes('synthesis:r2'))
 })

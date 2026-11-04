@@ -396,6 +396,34 @@ class FoundImages(unittest.TestCase):
         self.assertIn("404", summary["skipped"][0]["reason"])
 
 
+class PageScreenshots(unittest.TestCase):
+    """0.4.0: screenshots of visited pages go on the moodboard."""
+
+    def setUp(self):
+        self.work = tempfile.mkdtemp()
+        os.makedirs(os.path.join(self.work, "pages"))
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.work, ignore_errors=True)
+
+    def test_collect_from_pages_includes_each_pages_screenshot(self):
+        with open(os.path.join(self.work, "pages", "abc123.png"), "wb") as f:
+            f.write(blocks_png())
+        record = {"schema": "metadump-page/1", "key": "abc123", "url": "https://shop.example/minimal", "user_supplied": False,
+                  "outcome": {"ok": True}, "metadata": {"title": "Minimal shop"}, "images": [], "screenshot": "abc123.png"}
+        with open(os.path.join(self.work, "pages", "abc123.json"), "w") as f:
+            json.dump(record, f)
+        summary = images.collect(self.work, from_pages=True, converters=[])
+        self.assertEqual(summary["added"], 1)
+        rec = images.load_manifest(self.work)["images"][0]
+        self.assertEqual(rec["source"], {"kind": "screenshot", "page": "https://shop.example/minimal", "title": "Minimal shop"})
+        self.assertEqual(rec["origin"], "web")
+        self.assertEqual(rec["prov_hint"], "researched")
+        self.assertEqual(rec["caption"], "Screenshot of Minimal shop")
+        self.assertEqual(rec["palette"][0]["hex"], "#1E64C8")
+
+
 class Moodboard(unittest.TestCase):
     def manifest(self):
         return {"schema": "metadump-images/1", "images": [
@@ -426,6 +454,17 @@ class Moodboard(unittest.TestCase):
         import re
         for src in re.findall(r'src="([^"]+)"', html):
             self.assertFalse(re.match(r"^(https?:|//|/)", src), src)
+
+    def test_screenshots_and_found_images_link_to_the_page_they_came_from(self):
+        man = {"images": [
+            {"id": "img-s", "file": "s.png", "source": {"kind": "screenshot", "page": "https://shop.example/minimal", "title": "Minimal shop"},
+             "origin": "web", "prov_hint": "researched", "palette": [], "caption": "Screenshot of Minimal shop"},
+            {"id": "img-f", "file": "f.png", "source": {"kind": "url", "url": "https://upload.wikimedia.org/x/shell.jpg",
+                                                         "page": "https://commons.wikimedia.org/wiki/File:Shell.jpg", "title": "Shell"},
+             "origin": "web", "prov_hint": "researched", "palette": []}]}
+        html = images.moodboard_html(man, "shop")
+        self.assertIn('<a href="https://shop.example/minimal">Minimal shop</a> (screenshot)', html)
+        self.assertIn('<a href="https://commons.wikimedia.org/wiki/File:Shell.jpg">Shell</a>', html)
 
     def test_build_moodboard_copies_images_beside_the_html(self):
         root = tempfile.mkdtemp()

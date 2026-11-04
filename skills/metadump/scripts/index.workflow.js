@@ -28,11 +28,11 @@ const BRIEFS = `${SKILL}/references/briefs.md`
 // (the first lite smoke test produced 212 entries, ~3x the plan). Mirrors create.md.
 const BUDGETS = {
   lite: { research: '8-12', specialist: '12-20', lexicon: '10-15', exclusion: '10-15', observe: '10-20', inherit: 'as needed',
-    scrape: '8-15', watch: '8-15', moodboard: '6-12' },
+    scrape: '8-15', watch: '8-15', moodboard: '10-20' },
   standard: { research: '10-20', specialist: '20-35', lexicon: '15-30', exclusion: '15-25', observe: '20-35', inherit: 'as needed',
-    scrape: '15-25', watch: '15-30', moodboard: '10-20' },
+    scrape: '15-25', watch: '15-30', moodboard: '16-30' },
   deep: { research: '15-30', specialist: '30-50', lexicon: '25-45', exclusion: '20-35', observe: '30-50', inherit: 'as needed',
-    scrape: '25-40', watch: '25-45', moodboard: '15-30' },
+    scrape: '25-40', watch: '25-45', moodboard: '24-45' },
 }
 const budgetFor = type => (BUDGETS[DEPTH] || BUDGETS.standard)[type]
 const SCHEMA = `${SKILL}/references/schema.md`
@@ -44,7 +44,7 @@ const COLLECTS_EVIDENCE = new Set(['moodboard'])
 // Discover tickets search the web for videos and pages worth reading and write watch and scrape tickets for them (no shard).
 const FINDS_EVIDENCE = new Set(['discover'])
 // What one discover ticket may hand on, by depth: videos (watch jobs), pages (scrape jobs), images (moodboard). Mirrors create.md.
-const DISCOVERY_CAPS = { lite: { videos: 1, pages: 1, images: 6 }, standard: { videos: 3, pages: 3, images: 12 }, deep: { videos: 5, pages: 6, images: 24 } }
+const DISCOVERY_CAPS = { lite: { videos: 1, pages: 3, images: 8 }, standard: { videos: 3, pages: 6, images: 16 }, deep: { videos: 5, pages: 10, images: 32 } }
 const DISCOVERY_CAP = DISCOVERY_CAPS[DEPTH] || DISCOVERY_CAPS.standard
 // Gap rounds may add evidence (facts from outside, or a discover ticket to find a video or page) as well as specialist work.
 const GAP_EVIDENCE = new Set(['research', 'scrape', 'watch', 'discover'])
@@ -95,6 +95,14 @@ const VERIFY = {
         required: ['value_id', 'against_id'],
       },
     },
+    narrowings: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { entry_id: { type: 'string' }, rules_out: { type: 'string' }, why: { type: 'string' } },
+        required: ['entry_id', 'rules_out'],
+      },
+    },
     misses: { type: 'array', items: { type: 'string' } },
     lookups: { type: 'number' },
   },
@@ -142,6 +150,9 @@ Instructions: follow the "Opener" section and the "${type}" section of ${BRIEFS}
 ${extra || `Write exactly one file: ${WORK}/shards/${id}.json`}
 Return only the receipt or result the brief asks for, never the entries themselves.`
 
+// URLs come from web content: single-quote them for the shell, so & ; $ and quotes stay data.
+const shellQuote = s => `'${String(s).replace(/'/g, "'\\''")}'`
+
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'job'
 
 const ticketCall = (t, phaseName) => () => agent(opener(t.id, t.type), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
@@ -152,7 +163,9 @@ const runTickets = (list, phaseName) => parallel(list.map(t => ticketCall(t, pha
 const foundCall = (t, phaseName) => () => agent(opener(t.id, t.type, `This ticket was made by discovery (${t.by}); there is no ticket file.
 URL: ${t.pick.url}
 Answers: ${t.pick.answers || 'see the query log in map.md'}${t.pick.take ? `\nTake: ${t.pick.take}` : ''}
-origin: web. It was found online, so its facts, frames and images are researched and every source it adds says origin: "web"; never pass --reference.
+origin: web. It was found online, so its facts, frames and images are researched and every source it adds says origin: "web"; never pass --reference.${t.type === 'scrape' ? `
+Fetch it with a screenshot: python3 ${SKILL}/scripts/webpages.py fetch ${shellQuote(t.pick.url)} --work ${WORK} --screenshot, then open the screenshot with the Read tool and look at it.
+Interpret, don't copy: say what the page shows and what transfers to this task, in the task's own terms; quote only the facts you rely on.` : ''}
 Write exactly one file: ${WORK}/shards/${t.id}.json`), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
 
 // A moodboard told about the images discovery found (already within the caps), so it collects them as web-found.
@@ -220,9 +233,9 @@ if (wave1.length) {
   const first = wave1.filter(t => !COLLECTS_EVIDENCE.has(t.type))
   const after = wave1.filter(t => COLLECTS_EVIDENCE.has(t.type))
   const r1 = await runEvidence(first, 'Evidence')
-  if (discovery.images.length && !after.length) {
+  if ((discovery.images.length || discovery.found.length) && !after.length) {
     after.push({ id: '29-moodboard', type: 'moodboard' })
-    log(`discovery found ${discovery.images.length} image URLs and the chart planned no moodboard; adding 29-moodboard to collect them`)
+    log(`discovery found ${discovery.found.length} pages/videos and ${discovery.images.length} images; the chart planned no moodboard, so 29-moodboard collects their screenshots, frames and images`)
   }
   const boards = after.map(t => (discovery.images.length ? boardCall(t, discovery.images, 'Evidence') : ticketCall(t, 'Evidence')))
   const r = [...r1, ...(boards.length ? await parallel(boards) : [])]
@@ -236,6 +249,10 @@ if (wave2.length) {
   log(`specialists: ${r.filter(Boolean).length}/${wave2.length} tickets, ${count(r)} entries`)
 }
 
+const tier1Gaps = (verified, key, describe) => verified.flatMap(v => (v[key] || []).map(x => ({
+  job: v.job, decision: `${describe(x)}${x.why ? ` (${x.why})` : ''}`, tier: 1,
+})))
+let maxRounds = MAX_ROUNDS
 const results = { rounds: 0, builds: [], verify: [], audits: [], gap_tickets: [], entries_from_receipts: total, discovery }
 let round = 1
 while (true) {
@@ -274,22 +291,26 @@ while (true) {
   const audit = LITE ? null : outcomes[0]
   const verified = outcomes.slice(auditCall.length).filter(Boolean)
   results.audits.push(audit)
-  results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, contradictions: (v.contradictions || []).length, misses: (v.misses || []).length })))
+  results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, contradictions: (v.contradictions || []).length, narrowings: (v.narrowings || []).length, misses: (v.misses || []).length })))
 
-  // A concrete value that pulls against a tier-1 objective entry is a tier-1 gap (the A/B tests' failure mode).
-  const contradictions = verified.flatMap(v => (v.contradictions || []).map(c => ({
-    job: v.job, decision: `contradiction: ${c.value_id} pulls against ${c.against_id}${c.why ? ` (${c.why})` : ''}`, tier: 1,
-  })))
-  const tier12 = [...contradictions, ...verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))]
+  // Structural defects are tier-1 gaps: a concrete value pulling against a tier-1 objective entry (ADR 0003), and an
+  // entry ruling out what the request plausibly includes (ADR 0005).
+  const contradictions = tier1Gaps(verified, 'contradictions', c => `contradiction: ${c.value_id} pulls against ${c.against_id}`)
+  const narrowings = tier1Gaps(verified, 'narrowings', n => `narrowing: ${n.entry_id} rules out ${n.rules_out}`)
+  if (LITE && round === 1 && narrowings.length && maxRounds < 2) {
+    maxRounds = 2
+    log(`lite: ${narrowings.length} narrowings found, so one widening round runs`)
+  }
+  const tier12 = [...contradictions, ...narrowings, ...verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))]
   const missing = (audit && audit.missing_clauses) || []
-  log(`round ${round}: ${tier12.length} tier-1/2 gaps (${contradictions.length} contradictions) across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
+  log(`round ${round}: ${tier12.length} tier-1/2 gaps (${contradictions.length} contradictions, ${narrowings.length} narrowings) across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
   results.remaining_gaps = [...tier12, ...missing.map(clause => ({ decision: `untraced prompt clause: ${clause}`, tier: 1 }))]
-  if (round >= MAX_ROUNDS || (!tier12.length && !missing.length)) break
+  if (round >= maxRounds || (!tier12.length && !missing.length)) break
 
   phase('Gaps')
   const plan = await agent(`${opener(`gaps-r${round}`, 'gaps', `Round ${round}. Write ticket files only (no shard), named ${WORK}/tickets/6<N>-gap-<section>-r${round + 1}.md with N 0-9 unused so far.`)}
 
-Verify guesses at tier 1-2 and contradictions (JSON): ${JSON.stringify(tier12)}
+Verify guesses at tier 1-2, contradictions and narrowings (JSON): ${JSON.stringify(tier12)}
 Untraced prompt clauses (JSON): ${JSON.stringify(missing)}
 Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist, research, scrape, watch or discover), or {"tickets": []}.`,
     { label: `gaps:r${round}`, phase: 'Gaps', schema: GAPS })
@@ -318,9 +339,11 @@ Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist,
     results.stop_reason = 'gap round added under 10% new entries'
   }
   if (results.stop_reason) {
-    const nId = `9${round - 1}-normalize-r${round}`
-    await agent(opener(nId, 'normalize', `Round ${round}. Write exactly one file: ${WORK}/shards/${nId}.json`),
-      { label: `normalize:r${round}`, phase: 'Normalize', schema: RECEIPT })
+    if (!LITE) {
+      const nId = `9${round - 1}-normalize-r${round}`
+      await agent(opener(nId, 'normalize', `Round ${round}. Write exactly one file: ${WORK}/shards/${nId}.json`),
+        { label: `normalize:r${round}`, phase: 'Normalize', schema: RECEIPT })
+    }
     const s2 = await agent(opener('95-synthesis', 'synthesis',
       `Round ${round}. Rewrite ${WORK}/shards/95-synthesis.json; any repair shard is ${WORK}/shards/97-repair-r${round}.json. Build with: ${FINALIZE} build ${WORK}`),
       { label: `synthesis:r${round}`, phase: 'Synthesis', schema: SYNTH, effort: 'high' })

@@ -37,7 +37,7 @@ def base_dump():
                 "kind": "not_wanted",
                 "instead": "matte paper surface",
                 "scope": ["image"],
-                "tier": 1,
+                "tier": 2,  # inferred from "matte": the build's reading, so tier 2 at most
                 "prov": "inferred",
                 "anchor": "matte",
             }
@@ -118,9 +118,58 @@ class Validation(unittest.TestCase):
         self.assertEqual(out["palette"]["c-amber"]["tier"], 2)
         self.assertIn("proposed_not_tier1", codes(report["fixes"]))
 
+    def test_tier_1_holds_only_collected_entries(self):
+        d = base_dump()
+        d["palette"]["c-scope"] = {"term": "one product only", "tier": 1, "prov": "inferred", "anchor": "calm",
+                                   "text": "Calm means a single product and nothing else."}
+        d["palette"]["c-unknown"] = {"term": "paper stock", "tier": 1, "prov": "unknown", "anchor": "matte", "text": "Paper stock is undecided."}
+        out, report = finalize.build_dump(d)
+        self.assertEqual(out["palette"]["c-scope"]["tier"], 2)
+        self.assertEqual(out["palette"]["c-unknown"]["tier"], 2)
+        self.assertEqual(out["palette"]["c-amber"]["tier"], 1)  # user_stated stays
+        self.assertEqual(codes(report["fixes"]).count("tier1_needs_collected"), 2)
+
+    def test_the_builds_own_entries_that_narrow_the_task_warn(self):
+        d = base_dump()
+        d["palette"]["c-narrow"] = {"term": "parts", "tier": 2, "prov": "inferred", "text": "Four parts; nothing else is needed."}
+        d["palette"]["c-gate"] = {"term": "button", "tier": 3, "prov": "proposed", "text": "The button must be blue."}
+        d["palette"]["c-user"] = {"term": "calm", "tier": 2, "prov": "user_stated", "anchor": "calm", "text": "It must feel calm."}
+        d["palette"]["c-open"] = {"term": "grain", "tier": 3, "prov": "inferred", "text": "A fine paper grain could suit it."}
+        _, report = finalize.build_dump(d)
+        flagged = sorted(w["path"] for w in report["warnings"] if w["code"] == "narrowing_language")
+        self.assertEqual(flagged, ["/palette/c-gate", "/palette/c-narrow"])
+
+    def test_signature_keeps_only_entries_that_stayed_tier_1(self):
+        d = base_dump()
+        d["palette"]["c-scope"] = {"term": "one product", "tier": 1, "prov": "inferred", "anchor": "calm", "text": "One product."}
+        d["essence"]["signature"] = ["c-amber", "c-scope"]
+        out, report = finalize.build_dump(d)
+        self.assertEqual(out["essence"]["signature"], ["c-amber"])
+        self.assertIn("signature_not_tier1", codes(report["fixes"]))
+
+    def test_constraints_and_negations_are_not_narrowing(self):
+        d = base_dump()
+        d["palette"]["inv-logo"] = {"term": "logo corner", "tier": 2, "prov": "inferred", "variable": ["size"],
+                                    "text": "The logo always sits top-left."}
+        d["palette"]["fs-band"] = {"term": "band width", "tier": 3, "prov": "inferred", "kind": "forbidden_shortcut",
+                                   "text": "Band width never means quantity."}
+        d["palette"]["ak-neon"] = {"term": "neon", "tier": 2, "prov": "inferred", "kind": "not_wanted", "instead": "amber",
+                                   "text": "Never neon."}
+        d["palette"]["c-list"] = {"term": "layout", "tier": 2, "prov": "inferred", "text": "A grid is not the only option; a list also works."}
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("narrowing_language", codes(report["warnings"]))
+
+    def test_a_group_left_with_only_its_note_is_still_a_group(self):
+        d = base_dump()
+        d["palette"]["options"] = {"_about": "options, not requirements"}
+        out, report = finalize.build_dump(d)
+        self.assertEqual(report["errors"], [])
+        self.assertEqual(out["palette"]["options"], {"_about": "options, not requirements"})
+
     def test_tier_1_entry_without_anchor_is_demoted_to_tier_2(self):
         d = base_dump()
-        d["palette"]["c-amber"]["prov"] = "inferred"
+        d["sources"]["s-web"] = {"kind": "web", "url": "https://example.com/amber", "title": "Amber light"}
+        d["palette"]["c-amber"].update({"prov": "researched", "src": ["s-web"]})
         del d["palette"]["c-amber"]["anchor"]
         out, report = finalize.build_dump(d)
         self.assertEqual(out["palette"]["c-amber"]["tier"], 2)
@@ -231,7 +280,7 @@ class Validation(unittest.TestCase):
     def test_more_than_twelve_tier_1_entries_warns(self):
         d = base_dump()
         for i in range(13):
-            d["palette"]["c-%d" % i] = {"term": "t%d" % i, "tier": 1, "prov": "inferred", "anchor": "calm", "text": "x"}
+            d["palette"]["c-%d" % i] = {"term": "t%d" % i, "tier": 1, "prov": "user_stated", "anchor": "calm", "text": "x"}
         _, report = finalize.build_dump(d)
         self.assertIn("tier1_over_cap", codes(report["warnings"]))
 
@@ -303,8 +352,45 @@ class IndexAndRouting(unittest.TestCase):
         stats = out["manifest"]["stats"]
         self.assertEqual(stats["entries"], 2)
         self.assertEqual(stats["by_prov"], {"inferred": 1, "user_stated": 1})
-        self.assertEqual(stats["by_tier"], {"1": 2})
+        self.assertEqual(stats["by_tier"], {"1": 1, "2": 1})
         self.assertGreater(stats["tokens"], 0)
+
+    def thin(self, said, guessed):
+        d = base_dump()  # 1 user_stated + 1 inferred already
+        for i in range(said - 1):
+            d["palette"]["c-said-%d" % i] = {"term": "s%d" % i, "tier": 2, "prov": "user_stated", "anchor": "calm", "text": "x"}
+        for i in range(guessed - 1):
+            d["palette"]["c-guess-%d" % i] = {"term": "g%d" % i, "tier": 3, "prov": "inferred", "text": "x"}
+        return d
+
+    def test_stats_report_grounding_and_under_a_fifth_collected_warns(self):
+        _, out, report = finalize.finish(self.thin(5, 21))   # 5 of 26 = 19%
+        self.assertEqual(out["manifest"]["stats"]["grounding"],
+                         {"collected": 5, "derived": 21, "unknown": 0, "collected_share": 0.19, "hosts": 0})
+        self.assertIn("low_grounding", codes(report["warnings"]))
+
+    def test_exactly_a_fifth_collected_does_not_warn(self):
+        _, out, report = finalize.finish(self.thin(6, 24))   # 6 of 30 = 20%
+        self.assertNotIn("low_grounding", codes(report["warnings"]))
+
+    def test_a_small_dump_does_not_warn(self):
+        _, out, report = finalize.finish(base_dump())
+        self.assertEqual(out["manifest"]["stats"]["grounding"]["collected_share"], 0.5)
+        self.assertNotIn("low_grounding", codes(report["warnings"]))
+        self.assertNotIn("narrow_sources", codes(report["warnings"]))
+
+    def test_sources_from_fewer_than_three_hosts_warn(self):
+        d = self.thin(10, 10)
+        d["sources"] = {"s1": {"kind": "web", "url": "https://shopify.dev/a", "title": "a"},
+                        "s2": {"kind": "web", "url": "https://shopify.dev/b", "title": "b"},
+                        "s3": {"kind": "doc", "url": "https://www.nngroup.com/c", "title": "c"}}
+        _, out, report = finalize.finish(d)
+        self.assertEqual(out["manifest"]["stats"]["grounding"]["hosts"], 2)
+        self.assertIn("narrow_sources", codes(report["warnings"]))
+        d["sources"]["s4"] = {"kind": "image", "url": "https://upload.wikimedia.org/x.png", "title": "x", "origin": "web"}
+        _, out, report = finalize.finish(d)
+        self.assertEqual(out["manifest"]["stats"]["grounding"]["hosts"], 3)
+        self.assertNotIn("narrow_sources", codes(report["warnings"]))
 
     def test_route_over_slice_cap_warns(self):
         d = base_dump()
@@ -450,6 +536,17 @@ class Cli(unittest.TestCase):
         self.root = tempfile.mkdtemp()
         self.work = os.path.join(self.root, "metadumps", ".work", "demo")
 
+    def test_summary_labels_each_report_line_by_its_bucket(self):
+        d = base_dump()
+        d["palette"]["c-amber"]["prov"] = "proposed"  # one fix: proposed_not_tier1
+        path = os.path.join(self.root, "d.metadump.json")
+        with open(path, "w") as f:
+            json.dump(d, f)
+        res = run_cli("check", path)
+        fix_lines = [ln for ln in res.stdout.splitlines() if "proposed_not_tier1" in ln]
+        self.assertEqual(len(fix_lines), 1)
+        self.assertTrue(fix_lines[0].lstrip().startswith("fix "), fix_lines[0])
+
     def test_build_workdir_writes_dump_beside_work_and_exits_0(self):
         write_work(self.work, good_shards())
         res = run_cli("build", self.work)
@@ -459,6 +556,11 @@ class Cli(unittest.TestCase):
             dump = json.load(f)
         self.assertEqual(dump["palette"]["c-amber"]["prov"], "user_stated")
         self.assertTrue(os.path.exists(os.path.join(self.work, "report.json")))
+
+    def test_build_prints_the_grounding_mix(self):
+        write_work(self.work, good_shards())   # 1 user_stated, 1 inferred, no web sources
+        res = run_cli("build", self.work)
+        self.assertIn("grounding: 1 of 2 collected (50%), 0 source hosts", res.stdout)
 
     def test_build_with_errors_exits_1_and_writes_no_dump(self):
         shards = good_shards()
@@ -562,7 +664,7 @@ class AutoTier1Route(unittest.TestCase):
         self.assertEqual(report["errors"], [])
         auto = out["routing"][0]
         self.assertTrue(auto["auto"])
-        self.assertEqual(sorted(auto["paths"]), ["/anti_keywords/ak-gloss", "/palette/c-amber"])
+        self.assertEqual(sorted(auto["paths"]), ["/palette/c-amber"])
 
     def test_rebuilding_replaces_the_auto_route_instead_of_duplicating_it(self):
         out, _ = finalize.build_dump(base_dump())
@@ -618,6 +720,59 @@ class MediaTicketsAndSources(unittest.TestCase):
         self.assertFalse(draft["sources"]["s-maker"].get("user_supplied"))
         self.assertEqual(draft["sources"]["v-demo"]["origin"], "web")
         self.assertIn("found_source_relabeled", codes(report["fixes"]))
+
+    def test_an_options_group_with_an_about_note_is_a_group_not_an_entry(self):
+        draft, report = self.merge({
+            "30-style.json": {"ticket": {"id": "30-style", "type": "specialist"},
+                              "sections": {"style": {"options": {"_about": "options, not requirements",
+                                                                 "o-radius": entry("radius 8px", tier=4, prov="proposed"),
+                                                                 "o-hairline": entry("1px hairline", tier=4, prov="proposed")}}}}})
+        self.assertEqual(draft["style"]["options"]["o-radius"]["prov"], "proposed")
+        self.assertEqual(draft["style"]["options"]["_about"], "options, not requirements")
+        ids = [eid for eid, _p, _e, _h in finalize.iter_entries(draft)]
+        self.assertEqual(sorted(ids), ["o-hairline", "o-radius"])
+
+    def test_collected_images_nobody_looked_at_warn(self):
+        os.makedirs(os.path.join(self.tmp, "images"), exist_ok=True)
+        with open(os.path.join(self.tmp, "images", "manifest.json"), "w") as f:
+            json.dump({"schema": "metadump-images/1", "images": [{"id": "img-seen", "file": "a.png"}, {"id": "img-unseen", "file": "b.png"}]}, f)
+        draft, report = self.merge({
+            "29-moodboard.json": {"ticket": {"id": "29-moodboard", "type": "moodboard"},
+                                  "sources": {"i-a": {"kind": "image", "path": "images/a.png", "origin": "web", "image_id": "img-seen"},
+                                              "i-b": {"kind": "image", "path": "images/b.png", "origin": "web", "image_id": "img-unseen"}},
+                                  "sections": {"look": {"v-a": entry("hairline cards", prov="researched", src=["i-a"], method="visual"),
+                                                        "p-b": entry("#F4F1EC", prov="researched", src=["i-b"], method="pixel-sample")}}}})
+        unseen = [w["msg"] for w in report["warnings"] if w["code"] == "image_not_viewed"]
+        self.assertEqual(len(unseen), 1)
+        self.assertIn("img-unseen", unseen[0])
+
+    def test_an_image_counts_as_seen_when_a_visual_entry_cites_where_it_came_from(self):
+        os.makedirs(os.path.join(self.tmp, "images"), exist_ok=True)
+        with open(os.path.join(self.tmp, "images", "manifest.json"), "w") as f:
+            json.dump({"images": [
+                {"id": "img-shot", "file": "s.png", "source": {"kind": "screenshot", "page": "https://shop.example/p"}},
+                {"id": "img-frame", "file": "f.png", "source": {"kind": "video", "video": "https://v.example/a.mp4", "timecode": "00:00:01.000"}},
+                {"id": "img-url", "file": "u.png", "source": {"kind": "url", "url": "https://i.example/x.png"}},
+                {"id": "img-lost", "file": "l.png", "source": {"kind": "url", "url": "https://i.example/lost.png"}}]}, f)
+        _, report = self.merge({
+            "28-scrape-found-shop.json": {"ticket": {"id": "28-scrape-found-shop", "type": "scrape"},
+                "sources": {"s-page": {"kind": "web", "url": "https://shop.example/p", "title": "p"}},
+                "sections": {"look": {"v-shot": entry("hairline grid", prov="researched", src=["s-page"], method="visual")}}},
+            "19-watch-found-a.json": {"ticket": {"id": "19-watch-found-a", "type": "watch"},
+                "sources": {"v-a": {"kind": "video", "url": "https://v.example/a.mp4", "title": "a", "origin": "web"}},
+                "sections": {"motion": {"fr-1": entry("lid half open", prov="researched", src=["v-a"], method="visual", timecode="00:00:01.000")}}},
+            "29-moodboard.json": {"ticket": {"id": "29-moodboard", "type": "moodboard"},
+                "sources": {"i-x": {"kind": "image", "url": "https://i.example/x.png", "title": "x", "origin": "web"}},
+                "sections": {"look": {"v-x": entry("soft daylight", prov="researched", src=["i-x"], method="visual")}}}})
+        unseen = [w for w in report["warnings"] if w["code"] == "image_not_viewed"]
+        self.assertEqual([w["path"] for w in unseen], ["images/manifest.json:/img-lost"])
+
+    def test_a_malformed_images_manifest_does_not_crash_merge(self):
+        os.makedirs(os.path.join(self.tmp, "images"), exist_ok=True)
+        with open(os.path.join(self.tmp, "images", "manifest.json"), "w") as f:
+            json.dump(["not", "a", "manifest"], f)
+        _, report = self.merge({"30-a.json": {"ticket": {"id": "30-a", "type": "specialist"}, "sections": {"look": {"c-a": entry("a")}}}})
+        self.assertNotIn("image_not_viewed", codes(report["warnings"]))
 
     def test_video_and_image_sources_back_both_evidence_provenances(self):
         d = base_dump()

@@ -1,13 +1,13 @@
 # Metadump
 
-A plugin/skill that turns a prompt (plus optional references) into a meta dump: a chest of structured task knowledge that models, tools and subagents consult like a search index while the work is done. The dump is a resource to consult, not a source of truth to obey.
+A plugin/skill that turns a prompt (plus optional references) into a meta dump: a brain dump of structured task knowledge that models, tools and subagents draw on like a search index while the work is done. The dump seeds the work; it is not a source of truth to obey.
 
 ## Language
 
 ### The artifact
 
 **Meta dump**:
-One self-contained JSON file holding everything a model could usefully know about one task (keywords, anti-keywords, descriptions, references, palettes, patterns, measurements, timings, transcripts, sources), built from a prompt and consulted repeatedly while the work is done. It is a resource, not a source of truth: it puts objective, specific information on paper so the model does not have to guess it, while the user's prompt and the model's judgment still decide. Apart from its spine, its shape is designed for the task, which can be design, coding, testing or any other engineering work.
+One self-contained JSON file holding everything a model could usefully know about one task, built from a prompt and drawn on repeatedly while the work is done: the model's stream of consciousness about the task, put on paper. It holds what was collected (the user's words, references, researched facts, screenshots, measurements, timings, transcripts) and what a model knows or can think of around the task (keywords, anti-keywords, readings, associations, exemplars, patterns, needs, options, decision points), each labeled for what it is. It seeds the work: it widens what the model can draw on and pins down specifics it would otherwise guess, and it never narrows the request. The user's prompt sets the scope and the model's judgment decides. Apart from its spine, its shape is designed for the task, which can be design, coding, TDD or any other work.
 _Avoid_: metadata file, spec, brief, style guide, mood board, source of truth, rulebook
 
 **Spine**:
@@ -43,7 +43,7 @@ The optional tag on an entry saying how it was obtained: `scraped`, `transcribed
 _Avoid_: technique, source, confidence
 
 **Tier**:
-An entry's editorial relevance to the task: 1 defining (most relevant), 2 supporting, 3 contextual, 4 exploratory. Relevance, not obligation: a tier says how much an entry bears on the task, never that a consumer must apply it. Not confidence, frequency or search volume; exploratory entries are never promoted to fact.
+An entry's editorial relevance to the task: 1 defining (most relevant), 2 supporting, 3 contextual, 4 exploratory. Relevance, not obligation: a tier says how much an entry bears on the task, never that a consumer must apply it. Tier 1 holds only collected entries (the user's words, references, researched facts); the build's own derived entries (`inferred`, `proposed`, `unknown`) reach tier 2 at most. Not confidence, frequency or search volume; exploratory entries are never promoted to fact.
 _Avoid_: priority, rank, weight, importance, requirement level
 
 **Keyword**:
@@ -65,6 +65,30 @@ _Avoid_: ban, blocklist entry
 **Check**:
 An optional review prompt derived from objective entries ("highlights read white, not tinted") that a consumer may run on its own output as a self-review. Kept under the `checks` key, with its `severity`, for compatibility; a check never forces a revision, and a consumer may deviate and say why.
 _Avoid_: gate, requirement, must-pass test
+
+**Collected entry**:
+An entry the build gathered rather than thought up: the user's words (`user_stated`), what references show (`reference_observed`) or what a fetched source says (`researched`). Everything else is derived: the build's own `inferred` and `proposed` thinking, and `unknown`. Only collected entries reach tier 1.
+_Avoid_: fact, ground truth, verified
+
+**Reading**:
+One plausible interpretation of the request's scope, with what it includes ("shopping component" read as a product card, a mini cart or a product list). A meta dump keeps every reading side by side with a default, so the consumer chooses or combines; collapsing to one is narrowing.
+_Avoid_: interpretation, scope, sense (a sense is the meaning of one word)
+
+**Decision point**:
+A choice the work will face, recorded with its options, their tradeoffs, signals for when each fits, and sources (which test first, where the seam goes, density vs breathing room). It seeds the consumer's decision; it doesn't make it unless the user did.
+_Avoid_: recommendation, rule, default
+
+**Association**:
+Something a model knows around the task, written down as seed material: a human descriptor, an adjacent concept, a metaphor, a mood, or a brand, work or person commonly associated with a quality, with what it contributes.
+_Avoid_: vibe, tag
+
+**Research facet**:
+One angle research covers for each key quality and object in the prompt: vocabulary and human descriptors, principles and heuristics, exemplars, patterns and anti-patterns, needs, specifics, decision points. Research goes wide across facets before deep on any one.
+_Avoid_: topic, category
+
+**Grounding**:
+The share of a meta dump's entries that were collected rather than thought up by the build. A dump with low grounding is mostly the build's own thinking, and finalize says so.
+_Avoid_: confidence, accuracy
 
 **Options area**:
 The section or group (named `options` or `ideas`, or marked by an `_about` note saying "options, not requirements") where `proposed` entries live, so the builder's choices sit apart from the collected facts.

@@ -2,7 +2,7 @@
 
 Read this when building a meta dump. `<SKILL>` is the skill's base directory; `<WORK>` is `metadumps/.work/<slug>/` under the project root.
 
-The dump is a resource to consult, not a source of truth to obey. Building it is where the value comes from: it forces structure and pulls in specifics a model would not have at hand. So the build weights collection of objective, sourced data (exact values, real references, measurements, timings, transcripts, quotes, library facts, observed and scraped facts) over prescriptive design decisions. Proposals stay possible, labeled and kept in options areas.
+The dump is a brain dump, not a spec: the model's stream of consciousness about the task, collected and written down so the work can draw on it. Building it is where the value comes from: it forces structure, pulls in specifics a model would not have at hand, and writes down what the model knows but would not otherwise surface. So the build does two things. It **collects** widely (the user's words, references, researched facts across several facets, screenshots of exemplars, measurements, timings, transcripts, quotes, library facts), and it **widens** (readings of the request, associations, exemplars, patterns, needs, options, decision points). It seeds the consumer with more to work with. It never narrows the request: the build's own derived entries stay at tier 2 or below, and anything that would rule out what the request plausibly includes is a defect the verify pass reports.
 
 Contents: 1. Setup · 2. Depth and cost · 3. Chart (map.md) · 4. Tickets · 5. Prompt shard · 6. Fan-out · 7. Build, verify, loop · 8. Present · 9. Resume and expand · 10. Pages, videos and images
 
@@ -27,8 +27,8 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 1–2 evidence (research, or scrape/watch when the prompt names a URL or video; discover when the references leave visual or motion questions open) + 2–3 specialists + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 | 20–35K tokens | ~1–1.5M, 25–35 min (measured: 8 agents, 1.36M, 34 min) |
-| `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 2–4 research + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
+| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets covering the facets between them + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 (2 when verify finds narrowings) | 20–35K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
+| `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
 | `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 90–150K+ tokens, still routed | ~4–7M, 1–2 h (estimate) |
 
 "Tokens processed" counts every agent re-reading its context across its tool calls. It is far more than the dump's own size.
@@ -48,7 +48,7 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 Without budgets, workers write everything they can think of: the first lite run produced 212 entries against a plan of about 80.
 
-**Discovery caps** (videos for watch jobs / pages for scrape jobs / images for the moodboard, per discover ticket): lite 1 / 1 / 6, standard 3 / 3 / 12, deep 5 / 6 / 24. One discover ticket runs per wave (the chart's `07-discover`, and at most one per gap round), so a build fetches at most the caps once plus once per gap round. The Workflow script puts the caps in the discover prompt, keeps the first picks up to each cap, and lists everything it dropped (by URL) in `discovery.dropped`; an extra discover ticket in the same wave is dropped and listed too.
+**Discovery caps** (videos for watch jobs / pages for scrape jobs / images for the moodboard, per discover ticket): lite 1 / 3 / 8, standard 3 / 6 / 16, deep 5 / 10 / 32. One discover ticket runs per wave (the chart's `07-discover`, and at most one per gap round), so a build fetches at most the caps once plus once per gap round. The Workflow script puts the caps in the discover prompt, keeps the first picks up to each cap, and lists everything it dropped (by URL) in `discovery.dropped`; an extra discover ticket in the same wave is dropped and listed too.
 
 Pick the depth from the request. State one line before fan-out, e.g. "Standard depth: ~16 agents, roughly 2–4M tokens processed, about an hour." Then proceed. Don't wait for approval unless the user asked to be consulted. The user can say "lite" or "deep" any time.
 
@@ -76,6 +76,16 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 ## Senses
 <!-- ambiguous words in the prompt and the senses NOT meant -->
 - "counter": brand, not countertop / tally counter
+
+## Readings
+<!-- when the request's scope allows several readings, list them all with what each includes, and pick a default without dropping the others. They go into essence.readings. Collapsing to one reading is how a dump narrows a request. -->
+- "shopping component": product card with quick add (default) / mini cart with quantity and checkout / product list with filters / checkout summary
+
+## Research facets
+<!-- for each key quality and object in the prompt, which facets the research tickets cover: vocabulary and human descriptors, principles and heuristics, exemplars (brands, products, sites, codebases, works, people) with what transfers, patterns and anti-patterns, needs of the people involved, specifics, decision points. Lite: two tickets split the facets; standard: one or two facets per ticket. -->
+
+## Decision points
+<!-- the choices the work will face, each with its options; the dump gives options, tradeoffs and sources, the consumer decides. Design: density vs breathing room, one product vs a list. TDD: which test first, where the seam goes, outside-in vs inside-out, when to refactor. -->
 
 ## Layers
 <!-- the levels where properties could drift between each other -->
@@ -119,7 +129,8 @@ How to choose the evidence tickets:
 - A video link or a video file → a `watch` ticket (metadata, captions, frames; timing when motion matters).
 - Questions best answered by seeing or hearing something (how it looks, what it's made of, how it moves and how long that takes, a demo, a talk) that the references don't already answer → a `discover` ticket (`07-discover`). It searches the web and returns the most relevant videos, pages and images as picks; each video becomes a `watch` job and each page a `scrape` job (ids `19-watch-found-<slug>`, `28-scrape-found-<slug>`, no ticket file: the prompt carries the URL and question), which start as soon as it returns, and the images go to the moodboard. What it finds is `researched`, never `reference_observed`: the found jobs are told so, and `finalize.py` caps their shards and relabels their sources as found online regardless. Skip it when the user says to use only their references, or when nothing in the query log needs to be seen or heard.
 - Images, or a visual task (design, art direction, image generation, UI) → a `moodboard` ticket, which collects the references plus images from scraped pages and video frames.
-- Facts the task depends on that no reference holds → `research` (or `scrape`, when a known site holds them).
+- Facts the task depends on that no reference holds → `research` (or `scrape`, when a known site holds them). Research covers the facets in the map, wide before deep: several sources of different kinds per facet, never a single page.
+- Every dump gets a `lexicon` ticket that is also the associations pass: what the model knows around the task (human descriptors, adjacent concepts, associated brands, works and people, metaphors, moods) written down as seed material.
 
 How to choose the section plan for any domain:
 1. Start from the destination jobs and the query log, never from a template. A REST API dump has no `palette`; a carton dump has no `error_model`.
@@ -127,6 +138,7 @@ How to choose the section plan for any domain:
 3. Name sections the way a practitioner of that domain would (`verse_form`, `seams`, `macro_bands`, `subject_lines`).
 4. Survival rule: drop any section no job or query needs. Breadth comes from the query log, not from symmetry.
 5. Give each section a place for objective data first (measured, scraped, transcribed, observed, researched) and an options area for the builder's proposals.
+6. Plan for breadth as well as specifics: readings, decision points (with options and tradeoffs), exemplars, associations and candidate pools are sections or groups too, routed to an "explore options" job.
 
 `references/worked-plans.md` has three example plans (visual packaging, an engineering CLI with TDD, a short story) to calibrate against. They are illustrations, not templates.
 
@@ -174,7 +186,7 @@ Workflow({
 })
 ```
 
-The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found images and the chart planned none) → wave 2 (specialists, lexicon, exclusion) → normalize → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses or contradictions remain (up to `max_rounds`; a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets and `discovery` (`found`, `dropped`, `images`). Pass every ticket except `01-prompt` (already written).
+The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found anything and the chart planned none, so found pages' screenshots get looked at) → wave 2 (specialists, lexicon, exclusion) → normalize → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses, contradictions or narrowings remain (up to `max_rounds`; lite, which normally has one round, gets one widening round when verify finds narrowings; a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets and `discovery` (`found`, `dropped`, `images`). Pass every ticket except `01-prompt` (already written).
 
 ### Without Workflow (plain subagents)
 
@@ -200,7 +212,7 @@ Tell the user, briefly:
 - the path, size (entries, ~tokens) and depth;
 - the essence sentence and the tier-1 signature;
 - the routing jobs (what any skill can now pull from it);
-- provenance mix (how much is user_stated / observed / researched vs inferred / proposed), so they know how much is grounded;
+- the grounding mix that `build` prints (how much was collected vs the build's own thinking, and from how many hosts), plus any `low_grounding` or `narrow_sources` warning, so they know how much is grounded;
 - the top open questions with the defaults assumed. They can answer any time; answers become `user_stated` through use mode;
 - the moodboard path, if one was built;
 - what discovery found and used (how many videos, pages and images, from where) and anything the caps dropped, so the user can ask for more.

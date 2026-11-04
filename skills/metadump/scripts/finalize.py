@@ -8,6 +8,7 @@ Standard library only; Python 3.9+.
 import argparse
 import copy
 import json
+import urllib.parse
 import os
 import re
 import sys
@@ -30,6 +31,25 @@ TIER1_CAP = 12
 MANIFEST_REQUIRED = ["schema", "slug", "version", "created", "prompt"]
 # Which source kinds can back which provenance. Video and image sources back either one: a video or image
 # the user supplied is reference_observed, one found on the web is researched (sources say which in `origin`).
+# Words that turn the build's own thinking into a rule. The user's words and constraint mechanisms (invariants with
+# their `variable`, forbidden shortcuts, anti-keywords) may narrow; the build's other entries seed.
+NARROWING = re.compile(r"\b(must(?: not)?|never|always|nothing else|(?<!not )the only|no other)\b", re.I)
+CONSTRAINT_KINDS = {"not_wanted", "not_meant", "forbidden_shortcut", "invariant", "budget"}
+
+
+def _narrowing_word(entry):
+    """The narrowing word in a derived, non-constraint entry's text, or None."""
+    if entry.get("prov") not in ("inferred", "proposed") or "variable" in entry or entry.get("kind") in CONSTRAINT_KINDS:
+        return None
+    m = NARROWING.search(str(entry.get("text", "")))
+    return m.group(0) if m else None
+# A dump of 20+ entries where under a fifth was collected, or whose sources sit on fewer than 3 hosts,
+# is mostly the build's own thinking or one page restated: say so.
+LOW_GROUNDING_PARTS = 5
+LOW_GROUNDING_MIN_ENTRIES = 20
+MIN_SOURCE_HOSTS = 3
+# What the build collected rather than thought up: the user's words, observed references, researched sources.
+COLLECTED_PROVS = {"user_stated", "reference_observed", "researched"}
 PROV_SOURCE_KINDS = {
     "researched": {"web", "doc", "video", "image"},
     "reference_observed": {"reference", "dump", "video", "image"},
@@ -71,8 +91,11 @@ def resolve(doc, ptr):
 
 
 def _is_group(value):
-    return (isinstance(value, dict) and value and "tier" not in value and "prov" not in value
-            and all(isinstance(v, dict) and v for v in value.values()))
+    """A dict with no tier/prov whose members are all dicts; "_"-prefixed notes (like `_about`) don't count."""
+    if not isinstance(value, dict) or not value or "tier" in value or "prov" in value or "_delete" in value or "_replace" in value:
+        return False   # entries and edit markers aren't groups
+    members = [v for k, v in value.items() if not str(k).startswith("_")]
+    return all(isinstance(v, dict) and v for v in members)   # a group of notes only (all options deleted) is still a group
 
 
 def iter_entries(dump, report=None):
@@ -178,6 +201,11 @@ def _validate_entries(out, report):
             if entry["prov"] == "proposed":
                 entry["tier"] = 2
                 _note(report, "fixes", "proposed_not_tier1", ptr, "proposed entries are never tier 1; set to tier 2")
+            elif entry["prov"] not in COLLECTED_PROVS:
+                entry["tier"] = 2
+                _note(report, "fixes", "tier1_needs_collected", ptr,
+                      "tier 1 holds only what was collected (user_stated, reference_observed, researched); "
+                      "a derived '%s' entry is tier 2 at most, so the build's own thinking can't redefine the task" % entry["prov"])
             elif not _valid_anchor(entry.get("anchor"), prompt, sources):
                 entry["tier"] = 2
                 _note(report, "fixes", "tier1_needs_anchor", ptr,
@@ -186,6 +214,11 @@ def _validate_entries(out, report):
                 tier1.append(eid)
         if holder == "anti_keywords":
             _validate_anti_keyword(entry, ptr, report)
+        else:
+            word = _narrowing_word(entry)
+            if word:
+                _note(report, "warnings", "narrowing_language", ptr,
+                      "the build's own entry narrows the task ('%s'); say what it adds or offers instead, so it seeds the work rather than limiting it" % word)
     if len(tier1) > TIER1_CAP:
         _note(report, "warnings", "tier1_over_cap", "",
               "%d tier-1 entries (cap %d): too many to read as the most relevant; demote the least defining" % (len(tier1), TIER1_CAP))
@@ -234,9 +267,18 @@ def _validate_refs(out, ids, report):
         for ref in check.get("from", []) or []:
             if ref not in ids:
                 _note(report, "errors", "unknown_id", "/checks/" + _esc(cid), "from cites unknown id '%s'" % ref)
+    tier1 = {eid for eid, _p, e, _h in iter_entries(out) if e.get("tier") == 1}
+    kept = []
     for ref in out["essence"].get("signature", []) or []:
         if ref not in ids:
             _note(report, "errors", "unknown_id", "/essence/signature", "signature cites unknown id '%s'" % ref)
+        elif ref not in tier1:
+            _note(report, "fixes", "signature_not_tier1", "/essence/signature",
+                  "'%s' is not tier 1 (after validation); dropped from the signature, which every consumer reads first" % ref)
+            continue
+        kept.append(ref)
+    if "signature" in out["essence"]:
+        out["essence"]["signature"] = kept
     version = out["manifest"].get("version")
 
     def walk_exports(node, ptr):
@@ -371,12 +413,27 @@ def _stats(out):
         p = entry.get("prov")
         by_prov[p] = by_prov.get(p, 0) + 1
         by_section[holder] = by_section.get(holder, 0) + 1
+    collected = sum(by_prov.get(p, 0) for p in COLLECTED_PROVS)
+    unknown = by_prov.get("unknown", 0)
     return {
         "entries": n,
         "by_tier": dict(sorted(by_tier.items())),
-        "by_prov": dict(sorted(by_prov.items())),
+        "by_prov": dict(sorted(by_prov.items(), key=lambda kv: str(kv[0]))),
         "by_section": by_section,
+        "grounding": {"collected": collected, "derived": n - collected - unknown, "unknown": unknown,
+                      "collected_share": round(collected / n, 2) if n else 0.0, "hosts": len(_source_hosts(out))},
     }
+
+
+def _source_hosts(out):
+    """Distinct hosts behind the dump's web, doc, video and image sources: how widely it actually looked."""
+    hosts = set()
+    for src in (out.get("sources") or {}).values():
+        if isinstance(src, dict) and src.get("kind") in ("web", "doc", "video", "image") and src.get("url"):
+            host = urllib.parse.urlsplit(str(src["url"])).hostname or ""
+            if host:
+                hosts.add(host[4:] if host.startswith("www.") else host)
+    return hosts
 
 
 def _how_to_read(fname, head_lines):
@@ -423,6 +480,14 @@ def finish(dump):
             text, spans = serialize(out)
         if not changed:
             break
+    g, n = out["manifest"]["stats"]["grounding"], out["manifest"]["stats"]["entries"]
+    if n >= LOW_GROUNDING_MIN_ENTRIES and g["collected"] * LOW_GROUNDING_PARTS < n:   # under 1/5, compared on counts
+        _note(report, "warnings", "low_grounding", "/manifest/stats/grounding",
+              "only %d of %d entries were collected (user_stated, reference_observed, researched); the rest is the build's own "
+              "thinking. Widen the evidence (research facets, discovery, screenshots) before relying on it" % (g["collected"], n))
+    if n >= LOW_GROUNDING_MIN_ENTRIES and g["hosts"] < MIN_SOURCE_HOSTS:
+        _note(report, "warnings", "narrow_sources", "/sources",
+              "sources come from %d host(s); research covers facets across several kinds of source, not one site" % g["hosts"])
     for i, route in enumerate(out["routing"]):
         if route.get("tokens", 0) > SLICE_CAP_TOKENS:
             _note(report, "warnings", "route_over_cap", "/routing/%d" % i,
@@ -499,6 +564,16 @@ def _flatten(container, flat, gpath=()):
                 yield item
 
 
+def _group_notes(container, gpath=()):
+    """Yield (group path, key, value) for "_" notes at any group depth (e.g. an options group's `_about`)."""
+    for key, val in container.items():
+        if str(key).startswith("_"):
+            yield gpath, key, val
+        elif _is_group(val):
+            for item in _group_notes(val, gpath + (key,)):
+                yield item
+
+
 def _rank_key(e):
     return (PROV_RANK.get(e.get("prov"), 0), -(e.get("tier") or 9))
 
@@ -564,9 +639,9 @@ def merge_workdir(workdir):
             if not isinstance(content, dict):
                 continue
             slot = holder_slot(hname)
-            for k, v in content.items():
-                if str(k).startswith("_") and hname not in FLAT_HOLDERS:
-                    slot["notes"][k] = v
+            if hname not in FLAT_HOLDERS:
+                for gpath, k, v in _group_notes(content):
+                    slot["notes"][(gpath, k)] = v
             for gpath, eid, raw in _flatten(content, hname in FLAT_HOLDERS):
                 ptr = "%s:/%s/%s" % (name, hname, eid)
                 e = {k: v for k, v in raw.items() if k not in ("_replace", "_delete")}
@@ -612,7 +687,12 @@ def merge_workdir(workdir):
 
     def rebuild(hname):
         slot = holders.get(hname, {"notes": {}, "items": {}})
-        d = dict(slot["notes"])
+        d = {}
+        for (gpath, k), v in slot["notes"].items():
+            node = d
+            for g in gpath:
+                node = node.setdefault(g, {})
+            node[k] = v
         for eid, (gpath, e) in slot["items"].items():
             node = d
             for g in gpath:
@@ -630,7 +710,54 @@ def merge_workdir(workdir):
     for hname in order:
         draft[hname] = rebuild(hname)
     draft["sources"] = sources
+    _check_images_viewed(workdir, draft, report)
     return draft, report
+
+
+def _check_images_viewed(workdir, draft, report):
+    """Warn about collected images (images/manifest.json) that no `visual` entry describes: someone has to look.
+
+    An image counts as seen when a visual entry cites a source with its `image_id`, or the place it came from:
+    the page a screenshot shows, the video and timecode a frame was taken at, or the image's own url or file.
+    """
+    path = os.path.join(workdir, "images", "manifest.json")
+    if not os.path.exists(path):
+        return
+    man = _load_json(path, report, "bad_images_manifest")
+    if not isinstance(man, dict):
+        return
+    seen = set()
+    for _eid, _ptr, entry, _h in iter_entries(draft):
+        if entry.get("method") != "visual":
+            continue
+        for sid in entry.get("src") or []:
+            src = draft["sources"].get(sid)
+            if not isinstance(src, dict):
+                continue
+            if src.get("image_id"):
+                seen.add(("id", src["image_id"]))
+            for key in ("url", "path"):
+                if src.get(key):
+                    seen.add(("at", os.path.basename(str(src[key])) if key == "path" else str(src[key])))
+            if src.get("kind") == "video" and src.get("url"):
+                seen.add(("frame", str(src["url"]), str(entry.get("timecode") or entry.get("start_tc") or "")))
+    for img in man.get("images") or []:
+        if not isinstance(img, dict) or not img.get("id"):
+            continue
+        origin = img.get("source") or {}
+        keys = {("id", img["id"])}
+        if origin.get("kind") == "screenshot" and origin.get("page"):
+            keys.add(("at", str(origin["page"])))
+        if origin.get("kind") == "video" and origin.get("video"):
+            keys.add(("frame", str(origin["video"]), str(origin.get("timecode") or "")))
+        if origin.get("url"):
+            keys.add(("at", str(origin["url"])))
+        if origin.get("path"):
+            keys.add(("at", os.path.basename(str(origin["path"]))))
+        if not keys & seen:
+            _note(report, "warnings", "image_not_viewed", "images/manifest.json:/%s" % img["id"],
+                  "%s (%s) was collected but no visual entry describes it: open it with Read and write what you see, "
+                  "citing a source with image_id %s or the page, video or url it came from" % (img["id"], img.get("file", ""), img["id"]))
 
 
 AUTO_TIER1_JOB = "always first: the defining tier-1 entries"
@@ -732,10 +859,10 @@ def serialize(dump):
 
 def _summary(report, limit=12):
     lines = ["errors: %d  fixes: %d  warnings: %d" % (len(report["errors"]), len(report["fixes"]), len(report["warnings"]))]
-    for bucket in ("errors", "fixes", "warnings"):
+    for bucket, label in (("errors", "error"), ("fixes", "fix"), ("warnings", "warning")):
         items = report[bucket]
         for item in items[:limit]:
-            lines.append("  %-8s %-32s %s  %s" % (bucket[:-1], item["code"], item["path"], item["msg"]))
+            lines.append("  %-8s %-32s %s  %s" % (label, item["code"], item["path"], item["msg"]))
         if len(items) > limit:
             lines.append("  ... %d more %s (see the full report)" % (len(items) - limit, bucket))
     return "\n".join(lines)
@@ -829,6 +956,9 @@ def main(argv=None):
     print(_summary(report))
     print("wrote %s  (v%s, %s entries, ~%s tokens, head = first %s lines)" % (
         out_path, out["manifest"].get("version"), stats.get("entries"), stats.get("tokens"), out["manifest"].get("head_lines")))
+    g = stats.get("grounding") or {}
+    print("grounding: %s of %s collected (%d%%), %s source hosts" % (
+        g.get("collected", 0), stats.get("entries", 0), round(100 * g.get("collected_share", 0)), g.get("hosts", 0)))
     return 0
 
 

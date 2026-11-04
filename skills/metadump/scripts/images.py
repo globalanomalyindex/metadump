@@ -412,6 +412,11 @@ def add_image(man, work, data, source, origin="user", converters=None, alt=None,
     return rec, True
 
 
+def origin_of(record):
+    """Who supplied what a page or video record came from: "user" (reference_observed) or "web" (researched)."""
+    return "user" if record.get("user_supplied") else "web"
+
+
 def page_image_candidates(page, max_per_page=12, min_size=64):
     """Images worth collecting from one page record: http(s) sources, not tiny, in-main first."""
     meta = page.get("metadata") or {}
@@ -428,7 +433,7 @@ def page_image_candidates(page, max_per_page=12, min_size=64):
             "declared": {"width": w, "height": h} if (w or h) else None,
             "source": {"kind": "page", "url": src, "page": page.get("url"), "page_title": meta.get("title"),
                        "in_main": bool(img.get("in_main"))},
-            "origin": "user" if page.get("user_supplied") else "web",
+            "origin": origin_of(page),
             "license": meta.get("license") or meta.get("rights"),
         })
         if len(out) >= max_per_page:
@@ -471,6 +476,11 @@ def _source_line(src):
         link = src.get("page") or src.get("url")
         label = src.get("page_title") or urllib.parse.urlsplit(link or "").netloc or link
         return '<a href="%s">%s</a>' % (_esc(link), _esc(label))
+    if kind == "screenshot":
+        link = src.get("page") or ""
+        return '<a href="%s">%s</a> (screenshot)' % (_esc(link), _esc(src.get("title") or urllib.parse.urlsplit(link).netloc or link))
+    if kind == "url" and src.get("page"):   # found by discovery: link the page it came from, with its title
+        return '<a href="%s">%s</a>' % (_esc(src["page"]), _esc(src.get("title") or urllib.parse.urlsplit(src["page"]).netloc))
     if kind == "url":
         return '<a href="%s">%s</a>' % (_esc(src.get("url")), _esc(urllib.parse.urlsplit(src.get("url") or "").netloc))
     if kind == "video":
@@ -507,7 +517,7 @@ def moodboard_html(man, title, href_for=None, intro=None):
                _esc(rec.get("prov_hint") or ""), chips, note, lic))
     intro = intro or ("%d images. Each card shows where the image came from and its provenance label "
                       "(reference_observed = supplied by the user, researched = found on the web). Palettes are measured "
-                      "pixel samples. A resource to consult, not a set of requirements." % len(cards))
+                      "pixel samples. Seed material to look at and draw on, not a set of requirements." % len(cards))
     return ("<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
             "<meta name=\"referrer\" content=\"no-referrer\"><title>%s moodboard</title><style>%s</style></head>\n"
@@ -649,6 +659,14 @@ def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, m
                     continue
                 if not (page.get("outcome") or {}).get("ok"):
                     continue
+                page_origin = origin or origin_of(page)
+                shot = os.path.join(os.path.dirname(rec_path), os.path.basename(page.get("screenshot") or ""))
+                if page.get("screenshot") and os.path.isfile(shot):
+                    with open(shot, "rb") as f:
+                        data = f.read()
+                    title = (page.get("metadata") or {}).get("title") or page.get("url")
+                    add(data, {"kind": "screenshot", "page": page.get("url"), "title": title}, page_origin,
+                        caption="Screenshot of %s" % title)
                 for cand in page_image_candidates(page, max_per_page, min_size):
                     web = web or get_fetcher()
                     data, why = _fetch_image(web, cand["url"])
@@ -665,7 +683,7 @@ def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, m
                 except (OSError, ValueError):
                     continue
                 video = frames.get("source") or {}
-                org = origin or ("user" if frames.get("user_supplied") else "web")
+                org = origin or origin_of(frames)
                 for fr in frames.get("frames") or []:
                     path = os.path.join(os.path.dirname(fm), fr.get("file") or "")
                     if not os.path.isfile(path):

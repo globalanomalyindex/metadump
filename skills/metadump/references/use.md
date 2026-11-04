@@ -2,7 +2,9 @@
 
 For any skill, tool or session doing work in a project that has a meta dump. The point is to pull the few thousand tokens that matter for the step at hand, never the whole file, and to keep the dump true as decisions get made.
 
-**Consult, don't obey.** The dump is a resource of objective information, not a rulebook. The user's prompt and your judgment decide; the dump supplies the specifics you would otherwise guess (exact values, real references, measurements, timings, transcripts, sourced facts). Prefer its objective, sourced entries over your guesses, treat its `proposed` entries as one option among others, and when you choose differently from an entry, say so where it matters to the user.
+**Draw on it, don't obey it.** The dump is a brain dump: what was collected about the task (the user's words, references, researched facts, screenshots, measurements, timings, transcripts) plus what a model thought around it (readings, associations, exemplars, patterns, needs, options, decision points). It seeds your work with more to draw on, combine and riff with; it is not a spec. The user's prompt sets the scope and your judgment decides. Prefer its collected entries over your guesses for specifics, treat its readings, options and decision points as material for your own choices, and when you choose differently from an entry, say so where it matters to the user. **It never shrinks the task:** if an entry would rule out something the user's request plausibly includes, the request wins.
+
+**Your own take comes first.** Before you pull anything, write two or three lines of your own approach from the user's prompt alone. Then read the dump to widen and specify it: new options, exact values, references to look at, decisions to weigh. That way the dump adds to your thinking instead of replacing it.
 
 `F` below is the dump path, e.g. `metadumps/counter-carton.metadump.json`.
 
@@ -24,7 +26,7 @@ or Read with `limit = manifest.head_lines`. The head tells you the verbatim prom
 
 **Reading lean works best: head → `routing[0]` → one route (plus its export, if there is one) → scoped anti-keywords and checks.** That is usually 3–5 `jq` calls and a few thousand tokens. Then do the work, and come back when you hit a term you can't resolve or a question the dump might answer. Reading every section costs time and tokens and dilutes attention without improving the result (the first A/B test averaged 21 reads per task for no gain over 5).
 
-First pull the automatic route `routing[0]` (`always first: the defining tier-1 entries`, about 1–2K tokens): what the task is most about. Then match the job you are doing to a `routing[].job` (read `when` too) and run that route's `jq`:
+First pull the automatic route `routing[0]` (`always first: the defining tier-1 entries`, about 1–2K tokens): what the task is most about. Once, at the start, also pull the breadth: `essence.readings` (every reading of the request, with the default) and the "explore options" route if there is one (decision points, exemplars, associations, pools). Sketch two or three directions from it and your own take before you settle on one. This replaces reading around, it doesn't add to it: head, `routing[0]`, the breadth pull, then one route per step. Then match the job you are doing to a `routing[].job` (read `when` too) and run that route's `jq`:
 
 ```bash
 jq '<routing[i].jq>' F
@@ -66,11 +68,13 @@ jq '[.. | objects | select(.method == "scraped")] | .[0:5]' F              # fac
 jq '.index["ease out"]' F                                                 # or look the term up
 ```
 
-The moodboard page sits beside the dump (`metadumps/<slug>.moodboard.html`, with a `.png` render when a browser was available): open or Read it when you need to see the references, then come back to the entries for the numbers. Timelines read as plus or minus one frame; easing names are the nearest standard curve. `exports.md` says how timelines, transcripts and palettes become animation parameters, copy and image prompts.
+**Look at the images yourself.** For any visual job, open the moodboard render (`metadumps/<slug>.moodboard.png`) with the Read tool, then the images and screenshots that matter (their paths are in `sources` of kind `image`, and in `metadumps/<slug>.moodboard/`). Descriptions and palettes tell you what someone saw; looking tells you what is there. Then come back to the entries for the numbers. Timelines read as plus or minus one frame; easing names are the nearest standard curve. `exports.md` says how timelines, transcripts and palettes become animation parameters, copy and image prompts.
 
 ## 4. Apply
 
 - **Tiers say relevance, not obligation.** Tier 1 is what the task is most about: read it for every job and let it shape the work. Tier 2 is relevant to most jobs, tier 3 is context, and tier 4 is a labeled pool of options to sample for variety. None of them is a requirement; the user's prompt is.
+- **Readings and decision points are yours.** `essence.readings` lists every reading of the request; the default is a suggestion, and combining readings is often best (a product card *with* a small cart). Decision points list options and tradeoffs; pick per the user's words and your situation, and say which you picked when it matters.
+- **Riff.** Associations, exemplars and tier-4 pools are there to widen what you consider: combine two, borrow a relationship from an exemplar, push past the first idea. They're never quotas.
 - **Objective first.** Prefer `user_stated`, `reference_observed` and `researched` entries (and anything with a `method` such as `measured`, `scraped`, `transcribed`, `frame-diff` or `pixel-sample`) over your own guesses. `inferred` entries are directions you may adapt; `proposed` entries in the options area are one option among others.
 - **Keep both poles of every tension.** `essence.tensions` names the contradictions that define the work ("overexposed yet saturated", "measured indulgence"). Outputs that express both sides at once tend to be the strong ones: blown-out highlights *and* a saturated sky, not a pale washed-out compromise. Resolving a tension to one pole is the most common way a careful output ends up flat.
 - **The user's words outrank the builder's choices.** `proposed`/`inferred` parameters (a safe palette, a token scale, a layout) are starting points. When one pulls against a tier-1 `user_stated` quality, the user's quality wins and the parameter adapts. If it guards a hard constraint like text contrast, look for a design that satisfies both, e.g. keep the saturated field and put text on a local scrim, rather than draining the whole design.

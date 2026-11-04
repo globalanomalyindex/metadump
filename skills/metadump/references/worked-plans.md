@@ -27,7 +27,7 @@ Three charted plans across very different tasks, to calibrate how a section plan
 | `search_vocabulary` | search vocabulary, not_meant as negative keywords | job 5 |
 | `influences` | motif vs transferable relationship (tier 3–4) | jobs 2, 3 (keep new work original) |
 
-**Roster:** prompt · 2 observe (2 photos each) · 1 scrape (the brand's own product pages) · 2 research (packaging-design lineage, search vocabulary) · 1 moodboard (the shelf photos plus the scraped product shots, with measured band palettes) · 9 specialists · lexicon · exclusion · 2 normalize · synthesis · audit · 6 verify.
+**Roster:** prompt · 2 observe (2 photos each) · 1 scrape (the brand's own product pages, screenshotted) · 3 research (packaging-design lineage and exemplars, human descriptors and search vocabulary, shoppers' needs at the freezer aisle) · 1 discover (competitor cartons and shelf photos, screenshotted) · 1 moodboard (the shelf photos plus the scraped product shots, with measured band palettes) · 9 specialists · lexicon · exclusion · 2 normalize · synthesis · audit · 6 verify.
 **Exports:** `image.generic` + `image.flux2` (declared), `llm_brief` for copy, `search`.
 
 ---
@@ -41,7 +41,10 @@ Three charted plans across very different tasks, to calibrate how a section plan
 **Query log (excerpt):** Which Markdown lines are ingredient lines? (1) · Do "2 cups flour" and "1 cup flour" merge? (1) · Do "2 cups" and "200 g" merge? (1) · What happens to unparseable lines? (1) · What's the CLI shape and exit codes? (2) · Which Markdown parser, and what is its real API? (2) · What must never happen (network, silent drops)? (1) · Where can tests attach? (1)
 
 **Senses:** "convert" = turn recipes into a list, not metric/imperial unit conversion.
+**Readings:** a pure library with a thin CLI (default) / a CLI that also aggregates several recipe files / a watch-mode tool. All three kept; the user decides.
 **Layers:** input grammar / domain model / CLI surface.
+**Research facets:** TDD practice from its originators and current practitioners (red-green-refactor, test lists, outside-in vs inside-out); Markdown parsing libraries and their real APIs (Context7); how shopping lists are actually grouped in recipe apps (exemplars); unit-merging pitfalls (patterns and anti-patterns); what home cooks need from a list (needs).
+**Decision points:** which test first (degenerate empty input / simplest happy path / the riskiest merge rule); where the first seam goes (pure `buildShoppingList` vs the CLI boundary); fake or real filesystem in tests; when to refactor (each green vs once the list is done). Each with tradeoffs and sources, none decided unless the user decides.
 
 | Section | Mechanisms | Why it exists |
 |---|---|---|
@@ -54,10 +57,11 @@ Three charted plans across very different tasks, to calibrate how a section plan
 | `api_surface` | API surface, error taxonomy | spec, implement |
 | `library_facts` | library facts (researched only, version null until checked) | implement |
 | `prior_art` | motif vs transferable relationship | spec |
+| `decisions` | decision points (options, tradeoffs, sources) | next test, implement |
 
 **Anti-keywords:** `ak-convert` (not_meant, unit conversion), `ak-silent-drop` (not_wanted, instead "an Unparsed section", check: negative test), `ak-network` (not_wanted, scope code, check: lint `no-restricted-imports node:http,node:https`).
 
-**Routes:** `tdd_next_test` → `/seams`, `/test_list` · `tdd_oracle` → `/examples` (consumers keep only grounded prov) · `implement_ticket` → `/domain_vocabulary`, `/api_surface`, `/library_facts`, `/input_grammar` · `after_green` → `/invariants`, `/anti_keywords`, `/checks`.
+**Routes:** `explore_options` → `/decisions`, `essence.readings`, `/prior_art` · `tdd_next_test` → `/seams`, `/test_list`, `/decisions` · `tdd_oracle` → `/examples` (consumers keep only grounded prov) · `implement_ticket` → `/domain_vocabulary`, `/api_surface`, `/library_facts`, `/input_grammar` · `after_green` → `/invariants`, `/anti_keywords`, `/checks`.
 
 Before any user decision, every example is `inferred`, so the oracle route has nothing to grade against: the consuming TDD loop has to ask the user (or mark the test blocked). The dump makes that need visible instead of letting the model grade its own guess.
 

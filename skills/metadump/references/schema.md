@@ -45,10 +45,12 @@ Spine first because it is what every consumer reads; lookups last because nobody
 ```json
 {"one_sentence": "Generous food photography above vivid macro bands, organized by a pale panel and heavy black type.",
  "signature": ["c-photo-over-bands", "c-pale-panel", "c-heavy-title"],
- "tensions": [{"text": "measured indulgence", "poles": ["macro labels and counts", "sauce-coated abundance"], "prov": "inferred"}]}
+ "tensions": [{"text": "measured indulgence", "poles": ["macro labels and counts", "sauce-coated abundance"], "prov": "inferred"}],
+ "readings": [{"reading": "one flavor's carton front", "includes": ["photo", "bands", "title"], "default": true},
+              {"reading": "the whole flavor range as a system", "includes": ["variant rules", "shelf view"], "default": false}]}
 ```
 
-`signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten.
+`signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten. `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
 
 ### `routing`
 
@@ -159,7 +161,7 @@ Tiers rank how much an entry bears on the task. They are not confidence, search 
 
 | tier | name | Relevance, and how a consumer uses it |
 |---|---|---|
-| 1 | defining | Most relevant: what the task is most about. Read first for any job. Capped at ~12 entries; each needs an anchor. |
+| 1 | defining | Most relevant: what the task is most about. Read first for any job. Capped at ~12 entries; each needs an anchor and must be collected (`user_stated`, `reference_observed`, `researched`): the build's own derived entries (`inferred`, `proposed`, `unknown`) are tier 2 at most, so they can't redefine the task. |
 | 2 | supporting | Relevant to most jobs; consult when the job touches it. |
 | 3 | contextual | Background; pull it when the job needs that detail. |
 | 4 | exploratory | A labeled pool of options (analogies, alternatives, cross-modal metaphors). Sample a couple for variety; never a fact. |
@@ -233,7 +235,7 @@ Any dict holding `compiled_from_version` is an export payload. Finalize warns `s
 ```json
 "v-talk": {"kind": "video", "url": "https://www.youtube.com/watch?v=...", "title": "Easing in practice", "fetched": "2026-11-04",
            "origin": "web", "engine": "http", "supports": ["tl-card-enter"]},
-"i-shelf": {"kind": "image", "path": "metadumps/.work/carton/images/3fa9c2d1e5b7a8c0.jpg", "title": "shelf photo", "origin": "user"}
+"i-shelf": {"kind": "image", "path": "metadumps/.work/carton/images/3fa9c2d1e5b7a8c0.jpg", "title": "shelf photo", "origin": "user", "image_id": "img-3fa9c2d1e5"}
 ```
 
 Keep quotes short (≤25 words): they prove the claim, they are not a copy of the page. A scraped page's source may also carry `where` (heading path and chunk index).
@@ -278,9 +280,9 @@ Each ticket writes `metadumps/.work/<slug>/shards/<NN-ticket>.json`:
 
 Rejects (exit 1, dump not written): missing manifest fields or essence, bad tier/prov values, duplicate ids, `src` naming a missing source, checks/exports/signature citing unknown ids, routes that don't resolve, anti-keywords with a bad kind or a `not_wanted` with no `instead`.
 
-Fixes (and reports): prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that is `proposed` or has no valid anchor → tier 2; replaces that try to raise prov → blocked.
+Fixes (and reports): prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
 
-Warns: more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
+Warns: low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
 
 ## 14. Media entries (pages, videos, images)
 
