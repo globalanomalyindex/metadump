@@ -1,4 +1,5 @@
 # MetaDump - an agent skill for Claude Code, Codex, and more
+Turn your prompt and references into structured metadata and associations an AI can expand on!
 
 ## What's a meta dump
 
