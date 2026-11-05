@@ -27,7 +27,7 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + 2 verify (no normalize, no audit) | 1 (2 when verify finds narrowings) | 20–35K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
+| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 20–35K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
 | `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
 | `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 90–150K+ tokens, still routed | ~4–7M, 1–2 h (estimate) |
 
@@ -185,6 +185,8 @@ Workers write shards and return receipts, so the main context only sees ids, cou
 
 ### With the Workflow tool (preferred when available)
 
+The script runs every agent on Haiku at its default effort.
+
 Calling Workflow is part of this skill's instructions, which counts as the user opting in.
 
 ```
@@ -197,11 +199,11 @@ Workflow({
 })
 ```
 
-The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found anything and the chart planned none, so found pages' screenshots get looked at) → wave 2 (specialists, lexicon, exclusion) → normalize → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses, contradictions or narrowings remain (up to `max_rounds`; lite, which normally has one round, gets one widening round when verify finds narrowings; a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets and `discovery` (`found`, `dropped`, `images`). Pass every ticket except `01-prompt` (already written).
+The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found anything and the chart planned none, so found pages' screenshots get looked at) → wave 2 (specialists, lexicon, exclusion) → digest (normalize, at every depth) → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses, contradictions or narrowings remain (up to `max_rounds`; lite, which normally has one round, gets one widening round when verify finds narrowings; a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets and `discovery` (`found`, `dropped`, `images`). Pass every ticket except `01-prompt` (already written).
 
 ### Without Workflow (plain subagents)
 
-Run the same waves with the Agent tool, at most 8 calls per message (in wave 1, give the discover agent the caps for your depth; when it returns, keep its first picks up to each cap, note what you dropped, and run one watch or scrape agent per kept pick with id `19-watch-found-<slug>` or `28-scrape-found-<slug>`, its URL and question in the prompt, and "origin: web, never --reference"; then start `moodboard` after the other evidence, with the kept image picks saved as `images/found-29-moodboard.json` for `collect --found`). Each agent's prompt is the brief opener from `briefs.md` with `<WORK>`, `<SKILL>`, `<ID>`, `<TYPE>` filled in, plus "Follow the `<type>` section of `<SKILL>/references/briefs.md`." Wait for a wave's receipts before starting the next. Run `finalize.py merge <WORK>` between waves only if you want to look at the draft yourself; workers run it on their own.
+Run the same waves with the Agent tool, at most 8 calls per message. Pass `model: "haiku"` on every Agent call and leave effort at its default: the swarm is many small, well-briefed jobs, and every A/B test so far ran on Haiku (in wave 1, give the discover agent the caps for your depth; when it returns, keep its first picks up to each cap, note what you dropped, and run one watch or scrape agent per kept pick with id `19-watch-found-<slug>` or `28-scrape-found-<slug>`, its URL and question in the prompt, and "origin: web, never --reference"; then start `moodboard` after the other evidence, with the kept image picks saved as `images/found-29-moodboard.json` for `collect --found`). Each agent's prompt is the brief opener from `briefs.md` with `<WORK>`, `<SKILL>`, `<ID>`, `<TYPE>` filled in, plus "Follow the `<type>` section of `<SKILL>/references/briefs.md`." Wait for a wave's receipts before starting the next. Run `finalize.py merge <WORK>` between waves only if you want to look at the draft yourself; workers run it on their own.
 
 ## 7. Build, verify, loop
 

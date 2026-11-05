@@ -5,7 +5,7 @@ export const meta = {
   phases: [
     { title: 'Evidence', detail: 'observe references, research, discover videos, images and pages on the web, scrape pages, watch videos, collect images into a moodboard, inherit earlier dumps' },
     { title: 'Specialists', detail: 'one per section, plus lexicon and exclusion' },
-    { title: 'Normalize', detail: 'merge synonyms, resolve conflicts, cap tier 1' },
+    { title: 'Normalize', detail: 'digest: assimilate everything ingested into one body (merge across sources, resolve conflicts, cap tier 1)' },
     { title: 'Synthesis', detail: 'essence, routing, exports, review prompts; finalize build' },
     { title: 'Verify', detail: 'audit plus one dry-run consumer per routed job, with a contradiction pass' },
     { title: 'Gaps', detail: 'gap tickets for tier-1/2 guesses, then another round' },
@@ -22,7 +22,7 @@ const WORK = A.work_dir
 const DEPTH = A.depth || 'standard'
 const MAX_ROUNDS = A.max_rounds || (DEPTH === 'lite' ? 1 : DEPTH === 'deep' ? 3 : 2)
 const MAX_VERIFY = DEPTH === 'lite' ? 2 : DEPTH === 'deep' ? 8 : 6
-const LITE = DEPTH === 'lite' // lite skips normalize and audit (synthesis dedupes; verify still traces)
+const LITE = DEPTH === 'lite' // lite skips the audit (verify still traces); every depth digests (normalize)
 const BRIEFS = `${SKILL}/references/briefs.md`
 // Entries per shard by depth. Without a budget, workers write everything they can think of
 // (the first lite smoke test produced 212 entries, ~3x the plan). Mirrors create.md.
@@ -52,6 +52,10 @@ const ENGINE = new Set(['prompt', 'normalize', 'synthesis', 'audit', 'verify', '
 const work = A.tickets.filter(t => t && t.id && t.type && !ENGINE.has(t.type))
 const wave1 = work.filter(t => (t.wave || WAVE_OF[t.type] || 2) === 1)
 const wave2 = work.filter(t => (t.wave || WAVE_OF[t.type] || 2) !== 1)
+
+// Every agent in the swarm runs on Haiku, at its default effort: the fan-out is many small, well-briefed jobs.
+const SWARM_MODEL = 'haiku'
+const swarm = (prompt, opts = {}) => agent(prompt, { ...opts, model: SWARM_MODEL })
 
 // ---------------------------------------------------------------- schemas
 const RECEIPT = {
@@ -155,12 +159,12 @@ const shellQuote = s => `'${String(s).replace(/'/g, "'\\''")}'`
 
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'job'
 
-const ticketCall = (t, phaseName) => () => agent(opener(t.id, t.type), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
+const ticketCall = (t, phaseName) => () => swarm(opener(t.id, t.type), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
 const runTickets = (list, phaseName) => parallel(list.map(t => ticketCall(t, phaseName)))
 
 // ---------------------------------------------------------------- discovery
 // A found job (a watch or scrape made from a discover pick) has no ticket file: its prompt is the whole ticket.
-const foundCall = (t, phaseName) => () => agent(opener(t.id, t.type, `This ticket was made by discovery (${t.by}); there is no ticket file.
+const foundCall = (t, phaseName) => () => swarm(opener(t.id, t.type, `This ticket was made by discovery (${t.by}); there is no ticket file.
 URL: ${t.pick.url}
 Answers: ${t.pick.answers || 'see the query log in map.md'}${t.pick.take ? `\nTake: ${t.pick.take}` : ''}
 origin: web. It was found online, so its facts, frames and images are researched and every source it adds says origin: "web"; never pass --reference.${t.type === 'scrape' ? `
@@ -169,7 +173,7 @@ Interpret, don't copy: say what the page shows and what transfers to this task, 
 Write exactly one file: ${WORK}/shards/${t.id}.json`), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
 
 // A moodboard told about the images discovery found (already within the caps), so it collects them as web-found.
-const boardCall = (t, images, phaseName, scope) => () => agent(opener(t.id, 'moodboard', `${scope || ''}Discovery found these images online (origin web, already within the caps). Save this JSON as ${WORK}/images/found-${t.id}.json, then run python3 ${SKILL}/scripts/images.py collect --work ${WORK} --found ${WORK}/images/found-${t.id}.json alongside your other collect commands:
+const boardCall = (t, images, phaseName, scope) => () => swarm(opener(t.id, 'moodboard', `${scope || ''}Discovery found these images online (origin web, already within the caps). Save this JSON as ${WORK}/images/found-${t.id}.json, then run python3 ${SKILL}/scripts/images.py collect --work ${WORK} --found ${WORK}/images/found-${t.id}.json alongside your other collect commands:
 ${JSON.stringify(images)}
 Write exactly one file: ${WORK}/shards/${t.id}.json`), { label: `moodboard:${t.id}`, phase: phaseName, schema: RECEIPT })
 
@@ -205,7 +209,7 @@ const foundJob = (type, prefix, by) => pick => ({ id: freshId(`${prefix}-${type}
 // A discover ticket, then the found jobs made from its picks, as one chain: they start as soon as it
 // returns, without waiting for the rest of the evidence.
 const discoverThenRun = (t, phaseName) => async () => {
-  const out = await agent(opener(t.id, 'discover',
+  const out = await swarm(opener(t.id, 'discover',
     `Write no shard and no ticket files. Record every candidate you considered in ${WORK}/discovered/${t.id}.json, then return your picks. Caps at depth ${DEPTH}: at most ${DISCOVERY_CAP.videos} videos, ${DISCOVERY_CAP.pages} pages and ${DISCOVERY_CAP.images} images.`),
     { label: `discover:${t.id}`, phase: phaseName, schema: DISCOVERED })
   const { kept, dropped } = keepWithinCaps(out, t.id)
@@ -261,11 +265,11 @@ const verifyBuild = async (round, synth, withAudit) => {
   const jobs = (synth.jobs || []).slice(0, MAX_VERIFY)
   if ((synth.jobs || []).length > MAX_VERIFY) log(`verifying ${MAX_VERIFY} of ${synth.jobs.length} routed jobs (depth ${DEPTH} cap); the rest were not dry-run`)
   const auditId = `96-audit-r${round}`
-  const auditCall = withAudit ? [() => agent(opener(auditId, 'audit', `Round ${round}. The built dump is ${dump}. Write exactly one file: ${WORK}/shards/${auditId}.json`),
+  const auditCall = withAudit ? [() => swarm(opener(auditId, 'audit', `Round ${round}. The built dump is ${dump}. Write exactly one file: ${WORK}/shards/${auditId}.json`),
     { label: `audit:r${round}`, phase: 'Verify', schema: AUDIT })] : []
   const outcomes = await parallel([
     ...auditCall,
-    ...jobs.map(job => () => agent(opener(`verify-${slug(job)}`, 'verify',
+    ...jobs.map(job => () => swarm(opener(`verify-${slug(job)}`, 'verify',
       `Round ${round}. The built dump is ${dump}. Your job: "${job}". Write no shard; write ${WORK}/verify/r${round}-${slug(job)}.json`),
       { label: `verify:${slug(job)}`, phase: 'Verify', schema: VERIFY })),
   ])
@@ -288,17 +292,16 @@ let round = 1
 while (true) {
   results.rounds = round
 
-  if (!LITE) {
-    phase('Normalize')
-    const normId = round === 1 ? '90-normalize' : `9${round - 1}-normalize-r${round}`
-    await agent(opener(normId, 'normalize', `Round ${round}. Write exactly one file: ${WORK}/shards/${normId}.json`),
-      { label: `normalize:r${round}`, phase: 'Normalize', schema: RECEIPT })
-  }
+  // Digest: everything ingested is broken down and assimilated into one body before synthesis (ADR 0007).
+  phase('Normalize')
+  const normId = round === 1 ? '90-normalize' : `9${round - 1}-normalize-r${round}`
+  await swarm(opener(normId, 'normalize', `Round ${round}. Digest everything ingested so far. Write exactly one file: ${WORK}/shards/${normId}.json`),
+    { label: `normalize:r${round}`, phase: 'Normalize', schema: RECEIPT })
 
   phase('Synthesis')
-  const synth = await agent(opener('95-synthesis', 'synthesis',
+  const synth = await swarm(opener('95-synthesis', 'synthesis',
     `Round ${round}. Write (or rewrite) ${WORK}/shards/95-synthesis.json; any repair shard is ${WORK}/shards/97-repair-r${round}.json. Build with: ${FINALIZE} build ${WORK}`),
-    { label: `synthesis:r${round}`, phase: 'Synthesis', schema: SYNTH, effort: 'high' })
+    { label: `synthesis:r${round}`, phase: 'Synthesis', schema: SYNTH })
   results.builds.push(synth)
   if (!synth || !synth.built) {
     log(`synthesis round ${round} did not produce a passing build; stopping so the main loop can repair it`)
@@ -312,7 +315,7 @@ while (true) {
   if (round >= maxRounds || (!tier12.length && !missing.length)) break
 
   phase('Gaps')
-  const plan = await agent(`${opener(`gaps-r${round}`, 'gaps', `Round ${round}. Write ticket files only (no shard), named ${WORK}/tickets/6<N>-gap-<section>-r${round + 1}.md with N 0-9 unused so far.`)}
+  const plan = await swarm(`${opener(`gaps-r${round}`, 'gaps', `Round ${round}. Write ticket files only (no shard), named ${WORK}/tickets/6<N>-gap-<section>-r${round + 1}.md with N 0-9 unused so far.`)}
 
 Verify guesses at tier 1-2, contradictions and narrowings (JSON): ${JSON.stringify(tier12)}
 Untraced prompt clauses (JSON): ${JSON.stringify(missing)}
@@ -343,14 +346,12 @@ Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist,
     results.stop_reason = 'gap round added under 10% new entries'
   }
   if (results.stop_reason) {
-    if (!LITE) {
-      const nId = `9${round - 1}-normalize-r${round}`
-      await agent(opener(nId, 'normalize', `Round ${round}. Write exactly one file: ${WORK}/shards/${nId}.json`),
-        { label: `normalize:r${round}`, phase: 'Normalize', schema: RECEIPT })
-    }
-    const s2 = await agent(opener('95-synthesis', 'synthesis',
+    const nId = `9${round - 1}-normalize-r${round}`
+    await swarm(opener(nId, 'normalize', `Round ${round}. Digest what the gap round added into the existing body. Write exactly one file: ${WORK}/shards/${nId}.json`),
+      { label: `normalize:r${round}`, phase: 'Normalize', schema: RECEIPT })
+    const s2 = await swarm(opener('95-synthesis', 'synthesis',
       `Round ${round}. Rewrite ${WORK}/shards/95-synthesis.json; any repair shard is ${WORK}/shards/97-repair-r${round}.json. Build with: ${FINALIZE} build ${WORK}`),
-      { label: `synthesis:r${round}`, phase: 'Synthesis', schema: SYNTH, effort: 'high' })
+      { label: `synthesis:r${round}`, phase: 'Synthesis', schema: SYNTH })
     results.builds.push(s2)
     results.rounds = round
     // Check the widened dump once more (no audit, no further round): what it still finds goes to the main loop.

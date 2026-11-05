@@ -193,6 +193,20 @@ class Validation(unittest.TestCase):
         _, report = finalize.build_dump(d)
         self.assertIn("no_task_ladder", codes(report["warnings"]))
 
+    def test_a_section_that_is_one_source_passed_through_warns(self):
+        d = base_dump()
+        d["sources"]["s-docs"] = {"kind": "web", "url": "https://docs.example/product-card", "title": "ProductCard docs"}
+        d["sources"]["s-guide"] = {"kind": "web", "url": "https://guide.example/cards", "title": "Card guide"}
+        d["product_card_api"] = {"api-%d" % i: {"term": "prop %d" % i, "tier": 3, "prov": "researched", "src": ["s-docs"], "text": "x"}
+                                 for i in range(6)}
+        d["card_patterns"] = {"pat-%d" % i: {"term": "pattern %d" % i, "tier": 3, "prov": "researched",
+                                             "src": ["s-docs"] if i % 2 else ["s-guide", "s-docs"], "text": "x"} for i in range(6)}
+        d["ideas"] = {"idea-%d" % i: {"term": "idea %d" % i, "tier": 4, "prov": "inferred", "text": "x"} for i in range(6)}
+        d["routing"].append({"job": "everything", "paths": ["/product_card_api", "/card_patterns", "/ideas"]})
+        _, report = finalize.build_dump(d)
+        flagged = [w["path"] for w in report["warnings"] if w["code"] == "undigested_source"]
+        self.assertEqual(flagged, ["/product_card_api"])
+
     def test_tier_1_entry_without_anchor_is_demoted_to_tier_2(self):
         d = base_dump()
         d["sources"]["s-web"] = {"kind": "web", "url": "https://example.com/amber", "title": "Amber light"}

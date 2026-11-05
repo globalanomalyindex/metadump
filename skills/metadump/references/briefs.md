@@ -159,9 +159,12 @@ What a typical or lazy output would get wrong. This is where the dump beats a ba
 - Scope every rule as narrowly as it really applies. A finish restriction on one surface must not ban the word everywhere.
 - Factual disclaimers are not anti-keywords: put them in `open_questions`.
 
-## normalize (type `normalize`, shard `90-normalize` in round 1, `9N-normalize-rN` after a gap round)
+## normalize: the digest (type `normalize`, shard `90-normalize` in round 1, `9N-normalize-rN` after a gap round)
 
-Edit, don't add. Run `merge`, then read `draft.json` section by section with jq.
+Everything the build ingested (the prompt, references, research, pages, videos, images, the model's own associations) goes in as separate pieces. This pass digests them into one body: broken down and absorbed, so nothing passes through whole. It runs at every depth. Edit, don't add. Run `merge`, then read `draft.json` section by section with jq.
+- **Merge the same idea across sources** into one entry that cites every source (`_replace` the keeper with unioned `src`, `aliases` and `builds_on`; `{"_delete": true}` the rest). Three exemplars and a research page that all say "one accent color for the primary action" become one entry with four sources, not four entries.
+- **Break up source-shaped sections.** A section that is one page, one video or one ticket's output (`product_card_api`, a section of one scrape's facts) gets its entries moved into the task's own sections, organized by concept along the task ladder. finalize warns about a section whose entries all cite one source (`undigested_source`).
+- **Turn lists into patterns.** Where several sources agree, write the pattern they share (`inferred`, `builds_on` the collected entries). Where they disagree, keep both as options. Never drop the collected entries the pattern rests on.
 - Merge near-synonym entries: `_replace` the keeper (with unioned `aliases`) and write `{"_delete": true}` for the others.
 - Resolve contradictions: the stronger `prov` wins, then the lower tier. Record what was dropped in `notes`.
 - Enforce the tier-1 cap (~12): `_replace` the least defining tier-1 entries down to tier 2.

@@ -7,7 +7,7 @@ A plugin/skill that turns a prompt (plus optional references) into a meta dump: 
 ### The artifact
 
 **Meta dump**:
-One self-contained JSON file holding everything a model could usefully know about one task, built from a prompt and drawn on repeatedly while the work is done: the model's stream of consciousness about the task, put on paper. It holds what was collected (the user's words, references, researched facts, screenshots, measurements, timings, transcripts) and what a model knows or can think of around the task (keywords, anti-keywords, readings, associations, exemplars, patterns, needs, options, decision points), each labeled for what it is. It seeds the work: it widens what the model can draw on and pins down specifics it would otherwise guess, and it never narrows the request. The user's prompt sets the scope and the model's judgment decides. Apart from its spine, its shape is designed for the task, which can be design, coding, TDD or any other work.
+One self-contained JSON file holding everything a model could usefully know about one task, built from a prompt and drawn on repeatedly while the work is done: the model's stream of consciousness about the task, put on paper. Like eating and digesting: everything goes in (the prompt, references, research, pages, videos, images, what the model knows), gets broken down and absorbed, and comes out as one new thing. Nothing passes through whole. It holds what was collected (the user's words, references, researched facts, screenshots, measurements, timings, transcripts) and what a model knows or can think of around the task (keywords, anti-keywords, readings, associations, exemplars, patterns, needs, options, decision points), each labeled for what it is. It seeds the work: it widens what the model can draw on and pins down specifics it would otherwise guess, and it never narrows the request. The user's prompt sets the scope and the model's judgment decides. Apart from its spine, its shape is designed for the task, which can be design, coding, TDD or any other work.
 _Avoid_: metadata file, spec, brief, style guide, mood board, source of truth, rulebook
 
 **Spine**:
@@ -77,6 +77,10 @@ _Avoid_: rules, guidelines, best practices
 **Distillation**:
 Turning a named reference ("Apple's UI", screenshots, a codebase) into brand-agnostic understanding: measurements, descriptions, patterns noticed, principles, and dos and don'ts, so another agent can understand, recreate and imagine the feel without copying anything.
 _Avoid_: copying, cloning, recreation, scraping
+
+**Digestion**:
+The create-mode pass (run by the `normalize` ticket, at every depth) that turns everything ingested into one body: the same idea from different sources becomes one entry citing all of them, source-shaped sections are broken up into the task's own sections, and agreements become patterns. A section that is one source passed through whole is undigested.
+_Avoid_: dedupe, cleanup, normalization
 
 **Collected entry**:
 An entry the build gathered rather than thought up: the user's words (`user_stated`), what references show (`reference_observed`) or what a fetched source says (`researched`). Everything else is derived: the build's own `inferred` and `proposed` thinking, and `unknown`. Only collected entries reach tier 1.

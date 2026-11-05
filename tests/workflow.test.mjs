@@ -135,10 +135,12 @@ test('workers are pointed at the briefs file and their own shard path', async ()
   assert.equal(spec.opts.schema.required.includes('n_entries'), true)
 })
 
-test('lite depth skips normalize and audit to stay near five agents', async () => {
+test('every depth digests what it ingested before synthesis; lite still skips the audit', async () => {
   const { labels } = await runWith({ ...ARGS, depth: 'lite' }, standard({ guessesByRound: {} }))
-  assert.ok(!labels.some(l => l.startsWith('normalize') || l.startsWith('audit')), labels.join(', '))
-  assert.ok(labels.includes('synthesis:r1'))
+  assert.ok(labels.includes('normalize:r1'), labels.join(', '))
+  assert.ok(labels.indexOf('exclusion:75-exclusion') < labels.indexOf('normalize:r1'))
+  assert.ok(labels.indexOf('normalize:r1') < labels.indexOf('synthesis:r1'))
+  assert.ok(!labels.some(l => l.startsWith('audit')), labels.join(', '))
 })
 
 test('every worker prompt states the depth and its entry budget', async () => {
@@ -406,7 +408,7 @@ test('a found page URL is shell-quoted in the fetch command', async () => {
   assert.doesNotMatch(scrape.prompt, /--render/)
 })
 
-test('a lite widening round that adds little still skips normalize, as lite always does', async () => {
+test('a lite widening round that adds little is digested and verified once more', async () => {
   const behaviour = (label, prompt) => {
     if (label.startsWith('verify')) {
       const round = Number((prompt.match(/Round (\d+)/) || [0, 1])[1])
@@ -417,8 +419,26 @@ test('a lite widening round that adds little still skips normalize, as lite alwa
   }
   const { labels, result, calls } = await runWith({ ...ARGS, depth: 'lite' }, behaviour)
   assert.equal(result.stop_reason, 'gap round added under 10% new entries')
-  assert.ok(!labels.some(l => l.startsWith('normalize')), labels.join(', '))
-  assert.ok(labels.includes('synthesis:r2'))
+  assert.ok(labels.includes('normalize:r2'), labels.join(', '))
+  assert.ok(labels.indexOf('normalize:r2') < labels.indexOf('synthesis:r2'))
   assert.equal(calls.filter(c => c.label.startsWith('verify') && /Round 2/.test(c.prompt)).length, 2) // the widening is checked
   assert.deepEqual(result.remaining_gaps, [])
+})
+
+test('every agent in the swarm runs on haiku, with no effort override', async () => {
+  const gapsAndDiscovery = (label, prompt) => {
+    if (label.startsWith('gaps')) return { tickets: [{ id: '63-gap-motion-discover-r2', type: 'discover' }, { id: '64-gap-motion-r2', type: 'specialist' }] }
+    if (label.startsWith('discover')) return { videos: [{ url: 'https://v.example/a.mp4', slug: 'a' }], pages: [{ url: 'https://p.example/x', slug: 'x' }], images: [{ url: 'https://i.example/y.png' }] }
+    return standard()(label, prompt)
+  }
+  const runs = [await runWith(ARGS, gapsAndDiscovery), await runWith({ ...ARGS, tickets: [...DISCOVERY, ...TICKETS] }, gapsAndDiscovery)]
+  const calls = runs.flatMap(r => r.calls)
+  const kinds = new Set(calls.map(c => c.label.split(':')[0]))
+  for (const k of ['discover', 'watch', 'scrape', 'moodboard', 'observe', 'research', 'specialist', 'lexicon', 'exclusion', 'normalize', 'synthesis', 'audit', 'verify', 'gaps']) {
+    assert.ok(kinds.has(k), `scenario covers ${k}`)
+  }
+  for (const c of calls) {
+    assert.equal(c.opts.model, 'haiku', `${c.label} model`)
+    assert.equal(c.opts.effort, undefined, `${c.label} effort`)
+  }
 })

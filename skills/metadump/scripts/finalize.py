@@ -48,6 +48,8 @@ def _narrowing_word(entry):
 LOW_GROUNDING_PARTS = 5
 LOW_GROUNDING_MIN_ENTRIES = 20
 MIN_SOURCE_HOSTS = 3
+# A section of this many entries that all cite one single source is that source passed through whole.
+UNDIGESTED_MIN_ENTRIES = 5
 # What the build collected rather than thought up: the user's words, observed references, researched sources.
 COLLECTED_PROVS = {"user_stated", "reference_observed", "researched"}
 PROV_SOURCE_KINDS = {
@@ -800,7 +802,23 @@ def build_dump(dump):
     _validate_refs(out, ids, report)
     out["index"] = _build_index(out)
     _validate_routes(out, sections, report)
+    _check_digested(out, sections, report)
     return out, report
+
+
+def _check_digested(out, sections, report):
+    """Warn about a task section that is one source passed through whole, not digested into the task's own sections."""
+    for name in sections:
+        holder = out.get(name)
+        if not isinstance(holder, dict):
+            continue
+        entries = [e for _eid, _ptr, e, h in iter_entries({name: holder}) if h == name]
+        cited = [set(e.get("src") or []) for e in entries]
+        if len(entries) >= UNDIGESTED_MIN_ENTRIES and all(cited) and len(set().union(*cited)) == 1:
+            sid = next(iter(cited[0]))
+            _note(report, "warnings", "undigested_source", "/" + _esc(name),
+                  "all %d entries come from one source ('%s'): that's the source passed through, not digested. Break it "
+                  "down into the task's own sections and merge it with what other sources and the model say" % (len(entries), sid))
 
 
 # ---------------------------------------------------------------- layout

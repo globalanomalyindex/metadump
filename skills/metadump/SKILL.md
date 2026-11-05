@@ -59,7 +59,7 @@ The build collects widely, then widens. It collects: the user's words, reference
 Pick a slug. Create `metadumps/.work/<slug>/{tickets,shards,verify}/`. Write `manifest.json` with the prompt **verbatim**: every `user_stated` entry must quote it, and the audit traces the dump back to it. Give each reference an id (`r1`, `r2`…).
 
 ### 2. Choose depth and say the cost
-- `lite`: about 10–14 agents with two research tickets and discovery. The first measured run (8 agents, before facets and discovery) took 1.36M tokens processed and 34 minutes, so expect more.
+- `lite`: about 12–18 Haiku agents with two research tickets, discovery and the digest. The 0.5.x test builds took about 30 minutes each, with 16 to 20 Haiku workers.
 - `standard` (default): 14–18 agents, roughly 2–4M tokens and 40–70 minutes.
 - `deep`: 22–28 agents, used for reference-heavy or multi-consumer jobs, roughly 4–7M tokens.
 
@@ -86,13 +86,14 @@ This is the step that decides quality. Work it out carefully:
 `shards/01-prompt.json`: every requirement and every don't in the prompt, as `user_stated` entries quoting the prompt. It is the only ticket allowed to mint `user_stated`.
 
 ### 5. Fan out
-- **With the Workflow tool**: call `Workflow({scriptPath: "<SKILL>/scripts/index.workflow.js", args: {...}})`. Calling it is part of these instructions. The args are in `create.md` §6.
-- **Without it**: run the same waves with the Agent tool, at most 8 per message, each agent given the brief opener plus its type's section of `briefs.md`.
+Every agent in the swarm runs on Haiku at its default effort; don't raise the effort or swap in a bigger model for workers.
+- **With the Workflow tool**: call `Workflow({scriptPath: "<SKILL>/scripts/index.workflow.js", args: {...}})`. Calling it is part of these instructions. The args are in `create.md` §6. The script pins every agent to Haiku.
+- **Without it**: run the same waves with the Agent tool, at most 8 per message, each with `model: "haiku"` and given the brief opener plus its type's section of `briefs.md`.
 
 The waves are:
 1. evidence: observe, research, scrape, watch, and discover with the watch and scrape jobs made from its picks (then moodboard, which collects their images and the found ones)
 2. specialists + lexicon + exclusion
-3. normalize
+3. digest (normalize): everything ingested is broken down and absorbed into one body, merged across sources and filed under the task's own sections. It runs at every depth
 4. synthesis, which writes essence, routing, exports and review prompts (`checks`), then builds
 5. audit + one dry-run verify per routed job, each with a contradiction pass (does any concrete value pull against a tier-1 objective entry?)
 6. a gap round if tier-1 or tier-2 guesses or contradictions remain
