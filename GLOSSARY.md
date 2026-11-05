@@ -122,6 +122,10 @@ _Avoid_: confidence, accuracy
 The section or group (named `options` or `ideas`, or marked by an `_about` note saying "options, not requirements") where `proposed` entries live, so the builder's choices sit apart from the collected facts.
 _Avoid_: recommendations, defaults, suggestions
 
+**Candidate**:
+One real item in a candidate pool, for a task that asks for N existing items (a song for a five-song playlist, a book for a reading list, a tool): confirmed by a fetched source and labeled by the quality reading it serves. The pool holds more than N, and the consumer picks the N. An item no fetched source confirms is `unverified`: a lead to check, never a recommendation.
+_Avoid_: pick, recommendation, suggestion, result
+
 ### Inputs and sources
 
 **Reference**:

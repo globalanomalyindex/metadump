@@ -24,18 +24,22 @@ const MAX_ROUNDS = A.max_rounds || (DEPTH === 'lite' ? 1 : DEPTH === 'deep' ? 3 
 const MAX_VERIFY = DEPTH === 'lite' ? 2 : DEPTH === 'deep' ? 8 : 6
 const LITE = DEPTH === 'lite' // lite skips the audit (verify still traces); every depth digests (normalize)
 const BRIEFS = `${SKILL}/references/briefs.md`
-// Entries per shard by depth. Entries are facets (one object per area: a line of text plus lists of short
-// phrases, behaviors and a principle), the shape of the hand-made dumps this skill grew out of (ADR 0009), so the counts are
-// small. Without a budget, workers write everything they can think of. Mirrors create.md.
+// Entries per shard by depth, and about how many tokens those entries take in all. Entries are facets (one object per
+// area: a line of text plus lists of short phrases, behaviors and a principle), the shape of the hand-made dumps this
+// skill grew out of (ADR 0009), so the counts are small. Without a budget, workers write everything they can think of;
+// with a facet count alone, test 10's lite dumps still ran 30-47K tokens against 8-15K. Mirrors create.md.
+const B = (facets, tokens) => ({ facets, tokens })
 const BUDGETS = {
-  lite: { research: '4-8', specialist: '4-8', lexicon: '4-8', exclusion: '6-10', observe: '4-8', inherit: 'as needed',
-    scrape: '3-6', watch: '3-8', moodboard: '3-6' },
-  standard: { research: '6-10', specialist: '6-12', lexicon: '6-10', exclusion: '8-14', observe: '6-12', inherit: 'as needed',
-    scrape: '4-8', watch: '4-10', moodboard: '4-8' },
-  deep: { research: '8-14', specialist: '10-16', lexicon: '8-14', exclusion: '10-18', observe: '8-16', inherit: 'as needed',
-    scrape: '6-12', watch: '6-14', moodboard: '6-12' },
+  lite: { research: B('4-8', 1200), specialist: B('4-8', 1200), gap: B('4-8', 1200), lexicon: B('4-8', 1200), exclusion: B('6-10', 1500),
+    observe: B('4-8', 1200), inherit: B('as needed'), scrape: B('3-6', 900), watch: B('3-8', 1200), moodboard: B('3-6', 900) },
+  standard: { research: B('6-10', 2000), specialist: B('6-12', 2000), gap: B('6-12', 2000), lexicon: B('6-10', 2000), exclusion: B('8-14', 2800),
+    observe: B('6-12', 2000), inherit: B('as needed'), scrape: B('4-8', 1600), watch: B('4-10', 2000), moodboard: B('4-8', 1600) },
+  deep: { research: B('8-14', 3000), specialist: B('10-16', 3000), gap: B('10-16', 3000), lexicon: B('8-14', 3000), exclusion: B('10-18', 3900),
+    observe: B('8-16', 3000), inherit: B('as needed'), scrape: B('6-12', 2600), watch: B('6-14', 3000), moodboard: B('6-12', 2600) },
 }
 const budgetFor = type => (BUDGETS[DEPTH] || BUDGETS.standard)[type]
+const thousands = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+const budgetLine = b => `   Entry budget: ${b.facets} entries${b.tokens ? ` in about ${thousands(b.tokens)} tokens` : ''}, written as facets (one object per area: a line of text, lists of short phrases, behaviors and a principle; see the opener in briefs.md)`
 const SCHEMA = `${SKILL}/references/schema.md`
 const FINALIZE = `python3 ${SKILL}/scripts/finalize.py`
 
@@ -47,8 +51,10 @@ const FINDS_EVIDENCE = new Set(['discover'])
 // What one discover ticket may hand on, by depth: videos (watch jobs), pages (scrape jobs), images (moodboard). Mirrors create.md.
 const DISCOVERY_CAPS = { lite: { videos: 1, pages: 3, images: 8 }, standard: { videos: 3, pages: 6, images: 16 }, deep: { videos: 5, pages: 10, images: 32 } }
 const DISCOVERY_CAP = DISCOVERY_CAPS[DEPTH] || DISCOVERY_CAPS.standard
-// Gap rounds may add evidence (facts from outside, or a discover ticket to find a video or page) as well as specialist work.
+// Gap rounds may add evidence (facts from outside, or a discover ticket to find a video or page) as well as the build's
+// own work: `gap` tickets widen or rewrite entries (they may `_replace` and `_delete`), `specialist` ones only add.
 const GAP_EVIDENCE = new Set(['research', 'scrape', 'watch', 'discover'])
+const GAP_WORK = new Set(['gap', 'specialist'])
 const ENGINE = new Set(['prompt', 'normalize', 'synthesis', 'audit', 'verify', 'gaps'])
 const work = A.tickets.filter(t => t && t.id && t.type && !ENGINE.has(t.type))
 const wave1 = work.filter(t => (t.wave || WAVE_OF[t.type] || 2) === 1)
@@ -80,6 +86,10 @@ const SYNTH = {
   },
   required: ['built', 'jobs'],
 }
+// What verify's passes report, by kind. `constraint` is a finding about a constraint mechanism (a scoped anti-keyword with
+// an instead, an invariant with its variable, a forbidden shortcut), which may exclude (ADR 0005): verify uses it when
+// unsure, and it never starts a widening round (ADR 0011).
+const NARROWING_KINDS = ['scope', 'quality', 'job', 'definition', 'copy', 'constraint']
 const VERIFY = {
   type: 'object',
   properties: {
@@ -88,7 +98,8 @@ const VERIFY = {
       type: 'array',
       items: {
         type: 'object',
-        properties: { decision: { type: 'string' }, tier: { type: 'number' }, section: { type: 'string' }, query: { type: 'string' } },
+        // kind "research": the gap is a fact from outside (a candidate pool with fewer verified candidates than the task asks for)
+        properties: { decision: { type: 'string' }, tier: { type: 'number' }, section: { type: 'string' }, query: { type: 'string' }, kind: { type: 'string' } },
         required: ['decision', 'tier'],
       },
     },
@@ -104,8 +115,8 @@ const VERIFY = {
       type: 'array',
       items: {
         type: 'object',
-        properties: { entry_id: { type: 'string' }, rules_out: { type: 'string' }, why: { type: 'string' } },
-        required: ['entry_id', 'rules_out'],
+        properties: { entry_id: { type: 'string' }, kind: { type: 'string', enum: NARROWING_KINDS }, rules_out: { type: 'string' }, why: { type: 'string' } },
+        required: ['entry_id', 'kind', 'rules_out'],
       },
     },
     misses: { type: 'array', items: { type: 'string' } },
@@ -140,16 +151,17 @@ const GAPS = {
       type: 'array',
       items: { type: 'object', properties: { id: { type: 'string' }, type: { type: 'string' } }, required: ['id', 'type'] },
     },
+    notes: { type: 'string' },
   },
   required: ['tickets'],
 }
 
 // ---------------------------------------------------------------- prompts
-const opener = (id, type, extra) => `You are resolving one ticket of a meta dump build.
+const opener = (id, type, extra, file) => `You are resolving one ticket of a meta dump build.
 Work dir:  ${WORK}
 Skill dir: ${SKILL}
-Ticket id: ${id}   Type: ${type}   Depth: ${DEPTH}${budgetFor(type) ? `   Entry budget: ${budgetFor(type)} entries, written as facets (one object per area: a line of text, lists of short phrases, behaviors and a principle; see the opener in briefs.md)` : ''}
-Ticket file: ${WORK}/tickets/${id}.md (read it first if it exists)
+Ticket id: ${id}   Type: ${type}   Depth: ${DEPTH}${budgetFor(type) ? budgetLine(budgetFor(type)) : ''}
+Ticket file: ${WORK}/tickets/${file || id}.md (read it first if it exists)
 Context: ${WORK}/map.md (destination jobs, query log, senses, layers, section plan) and ${WORK}/manifest.json (verbatim prompt)
 Instructions: follow the "Opener" section and the "${type}" section of ${BRIEFS} exactly. The format is ${SCHEMA}.
 ${extra || `Write exactly one file: ${WORK}/shards/${id}.json`}
@@ -160,7 +172,7 @@ const shellQuote = s => `'${String(s).replace(/'/g, "'\\''")}'`
 
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'job'
 
-const ticketCall = (t, phaseName) => () => swarm(opener(t.id, t.type), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
+const ticketCall = (t, phaseName) => () => swarm(opener(t.id, t.type, undefined, t.file), { label: `${t.type}:${t.id}`, phase: phaseName, schema: RECEIPT })
 const runTickets = (list, phaseName) => parallel(list.map(t => ticketCall(t, phaseName)))
 
 // ---------------------------------------------------------------- discovery
@@ -211,7 +223,7 @@ const foundJob = (type, prefix, by) => pick => ({ id: freshId(`${prefix}-${type}
 // returns, without waiting for the rest of the evidence.
 const discoverThenRun = (t, phaseName) => async () => {
   const out = await swarm(opener(t.id, 'discover',
-    `Write no shard and no ticket files. Record every candidate you considered in ${WORK}/discovered/${t.id}.json, then return your picks. Caps at depth ${DEPTH}: at most ${DISCOVERY_CAP.videos} videos, ${DISCOVERY_CAP.pages} pages and ${DISCOVERY_CAP.images} images.`),
+    `Write no shard and no ticket files. Record every candidate you considered in ${WORK}/discovered/${t.id}.json, then return your picks. Caps at depth ${DEPTH}: at most ${DISCOVERY_CAP.videos} videos, ${DISCOVERY_CAP.pages} pages and ${DISCOVERY_CAP.images} images.`, t.file),
     { label: `discover:${t.id}`, phase: phaseName, schema: DISCOVERED })
   const { kept, dropped } = keepWithinCaps(out, t.id)
   const jobs = [...kept.videos.map(foundJob('watch', '19', t.id)), ...kept.pages.map(foundJob('scrape', '28', t.id))]
@@ -254,8 +266,8 @@ if (wave2.length) {
   log(`specialists: ${r.filter(Boolean).length}/${wave2.length} tickets, ${count(r)} entries`)
 }
 
-const tier1Gaps = (verified, key, describe) => verified.flatMap(v => (v[key] || []).map(x => ({
-  job: v.job, decision: `${describe(x)}${x.why ? ` (${x.why})` : ''}`, tier: 1,
+const tier1Gaps = (verified, key, describe, kind) => verified.flatMap(v => (v[key] || []).map(x => ({
+  job: v.job, ...((x.kind || kind) ? { kind: x.kind || kind } : {}), decision: `${describe(x)}${x.why ? ` (${x.why})` : ''}`, tier: 1,
 })))
 let maxRounds = MAX_ROUNDS
 
@@ -276,19 +288,22 @@ const verifyBuild = async (round, synth, withAudit) => {
   ])
   const audit = withAudit ? outcomes[0] : null
   const verified = outcomes.slice(auditCall.length).filter(Boolean)
+    .map(v => ({ ...v, narrowings: (v.narrowings || []).filter(n => n.kind !== 'constraint') }))
   results.audits.push(audit)
   results.verify.push(...verified.map(v => ({ round, job: v.job, guesses: v.guesses.length, tier12: v.guesses.filter(g => g.tier <= 2).length, contradictions: (v.contradictions || []).length, narrowings: (v.narrowings || []).length, misses: (v.misses || []).length })))
   // Structural defects are tier-1 gaps: a concrete value pulling against a tier-1 objective entry (ADR 0003), and an
   // entry ruling out what the request plausibly includes (ADR 0005).
-  const contradictions = tier1Gaps(verified, 'contradictions', c => `contradiction: ${c.value_id} pulls against ${c.against_id}`)
+  const contradictions = tier1Gaps(verified, 'contradictions', c => `contradiction: ${c.value_id} pulls against ${c.against_id}`, 'contradiction')
   const narrowings = tier1Gaps(verified, 'narrowings', n => `narrowing: ${n.entry_id} rules out ${n.rules_out}`)
   const tier12 = [...contradictions, ...narrowings, ...verified.flatMap(v => v.guesses.filter(g => g.tier <= 2).map(g => ({ job: v.job, ...g })))]
   const missing = (audit && audit.missing_clauses) || []
   log(`round ${round}: ${tier12.length} tier-1/2 gaps (${contradictions.length} contradictions, ${narrowings.length} narrowings) across ${verified.length} jobs, ${missing.length} untraced prompt clauses`)
   results.remaining_gaps = [...tier12, ...missing.map(clause => ({ decision: `untraced prompt clause: ${clause}`, tier: 1 }))]
-  return { tier12, missing, narrowings }
+  // A candidate pool short of verified candidates is a fact to go and get, so at lite it earns the widening round too.
+  const research = tier12.filter(g => g.kind === 'research')
+  return { tier12, missing, narrowings, research }
 }
-const results = { rounds: 0, builds: [], verify: [], audits: [], gap_tickets: [], entries_from_receipts: total, discovery }
+const results = { rounds: 0, builds: [], verify: [], audits: [], gap_tickets: [], gap_notes: [], entries_from_receipts: total, discovery }
 let round = 1
 while (true) {
   results.rounds = round
@@ -308,10 +323,10 @@ while (true) {
     log(`synthesis round ${round} did not produce a passing build; stopping so the main loop can repair it`)
     break
   }
-  const { tier12, missing, narrowings } = await verifyBuild(round, synth, !LITE)
-  if (LITE && round === 1 && narrowings.length && maxRounds < 2) {
+  const { tier12, missing, narrowings, research } = await verifyBuild(round, synth, !LITE)
+  if (LITE && round === 1 && (narrowings.length || research.length) && maxRounds < 2) {
     maxRounds = 2
-    log(`lite: ${narrowings.length} narrowings found, so one widening round runs`)
+    log(`lite: ${narrowings.length} narrowings and ${research.length} research gaps found, so one widening round runs`)
   }
   if (round >= maxRounds || (!tier12.length && !missing.length)) break
 
@@ -320,9 +335,13 @@ while (true) {
 
 Verify guesses at tier 1-2, contradictions and narrowings (JSON): ${JSON.stringify(tier12)}
 Untraced prompt clauses (JSON): ${JSON.stringify(missing)}
-Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist, research, scrape, watch or discover), or {"tickets": []}.`,
+Return {"tickets": [{"id", "type"}], "notes": "..."} for the tickets you wrote (type gap, specialist, research, scrape, watch or discover), or {"tickets": [], "notes": "..."}; notes name each finding you dropped and why.`,
     { label: `gaps:r${round}`, phase: 'Gaps', schema: GAPS })
-  const gapTickets = ((plan && plan.tickets) || []).filter(t => t.id && (t.type === 'specialist' || GAP_EVIDENCE.has(t.type)))
+  if (plan && plan.notes) results.gap_notes.push({ round, notes: plan.notes })
+  // A gap ticket always carries the round it feeds (6N-gap-<section>-rN): finalize merges shards in round order, so
+  // its edits land on the earlier rounds' digest. Its ticket file keeps the id the planner wrote it under.
+  const withRound = t => (/-r\d+$/.test(t.id) ? t : { ...t, id: `${t.id}-r${round + 1}`, file: t.id })
+  const gapTickets = ((plan && plan.tickets) || []).filter(t => t.id && (GAP_WORK.has(t.type) || GAP_EVIDENCE.has(t.type))).map(withRound)
   results.gap_tickets.push(...gapTickets.map(t => t.id))
   if (!gapTickets.length) break
 
@@ -363,7 +382,9 @@ Return {"tickets": [{"id", "type"}]} for the tickets you wrote (type specialist,
 
 results.entries_from_receipts = total
 results.remaining_gaps = results.remaining_gaps || []
+// A contradiction against the user's words becomes a constraint, never an open-question default (ADR 0011).
+const contradicted = results.remaining_gaps.some(g => g.kind === 'contradiction')
 results.next = (results.remaining_gaps.length
-  ? `Main loop: write the ${results.remaining_gaps.length} remaining_gaps as open_questions (each with a default, impact and how to resolve) in ${WORK}/shards/98-open-questions.json, then run `
+  ? `Main loop: write the ${results.remaining_gaps.length} remaining_gaps as open_questions (each with a default, impact and how to resolve) in ${WORK}/shards/98-open-questions.json${contradicted ? ', but write each contradiction against a tier-1 user_stated entry as a scoped not_wanted anti-keyword with an instead (inferred, in the same shard), never an open question' : ''}, then run `
   : 'Main loop: run ') + `${FINALIZE} build ${WORK} (audit demotions apply on rebuild), read ${WORK}/report.json, then present.`
 return results

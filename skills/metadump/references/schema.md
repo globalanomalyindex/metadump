@@ -86,7 +86,7 @@ See sections 6–8. `open_questions` holds what the prompt and evidence leave op
 
 Finalize gives open questions `prov: "unknown"` and `tier: 3` if absent. Use mode records answers as `user_stated` entries with `decided_in`, then deletes or keeps the question as resolved.
 
-An `open_questions` default settles a parameter the prompt left open and the work can't proceed without (currency, framework, a settle band). It never picks the deliverable ("use Set A"), a reading of a quality word, or a scope reading: those stay side by side as readings and candidate pools, and the consumer composes.
+An `open_questions` default settles a parameter the prompt left open and the work can't proceed without (currency, framework, a settle band). It never picks the deliverable ("use Set A"), a reading of a quality word, or a scope reading: those stay side by side as readings and candidate pools, and the consumer composes. Nor does it hold a contradiction against the user's words: a value that pulls against a tier-1 `user_stated` entry becomes a scoped `not_wanted` anti-keyword with an `instead` (§6), which consumers read with every slice.
 
 ## 3. Task sections and entries
 
@@ -126,7 +126,27 @@ Keys starting with `_` are section notes, not entries.
 | `queries` | For search vocabulary: phrases people would type |
 | `readings` | For a `kind: "quality"` facet: the ways a quality word from the prompt can be read for this task, side by side, each `{"reading", "in_practice", "signals"}`. At least two (finalize warns: `quality_one_reading`), and none is the default |
 
-A facet stays small: past about 300 tokens finalize warns (`oversized_entry`; measured `timeline`, `transcript` and `media` entries are exempt). A facet carries one `tier` and one `prov`, so split it when its items have different provenance (what the references show vs what the build associates). A reference descriptor is a facet too: `{"kind": "reference", "term": "<what it shows>", "signals": [...], "method": "visual", "src": ["r1"]}`.
+A facet stays small: about 100 to 200 tokens, with 3 to 8 phrases per list. Past about 300 tokens finalize warns (`oversized_entry`; measured `timeline`, `transcript` and `media` entries are exempt). A facet carries one `tier` and one `prov`, so split it when its items have different provenance (what the references show vs what the build associates). A reference descriptor is a facet too: `{"kind": "reference", "term": "<what it shows>", "signals": [...], "method": "visual", "src": ["r1"]}`. The moodboard describes the images that bear on the task, at most 8, and lists the rest in one `visual` facet's `skipped`: `[{"id": "<image id>", "reason": "site logo"}]`.
+
+**Candidates.** When the task asks for N existing items (a 5-song playlist, a reading list, three tools), the dump holds a candidate pool: more than N real items, at least 2N where the catalogs allow, spread across the readings, from which the consumer picks the N. Each is a `kind: "candidate"` facet:
+
+```json
+"cand-1983-single": {"kind": "candidate", "term": "<song title>", "by": "<band>", "year": 1983, "reading": "obscure: a regional label's single",
+  "tier": 2, "prov": "researched", "src": ["s-label-catalog"], "text": "A short twangy lead riff over a slow beat; never reissued."},
+"cand-recalled": {"kind": "candidate", "term": "<title the model recalls>", "by": "<band>", "reading": "melodic guitar riffs",
+  "status": "unverified", "tier": 4, "prov": "inferred", "text": "Recalled, not found in any fetched catalog: check it before using it."}
+```
+
+| Field | Holds |
+|---|---|
+| `term` | The item itself: the song title, the book, the tool |
+| `by` | Its artist, author or maker |
+| `year` or `version` | Where it applies |
+| `reading` | Which quality reading it serves (§3 `readings` of the `kind: "quality"` facet) |
+| `src` | A fetched source that confirms the item exists as described; its `quote` says so (§9) |
+| `text` | One line on why it fits |
+
+A candidate no fetched source confirms carries `status: "unverified"` and `prov: "inferred"`, sits at tier 4, and is a lead to check, never a recommendation; finalize puts every candidate that isn't collected there, whatever it claimed (`candidate_unverified`). The pool is never a finished set of N, and a verified pool larger than N is what the dump should hold.
 
 **Options area.** `proposed` entries (the builder's choices where nothing decides it) live apart from collected facts: in a section or group named `options` or `ideas`, or under a section whose `_about` says "options, not requirements". They are never tier 1 (finalize enforces that) and exports phrase them as choices.
 
@@ -155,7 +175,7 @@ A facet stays small: past about 300 tokens finalize warns (`oversized_entry`; me
 | `inherited` | set by inherit shards | Copied from an earlier dump; keeps its original prov |
 | `decided_in` | use-mode write-back | Where the user decided it (`"use-mode 2026-11-05: user chose matte"`) |
 | `verified_by` | optional | For engineering dumps: the test name that pins this entry |
-| `status` | optional | Free state such as `todo` / `done` / `superseded` (test lists, parameters) |
+| `status` | optional | Free state such as `todo` / `done` / `superseded` (test lists, parameters), or `unverified` (a candidate no fetched source confirms) |
 | `method` | optional | How the specifics were obtained, one of the values in §4. Unknown token-like values only warn. |
 | `where` | optional | Where in a source the entry came from: `{"url", "heading_path", "chunk"}` for a page, `{"timecode", "frame"}` for a video |
 
@@ -226,7 +246,7 @@ The opposite of keywords: what is not meant, and what is not wanted. One map, ke
 | `class` | Optional: `noise` for filler words that add nothing ("masterpiece", "robust", "seamless") |
 | `trigger` | Optional: when a model tends to reach for the term ("brand name without 'packaging'") |
 
-The user's own don'ts go in verbatim as `user_stated` tier 1. Factual disclaimers ("no nutrition analysis was done") are not anti-keywords: put them in `open_questions` or a section `_about` note.
+The user's own don'ts go in verbatim as `user_stated` tier 1. A value verify found pulling against the user's words becomes a scoped `not_wanted` too, written by the gap round (`inferred`, `builds_on` the user's entry), never an `open_questions` default: consumers pull anti-keywords with every slice. Factual disclaimers ("no nutrition analysis was done") are not anti-keywords: put them in `open_questions` or a section `_about` note.
 
 ## 7. Checks (review prompts)
 
@@ -273,7 +293,7 @@ Any dict holding `compiled_from_version` is an export payload. Finalize warns `s
 "i-shelf": {"kind": "image", "path": "metadumps/.work/carton/images/3fa9c2d1e5b7a8c0.jpg", "title": "shelf photo", "origin": "user", "image_id": "img-3fa9c2d1e5"}
 ```
 
-Keep quotes short (≤25 words): they prove the claim, they are not a copy of the page. A scraped page's source may also carry `where` (heading path and chunk index).
+Keep quotes short (≤25 words): they prove the claim, they are not a copy of the page. Copy each one from the page text that `webpages.py fetch` cached (its chunks), never from a WebFetch summary or a search snippet; a fact known only from those is `inferred`. When a source's `url` has a page under `<WORK>/pages/`, finalize checks that the quote is in that page's text, ignoring case, spacing and curly quotes (`quote_not_in_page`). A scraped page's source may also carry `where` (heading path and chunk index).
 
 ## 10. Index (built by finalize)
 
@@ -305,19 +325,19 @@ Each ticket writes `metadumps/.work/<slug>/shards/<NN-ticket>.json`:
  "spine": {}}
 ```
 
-- `type` sets the provenance ceiling: `prompt` may mint `user_stated`; `observe` may mint `reference_observed`; `research` may mint `researched`; `scrape`, `watch` and `moodboard` may mint `researched` (found on the web) or `reference_observed` (supplied by the user); `specialist`, `lexicon`, `exclusion`, `normalize`, `synthesis`, `audit` may mint only `inferred`/`proposed`/`unknown`; `discover` writes no shard; the found jobs made from its picks (ids containing `-found-`) may mint only `researched` and derived provenance, and their sources are relabeled as found online (`kind: web`, media `origin: web`); `inherit` keeps whatever the earlier dump said and flags `inherited`.
+- `type` sets the provenance ceiling: `prompt` may mint `user_stated`; `observe` may mint `reference_observed`; `research` may mint `researched`; `scrape`, `watch` and `moodboard` may mint `researched` (found on the web) or `reference_observed` (supplied by the user); `specialist`, `gap`, `lexicon`, `exclusion`, `normalize`, `synthesis`, `audit` may mint only `inferred`/`proposed`/`unknown`; `discover` writes no shard; the found jobs made from its picks (ids containing `-found-`) may mint only `researched` and derived provenance, and their sources are relabeled as found online (`kind: web`, media `origin: web`); `inherit` keeps whatever the earlier dump said and flags `inherited`.
 - Same id in two shards: the stronger entry wins and `aliases`/`variants`/`keywords`/`src` are unioned.
-- `normalize`, `synthesis` and `audit` shards may set `"_replace": true` on an entry (replaces it, cannot raise its prov) or write `{"_delete": true}` (removes it).
+- `normalize`, `gap`, `synthesis` and `audit` shards may set `"_replace": true` on an entry (replaces it, cannot raise its prov) or write `{"_delete": true}` (removes it). Other types can't: a specialist's `_replace` merges like any entry with the same id (the stronger one is kept), and its `_delete` is ignored with a warning (`delete_not_allowed`).
 - Only `synthesis` shards may carry `spine` (`essence`, `routing`, `exports`, `checks`).
-- Shards apply in filename order. Numbering: `01` prompt · `05` inherit · `07` discover (no shard) · `10–19` observe, watch (`19-watch-found-*` from discovery) · `20–28` research, scrape (`28-scrape-found-*` from discovery) · `29` moodboard (`29-moodboard-rN` for images found in a gap round) · `30–69` specialists (`60–69` gap round) · `70` lexicon · `75` exclusion · `90–91` normalize · `95` synthesis · `96` audit · `97` repair.
+- Shards apply in **round order**: by round, then by filename. A shard's round is the `-rN` before `.json` (`60-gap-look-r2`, `91-normalize-r2`, `96-audit-r1`); a shard without one is round 1. `95-synthesis*` (rewritten every round) and `97-repair*` (type synthesis) apply after every other shard, in round order: `95-synthesis` belongs to the latest round in the work dir and applies before that round's repair, so a repair from an earlier round is superseded by the rewrite. So a gap round's edits land on the earlier rounds' digest (`70-lexicon`, `75-exclusion`, `90-normalize`) instead of under it, and that round's own digest (`91-normalize-r2`) applies after them. Numbering: `01` prompt · `05` inherit · `07` discover (no shard) · `10–19` observe, watch (`19-watch-found-*` from discovery) · `20–28` research, scrape (`28-scrape-found-*` from discovery) · `29` moodboard (`29-moodboard-rN` for images found in a gap round) · `30–59` specialists · `60–69` gap round (`6N-gap-<section>-rN`, always with the round it feeds: type `gap` when it widens or rewrites entries, `research`, `scrape`, `watch` or `discover` when the gap is a fact from outside) · `70` lexicon · `75` exclusion · `90–91` normalize · `95` synthesis · `96` audit · `97` repair.
 
 ## 13. What finalize fixes vs rejects
 
 Rejects (exit 1, dump not written): missing manifest fields or essence, bad tier/prov values, duplicate ids, `src` naming a missing source, checks/exports/signature citing unknown ids, routes that don't resolve, anti-keywords with a bad kind or a `not_wanted` with no `instead`.
 
-Fixes (and reports): a task section left with no entries, only notes → dropped (`empty_section_dropped`); prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
+Fixes (and reports): a task section left with no entries, only notes → dropped (`empty_section_dropped`); a `kind: "candidate"` entry that isn't collected → `status: "unverified"` at tier 4, whatever it claimed (`candidate_unverified`); prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
 
-Warns: prose that should be lists (`wordy_entry`: a `text` over 40 words or an `instead` over 20), a facet over ~300 tokens (`oversized_entry`), a `kind: "quality"` facet with fewer than two `readings` (`quality_one_reading`), a section whose 5+ entries all cite one single source (`undigested_source`: that source passed through, not digested), no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
+Warns: prose that should be lists (`wordy_entry`: a `text` over 40 words or an `instead` over 20), a facet over ~300 tokens (`oversized_entry`; `merge`, and a `build` that writes a dump from a work dir, also print one `oversized_entry by shard` line naming every one by the shard that wrote it), candidates with fewer than 5 verified among them (`candidate_pool_thin`: a floor, since finalize can't read N from the prompt), a source whose `quote` isn't in the page `webpages.py` cached for its `url` (`quote_not_in_page`), a `kind: "quality"` facet with fewer than two `readings` (`quality_one_reading`), a section whose 5+ entries all cite one single source (`undigested_source`: that source passed through, not digested), no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from, and none lists under `skipped` (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
 
 ## 14. Media entries (pages, videos, images)
 

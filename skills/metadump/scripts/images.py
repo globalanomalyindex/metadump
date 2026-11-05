@@ -432,7 +432,11 @@ def _is_flat(data, converters, threshold=0.98):
     return bool(pal) and pal[0].get("share", 0) >= threshold
 
 
-def page_image_candidates(page, max_per_page=12, min_size=64):
+# Images taken from each scraped page, in-main first. Test 10's toast dump collected 15 page images and 3 bore on the task.
+MAX_PER_PAGE = 4
+
+
+def page_image_candidates(page, max_per_page=MAX_PER_PAGE, min_size=64):
     """Images worth collecting from one page record: http(s) sources, not tiny, not logos or icons, in-main first."""
     meta = page.get("metadata") or {}
     out = []
@@ -605,7 +609,7 @@ def _found_items(path):
     return [i for i in items if isinstance(i, dict) and i.get("url")]
 
 
-def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, max_per_page=12, min_size=64,
+def collect(work, inputs=(), from_pages=False, from_frames=False, origin=None, max_per_page=MAX_PER_PAGE, min_size=64,
             converters=None, fetcher=None, top=6, delay=1.0, found=None):
     """Add images to <work>/images. Returns a summary dict. `found` is a found-images file from discovery:
     those images are always web-found (researched), whatever `origin` says."""
@@ -734,7 +738,8 @@ def main(argv=None):
     c.add_argument("--from-frames", action="store_true", help="also collect frames written by video.py under <work>/frames/")
     c.add_argument("--found", help="JSON file of images discovery found online ([{url, page, title, license}]); always collected as found online")
     c.add_argument("--origin", choices=("user", "web"), help="override: user-supplied (reference_observed) or found online (researched)")
-    c.add_argument("--max-per-page", type=int, default=12)
+    c.add_argument("--max-per-page", type=int, default=MAX_PER_PAGE,
+                   help="images to take from each scraped page, in-main first, after logos and icons are skipped (default %d)" % MAX_PER_PAGE)
     c.add_argument("--min-size", type=int, default=64, help="skip page images declared smaller than this (px)")
     c.add_argument("--top", type=int, default=6, help="palette colors per image")
     c.add_argument("--delay", type=float, default=1.0, help="seconds between requests to one host")

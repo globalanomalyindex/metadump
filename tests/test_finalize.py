@@ -548,6 +548,116 @@ class MergeShards(unittest.TestCase):
         self.assertEqual(e["prov"], "reference_observed")
         self.assertTrue(e["inherited"])
 
+    def test_a_gap_shard_is_a_known_ticket_type_that_mints_only_derived_provenance(self):
+        draft, report = self.merge({
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"},
+                                    "sections": {"feel": {"g-calm": entry("calm", prov="researched")}}},
+        })
+        self.assertEqual(draft["feel"]["g-calm"]["prov"], "inferred")
+        self.assertIn("prov_over_ceiling", codes(report["fixes"]))
+        self.assertNotIn("unknown_ticket_type", codes(report["warnings"]))
+
+    def test_a_gap_shard_may_replace_without_raising_provenance_and_may_delete(self):
+        # Test 10: gap shards typed specialist could not edit, so `_replace` edits were silently ignored.
+        draft, report = self.merge({
+            "30-feel.json": {"ticket": {"id": "30-feel", "type": "specialist"},
+                             "sections": {"feel": {"q-calm": entry("calm", kind="quality", readings=[{"reading": "slow motion"}]),
+                                                   "o-set": entry("the default set", tier=3, prov="proposed")}}},
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"},
+                                    "sections": {"feel": {"q-calm": dict(entry("calm", tier=3, prov="user_stated", kind="quality",
+                                                                               readings=[{"reading": "slow motion"}, {"reading": "few elements"}]),
+                                                                         _replace=True),
+                                                          "o-set": {"_delete": True}}}},
+        })
+        q = draft["feel"]["q-calm"]
+        self.assertEqual([r["reading"] for r in q["readings"]], ["slow motion", "few elements"])
+        self.assertEqual(q["tier"], 3)
+        self.assertEqual(q["prov"], "inferred")
+        self.assertIn("prov_upgrade_blocked", codes(report["fixes"]))
+        self.assertNotIn("o-set", draft["feel"])
+        self.assertNotIn("delete_not_allowed", codes(report["warnings"]))
+
+    def test_a_round_2_gap_replace_of_an_entry_the_round_1_digest_replaced_wins(self):
+        # In filename order 60-gap-* sorts before 90-normalize, so round 1's digest overwrote the gap round's widening.
+        draft, _ = self.merge({
+            "30-feel.json": {"ticket": {"id": "30-feel", "type": "specialist"},
+                             "sections": {"feel": {"q-sticky": entry("sticky", kind="quality", readings=[{"reading": "early settle"}])}}},
+            "90-normalize.json": {"ticket": {"id": "90-normalize", "type": "normalize"},
+                                  "sections": {"feel": {"q-sticky": dict(entry("sticky", kind="quality", aliases=["grippy"],
+                                                                               readings=[{"reading": "early settle"}]), _replace=True)}}},
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"},
+                                    "sections": {"feel": {"q-sticky": dict(entry("sticky", kind="quality", aliases=["grippy"],
+                                                                                 readings=[{"reading": "early settle"}, {"reading": "slow grip"}]),
+                                                                           _replace=True)}}},
+        })
+        self.assertEqual([r["reading"] for r in draft["feel"]["q-sticky"]["readings"]], ["early settle", "slow grip"])
+
+    def test_a_round_2_gap_delete_of_a_lexicon_entry_stays_deleted(self):
+        draft, _ = self.merge({
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"}, "sections": {"feel": {"q-calm": {"_delete": True}}}},
+            "70-lexicon.json": {"ticket": {"id": "70-lexicon", "type": "lexicon"},
+                                "sections": {"feel": {"q-calm": entry("calm", kind="quality", readings=[{"reading": "slow motion"}]),
+                                                      "q-warm": entry("warm", kind="quality", readings=[{"reading": "amber light"}])}}},
+        })
+        self.assertNotIn("q-calm", draft["feel"])
+        self.assertIn("q-warm", draft["feel"])
+
+    def test_the_round_2_digest_applies_after_the_round_2_gap_shards(self):
+        draft, _ = self.merge({
+            "30-feel.json": {"ticket": {"id": "30-feel", "type": "specialist"},
+                             "sections": {"feel": {"q-sticky": entry("sticky", kind="quality", readings=[{"reading": "early settle"}])}}},
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"},
+                                    "sections": {"feel": {"q-sticky": dict(entry("sticky", kind="quality",
+                                                                                 readings=[{"reading": "early settle"}, {"reading": "slow grip"}]),
+                                                                           _replace=True)}}},
+            "91-normalize-r2.json": {"ticket": {"id": "91-normalize-r2", "type": "normalize"},
+                                     "sections": {"feel": {"q-sticky": dict(entry("sticky", kind="quality", aliases=["grippy"],
+                                                                                  readings=[{"reading": "early settle"}, {"reading": "slow grip"}]),
+                                                                            _replace=True)}}},
+        })
+        self.assertEqual(draft["feel"]["q-sticky"]["aliases"], ["grippy"])
+
+    def test_95_synthesis_still_applies_after_every_round_and_supplies_the_spine(self):
+        # Synthesis rewrites 95-synthesis.json each round, so it lands after the latest round's digest.
+        draft, _ = self.merge({
+            "30-feel.json": {"ticket": {"id": "30-feel", "type": "specialist"}, "sections": {"feel": {"c-note": entry("note")}}},
+            "91-normalize-r2.json": {"ticket": {"id": "91-normalize-r2", "type": "normalize"},
+                                     "sections": {"feel": {"c-note": dict(entry("note", tier=3), _replace=True)}}},
+            "95-synthesis.json": {"ticket": {"id": "95-synthesis", "type": "synthesis"},
+                                  "spine": {"essence": {"one_sentence": "Round two's thesis."}, "routing": [{"job": "feel", "paths": ["/feel"]}]},
+                                  "sections": {"feel": {"c-note": dict(entry("note", tier=4), _replace=True)}}},
+        })
+        self.assertEqual(draft["essence"]["one_sentence"], "Round two's thesis.")
+        self.assertEqual(draft["feel"]["c-note"]["tier"], 4)
+
+    def test_a_repair_shard_applies_after_95_synthesis_whose_build_it_repairs(self):
+        draft, _ = self.merge({
+            "30-feel.json": {"ticket": {"id": "30-feel", "type": "specialist"}, "sections": {"feel": {"c-note": entry("note")}}},
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"}, "sections": {"feel": {"c-more": entry("more")}}},
+            "95-synthesis.json": {"ticket": {"id": "95-synthesis", "type": "synthesis"},
+                                  "spine": {"essence": {"one_sentence": "A thesis whose routes don't resolve."},
+                                            "routing": [{"job": "feel", "paths": ["/fele"]}]}},
+            "97-repair-r2.json": {"ticket": {"id": "97-repair-r2", "type": "synthesis"},
+                                  "spine": {"essence": {"one_sentence": "The repaired thesis."},
+                                            "routing": [{"job": "feel", "paths": ["/feel"]}]}},
+        })
+        self.assertEqual(draft["essence"]["one_sentence"], "The repaired thesis.")
+        self.assertEqual(draft["routing"], [{"job": "feel", "paths": ["/feel"]}])
+
+    def test_a_round_1_repair_does_not_override_the_synthesis_a_later_round_rewrote(self):
+        # Synthesis rewrites 95-synthesis.json in the latest round, so it belongs to that round: a repair of round 1's
+        # build is superseded by round 2's rewrite, while round 2's own repair still applies after it.
+        draft, _ = self.merge({
+            "30-feel.json": {"ticket": {"id": "30-feel", "type": "specialist"}, "sections": {"feel": {"c-note": entry("note")}}},
+            "60-gap-feel-r2.json": {"ticket": {"id": "60-gap-feel-r2", "type": "gap"}, "sections": {"feel": {"c-more": entry("more")}}},
+            "95-synthesis.json": {"ticket": {"id": "95-synthesis", "type": "synthesis"},
+                                  "spine": {"essence": {"one_sentence": "The round-2 thesis."},
+                                            "routing": [{"job": "feel", "paths": ["/feel"]}]}},
+            "97-repair-r1.json": {"ticket": {"id": "97-repair-r1", "type": "synthesis"},
+                                  "spine": {"essence": {"one_sentence": "The round-1 repaired thesis."}}},
+        })
+        self.assertEqual(draft["essence"]["one_sentence"], "The round-2 thesis.")
+
     def test_groups_inside_sections_merge_by_entry(self):
         draft, _ = self.merge({
             "30-a.json": {"ticket": {"id": "t30", "type": "specialist"}, "sections": {"palette": {"roles": {"c-a": entry("a")}}}},
@@ -603,6 +713,20 @@ class Cli(unittest.TestCase):
         res = run_cli("build", self.work)
         self.assertIn("grounding: 1 of 2 collected (50%), 0 source hosts", res.stdout)
 
+    def test_build_counts_oversized_entries_by_shard_so_the_main_loop_knows_which_worker_to_send_back(self):
+        # Test 10: oversized_entry fired 2 to 23 times per dump, and the summary shows only the first 12 warnings.
+        many = ["phrase %03d" % i for i in range(120)]   # about 360 tokens of properties
+        shards = good_shards()
+        shards["30-look.json"] = {"ticket": {"id": "30-look", "type": "specialist"},
+                                  "sections": {"palette": {"c-big": entry("big facet", properties=many),
+                                                           "c-big2": entry("big facet two", properties=many)}}}
+        shards["70-lexicon.json"] = {"ticket": {"id": "70-lexicon", "type": "lexicon"},
+                                     "sections": {"palette": {"c-words": entry("many words", properties=many)}}}
+        write_work(self.work, shards)
+        res = run_cli("build", self.work)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertIn("oversized_entry by shard: 30-look 2 (c-big, c-big2); 70-lexicon 1 (c-words)", res.stdout.splitlines())
+
     def test_build_with_errors_exits_1_and_writes_no_dump(self):
         shards = good_shards()
         shards["95-synth.json"]["spine"]["routing"][0]["paths"].append("/missing")
@@ -638,6 +762,20 @@ class Cli(unittest.TestCase):
             json.dump(base_dump(), f, indent=2)
         res = run_cli("check", path)
         self.assertIn("layout_stale", res.stdout)
+
+    def test_merge_names_every_oversized_entry_by_shard_for_the_digest(self):
+        # The digest (normalize) reads merge's output to split oversized facets; before synthesis writes routes,
+        # unrouted_section alone can fill the 12 warning lines the summary shows.
+        many = ["phrase %03d" % i for i in range(120)]
+        shards = good_shards()
+        del shards["95-synth.json"]
+        shards["30-look.json"] = {"ticket": {"id": "30-look", "type": "specialist"},
+                                  "sections": {"look_%d" % i: {"c-look-%d" % i: entry("look %d" % i)} for i in range(12)}}
+        shards["30-look.json"]["sections"]["look_0"]["c-big"] = entry("big facet", properties=many)
+        write_work(self.work, shards)
+        res = run_cli("merge", self.work)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertIn("oversized_entry by shard: 30-look 1 (c-big)", res.stdout.splitlines())
 
     def test_merge_command_writes_laid_out_draft_even_before_spine_exists(self):
         shards = good_shards()
@@ -717,6 +855,122 @@ class FacetObjects(unittest.TestCase):
         d["anti_keywords"]["ak-gloss"]["instead"] = " ".join(["matte"] * 20)
         _, report = finalize.build_dump(d)
         self.assertNotIn("wordy_entry", codes(report["warnings"]))
+
+
+class Candidates(unittest.TestCase):
+    """0.7.1: a task that asks for N items gets a pool of candidates, each confirmed by a fetched source (ADR 0011)."""
+
+    def pool_dump(self, pool):
+        d = base_dump()
+        d["sources"]["s-label"] = {"kind": "web", "url": "https://label.example/catalog", "title": "Label catalog",
+                                   "fetched": "2026-11-05", "quote": "a 1983 single"}
+        d["pool"] = pool
+        d["routing"][0]["paths"].append("/pool")
+        return d
+
+    def test_a_candidate_no_fetched_source_confirms_becomes_an_unverified_lead_at_tier_4(self):
+        # Test 10: the playlist dump's pools named bands and no songs; the prompt-only builds invented titles.
+        d = self.pool_dump({
+            "cand-listed": entry("listed song", kind="candidate", by="a band", year=1983, reading="obscure",
+                                 prov="researched", src=["s-label"]),
+            "cand-recalled": entry("recalled song", tier=3, kind="candidate", by="a band", reading="melodic riff"),
+        })
+        out, report = finalize.build_dump(d)
+        self.assertEqual(out["pool"]["cand-recalled"]["status"], "unverified")
+        self.assertEqual(out["pool"]["cand-recalled"]["tier"], 4)
+        self.assertNotIn("status", out["pool"]["cand-listed"])
+        self.assertEqual(out["pool"]["cand-listed"]["tier"], 2)
+        self.assertEqual([f["path"] for f in report["fixes"] if f["code"] == "candidate_unverified"], ["/pool/cand-recalled"])
+
+    def test_every_candidate_that_is_not_collected_ends_unverified_at_tier_4_whatever_it_claimed(self):
+        d = self.pool_dump({
+            "cand-flagged": entry("flagged song", kind="candidate", by="a band", status="unverified"),        # tier 2
+            "cand-claimed": entry("claimed song", tier=3, kind="candidate", by="a band", status="verified"),
+            "cand-settled": entry("settled song", tier=4, kind="candidate", by="a band", status="unverified"),
+        })
+        out, report = finalize.build_dump(d)
+        for cid in ("cand-flagged", "cand-claimed", "cand-settled"):
+            self.assertEqual((out["pool"][cid]["status"], out["pool"][cid]["tier"]), ("unverified", 4), cid)
+        self.assertEqual(sorted(f["path"] for f in report["fixes"] if f["code"] == "candidate_unverified"),
+                         ["/pool/cand-claimed", "/pool/cand-flagged"])
+
+    def test_a_candidate_pool_with_fewer_than_five_verified_candidates_warns(self):
+        pool = {"cand-%d" % i: entry("listed song %d" % i, kind="candidate", by="a band", reading="obscure",
+                                     prov="researched", src=["s-label"]) for i in range(4)}
+        pool["cand-lead"] = entry("recalled song", tier=4, kind="candidate", by="a band", status="unverified")
+        _, report = finalize.build_dump(self.pool_dump(pool))   # five candidates, four verified
+        self.assertIn("candidate_pool_thin", codes(report["warnings"]))
+        pool["cand-4"] = entry("listed song 4", kind="candidate", by="a band", reading="melodic riff",
+                               prov="researched", src=["s-label"])
+        _, report = finalize.build_dump(self.pool_dump(pool))   # five verified
+        self.assertNotIn("candidate_pool_thin", codes(report["warnings"]))
+        _, report = finalize.build_dump(base_dump())             # no candidates at all
+        self.assertNotIn("candidate_pool_thin", codes(report["warnings"]))
+
+
+class QuotesAgainstPages(unittest.TestCase):
+    """0.7.1: a source's quote is checked against the page webpages.py cached, when there is one."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def cache_page(self, url, text, key="k1", final_url=None):
+        # The shapes webpages.py writes: <WORK>/pages/manifest.json and one record per page with its clean `text`.
+        pages = os.path.join(self.tmp, "pages")
+        os.makedirs(pages, exist_ok=True)
+        final = final_url or url
+        with open(os.path.join(pages, key + ".json"), "w") as f:
+            json.dump({"schema": "metadump-page/1", "key": key, "url": url, "outcome": {"ok": True, "reason": "ok"},
+                       "fetch": {"final_url": final}, "text": text,
+                       "chunks": [{"index": 0, "heading_path": [], "span": [0, len(text)], "url": final, "text": text}]}, f)
+        with open(os.path.join(pages, "manifest.json"), "w") as f:
+            json.dump({"schema": "metadump-pages/1", "pages": [{"key": key, "url": url, "final_url": final, "ok": True,
+                                                                "record": key + ".json"}]}, f)
+
+    def merge_sources(self, sources):
+        write_work(self.tmp, {"20-research.json": {"ticket": {"id": "20-research", "type": "research"}, "sources": sources,
+                                                   "sections": {"pool": {"c-a": entry("a", prov="researched", src=sorted(sources))}}}})
+        return finalize.merge_workdir(self.tmp)
+
+    def test_a_quote_its_cached_page_does_not_contain_warns(self):
+        # Test 10: three dump builders said many `researched` quotes came from WebFetch summaries or search snippets.
+        self.cache_page("https://label.example/catalog", "The 1983 single was pressed in a run of 500 copies.")
+        _, report = self.merge_sources({
+            "s-label": {"kind": "web", "url": "https://label.example/catalog", "title": "Catalog", "quote": "pressed in a run of 5,000 copies"},
+            "s-elsewhere": {"kind": "web", "url": "https://elsewhere.example/p", "title": "Not cached", "quote": "anything at all"},
+        })
+        flagged = [w for w in report["warnings"] if w["code"] == "quote_not_in_page"]
+        self.assertEqual([w["path"] for w in flagged], ["/sources/s-label"])
+        self.assertIn("https://label.example/catalog", flagged[0]["msg"])
+
+    def test_a_quote_matches_its_cached_page_whatever_its_case_spacing_and_curly_quotes(self):
+        self.cache_page("https://label.example/catalog", "Its “warm, ringing” lead guitar\n   defined the label’s sound.")
+        _, report = self.merge_sources({
+            "s-label": {"kind": "web", "url": "https://label.example/catalog", "title": "Catalog",
+                        "quote": "its \"warm, ringing\" lead guitar defined the LABEL'S sound"},
+        })
+        self.assertNotIn("quote_not_in_page", codes(report["warnings"]))
+
+    def test_a_source_that_cites_the_page_it_was_redirected_to_is_checked_too(self):
+        self.cache_page("http://label.example/catalog", "The 1983 single was pressed in a run of 500 copies.",
+                        final_url="https://www.label.example/catalog")
+        _, report = self.merge_sources({
+            "s-label": {"kind": "web", "url": "https://www.label.example/catalog", "title": "Catalog", "quote": "a run of 5,000 copies"},
+        })
+        self.assertEqual([w["path"] for w in report["warnings"] if w["code"] == "quote_not_in_page"], ["/sources/s-label"])
+
+    def test_an_unreadable_page_cache_neither_crashes_merge_nor_blocks_the_build(self):
+        source = {"s-label": {"kind": "web", "url": "https://label.example/catalog", "title": "Catalog", "quote": "a 1983 single"}}
+        self.cache_page("https://label.example/catalog", "x")
+        with open(os.path.join(self.tmp, "pages", "k1.json"), "w") as f:
+            f.write("{not json")                                   # a record cut off mid-write
+        _, report = self.merge_sources(source)
+        self.assertEqual(report["errors"], [])
+        self.assertNotIn("quote_not_in_page", codes(report["warnings"]))
+        with open(os.path.join(self.tmp, "pages", "manifest.json"), "w") as f:
+            f.write("[1, 2")                                      # a manifest cut off mid-write
+        _, report = self.merge_sources(source)
+        self.assertEqual(report["errors"], [])
 
 
 class SearchIndexWords(unittest.TestCase):
@@ -873,6 +1127,21 @@ class MediaTicketsAndSources(unittest.TestCase):
                 "sections": {"look": {"v-x": entry("soft daylight", prov="researched", src=["i-x"], method="visual")}}}})
         unseen = [w for w in report["warnings"] if w["code"] == "image_not_viewed"]
         self.assertEqual([w["path"] for w in unseen], ["images/manifest.json:/img-lost"])
+
+    def test_an_image_the_moodboard_lists_as_skipped_with_a_reason_counts_as_handled(self):
+        # Test 10: the button dump described 31 moodboard images, mostly page screenshots and off-topic thumbnails.
+        os.makedirs(os.path.join(self.tmp, "images"), exist_ok=True)
+        with open(os.path.join(self.tmp, "images", "manifest.json"), "w") as f:
+            json.dump({"images": [{"id": "img-card", "file": "c.png"}, {"id": "img-logo", "file": "l.png"},
+                                  {"id": "img-thumb", "file": "t.png"}]}, f)
+        _, report = self.merge({
+            "29-moodboard.json": {"ticket": {"id": "29-moodboard", "type": "moodboard"},
+                                  "sources": {"i-card": {"kind": "image", "path": "images/c.png", "origin": "web", "image_id": "img-card"}},
+                                  "sections": {"look": {"v-card": entry("hairline cards", prov="researched", src=["i-card"], method="visual"),
+                                                        "v-skipped": entry("images not described", tier=4, method="visual",
+                                                                           skipped=[{"id": "img-logo", "reason": "site logo"}])}}}})
+        unseen = [w["path"] for w in report["warnings"] if w["code"] == "image_not_viewed"]
+        self.assertEqual(unseen, ["images/manifest.json:/img-thumb"])
 
     def test_a_malformed_images_manifest_does_not_crash_merge(self):
         os.makedirs(os.path.join(self.tmp, "images"), exist_ok=True)

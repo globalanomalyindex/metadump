@@ -33,22 +33,22 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 "Tokens processed" counts every agent re-reading its context across its tool calls. It is far more than the dump's own size.
 
-**Entry budgets per shard** (the Workflow script puts these in each worker's prompt; give them to Agent-tool workers yourself). They count **facets**: one object per area, with a line of text and lists of short phrases, behaviors and a principle, the shape of the hand-made dumps this skill grew out of (`briefs.md`, opener). Atomic entries like anti-keywords, timelines and cues still count one each.
+**Entry budgets per shard** (the Workflow script puts these in each worker's prompt; give them to Agent-tool workers yourself). They count **facets**: one object per area, with a line of text and lists of short phrases, behaviors and a principle, the shape of the hand-made dumps this skill grew out of (`briefs.md`, opener). Atomic entries like anti-keywords, timelines and cues still count one each. Each budget also gives about how many tokens the shard's entries take in all: a facet is about 100 to 200 tokens with 3 to 8 phrases per list, and finalize warns past 300 (`oversized_entry`).
 
 | Type | lite | standard | deep |
 |---|---|---|---|
-| research | 4–8 | 6–10 | 8–14 |
-| specialist | 4–8 | 6–12 | 10–16 |
-| lexicon | 4–8 | 6–10 | 8–14 |
-| exclusion | 6–10 | 8–14 | 10–18 |
-| observe | 4–8 | 6–12 | 8–16 |
-| scrape | 3–6 | 4–8 | 6–12 |
-| watch | 3–8 | 4–10 | 6–14 |
-| moodboard | 3–6 | 4–8 | 6–12 |
+| research | 4–8, ~1,200 tokens | 6–10, ~2,000 | 8–14, ~3,000 |
+| specialist, gap | 4–8, ~1,200 | 6–12, ~2,000 | 10–16, ~3,000 |
+| lexicon | 4–8, ~1,200 | 6–10, ~2,000 | 8–14, ~3,000 |
+| exclusion | 6–10, ~1,500 | 8–14, ~2,800 | 10–18, ~3,900 |
+| observe | 4–8, ~1,200 | 6–12, ~2,000 | 8–16, ~3,000 |
+| scrape | 3–6, ~900 | 4–8, ~1,600 | 6–12, ~2,600 |
+| watch | 3–8, ~1,200 | 4–10, ~2,000 | 6–14, ~3,000 |
+| moodboard | 3–6, ~900 | 4–8, ~1,600 | 6–12, ~2,600 |
 
-Reference descriptors (one per image or reference) come on top of the observe and moodboard budgets.
+Reference descriptors (one per image or reference) come on top of the observe and moodboard budgets; the moodboard describes at most 8 images and lists the rest as skipped (`briefs.md`, moodboard).
 
-Without budgets, workers write everything they can think of: the first lite run produced 212 entries against a plan of about 80.
+Without budgets, workers write everything they can think of: the first lite run produced 212 entries against a plan of about 80. With facet counts alone, test 10's lite dumps still ran 30K to 47K tokens (76 to 135 entries) against the 8–15K target, with `oversized_entry` firing 2 to 23 times per dump; hence the token figures. After a build that writes the dump (and after every `merge`), finalize prints an `oversized_entry by shard` line naming the worker to send back.
 
 **Discovery caps** (videos for watch jobs / pages for scrape jobs / images for the moodboard, per discover ticket): lite 1 / 3 / 8, standard 3 / 6 / 16, deep 5 / 10 / 32. One discover ticket runs per wave (the chart's `07-discover`, and at most one per gap round), so a build fetches at most the caps once plus once per gap round. The Workflow script puts the caps in the discover prompt, keeps the first picks up to each cap, and lists everything it dropped (by URL) in `discovery.dropped`; an extra discover ticket in the same wave is dropped and listed too.
 
@@ -113,7 +113,8 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 <!-- what the prompt leaves open that a consumer would otherwise guess -->
 
 ## Evidence
-<!-- where the specifics will come from: references to observe, URLs to scrape, videos to watch, images to collect, docs to research. Each line names the ticket that gets it. -->
+<!-- where the specifics will come from: references to observe, URLs to scrape, videos to watch, images to collect, docs to research. Each line names the ticket that gets it. When the task asks for N existing items, name the catalogs that list them as scrape and research targets, and the candidate pool to fill: at least 2N verified candidates spread across the readings. -->
+- "5-song playlist": catalogs that list songs with artist and year (a label's discography, a music database, a compilation's track list) → 21-scrape-catalog, 22-research-candidates; pool of at least 10 verified candidates across the readings of "lesser known" and "melodious"
 
 ## Section plan
 <!-- group questions + gaps into sections named in the task's own words; pick mechanisms from mechanisms.md; a section exists only if a job or query hits it -->
@@ -148,6 +149,7 @@ How to choose the evidence tickets:
 - Questions best answered by seeing or hearing something (how it looks, what it's made of, how it moves and how long that takes, a demo, a talk) that the references don't already answer → a `discover` ticket (`07-discover`). It searches the web and returns the most relevant videos, pages and images as picks; each video becomes a `watch` job and each page a `scrape` job (ids `19-watch-found-<slug>`, `28-scrape-found-<slug>`, no ticket file: the prompt carries the URL and question), which start as soon as it returns, and the images go to the moodboard. What it finds is `researched`, never `reference_observed`: the found jobs are told so, and `finalize.py` caps their shards and relabels their sources as found online regardless. Skip it when the user says to use only their references, or when nothing in the query log needs to be seen or heard.
 - Images, or a visual task (design, art direction, image generation, UI) → a `moodboard` ticket, which collects the references plus images from scraped pages and video frames.
 - Facts the task depends on that no reference holds → `research` (or `scrape`, when a known site holds them). Research covers the facets in the map, wide before deep: several sources of different kinds per facet, never a single page.
+- The task asks for N existing items (a 5-song playlist, a reading list, three tools) → the dump's job is a **candidate pool**: more than N real items, each confirmed by a fetched source and labeled by the quality reading it serves, from which the consumer composes the N. Name the catalogs where such items are listed (discographies, databases, bibliographies, package registries) under Evidence as `scrape` and `research` targets (and as what `discover` should aim at), and plan a pool of at least 2N verified candidates spread across the readings. Test 10's playlist dump reached only band-level sources, so its pool held bands and no songs, and every build that used it recommended acts instead of songs.
 - Every dump gets a `lexicon` ticket that is also the associations pass: what the model knows around the task (human descriptors, adjacent concepts, associated brands, works and people, metaphors, moods) written down as seed material.
 
 How to choose the section plan for any domain:
@@ -156,7 +158,7 @@ How to choose the section plan for any domain:
 3. Name sections the way a practitioner of that domain would (`verse_form`, `seams`, `macro_bands`, `subject_lines`).
 4. Survival rule: drop any section no job or query needs. Breadth comes from the query log, not from symmetry.
 5. Give each section a place for objective data first (measured, scraped, transcribed, observed, researched) and an options area for the builder's proposals.
-6. Plan for breadth as well as specifics: readings, decision points (with options and tradeoffs), exemplars, associations and candidate pools are sections or groups too, routed to an "explore options" job.
+6. Plan for breadth as well as specifics: readings, decision points (with options and tradeoffs), exemplars, associations and candidate pools are sections or groups too, routed to an "explore options" job. For a task that asks for N existing items, the pool of verified candidates is routed to the job that makes the deliverable too.
 
 7. Write every section as facets. A dump reads like the owner's hand-made ones when it has, in some form:
    - a **thesis** and a one-line **summary** (`essence.one_sentence`, `essence.summary`);
@@ -218,7 +220,7 @@ Workflow({
 })
 ```
 
-The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found anything and the chart planned none, so found pages' screenshots get looked at) → wave 2 (specialists, lexicon, exclusion) → digest (normalize, at every depth) → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses, contradictions or narrowings remain (up to `max_rounds`; lite, which normally has one round, gets one widening round when verify finds narrowings; a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets and `discovery` (`found`, `dropped`, `images`). Pass every ticket except `01-prompt` (already written).
+The script runs wave 1 (observe, research, scrape, watch, inherit, plus discover followed straight away by the watch and scrape jobs made from its picks; then moodboard, which collects their images and the found images, and is added as `29-moodboard` if discovery found anything and the chart planned none, so found pages' screenshots get looked at) → wave 2 (specialists, lexicon, exclusion) → digest (normalize, at every depth) → synthesis (which builds) → audit + one verify per routed job → a gap round if tier-1/2 guesses, contradictions or narrowings remain (up to `max_rounds`; a narrowing verify labels `constraint` never counts; lite, which normally has one round, gets one widening round when verify finds narrowings or a research gap (a candidate pool short of verified candidates); `gap` tickets widen or rewrite entries and always carry the round they feed (`-rN`, appended when the planner leaves it off), a gap `discover` runs like the first one, and images it finds get a `29-moodboard-rN` pass). It returns the build result, verify summaries, gap tickets, the gap planner's `gap_notes`, `discovery` (`found`, `dropped`, `images`) and `next`, the main loop's last step. Pass every ticket except `01-prompt` (already written).
 
 ### Without Workflow (plain subagents)
 
@@ -228,14 +230,14 @@ Run the same waves with the Agent tool, at most 8 calls per message. Pass `model
 
 1. After synthesis: `python3 <SKILL>/scripts/finalize.py build <WORK>`. It merges, validates, fixes what it safely can, builds the index, measures each route and writes `metadumps/<slug>.metadump.json` plus `<WORK>/report.json`. Exit 1 means nothing was written: fix the listed errors (a `97-repair.json` synthesis shard, or edit the offending shard) and rerun.
 2. Read the report's `fixes`. Many demotions from one ticket mean it over-claimed: check it.
-3. Verify: one dry-run consumer per routed job (the `verify` brief) plus the `audit` brief. Their guesses are the dump's real gaps, and their contradictions (a concrete value that pulls against a tier-1 objective entry) are tier-1 gaps.
-4. **Stop** when any of these holds:
+3. Verify: one dry-run consumer per routed job (the `verify` brief) plus the `audit` brief. Their guesses are the dump's real gaps. Their contradictions (a concrete value that pulls against a tier-1 collected entry) and narrowings (each labeled `scope`, `quality`, `job`, `definition` or `copy`) are tier-1 gaps. Constraint mechanisms are not narrowings (ADR 0005, ADR 0011): the user's words, scoped anti-keywords with an `instead`, invariants with their `variable` and forbidden shortcuts may exclude, so verify skips them, and a finding it labels `constraint` is dropped. In test 10 every build ran a widening round, mostly for scoped anti-keywords that already had an `instead`.
+4. A **widening round** runs only when verify reports narrowings, contradictions against tier-1 collected entries, missing job steps, missing prompt clauses or a research gap (a candidate pool short of verified candidates). At lite, which otherwise has one round, narrowings and research gaps earn it; contradictions there go to the main loop (step 5). At standard and deep, tier-1/2 guesses earn a gap round too. **Stop** when any of these holds:
    - no tier-1/2 guesses remain and no prompt clause is untraced;
    - a round added fewer than ~10% new entries;
    - `max_rounds` reached (lite 1, standard 2, deep 3).
 
-   Otherwise write gap tickets (the `gaps` brief), run them as wave 2, then normalize (`91-normalize-r2`), synthesis again (it rewrites `95-synthesis.json`), build, verify.
-5. Remaining gaps go to `open_questions` with defaults. Nothing is asked of the user during the build.
+   Otherwise write gap tickets (the `gaps` brief): type `gap` for what the dump's own entries must widen or rewrite (a `gap` shard may `_replace` and `_delete`), and `research`, `scrape`, `watch` or `discover` for facts from outside, including a candidate pool short of verified candidates. A contradiction against a tier-1 `user_stated` entry becomes a constraint: the gap round writes a scoped `not_wanted` anti-keyword with an `instead` that keeps the user's words, never an `open_questions` default. In test 10, motion looping at rest against the prompt's "hover state animations" became an open question, and no build acted on it. A contradiction against another collected entry gets its value replaced or moved to the options area. Gap tickets always carry the round they feed (`6N-gap-<section>-rN`), and finalize merges shards in round order (`95-synthesis` and `97-repair` last, schema §12), so the gap round's edits land on round 1's digest and `91-normalize-r2` digests them. Run the tickets as wave 2, then normalize (`91-normalize-r2`), synthesis again (it rewrites `95-synthesis.json`), build, verify.
+5. Remaining gaps go to `open_questions` with defaults, except a contradiction against a tier-1 `user_stated` entry: the main loop writes it as a scoped `not_wanted` anti-keyword with an `instead` (the Workflow script's `next` says so). Nothing is asked of the user during the build.
 6. Fill `manifest.built` with a one-line process note (edit `<WORK>/manifest.json`, rebuild).
 
 ## 8. Present

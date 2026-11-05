@@ -20,4 +20,5 @@ We rejected:
 ## Consequences
 
 - Dumps for "make me N things" tasks hold no ready-to-paste set. Consumers get readings, exemplars per reading, decision points and signals, and compose their own.
+- For tasks that ask for N existing items (songs, books, tools), ADR 0011 makes the pool concrete: verified candidates, more than N, instead of one or two exemplars per reading.
 - Measured in A/B test 9 (`ab-tests/2026-11-05-curves-haiku-v2/`), a rerun of test 8: B 7.67 vs A 4.50, win rate 1.0, p = 0.029. Distinct went from 3.83 to 7.08 and presentation held at 8.5. None of B's 12 curves was copied from the dump, and all 12 were different (test 8: 4 distinct, 11 copied).

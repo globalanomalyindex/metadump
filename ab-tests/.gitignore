@@ -1,12 +1,15 @@
 # Moodboard images are screenshots and images of third-party sites; the dumps keep their sources and links.
-*/metadumps/*.moodboard/
-*/metadumps/*.moodboard.png
-*/metadumps/*.moodboard.html
+**/metadumps/*.moodboard/
+**/metadumps/*.moodboard.png
+**/metadumps/*.moodboard.html
 # Label-shuffled copies of runs and shots for the blind graders; regenerate with blind.py (key.json maps them back).
-*/blind/
+**/blind/
 
 # metadump work dirs are resumable scratch, not deliverables
-*/metadumps/.work/
+**/metadumps/.work/
 
 # Raw frames motion.mjs captures; the frame strips in shots/ hold the same frames
-*/frames/
+**/frames/
+
+# Recorded videos for social posts; rebuild with record.mjs
+**/video/

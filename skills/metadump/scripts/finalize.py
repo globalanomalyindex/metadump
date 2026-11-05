@@ -520,6 +520,7 @@ TICKET_PROVS = {
     "watch": _DERIVED_ONLY | {"researched", "reference_observed"},
     "moodboard": _DERIVED_ONLY | {"researched", "reference_observed"},
     "specialist": _DERIVED_ONLY,
+    "gap": _DERIVED_ONLY,   # a gap round's widening or rewrite: the build's own thinking, like a specialist's
     "lexicon": _DERIVED_ONLY,
     "exclusion": _DERIVED_ONLY,
     "normalize": _DERIVED_ONLY,
@@ -530,7 +531,8 @@ TICKET_PROVS = {
 # Tickets that discovery made (ids like 19-watch-found-<slug>) read what the build found online,
 # so nothing they write can be reference_observed, whatever the agent claimed.
 FOUND_TICKET_PROVS = _DERIVED_ONLY | {"researched"}
-EDITOR_TYPES = {"normalize", "synthesis", "audit"}
+# Tickets whose entries may `_replace` or `_delete` others (a replace never raises provenance).
+EDITOR_TYPES = {"normalize", "gap", "synthesis", "audit"}
 UNION_FIELDS = ("aliases", "variants", "keywords", "src")
 FLAT_HOLDERS = ("anti_keywords", "open_questions")
 
@@ -598,8 +600,38 @@ def _load_json(path, report, code):
         return None
 
 
-def merge_workdir(workdir):
-    """Merge <workdir>/manifest.json and <workdir>/shards/*.json into a draft dump."""
+# Shards merge in round order, so a gap round's edits land on the earlier rounds' digest instead of under it:
+# by round (the `-rN` before `.json`; a shard without one is round 1), then by filename. Synthesis rewrites
+# 95-synthesis.json in every round and a 97-repair shard (type synthesis) repairs that build, so both apply after
+# every other shard, in round order: 95-synthesis belongs to the latest round in the work dir and applies before
+# that round's repair, and a repair from an earlier round is superseded by the later rewrite.
+_SHARD_ROUND = re.compile(r"-r(\d+)\.json$")
+_APPLY_LAST = ("95-synthesis", "97-repair")
+
+
+def _shard_round(name):
+    m = _SHARD_ROUND.search(name)
+    return int(m.group(1)) if m else 1
+
+
+def _shard_order_key(names):
+    latest = max([_shard_round(n) for n in names] or [1])
+
+    def key(name):
+        if name.startswith("95-synthesis"):
+            return (1, latest, 0, name)
+        if name.startswith("97-repair"):
+            return (1, _shard_round(name), 1, name)
+        return (0, _shard_round(name), 0, name)
+    return key
+
+
+def merge_workdir(workdir, shard_of=None):
+    """Merge <workdir>/manifest.json and <workdir>/shards/*.json into a draft dump.
+
+    `shard_of`, when given, is filled with entry id -> the shard (file stem) whose version of the entry was kept,
+    so a report about an entry can name the worker that wrote it.
+    """
 
     report = _new_report()
     man_path = os.path.join(workdir, "manifest.json")
@@ -609,7 +641,8 @@ def merge_workdir(workdir):
         manifest = {}
         _note(report, "errors", "missing_manifest", man_path, "create mode writes manifest.json before fan-out")
     shard_dir = os.path.join(workdir, "shards")
-    names = sorted(n for n in os.listdir(shard_dir) if n.endswith(".json")) if os.path.isdir(shard_dir) else []
+    names = [n for n in os.listdir(shard_dir) if n.endswith(".json")] if os.path.isdir(shard_dir) else []
+    names.sort(key=_shard_order_key(names))
 
     order = []          # task sections, first-seen order
     holders = {}        # holder -> {"notes": {}, "items": {id: (gpath, entry)}}
@@ -624,10 +657,12 @@ def merge_workdir(workdir):
                 order.append(name)
         return holders[name]
 
+    shard_of = {} if shard_of is None else shard_of
     for name in names:
         shard = _load_json(os.path.join(shard_dir, name), report, "bad_shard")
         if not isinstance(shard, dict):
             continue
+        stem = name[:-len(".json")]
         ttype = (shard.get("ticket") or {}).get("type", "specialist")
         if ttype not in TICKET_PROVS:
             _note(report, "warnings", "unknown_ticket_type", name, "type '%s' treated as specialist" % ttype)
@@ -660,8 +695,9 @@ def merge_workdir(workdir):
                 if raw.get("_delete"):
                     if is_editor and eid in where:
                         del holders[where.pop(eid)]["items"][eid]
+                        shard_of.pop(eid, None)
                     elif not is_editor:
-                        _note(report, "warnings", "delete_not_allowed", ptr, "only normalize/synthesis/audit shards may delete")
+                        _note(report, "warnings", "delete_not_allowed", ptr, "only normalize/gap/synthesis/audit shards may delete")
                     continue
                 if ttype == "inherit":
                     e["inherited"] = True
@@ -674,6 +710,7 @@ def merge_workdir(workdir):
                     del holders[old_holder]["items"][eid]
                     slot["items"][eid] = (gpath, e)
                     where[eid] = hname
+                    shard_of[eid] = stem
                     continue
                 if "prov" in e:
                     capped = _cap_prov(e["prov"], allowed)
@@ -691,10 +728,13 @@ def merge_workdir(workdir):
                         if merged:
                             winner[f] = merged
                     holders[old_holder]["items"][eid] = (old_gpath, winner)
+                    if winner is e:
+                        shard_of[eid] = stem
                     _note(report, "warnings", "merge_conflict", ptr, "id '%s' also in an earlier shard; kept the stronger entry" % eid)
                 else:
                     slot["items"][eid] = (gpath, e)
                     where[eid] = hname
+                    shard_of[eid] = stem
 
     def rebuild(hname):
         slot = holders.get(hname, {"notes": {}, "items": {}})
@@ -722,7 +762,50 @@ def merge_workdir(workdir):
         draft[hname] = rebuild(hname)
     draft["sources"] = sources
     _check_images_viewed(workdir, draft, report)
+    _check_quotes_in_pages(workdir, draft, report)
     return draft, report
+
+
+def _read_json_or_none(path):
+    """A work-dir record the scripts wrote, or None when it is missing or unreadable (a check, never a gate)."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+# Typographic quotes and apostrophes, compared as straight ones.
+_STRAIGHT_QUOTES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u2032": "'",
+                                  "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u201f": '"', "\u2033": '"'})
+
+
+def _plain_text(text):
+    """Text as a quote is compared with a page: whitespace collapsed, case folded, straight quotes."""
+    return " ".join(str(text).translate(_STRAIGHT_QUOTES).casefold().split())
+
+
+def _check_quotes_in_pages(workdir, draft, report):
+    """Warn about a source whose quote the page webpages.py cached for its url doesn't contain: the quote came from
+    somewhere else (a WebFetch summary, a search snippet). A source with no cached page isn't checked."""
+    pages_dir = os.path.join(workdir, "pages")
+    man = _read_json_or_none(os.path.join(pages_dir, "manifest.json"))
+    pages = man.get("pages") if isinstance(man, dict) and isinstance(man.get("pages"), list) else []
+    record_of = {}
+    for p in pages:
+        for key in ("url", "final_url"):   # the url fetched, or the one it redirected to
+            if isinstance(p, dict) and p.get(key) and p.get("record"):
+                record_of.setdefault(p[key], p["record"])
+    for sid, src in draft["sources"].items():
+        record = record_of.get(str(src.get("url"))) if isinstance(src, dict) and src.get("quote") else None
+        page = _read_json_or_none(os.path.join(pages_dir, os.path.basename(str(record)))) if record else None
+        if not isinstance(page, dict):
+            continue
+        if _plain_text(src["quote"]) not in _plain_text(page.get("text") or ""):
+            _note(report, "warnings", "quote_not_in_page", "/sources/" + _esc(sid),
+                  "the quote of '%s' is not in the page cached for %s (pages/%s): take quotes from webpages.py fetch "
+                  "chunks; a fact known only from a WebFetch summary or a search snippet is inferred, not researched"
+                  % (sid, src["url"], os.path.basename(record)))
 
 
 def _check_images_viewed(workdir, draft, report):
@@ -730,6 +813,8 @@ def _check_images_viewed(workdir, draft, report):
 
     An image counts as seen when a visual entry cites a source with its `image_id`, or the place it came from:
     the page a screenshot shows, the video and timecode a frame was taken at, or the image's own url or file.
+    It counts as handled when a visual entry lists its id under `skipped`, with a reason (the moodboard describes
+    the images that bear on the task, at most 8, and skips the rest).
     """
     path = os.path.join(workdir, "images", "manifest.json")
     if not os.path.exists(path):
@@ -741,6 +826,9 @@ def _check_images_viewed(workdir, draft, report):
     for _eid, _ptr, entry, _h in iter_entries(draft):
         if entry.get("method") != "visual":
             continue
+        for item in entry.get("skipped") or []:   # looked at and left out, by id with a reason
+            if isinstance(item, dict) and item.get("id"):
+                seen.add(("id", str(item["id"])))
         for sid in entry.get("src") or []:
             src = draft["sources"].get(sid)
             if not isinstance(src, dict):
@@ -804,6 +892,7 @@ def build_dump(dump):
     out["sources"] = src.get("sources") or {}
     _validate_spine(out, report)
     ids = _validate_entries(out, report)
+    _check_candidates(out, report)
     _add_tier1_route(out)
     _validate_refs(out, ids, report)
     out["index"] = _build_index(out)
@@ -812,6 +901,29 @@ def build_dump(dump):
     _check_wordy(out, report)
     _check_quality_readings(out, report)
     return out, report
+
+
+# A pool needs at least N verified candidates for a task that asks for N things, and ideally 2N. finalize can't read
+# N from the prompt, so this is a floor that catches a pool with almost nothing verified, not a check against N.
+MIN_VERIFIED_CANDIDATES = 5
+
+
+def _check_candidates(out, report):
+    """A candidate is a real item for a task that asks for N things (a song, a book, a tool). One no fetched source
+    confirms is a lead to check, never a recommendation (test 10: the prompt-only builds invented song titles)."""
+    candidates = [(ptr, e) for _eid, ptr, e, _h in iter_entries(out) if e.get("kind") == "candidate"]
+    for ptr, entry in candidates:
+        if entry.get("prov") in COLLECTED_PROVS or (entry.get("status") == "unverified" and entry.get("tier") == 4):
+            continue
+        entry["status"], entry["tier"] = "unverified", 4
+        _note(report, "fixes", "candidate_unverified", ptr,
+              "no fetched source confirms this candidate; marked status 'unverified' at tier 4, a lead to check, not a pick")
+    verified = [e for _p, e in candidates if e.get("prov") in COLLECTED_PROVS and e.get("status") != "unverified"]
+    if candidates and len(verified) < MIN_VERIFIED_CANDIDATES:
+        _note(report, "warnings", "candidate_pool_thin", "",
+              "%d candidates, %d verified (fewer than %d): a task that asks for N things needs at least N verified "
+              "candidates to pick from, ideally 2N across its readings. Research or scrape the catalogs that list them"
+              % (len(candidates), len(verified), MIN_VERIFIED_CANDIDATES))
 
 
 QUALITY_MIN_READINGS = 2
@@ -945,6 +1057,20 @@ def _summary(report, limit=12):
     return "\n".join(lines)
 
 
+def _oversized_by_shard(report, shard_of):
+    """One line naming every oversized entry by the shard that wrote it, or None: the summary shows only the first
+    warnings, and the main loop (or the digest) needs to know which worker to send back."""
+    by_shard = {}
+    for w in report["warnings"]:
+        if w["code"] == "oversized_entry":
+            eid = w["path"].rsplit("/", 1)[-1].replace("~1", "/").replace("~0", "~")
+            by_shard.setdefault(shard_of.get(eid, "?"), []).append(eid)
+    if not by_shard:
+        return None
+    return "oversized_entry by shard: " + "; ".join(
+        "%s %d (%s)" % (shard, len(ids), ", ".join(ids)) for shard, ids in sorted(by_shard.items()))
+
+
 def _combine(*reports):
     out = _new_report()
     for r in reports:
@@ -975,13 +1101,17 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.cmd == "merge":
-        draft, merge_report = merge_workdir(args.workdir)
+        shard_of = {}
+        draft, merge_report = merge_workdir(args.workdir, shard_of)
         out, built = build_dump(draft)
         text, _spans = serialize(out)
         _write(os.path.join(args.workdir, "draft.json"), text)
         report = _combine(merge_report, built)
         stats = _stats(out)
         print(_summary(report))
+        oversized = _oversized_by_shard(report, shard_of)
+        if oversized:
+            print(oversized)
         print("wrote %s  (%d entries; by section %s). Validation errors are expected until synthesis writes the spine." % (
             os.path.join(args.workdir, "draft.json"), stats["entries"], json.dumps(stats["by_section"])))
         return 1 if any(e["code"] in ("missing_manifest", "bad_manifest") for e in merge_report["errors"]) else 0
@@ -1002,8 +1132,9 @@ def main(argv=None):
         return 1 if report["errors"] else 0
 
     src = args.src
+    shard_of = {}
     if os.path.isdir(src):
-        draft, merge_report = merge_workdir(src)
+        draft, merge_report = merge_workdir(src, shard_of)
         slug = draft.get("manifest", {}).get("slug") or os.path.basename(os.path.normpath(src))
         out_path = args.out or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(src))), slug + ".metadump.json")
         report_path = args.report or os.path.join(src, "report.json")
@@ -1031,6 +1162,9 @@ def main(argv=None):
     _write(out_path, text)
     stats = out["manifest"].get("stats", {})
     print(_summary(report))
+    oversized = _oversized_by_shard(report, shard_of) if os.path.isdir(src) else None
+    if oversized:
+        print(oversized)
     print("wrote %s  (v%s, %s entries, ~%s tokens, head = first %s lines)" % (
         out_path, out["manifest"].get("version"), stats.get("entries"), stats.get("tokens"), out["manifest"].get("head_lines")))
     g = stats.get("grounding") or {}

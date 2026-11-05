@@ -443,3 +443,127 @@ test('every agent in the swarm runs on haiku, with no effort override', async ()
     assert.equal(c.opts.effort, undefined, `${c.label} effort`)
   }
 })
+
+// ---------------------------------------------------------------- 0.7.1: constraint findings, token budgets, gap tickets
+const verifyFinds = findings => (label, prompt) => {
+  if (label.startsWith('verify')) {
+    const round = Number((prompt.match(/Round (\d+)/) || [0, 1])[1])
+    return { job: label, guesses: [], misses: [], lookups: 2, contradictions: [], ...(round === 1 ? findings : {}) }
+  }
+  return standard({ guessesByRound: {} })(label, prompt)
+}
+const CONSTRAINT_ONLY = { narrowings: [{ entry_id: 'ak-loop-at-rest', kind: 'constraint', rules_out: 'looping motion at rest', why: 'a scoped not_wanted with an instead' }] }
+
+test('a verify result whose narrowings are all constraint findings does not start a widening round', async () => {
+  // Test 10: every lite build ran a widening round, mostly for scoped anti-keywords that already had an instead.
+  for (const depth of ['lite', 'standard']) {
+    const { result, labels } = await runWith({ ...ARGS, depth }, verifyFinds(CONSTRAINT_ONLY))
+    assert.equal(result.rounds, 1, depth)
+    assert.ok(!labels.some(l => l.startsWith('gaps')), `${depth}: ${labels.join(', ')}`)
+    assert.deepEqual(result.remaining_gaps, [], depth)
+  }
+  const { calls } = await runWith({ ...ARGS, depth: 'lite' }, verifyFinds(CONSTRAINT_ONLY))
+  const narrowing = calls.find(c => c.label.startsWith('verify')).opts.schema.properties.narrowings.items
+  assert.deepEqual([...narrowing.properties.kind.enum].sort(), ['constraint', 'copy', 'definition', 'job', 'quality', 'scope'])
+  assert.ok(narrowing.required.includes('kind'))
+})
+
+test('constraint findings never reach the gap planner, and the other narrowings arrive with their kind', async () => {
+  const mixed = { narrowings: [...CONSTRAINT_ONLY.narrowings,
+    { entry_id: 'q-dreamlike', kind: 'definition', rules_out: 'a slow drift that never settles', why: 'one reading only' }] }
+  const { calls } = await runWith(ARGS, verifyFinds(mixed))
+  const gaps = calls.find(c => c.label === 'gaps:r1')
+  assert.ok(gaps, 'a definition narrowing starts a gap round')
+  assert.match(gaps.prompt, /"kind":"definition","decision":"narrowing: q-dreamlike rules out a slow drift that never settles/)
+  assert.doesNotMatch(gaps.prompt, /ak-loop-at-rest/)
+})
+
+test('every worker prompt states a token budget next to its facet count', async () => {
+  // Test 10: lite dumps ran 30K to 47K tokens against a target of 8 to 15K.
+  const want = { lite: '1,200', standard: '2,000', deep: '3,000' }
+  for (const [depth, tokens] of Object.entries(want)) {
+    const { calls } = await runWith({ ...ARGS, depth }, standard({ guessesByRound: {} }))
+    for (const label of ['research:20-research-lineage', 'specialist:30-composition']) {
+      assert.match(calls.find(c => c.label === label).prompt, new RegExp(`Entry budget: \\d+-\\d+ entries in about ${tokens} tokens`), `${depth} ${label}`)
+    }
+  }
+  const { calls } = await runWith({ ...ARGS, depth: 'lite', tickets: MEDIA }, standard({ guessesByRound: {} }))
+  assert.match(calls.find(c => c.label === 'scrape:15-scrape-docs').prompt, /Entry budget: 3-6 entries in about 900 tokens/)
+})
+
+test('a gap ticket in a gap round is spawned with the gap section of briefs.md and a specialist budget', async () => {
+  // Test 10: gap shards typed specialist could not `_replace`, so every widening round needed an extra normalize agent.
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('gaps')) return { tickets: [{ id: '60-gap-feel-r2', type: 'gap' }, { id: '61-gap-scrape-r2', type: 'scrape' }] }
+    return standard()(label, prompt)
+  }
+  const { labels, calls, result } = await runWith(ARGS, behaviour)
+  const gap = calls.find(c => c.label === 'gap:60-gap-feel-r2')
+  assert.ok(gap, labels.join(', '))
+  assert.equal(gap.opts.phase, 'Gaps')
+  assert.match(gap.prompt, /"gap" section of \/skill\/references\/briefs\.md/)
+  assert.match(gap.prompt, /shards\/60-gap-feel-r2\.json/)
+  assert.match(gap.prompt, /Entry budget: 6-12 entries in about 2,000 tokens/)
+  assert.ok(labels.indexOf('scrape:61-gap-scrape-r2') < labels.indexOf('gap:60-gap-feel-r2'), 'outside facts first')
+  assert.ok(labels.indexOf('gap:60-gap-feel-r2') < labels.indexOf('normalize:r2'))
+  assert.ok(result.gap_tickets.includes('60-gap-feel-r2'))
+  assert.match(calls.find(c => c.label === 'gaps:r1').prompt, /type gap, specialist, research, scrape, watch or discover/)
+})
+
+test('verify can label a guess a research gap, and the label reaches the gap planner', async () => {
+  // Test 10: the playlist dump's research reached only band-level sources, so its pool held no songs to pick from.
+  const shortfall = { guesses: [{ decision: 'the pool holds 2 verified candidates; the task asks for 5', tier: 1, section: 'pool', kind: 'research' }] }
+  const { calls } = await runWith(ARGS, verifyFinds(shortfall))
+  const guess = calls.find(c => c.label.startsWith('verify')).opts.schema.properties.guesses.items
+  assert.equal(guess.properties.kind.type, 'string')
+  assert.match(calls.find(c => c.label === 'gaps:r1').prompt, /"kind":"research"/)
+})
+
+test('leftover contradictions go back to the main loop as anti-keywords, never as open-question defaults', async () => {
+  // Test 10: verify found looping motion at rest pulling against the prompt's "hover state animations"; the main loop
+  // filed it as an open_questions default, and no builder acted on it.
+  const rest = { contradictions: [{ value_id: 'ex-halo-loop', against_id: 'us-hover-states', why: 'looping motion at rest' }] }
+  const { result } = await runWith({ ...ARGS, depth: 'lite' }, verifyFinds(rest))
+  assert.equal(result.remaining_gaps.length, 2) // lite: no round left for it
+  assert.match(result.next, /user_stated entry as a scoped not_wanted anti-keyword with an instead/)
+  assert.match(result.next, /never an open question/)
+  const guessesOnly = await runWith({ ...ARGS, depth: 'lite' }, standard({ guessesByRound: { 1: 2 } }))
+  assert.doesNotMatch(guessesOnly.result.next, /not_wanted/)
+})
+
+test('the gap planner notes the constraint findings it dropped, and its notes come back with the results', async () => {
+  const note = 'dropped ak-glow-at-rest: a scoped not_wanted with an instead, a constraint and not a narrowing'
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('gaps')) return { tickets: [], notes: note }
+    return standard()(label, prompt)
+  }
+  const { result, calls } = await runWith(ARGS, behaviour)
+  assert.deepEqual(result.gap_notes, [{ round: 1, notes: note }])
+  const gaps = calls.find(c => c.label === 'gaps:r1')
+  assert.equal(gaps.opts.schema.properties.notes.type, 'string')
+  assert.match(gaps.prompt, /"notes"/)
+})
+
+test('a gap ticket the planner names without its round is spawned with one, and its brief names that shard file', async () => {
+  // finalize merges shards in round order, so a gap shard without its -rN would sort into round 1, under the digest.
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('gaps')) return { tickets: [{ id: '60-gap-look', type: 'gap' }] }
+    return standard()(label, prompt)
+  }
+  const { labels, calls, result } = await runWith(ARGS, behaviour)
+  const gap = calls.find(c => c.label === 'gap:60-gap-look-r2')
+  assert.ok(gap, labels.join(', '))
+  assert.match(gap.prompt, /Write exactly one file: \/proj\/metadumps\/\.work\/demo\/shards\/60-gap-look-r2\.json/)
+  assert.match(gap.prompt, /Ticket file: \/proj\/metadumps\/\.work\/demo\/tickets\/60-gap-look\.md/) // the file the planner wrote
+  assert.deepEqual(result.gap_tickets, ['60-gap-look-r2'])
+})
+
+test('at lite, a research gap (a pool short of verified candidates) earns the one widening round', async () => {
+  // Test 10's playlist was lite: its pool held no verified songs, and no round went back to the catalogs.
+  const shortfall = { guesses: [{ decision: 'the pool holds 3 verified candidates; the task asks for 5', tier: 2, section: 'pool', kind: 'research' }] }
+  const { labels, calls } = await runWith({ ...ARGS, depth: 'lite' }, verifyFinds(shortfall))
+  const gaps = calls.find(c => c.label === 'gaps:r1')
+  assert.ok(gaps, labels.join(', '))
+  assert.match(gaps.prompt, /"decision":"the pool holds 3 verified candidates; the task asks for 5","tier":2,"section":"pool","kind":"research"/)
+  assert.ok(labels.includes('synthesis:r2'))
+})
