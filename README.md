@@ -77,6 +77,19 @@ claude plugin install metadump@metadump
 
 or just give your agent the GitHub link and tell it to install it for you!
 
+## Stay up to date
+
+Updates don't install themselves by default. Claude Code only auto-updates Anthropic's official plugin marketplaces, and every other marketplace (this one included) starts with auto-update off. So pick one of these:
+
+- **Turn on auto-update once.** In Claude Code, run `/plugin`, open the **Marketplaces** tab, pick **metadump**, and choose **Enable auto-update**. From then on, new versions download in the background when a session starts, and your next session uses them.
+- **Or update by hand whenever you want:**
+
+  ```bash
+  claude plugin update metadump@metadump
+  ```
+
+Or just ask your agent to update it for you. `claude plugin list` shows which version you have. The newest is whatever `version` says in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json).
+
 ## Use
 
 /metadump:metadump in your agent, or just ask for one: "make a metadump for ...", and attach photos or files or paste links to pages or videos if you have them. Say "lite" if you want it fast or "deep" if you want everything.

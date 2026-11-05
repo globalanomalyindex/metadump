@@ -35,3 +35,9 @@ Name tests with the glossary's terms (`GLOSSARY.md`).
 - Every Python script in `skills/metadump/scripts/` is Python 3.9+ standard library only; keep it that way so it runs anywhere the skill is installed. Optional tools (a Chromium-family browser, yt-dlp, ffmpeg/ffprobe, sips) are detected at runtime by `tools.py` and never installed. `METADUMP_DISABLE=browser,ffmpeg` hides tools to test the fallbacks.
 - `webpages.py` is a clean-room implementation (`docs/clean-room/`, `docs/adr/0004-clean-room-scraper.md`): change it from the spec and our own requirements, never by reading the original project.
 - Use the glossary's terms (`GLOSSARY.md`) in code, docs and skill text.
+
+## Releasing
+
+- **Bump `version` in `.claude-plugin/plugin.json` for every change users should get.** Claude Code only installs an update when that version changes, both for `claude plugin update` and for auto-update. A push without a bump reaches nobody. Use a patch bump for fixes and docs (0.5.1 → 0.5.2) and a minor bump for features.
+- Auto-update is off by default for this marketplace, and `marketplace.json` has no field to turn it on. Users update by hand or switch it on under `/plugin` → Marketplaces. The README's "Stay up to date" section and SKILL.md's "Keeping the plugin current" tell them how; keep both accurate.
+- After pushing a release, refresh the local install: `claude plugin marketplace update metadump`, then `claude plugin update metadump@metadump`.

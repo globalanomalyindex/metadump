@@ -144,6 +144,12 @@ Don't paste the dump into the chat.
 - **No file paths or code in engineering dumps.** They go stale against the repo. Link entries to tests with `verified_by`.
 - **Never hand-format a dump.** Edit it, then run `finalize.py build`, which restores the layout, index and costs.
 
+## Keeping the plugin current
+
+This plugin comes from a third-party marketplace, so Claude Code doesn't auto-update it unless the user turned that on. If the user asks how to update it, or a feature this file describes seems missing from their copy, tell them either way works:
+- **Once:** run `/plugin` → **Marketplaces** → **metadump** → **Enable auto-update**. New versions then arrive in the background at session start.
+- **By hand:** run `claude plugin update metadump@metadump` in the shell, then start a new session.
+
 ## Files
 
 | Path | What it is / when to read it |
