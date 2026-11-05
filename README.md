@@ -30,7 +30,7 @@ Before this, I was making meta dumps by asking an agent to make one from a text 
 
 ## Does it actually help?
 
-I A/B test it: the same task built by Haiku with and without a dump, then graded blind by Haiku graders who never know which is which. The latest round is a "compact, minimal, modern shopping component":
+I A/B tested it: the same task built by Haiku with and without a dump, then graded blind by Haiku 5.5 graders. The latest round is a "compact, minimal, modern shopping component":
 
 | Version | Prompt only | Prompt + meta dump | Dump wins head to head |
 |---|---|---|---|
@@ -40,7 +40,7 @@ I A/B test it: the same task built by Haiku with and without a dump, then graded
 
 The early versions lost. When a dump carried a wrong made-up number, the model followed it instead of what I asked for. Another time the dump decided on its own that "compact" meant one product and nothing else, so every build that read it made a bare little card with no cart. The fixes behind 0.4.0 to 0.5.1 came straight out of those losses. In the 0.5.1 round, the dump builds won on every criterion, including usability, and every one of them covered the whole shopping job: size, quantity, add to bag, a bag you can review, and checkout.
 
-It's still small (4 runs per side, one task), so read it as a direction, not proof. Everything is in [`ab-tests/`](ab-tests/README.md): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
+It's still small (4 runs per side, one task), so read it as a direction and not proof. Everything is in [`ab-tests/`](ab-tests/README.md): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
 
 ## What makes it work
 
@@ -50,7 +50,7 @@ It's still small (4 runs per side, one task), so read it as a direction, not pro
 - **Every entry says where it came from.** The ranking is `user_stated` > `reference_observed` > `researched` > `inferred` > `proposed`, plus `unknown`. That way the model can tell what I actually asked for from what it made up, and it reaches for the real stuff first. A build script enforces it: a subagent can't claim it researched something it didn't, anything marked `user_stated` has to quote my actual prompt, and anything found online can never pass as my reference.
 - **Tiers mean relevance, not rules.** Tier 1 is what the task is most about (12 max), 2 is supporting, 3 is context, and 4 is exploratory ideas to pull from. Only things that were actually collected (my words, my references, things it researched) can be tier 1. The builder's own takes top out at tier 2, so they can't redefine what I asked for.
 - **Readings and decisions, not answers.** If a request can mean a few things ("shopping component" could be a product card, a mini cart or a product list), it keeps all of them with a default. The choices coming up (which test to write first, how dense to go) get written down with their options and tradeoffs instead of being decided for you.
-- **Anti-keywords.** The opposite of a keyword: something that tells the model "this is not what I mean" (like "acrylic" meaning clear plastic here, not acrylic paint), or just stuff we don't want. Every one comes with an `instead`. A lot of image models (FLUX.2, gpt-image, Gemini) don't even have negative prompts, so the only way to say no is to say what to do instead.
+- **Anti-keywords.** The opposite of a keyword: something that tells the model "this is not what I mean" (like "acrylic" meaning clear plastic here, not acrylic paint), or just stuff we don't want. Every one comes with an `instead`. A lot of image models (FLUX.2, gpt-image, Gemini) don't have negative prompts, so the only way to say no is to say what to do instead.
 - **It indexes itself.** A routing table at the top maps each job ("write the image prompt", "pick the next test", "build the landing page") to the exact JSON paths it needs, with token costs. There's a word index like a real search engine has, and every entry sits on one line so grep works. The model never loads the whole thing, because loading a 100K-token file all at once actually makes the output worse. It only pulls the slice for the step it's on.
 - **No template.** The sections get designed for whatever you're making. A REST API dump doesn't get a color palette, and a packaging dump doesn't get an error model.
 - **Checks that keep it honest.** Dry runs look for numbers that fight with what I asked for and for anything that narrows the request, then a widening round fixes those. Every build prints how much of the dump was actually collected and from how many websites. It warns when the dump is mostly its own guesses, when its sources come from only one or two sites, or when nobody looked at an image it collected.
@@ -58,7 +58,7 @@ It's still small (4 runs per side, one task), so read it as a direction, not pro
 
 ## Pages, videos and images
 
-When it's making a dump, it can go get the specifics itself, with nothing to install:
+When it's making a dump (lol), it can go get the specifics itself, with nothing to install:
 
 - **Research that actually goes wide.** For each thing in my prompt it looks at how people describe it, the principles behind it, brands and products and people known for it (and what's worth borrowing from them, not copying), common patterns and mistakes, what people actually need, real numbers, and the decisions coming up. Lots of sources, not one page.
 - **Pages.** Give it a link, or let it find some, and it fetches the page, cleans it into text with the headings kept, chops it into chunks, screenshots it if the look matters, and then interprets it: a few quoted facts plus what the page shows and what transfers to my task. It's not a copy of the page. It checks robots.txt and waits between requests so it isn't rude.
@@ -77,11 +77,11 @@ claude plugin marketplace add globalanomalyindex/metadump
 claude plugin install metadump@metadump
 ```
 
+or just give your agent the GitHub link and tell it to install it for you!
+
 ## Use
 
-Just ask for one: "make a metadump for ...", and attach photos or files or paste links to pages or videos if you have them. Say "lite" if you want it fast or "deep" if you want everything.
-
-Heads up, it isn't cheap. A lite run now takes about half an hour, with around 16 to 20 subagents. Standard is probably 2–4M tokens and about an hour.
+/metadump:metadump in your agent, or just ask for one: "make a metadump for ...", and attach photos or files or paste links to pages or videos if you have them. Say "lite" if you want it fast or "deep" if you want everything.
 
 It saves to `metadumps/<slug>.metadump.json` in your project. Scratch work goes in `metadumps/.work/`, and you can delete that whenever.
 
