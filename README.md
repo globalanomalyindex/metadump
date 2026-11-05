@@ -1,6 +1,4 @@
-# metadump
-
-A Claude Code plugin that takes a prompt and turns it into a meta dump.
+# MetaDump - an agent skill for Claude Code, Codex, and more
 
 ## What's a meta dump
 
