@@ -1,7 +1,7 @@
 # MetaDump - an agent skill for Claude Code, Codex, and more
 Turn your prompt and references into structured metadata and associations an AI can expand on!
 
-## What's a meta dump
+## What's a meta dump?
 
 A meta dump is what I call one big JSON file that's basically a giant chest of information for the model to use. It's filled with everything about whatever you're making: keywords, tiered keywords, associated words, anti-keywords, natural language descriptions, SEO and search vocabulary, inspiration, colors, patterns, references, sources, measurements, timings, transcripts, anything at all like that. You make it once from a prompt (plus reference photos, files, links or videos if you have them), and then the model, or any other skill, tool or subagent, can go back to it whenever it needs to.
 
