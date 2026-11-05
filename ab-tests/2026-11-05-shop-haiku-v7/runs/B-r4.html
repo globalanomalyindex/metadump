@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pantry: compact product grid</title>
+<style>
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --line: #e7e5e4;
+  --text: #1c1917;
+  --muted: #57534e;
+  --media: #f5f5f4;
+  --accent: #1d4ed8;
+  --accent-ink: #ffffff;
+  --accent-hover: #1e40af;
+  --ok: #166534;
+  --focus: #1d4ed8;
+  --shadow: 0 4px 14px rgba(28, 25, 23, .08);
+  --radius: 12px;
+  --ctl: 40px;
+  --step: 36px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c0a09;
+    --surface: #171513;
+    --line: #2c2825;
+    --text: #fafaf9;
+    --muted: #a8a29e;
+    --media: #211e1b;
+    --accent: #93c5fd;
+    --accent-ink: #0b1220;
+    --accent-hover: #bfdbfe;
+    --ok: #86efac;
+    --focus: #93c5fd;
+    --shadow: 0 4px 14px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c0a09;
+  --surface: #171513;
+  --line: #2c2825;
+  --text: #fafaf9;
+  --muted: #a8a29e;
+  --media: #211e1b;
+  --accent: #93c5fd;
+  --accent-ink: #0b1220;
+  --accent-hover: #bfdbfe;
+  --ok: #86efac;
+  --focus: #93c5fd;
+  --shadow: 0 4px 14px rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 0; }
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -.01em; }
+.count { margin: 0; color: var(--muted); font-size: 13px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+@media (min-width: 640px) { .grid { gap: 16px; } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 160ms ease-out, border-color 160ms ease-out;
+}
+.card:hover, .card:focus-within { box-shadow: var(--shadow); border-color: transparent; }
+
+.media { aspect-ratio: 1 / 1; background: var(--media); display: grid; place-items: center; color: var(--muted); }
+.media svg { width: 52%; height: auto; }
+.media svg * { fill: var(--surface); stroke: currentColor; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.media svg .d { fill: none; stroke-width: 2; }
+
+.body { padding: 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.name { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3; }
+.meta { margin: 0; font-size: 13px; color: var(--muted); }
+
+.buy { display: grid; gap: 8px; margin-top: auto; padding-top: 10px; }
+.price { font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; }
+
+.add {
+  min-height: var(--ctl);
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+}
+.add:hover { background: var(--accent-hover); }
+.add:disabled { opacity: .75; cursor: progress; }
+
+.stepper {
+  display: grid;
+  grid-template-columns: var(--step) 1fr var(--step);
+  align-items: center;
+  height: var(--ctl);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.step {
+  width: var(--step); height: var(--step);
+  border: 0; background: none; font-size: 18px; cursor: pointer; border-radius: 8px;
+}
+.step:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
+.qty { text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.foot { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 24px; }
+.note { margin: 0; font-size: 13px; color: var(--muted); }
+.note.ok { color: var(--ok); }
+.link {
+  min-height: 24px; padding: 0; border: 0; background: none; cursor: pointer;
+  font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+}
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.bag {
+  position: sticky; bottom: 0;
+  margin-top: 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.bar { max-width: 960px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+.toggle {
+  min-height: 40px; padding: 0; border: 0; background: none; cursor: pointer;
+  font-weight: 600; text-align: left;
+}
+.spacer { flex: 1; }
+.total { font-weight: 650; font-variant-numeric: tabular-nums; }
+.ghost {
+  min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); cursor: pointer; font-weight: 600; font-size: 15px;
+}
+#bagPanel { max-width: 960px; margin: 0 auto; padding: 0 16px 14px; }
+#bagTitle { margin: 4px 0 2px; font-size: 15px; font-weight: 650; }
+#bagTitle:focus { outline: none; }
+#bagList { list-style: none; margin: 0; padding: 0; max-height: 40vh; overflow: auto; }
+#bagList li {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center;
+  padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px;
+}
+#bagList .empty { display: block; color: var(--muted); }
+.li-qty { color: var(--muted); font-variant-numeric: tabular-nums; }
+.li-sub { font-weight: 600; font-variant-numeric: tabular-nums; }
+.sub { display: flex; justify-content: space-between; font-size: 14px; margin: 10px 0 6px; }
+.sub span:last-child { font-weight: 650; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <h1>Pantry</h1>
+    <p class="count">Everyday staples</p>
+  </header>
+
+  <section id="grid" class="grid" aria-label="Products"></section>
+
+  <section class="bag" aria-label="Bag">
+    <div class="bar">
+      <button id="bagToggle" class="toggle" aria-expanded="false" aria-controls="bagPanel"><span id="bagLabel">Bag</span></button>
+      <span class="spacer"></span>
+      <span id="bagTotal" class="total">$0.00</span>
+      <button id="checkout" class="ghost" type="button">Checkout</button>
+    </div>
+    <div id="bagPanel" hidden>
+      <h2 id="bagTitle" tabindex="-1">Your bag</h2>
+      <ul id="bagList"></ul>
+      <div class="sub"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+      <button id="clear" class="link" type="button">Clear bag</button>
+    </div>
+  </section>
+</main>
+
+<div id="announce" class="sr" aria-live="polite"></div>
+
+<script>
+(() => {
+  const MAX = 9;
+
+  const PRODUCTS = [
+    { id: 'oat',     name: 'Oat milk, barista edition',  variant: '1 L · Pack of 1',      price: 349,  shape: 'carton' },
+    { id: 'dripper', name: 'Ceramic pour-over dripper',  variant: 'White · Size 2',       price: 2800, shape: 'cone' },
+    { id: 'oil',     name: 'Extra virgin olive oil',     variant: '500 ml · Cold pressed', price: 1450, shape: 'bottle' },
+    { id: 'towels',  name: 'Linen tea towels',           variant: 'Pack of 2 · Natural',  price: 1800, shape: 'towel' },
+    { id: 'coffee',  name: 'Cold brew coffee, dark roast', variant: '340 g · Whole bean', price: 1295, shape: 'jar' },
+    { id: 'bottle',  name: 'Insulated water bottle',     variant: '750 ml · Matte black', price: 2400, shape: 'tall' },
+  ];
+
+  const SHAPES = {
+    carton: '<path d="M36 36h48v56H36z"/><path class="d" d="M36 36l24-12 24 12M60 24v12"/>',
+    cone:   '<path d="M28 34h64L70 92H50z"/><path class="d" d="M40 58h40"/>',
+    bottle: '<path d="M50 22h20v10c8 4 10 10 10 20v50a6 6 0 0 1-6 6H46a6 6 0 0 1-6-6V52c0-10 2-16 10-20z"/><path class="d" d="M48 62h24"/>',
+    tall:   '<rect x="44" y="14" width="32" height="92" rx="14"/><path class="d" d="M44 36h32M44 84h32"/>',
+    towel:  '<rect x="34" y="26" width="52" height="68" rx="3"/><path class="d" d="M34 40h52M34 52h52M34 78h52"/>',
+    jar:    '<path d="M34 42h52v50a8 8 0 0 1-8 8H42a8 8 0 0 1-8-8z"/><rect x="32" y="28" width="56" height="14" rx="3"/>',
+  };
+
+  // state: bag holds quantities by product id; pending holds in-flight adds; flash holds confirmation text
+  const state = { bag: { oat: 2 }, pending: {}, flash: {} };
+  const timers = {};
+
+  const $ = (sel) => document.querySelector(sel);
+  const money = (cents) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+  const byId = (id) => PRODUCTS.find((p) => p.id === id);
+  const itemCount = () => Object.values(state.bag).reduce((a, b) => a + b, 0);
+  const total = () => Object.entries(state.bag).reduce((sum, [id, q]) => sum + byId(id).price * q, 0);
+  const plural = (n) => (n === 1 ? 'item' : 'items');
+
+  function later(key, ms, fn) {
+    clearTimeout(timers[key]);
+    timers[key] = setTimeout(fn, ms);
+  }
+
+  function noteFor(p, q, busy) {
+    if (busy) return { text: '', ok: false };
+    if (q >= MAX) return { text: `Maximum ${MAX} per order`, ok: false };
+    if (state.flash[p.id]) return { text: state.flash[p.id], ok: true };
+    if (q === 1) return { text: 'Minimum 1', ok: false };
+    return { text: '', ok: false };
+  }
+
+  function cardHTML(p) {
+    const q = state.bag[p.id] || 0;
+    const busy = !!state.pending[p.id];
+    let action;
+    if (busy) {
+      action = '<button class="add" type="button" disabled aria-busy="true">Adding…</button>';
+    } else if (!q) {
+      action = `<button class="add" type="button" data-action="add" data-id="${p.id}">Add to bag</button>`;
+    } else {
+      action = `
+        <div class="stepper" role="group" aria-label="Quantity, ${p.name}">
+          <button class="step" type="button" data-action="dec" data-id="${p.id}" aria-label="Decrease quantity of ${p.name}" ${q <= 1 ? 'disabled' : ''}>−</button>
+          <span class="qty">${q}</span>
+          <button class="step" type="button" data-action="inc" data-id="${p.id}" aria-label="Increase quantity of ${p.name}" ${q >= MAX ? 'disabled' : ''}>+</button>
+        </div>`;
+    }
+    const note = noteFor(p, q, busy);
+    const remove = q && !busy
+      ? `<button class="link" type="button" data-action="remove" data-id="${p.id}">Remove</button>`
+      : '';
+    return `
+      <article class="card" data-id="${p.id}">
+        <div class="media"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">${SHAPES[p.shape]}</svg></div>
+        <div class="body">
+          <h3 class="name">${p.name}</h3>
+          <p class="meta">${p.variant}</p>
+          <div class="buy">
+            <span class="price">${money(p.price)}</span>
+            ${action}
+          </div>
+          <div class="foot">
+            <p class="note${note.ok ? ' ok' : ''}">${note.text}</p>
+            ${remove}
+          </div>
+        </div>
+      </article>`;
+  }
+
+  // Replace one card and put focus back on the matching control (want), else where it was.
+  function swap(id, want) {
+    const old = document.querySelector(`article[data-id="${id}"]`);
+    const active = document.activeElement;
+    const had = old && active && old.contains(active) ? active.dataset.action : null;
+    const t = document.createElement('template');
+    t.innerHTML = cardHTML(byId(id)).trim();
+    const next = t.content.firstElementChild;
+    old.replaceWith(next);
+    const target = want || had;
+    if (target) {
+      const b = next.querySelector(`[data-action="${target}"]:not([disabled])`) || next.querySelector('button:not([disabled])');
+      if (b) b.focus();
+    }
+  }
+
+  function renderBag() {
+    const panel = $('#bagPanel');
+    const hadFocus = panel.contains(document.activeElement);
+    const n = itemCount();
+    const sum = total();
+    $('#bagLabel').textContent = n ? `Bag · ${n} ${plural(n)}` : 'Bag · empty';
+    $('#bagTotal').textContent = money(sum);
+    $('#subtotal').textContent = money(sum);
+    const lines = PRODUCTS.filter((p) => state.bag[p.id]);
+    $('#bagList').innerHTML = lines.length
+      ? lines.map((p) => {
+          const q = state.bag[p.id];
+          return `<li>
+            <span>${p.name}</span>
+            <span class="li-qty">${q} × ${money(p.price)}</span>
+            <span class="li-sub">${money(p.price * q)}</span>
+            <button class="link" type="button" data-bagremove="${p.id}" aria-label="Remove ${p.name} from bag">Remove</button>
+          </li>`;
+        }).join('')
+      : '<li class="empty">Your bag is empty.</li>';
+    if (hadFocus && !panel.contains(document.activeElement)) $('#bagTitle').focus();
+  }
+
+  function announce(text) {
+    const el = $('#announce');
+    el.textContent = '';
+    setTimeout(() => { el.textContent = text; }, 30);
+  }
+
+  function flash(id, text, want) {
+    state.flash[id] = text;
+    later('f' + id, 2400, () => { delete state.flash[id]; swap(id); });
+    swap(id, want);
+  }
+
+  function addItem(id) {
+    if (state.pending[id] || state.bag[id]) return;
+    const p = byId(id);
+    state.pending[id] = true;
+    swap(id);
+    later('p' + id, 180, () => {
+      state.pending[id] = false;
+      state.bag[id] = 1;
+      flash(id, `Added: ${p.name}, 1 in bag`, 'inc');
+      renderBag();
+      announce(`Added: ${p.name}, 1 in bag`);
+    });
+  }
+
+  function step(id, d) {
+    const p = byId(id);
+    const q = state.bag[id] || 0;
+    const n = Math.min(MAX, Math.max(1, q + d));
+    if (n === q) return;
+    state.bag[id] = n;
+    if (d > 0) {
+      flash(id, `Added: ${p.name}, ${n} in bag`, 'inc');
+    } else {
+      delete state.flash[id];
+      clearTimeout(timers['f' + id]);
+      swap(id, 'dec');
+    }
+    renderBag();
+    announce(`${p.name}, ${n} in bag`);
+  }
+
+  function removeItem(id, want) {
+    if (!state.bag[id]) return;
+    const p = byId(id);
+    delete state.bag[id];
+    delete state.flash[id];
+    clearTimeout(timers['f' + id]);
+    swap(id, want);
+    renderBag();
+    announce(`Removed: ${p.name}`);
+  }
+
+  // Initial render
+  $('#grid').innerHTML = PRODUCTS.map(cardHTML).join('');
+  renderBag();
+
+  // Events
+  $('#grid').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-action]');
+    if (!b || b.disabled) return;
+    const id = b.dataset.id;
+    switch (b.dataset.action) {
+      case 'add': addItem(id); break;
+      case 'inc': step(id, 1); break;
+      case 'dec': step(id, -1); break;
+      case 'remove': removeItem(id, 'add'); break;
+    }
+  });
+
+  $('#bagList').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-bagremove]');
+    if (b) removeItem(b.dataset.bagremove);
+  });
+
+  $('#bagToggle').addEventListener('click', () => {
+    const panel = $('#bagPanel');
+    const open = panel.hidden;
+    panel.hidden = !open;
+    $('#bagToggle').setAttribute('aria-expanded', String(open));
+  });
+
+  $('#clear').addEventListener('click', () => {
+    Object.keys(timers).forEach((k) => clearTimeout(timers[k]));
+    state.bag = {};
+    state.pending = {};
+    state.flash = {};
+    PRODUCTS.forEach((p) => swap(p.id));
+    renderBag();
+    announce('Bag cleared.');
+  });
+
+  $('#checkout').addEventListener('click', () => {
+    announce(itemCount()
+      ? 'Checkout is not connected in this demo.'
+      : 'Your bag is empty. Add an item first.');
+  });
+})();
+</script>
+</body>
+</html>

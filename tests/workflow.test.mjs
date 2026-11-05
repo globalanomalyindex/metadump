@@ -147,9 +147,10 @@ test('every worker prompt states the depth and its entry budget', async () => {
   const { calls } = await runWith({ ...ARGS, depth: 'lite' }, standard({ guessesByRound: {} }))
   const spec = calls.find(c => c.label === 'specialist:30-composition')
   assert.match(spec.prompt, /Depth: lite/)
-  assert.match(spec.prompt, /Entry budget: 12-20 entries/)
+  assert.match(spec.prompt, /Entry budget: 4-8 entries/)
+  assert.match(spec.prompt, /facets/)
   const research = calls.find(c => c.label === 'research:20-research-lineage')
-  assert.match(research.prompt, /Entry budget: 8-12 entries/)
+  assert.match(research.prompt, /Entry budget: 4-8 entries/)
 })
 
 test('stopping with tier-1/2 guesses hands them to the main loop as remaining gaps', async () => {
@@ -188,9 +189,9 @@ test('moodboard tickets start after the scrape and watch tickets whose images th
 
 test('media evidence tickets carry an entry budget for every depth', async () => {
   const want = {
-    lite: { scrape: '8-15', watch: '8-15', moodboard: '10-20' },
-    standard: { scrape: '15-25', watch: '15-30', moodboard: '16-30' },
-    deep: { scrape: '25-40', watch: '25-45', moodboard: '24-45' },
+    lite: { scrape: '3-6', watch: '3-8', moodboard: '3-6' },
+    standard: { scrape: '4-8', watch: '4-10', moodboard: '4-8' },
+    deep: { scrape: '6-12', watch: '6-14', moodboard: '6-12' },
   }
   for (const depth of Object.keys(want)) {
     const { calls } = await runWith({ ...ARGS, depth, tickets: MEDIA }, standard({ guessesByRound: {} }))

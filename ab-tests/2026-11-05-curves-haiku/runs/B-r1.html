@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and punchy curves</title>
+<style>
+:root {
+  --bg: #f4f3ef;
+  --card: #ffffff;
+  --ink: #1c1c1f;
+  --muted: #62626b;
+  --line: #d9d7d0;
+  --track: #ebeae4;
+  --accent: #e0532a;
+  --accent-soft: rgba(224, 83, 42, 0.14);
+  --target: #8a8a93;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131315;
+    --card: #1c1c20;
+    --ink: #f1f1f3;
+    --muted: #9c9ca6;
+    --line: #34343b;
+    --track: #26262c;
+    --accent: #ff7a4d;
+    --accent-soft: rgba(255, 122, 77, 0.16);
+    --target: #6f6f79;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131315;
+  --card: #1c1c20;
+  --ink: #f1f1f3;
+  --muted: #9c9ca6;
+  --line: #34343b;
+  --track: #26262c;
+  --accent: #ff7a4d;
+  --accent-soft: rgba(255, 122, 77, 0.16);
+  --target: #6f6f79;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+}
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+h1 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.lede {
+  margin: 0;
+  color: var(--muted);
+  max-width: 60ch;
+}
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  min-height: 40px;
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 820px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.card h2 {
+  font-size: 1.15rem;
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+.tag {
+  font-size: 0.8rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+code {
+  font: 0.85rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.stage {
+  position: relative;
+  height: 56px;
+  background: var(--track);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.stage::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--line);
+  border-radius: 2px;
+}
+.stage::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: var(--target);
+  border-radius: 2px;
+}
+.dot {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--accent);
+  will-change: transform;
+}
+
+.graph {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--track);
+  border-radius: 12px;
+}
+.graph .axis { stroke: var(--line); stroke-width: 1; }
+.graph .target { stroke: var(--target); stroke-width: 1; stroke-dasharray: 3 3; }
+.graph .curve { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.graph .marker { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
+
+.readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.readout strong { color: var(--ink); font-weight: 600; }
+
+.feel {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.feel b { color: var(--ink); font-weight: 600; }
+.feel-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.feel-list li {
+  padding-left: 14px;
+  position: relative;
+}
+.feel-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.card-foot {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+footer {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 80ch;
+}
+footer p { margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Sticky and punchy</h1>
+      <p class="lede">Three custom cubic-bezier curves. Each one leaves fast, and each one lands and holds. Every loop plays the move, holds at rest, then resets.</p>
+    </div>
+    <button type="button" id="toggle-all" aria-pressed="false">Pause loops</button>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <footer>
+    <p>Overshoot and settle figures are measured on the move leg of each curve (20,000 samples). The stop is judged at the 1 percent band: the point after which the curve stays within 1 percent of rest. The hold between loops is 1.2 s and lives in the loop, not in the timing function.</p>
+    <p>With reduced motion on, nothing loops. Each card shows its rest state and a button plays one move.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // The three curves. These exact values drive every animation on the page.
+  var CURVES = [
+    {
+      name: "punchy-leave",
+      bezier: [0.2, 1.2, 0.2, 1],
+      duration_ms: 250,
+      css: "--ease-punchy-leave",
+      tag: "fast leave, one kick",
+      points: [
+        "Punch: half the distance by 9 percent of the run.",
+        "Kick: passes its target once, by about 1.25 percent, peaking at 53 percent.",
+        "Stop: inside 1 percent of rest by 64 percent of the run."
+      ]
+    },
+    {
+      name: "punchy-sticky",
+      bezier: [0.15, 1, 0.2, 1.04],
+      duration_ms: 300,
+      css: "--ease-punchy-sticky",
+      tag: "punch and stop in one",
+      points: [
+        "Punch: half the distance by 9 percent of the run.",
+        "Kick: a faint pass under 1 percent, peaking at 70 percent.",
+        "Stop: inside 1 percent of rest by 46 percent of the run."
+      ]
+    },
+    {
+      name: "sticky-settle",
+      bezier: [0.18, 0.98, 0.3, 1],
+      duration_ms: 250,
+      css: "--ease-sticky-settle",
+      tag: "no kick, decisive stop",
+      points: [
+        "Punch: half the distance by 11 percent of the run.",
+        "No overshoot: the curve never passes its target.",
+        "Stop: inside 1 percent of rest by 64 percent of the run, so the hold reads as already done."
+      ]
+    }
+  ];
+
+  // Expose the curves for the test harness.
+  window.CURVES = CURVES.map(function (c) {
+    return { name: c.name, bezier: c.bezier.slice(), duration_ms: c.duration_ms };
+  });
+
+  var HOLD_MS = 1200;
+  var GRAPH_W = 200;
+  var GRAPH_H = 120;
+  var Y_MIN = -0.05;
+  var Y_MAX = 1.1;
+  var PAD_X = 12;
+
+  var reduced = false;
+  try {
+    reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch (e) { reduced = false; }
+
+  function cssOf(b) {
+    return "cubic-bezier(" + b.join(", ") + ")";
+  }
+
+  function bezierCoord(s, a, b) {
+    var u = 1 - s;
+    return 3 * u * u * s * a + 3 * u * s * s * b + s * s * s;
+  }
+
+  // Progress (y) at time fraction t (x), solved by bisection on the x curve.
+  function easeAt(b, t) {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    var lo = 0, hi = 1;
+    for (var i = 0; i < 50; i++) {
+      var m = (lo + hi) / 2;
+      if (bezierCoord(m, b[0], b[2]) < t) lo = m; else hi = m;
+    }
+    return bezierCoord((lo + hi) / 2, b[1], b[3]);
+  }
+
+  function graphX(t) { return PAD_X + t * (GRAPH_W - 2 * PAD_X); }
+  function graphY(y) { return GRAPH_H - 10 - ((y - Y_MIN) / (Y_MAX - Y_MIN)) * (GRAPH_H - 20); }
+
+  function curvePath(b) {
+    var d = "";
+    for (var i = 0; i <= 120; i++) {
+      var t = i / 120;
+      d += (i === 0 ? "M" : "L") + graphX(t).toFixed(2) + " " + graphY(easeAt(b, t)).toFixed(2) + " ";
+    }
+    return d.trim();
+  }
+
+  function keyframesFor(c, travel) {
+    var d = c.duration_ms;
+    var total = d + HOLD_MS;
+    var off = d / total;
+    return {
+      total: total,
+      frames: [
+        { transform: "translateX(0px)", easing: cssOf(c.bezier), offset: 0 },
+        { transform: "translateX(" + travel + "px)", easing: "linear", offset: off },
+        { transform: "translateX(" + travel + "px)", offset: 1 }
+      ]
+    };
+  }
+
+  var grid = document.getElementById("grid");
+  var toggleAll = document.getElementById("toggle-all");
+  var runs = [];
+
+  CURVES.forEach(function (c, idx) {
+    var card = document.createElement("article");
+    card.className = "card";
+
+    var head = document.createElement("div");
+    head.className = "card-head";
+    var h2 = document.createElement("h2");
+    h2.textContent = c.name;
+    var tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = c.tag;
+    head.appendChild(h2);
+    head.appendChild(tag);
+
+    var meta = document.createElement("p");
+    meta.className = "meta";
+    meta.innerHTML = "<code>" + cssOf(c.bezier) + "</code> &middot; " + c.duration_ms + " ms move, " + HOLD_MS + " ms hold";
+
+    var stage = document.createElement("div");
+    stage.className = "stage";
+    stage.setAttribute("role", "img");
+    stage.setAttribute("aria-label", c.name + " loop: a dot moves across the track and holds at the end");
+    var dot = document.createElement("div");
+    dot.className = "dot";
+    stage.appendChild(dot);
+
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", "graph");
+    svg.setAttribute("viewBox", "0 0 " + GRAPH_W + " " + GRAPH_H);
+    svg.setAttribute("aria-hidden", "true");
+    var base = document.createElementNS(svgNS, "line");
+    base.setAttribute("class", "axis");
+    base.setAttribute("x1", graphX(0)); base.setAttribute("x2", graphX(1));
+    base.setAttribute("y1", graphY(0)); base.setAttribute("y2", graphY(0));
+    var target = document.createElementNS(svgNS, "line");
+    target.setAttribute("class", "target");
+    target.setAttribute("x1", graphX(0)); target.setAttribute("x2", graphX(1));
+    target.setAttribute("y1", graphY(1)); target.setAttribute("y2", graphY(1));
+    var path = document.createElementNS(svgNS, "path");
+    path.setAttribute("class", "curve");
+    path.setAttribute("d", curvePath(c.bezier));
+    var marker = document.createElementNS(svgNS, "circle");
+    marker.setAttribute("class", "marker");
+    marker.setAttribute("r", "4.5");
+    marker.setAttribute("cx", graphX(0));
+    marker.setAttribute("cy", graphY(0));
+    svg.appendChild(base);
+    svg.appendChild(target);
+    svg.appendChild(path);
+    svg.appendChild(marker);
+
+    var readout = document.createElement("div");
+    readout.className = "readout";
+    var prog = document.createElement("span");
+    prog.innerHTML = "progress <strong>0.000</strong>";
+    var status = document.createElement("span");
+    status.textContent = "moving";
+    readout.appendChild(prog);
+    readout.appendChild(status);
+
+    var feel = document.createElement("ul");
+    feel.className = "feel-list";
+    c.points.forEach(function (p) {
+      var li = document.createElement("li");
+      li.textContent = p;
+      feel.appendChild(li);
+    });
+
+    var foot = document.createElement("div");
+    foot.className = "card-foot";
+    var playOnce = document.createElement("button");
+    playOnce.type = "button";
+    playOnce.textContent = "Play once";
+    playOnce.hidden = !reduced;
+    foot.appendChild(playOnce);
+
+    card.appendChild(head);
+    card.appendChild(meta);
+    card.appendChild(stage);
+    card.appendChild(svg);
+    card.appendChild(readout);
+    card.appendChild(feel);
+    card.appendChild(foot);
+    grid.appendChild(card);
+
+    runs.push({
+      curve: c,
+      dot: dot,
+      stage: stage,
+      marker: marker,
+      progEl: prog.querySelector("strong"),
+      statusEl: status,
+      anim: null,
+      total: 0,
+      duration: c.duration_ms,
+      playOnce: playOnce,
+      lastStatus: ""
+    });
+  });
+
+  function travelFor(stage) {
+    // Stage inner width minus the 12px inset on each side and the 16px dot.
+    return Math.max(0, stage.clientWidth - 24 - 16);
+  }
+
+  function build(run) {
+    var travel = travelFor(run.stage);
+    var kf = keyframesFor(run.curve, travel);
+    run.total = kf.total;
+    if (!run.anim) {
+      run.anim = run.dot.animate(kf.frames, {
+        duration: kf.total,
+        iterations: reduced ? 1 : Infinity,
+        fill: "both"
+      });
+      if (reduced) {
+        run.anim.pause();
+        run.anim.currentTime = kf.total;
+      }
+    } else {
+      run.anim.effect.setKeyframes(kf.frames);
+    }
+  }
+
+  runs.forEach(function (run) {
+    build(run);
+    run.playOnce.addEventListener("click", function () {
+      if (!run.anim) return;
+      run.anim.currentTime = 0;
+      run.anim.play();
+    });
+  });
+
+  function paintRun(run, now) {
+    var local;
+    if (run.anim && run.anim.effect && !reduced) {
+      local = run.anim.currentTime || 0;
+      local = local % run.total;
+    } else {
+      local = run.anim ? (run.anim.currentTime || 0) : 0;
+      local = Math.min(local, run.total);
+    }
+    var t = Math.min(local / run.duration, 1);
+    var y = easeAt(run.curve.bezier, t);
+    run.marker.setAttribute("cx", graphX(t).toFixed(2));
+    run.marker.setAttribute("cy", graphY(y).toFixed(2));
+    run.progEl.textContent = y.toFixed(3);
+
+    var s;
+    if (t >= 1) s = "at rest";
+    else if (y > 1.0005) s = "past target";
+    else s = "moving";
+    if (s !== run.lastStatus) {
+      run.statusEl.textContent = s;
+      run.lastStatus = s;
+    }
+  }
+
+  function frame() {
+    runs.forEach(function (run) { paintRun(run, 0); });
+    window.requestAnimationFrame(frame);
+  }
+  window.requestAnimationFrame(frame);
+
+  // Paused state for the loops: a single toggle, and nothing moves under reduced motion.
+  toggleAll.addEventListener("click", function () {
+    var pausing = toggleAll.getAttribute("aria-pressed") !== "true";
+    runs.forEach(function (run) {
+      if (!run.anim) return;
+      if (pausing) run.anim.pause(); else run.anim.play();
+    });
+    toggleAll.setAttribute("aria-pressed", pausing ? "true" : "false");
+    toggleAll.textContent = pausing ? "Play loops" : "Pause loops";
+  });
+  if (reduced) {
+    toggleAll.disabled = true;
+    toggleAll.textContent = "Reduced motion on";
+  }
+
+  // Keep the travel in step with the track width.
+  var resizeTimer = null;
+  window.addEventListener("resize", function () {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(function () {
+      runs.forEach(function (run) {
+        var wasPaused = run.anim && run.anim.playState === "paused";
+        var t = run.anim ? run.anim.currentTime : 0;
+        build(run);
+        if (run.anim && !reduced) {
+          run.anim.currentTime = t;
+          if (wasPaused) run.anim.pause();
+        }
+      });
+    }, 120);
+  });
+})();
+</script>
+</body>
+</html>

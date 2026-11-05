@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and Punchy Curves</title>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --fg: #1d1d1f;
+  --muted: #6b6b70;
+  --card: #ffffff;
+  --accent: #e4572e;
+  --line: #dcdad3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111214;
+    --fg: #f2f2f4;
+    --muted: #9a9aa2;
+    --card: #1b1c20;
+    --accent: #ff7a52;
+    --line: #2c2e34;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111214;
+  --fg: #f2f2f4;
+  --muted: #9a9aa2;
+  --card: #1b1c20;
+  --accent: #ff7a52;
+  --line: #2c2e34;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+h1 { font-size: 22px; margin: 0 0 4px; font-weight: 650; }
+.lead { color: var(--muted); margin: 0 0 24px; font-size: 14px; line-height: 1.5; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.name { font-weight: 600; font-size: 16px; }
+.spec {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.track {
+  position: relative;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.ball {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  will-change: transform;
+  animation-name: travel;
+  animation-duration: var(--dur);
+  animation-timing-function: var(--bz);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes travel {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--dist, 0px)); }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Sticky and punchy</h1>
+  <p class="lead">Three custom cubic-bezier curves, each looping a ball back and forth across its track. Values and durations below are the exact ones the animations use.</p>
+  <div id="list"></div>
+</main>
+<script>
+// Single source of truth: the animations and window.CURVES both read from this array.
+var CURVES = [
+  { name: "Sticky Snap", bezier: [0.76, 0, 0.24, 1], duration_ms: 420 },
+  { name: "Punchy Overshoot", bezier: [0.34, 1.56, 0.64, 1], duration_ms: 560 },
+  { name: "Sticky Punch", bezier: [0.65, -0.3, 0.15, 1.25], duration_ms: 680 }
+];
+window.CURVES = CURVES;
+
+(function () {
+  var list = document.getElementById("list");
+  var tracks = [];
+
+  CURVES.forEach(function (c) {
+    var card = document.createElement("section");
+    card.className = "card";
+
+    var head = document.createElement("div");
+    head.className = "head";
+
+    var name = document.createElement("div");
+    name.className = "name";
+    name.textContent = c.name;
+
+    var spec = document.createElement("div");
+    spec.className = "spec";
+    spec.textContent = "cubic-bezier(" + c.bezier.join(", ") + ") · " + c.duration_ms + "ms";
+
+    head.appendChild(name);
+    head.appendChild(spec);
+
+    var track = document.createElement("div");
+    track.className = "track";
+
+    var ball = document.createElement("div");
+    ball.className = "ball";
+    ball.style.setProperty("--bz", "cubic-bezier(" + c.bezier.join(", ") + ")");
+    ball.style.setProperty("--dur", c.duration_ms + "ms");
+
+    track.appendChild(ball);
+    card.appendChild(head);
+    card.appendChild(track);
+    list.appendChild(card);
+    tracks.push(track);
+  });
+
+  // Travel distance = track width minus the ball's left inset (6px) and its width (28px) minus its right inset (6px).
+  function layout() {
+    tracks.forEach(function (t) {
+      t.style.setProperty("--dist", (t.clientWidth - 40) + "px");
+    });
+  }
+  layout();
+  window.addEventListener("resize", layout);
+})();
+</script>
+</body>
+</html>

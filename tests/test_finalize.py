@@ -653,6 +653,72 @@ class Cli(unittest.TestCase):
         self.assertIn("amber light", draft["index"])
 
 
+class FacetObjects(unittest.TestCase):
+    """0.7.0: dumps are written as facets of short phrases, the way the hand-made files were."""
+
+    def test_facet_phrases_stay_out_of_the_index_so_it_does_not_double_the_file(self):
+        # Test 8's dump: indexing every facet phrase made the index 25K tokens against a 24K body. grep finds
+        # a phrase anyway (one entry per line); the index keeps terms, aliases, variants and keywords.
+        d = base_dump()
+        d["color"] = {"c-blue": entry("blue", keywords=["electric cyan"], properties=["subsurface glow"],
+                                      descriptors=["self-illuminated"], signals=["dominant cyan hues"])}
+        d["routing"][0]["paths"].append("/color")
+        out, _ = finalize.build_dump(d)
+        self.assertIn("/color/c-blue", out["index"]["electric cyan"]["hits"])
+        for phrase in ("subsurface glow", "self-illuminated", "dominant cyan hues", "subsurface"):
+            self.assertNotIn(phrase, out["index"], phrase)
+
+    def test_a_quality_facet_with_one_reading_warns(self):
+        # Test 8: the dump defined "sticky" once, inferred, and every build copied the curves tuned to it.
+        d = base_dump()
+        d["feel"] = {"q-calm": entry("calm", kind="quality", readings=[{"reading": "low contrast and slow motion"}])}
+        d["routing"][0]["paths"].append("/feel")
+        _, report = finalize.build_dump(d)
+        self.assertEqual([w["path"] for w in report["warnings"] if w["code"] == "quality_one_reading"], ["/feel/q-calm"])
+
+    def test_a_quality_facet_with_two_readings_does_not_warn(self):
+        d = base_dump()
+        d["feel"] = {"q-calm": entry("calm", kind="quality", readings=[{"reading": "low contrast and slow motion"},
+                                                                       {"reading": "few elements and lots of air"}])}
+        d["routing"][0]["paths"].append("/feel")
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("quality_one_reading", codes(report["warnings"]))
+
+    def test_a_section_left_with_only_notes_is_dropped(self):
+        # Test 8: normalize merged three sections away but could only leave `_about` stubs behind, which then
+        # warned as unrouted. A section with no entries is nothing a consumer can use.
+        d = base_dump()
+        d["feel"] = {"_about": "merged into /palette"}
+        out, report = finalize.build_dump(d)
+        self.assertNotIn("feel", out)
+        self.assertEqual([f["path"] for f in report["fixes"] if f["code"] == "empty_section_dropped"], ["/feel"])
+        self.assertNotIn("unrouted_section", codes(report["warnings"]))
+
+    def test_an_oversized_facet_warns_but_a_timeline_may_be_long(self):
+        # Test 8's facets ran to 400-500 tokens; the hand-made ones are 100-200. Measured timelines are long by nature.
+        d = base_dump()
+        many = ["phrase %03d" % i for i in range(120)]   # about 360 tokens of properties
+        d["palette"]["c-big"] = entry("big facet", properties=many)
+        d["palette"]["c-tl"] = entry("a timeline", kind="timeline", properties=many)
+        _, report = finalize.build_dump(d)
+        self.assertEqual([w["path"] for w in report["warnings"] if w["code"] == "oversized_entry"], ["/palette/c-big"])
+
+    def test_long_prose_warns_so_entries_stay_lists_of_short_phrases(self):
+        d = base_dump()
+        d["palette"]["c-amber"]["text"] = " ".join(["word"] * 41)                    # 41 words: over the 40-word limit
+        d["anti_keywords"]["ak-gloss"]["instead"] = " ".join(["matte"] * 21)        # 21 words: over the 20-word limit
+        _, report = finalize.build_dump(d)
+        wordy = sorted(w["path"] for w in report["warnings"] if w["code"] == "wordy_entry")
+        self.assertEqual(wordy, ["/anti_keywords/ak-gloss", "/palette/c-amber"])
+
+    def test_prose_within_the_limits_does_not_warn(self):
+        d = base_dump()
+        d["palette"]["c-amber"]["text"] = " ".join(["word"] * 40)
+        d["anti_keywords"]["ak-gloss"]["instead"] = " ".join(["matte"] * 20)
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("wordy_entry", codes(report["warnings"]))
+
+
 class SearchIndexWords(unittest.TestCase):
     def test_single_words_of_terms_are_indexed_without_stopwords(self):
         d = base_dump()

@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"compact": 8, "minimal": 8, "modern": 7, "usability": 9, "craft": 8, "overall": 8, "note": "Tidy four-up grid with search, category chips, sort, and a real cart drawer with totals and checkout, though the gradient initials tiles read as placeholders and the mobile cards are tall."},
+"X": {"compact": 9, "minimal": 9, "modern": 8, "usability": 6, "craft": 8, "overall": 8, "note": "The densest and most restrained design, with refined line-art glyphs, a blue accent, and clear add/adjust/remove feedback in an inline bag, but it has no checkout action, search, or filtering."},
+"Y": {"compact": 5, "minimal": 8, "modern": 7, "usability": 7, "craft": 6, "overall": 6, "note": "Tall 4:5 tiles leave a stranded third-row card under a sticky review bar that covers content on mobile, so it is less compact than the others despite clean per-card status text."},
+"Z": {"compact": 9, "minimal": 5, "modern": 5, "usability": 9, "craft": 7, "overall": 7, "note": "The most complete shopping flow (search, sort, stock flags, sold-out state, drawer with tax and free-shipping hint), but emoji product art, shadows, and badges add clutter and a dated feel, and the mobile chip row clips."}
+},
+"ranking": ["X", "W", "Z", "Y"]}

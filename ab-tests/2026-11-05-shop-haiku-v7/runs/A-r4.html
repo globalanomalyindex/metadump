@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Northfield Supply</title>
+<style>
+:root{
+  --bg:#fafaf9;--surface:#ffffff;--ink:#1c1917;--muted:#78716c;--line:#e7e5e4;
+  --accent:#1c1917;--accent-ink:#ffffff;--good:#15803d;--shadow:0 1px 2px rgba(0,0,0,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c0a09;--surface:#1c1917;--ink:#fafaf9;--muted:#a8a29e;--line:#292524;
+    --accent:#fafaf9;--accent-ink:#0c0a09;--good:#4ade80;--shadow:none;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c0a09;--surface:#1c1917;--ink:#fafaf9;--muted:#a8a29e;--line:#292524;
+  --accent:#fafaf9;--accent-ink:#0c0a09;--good:#4ade80;--shadow:none;color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:-.01em;font-size:17px;margin-right:auto}
+.search input{width:100%;min-width:200px;max-width:340px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.sort{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 12px;font-size:13px}
+
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.added{background:var(--good);color:var(--surface)}
+.btn.full{width:100%;padding:11px 14px}
+
+.toolbar{display:flex;align-items:center;gap:10px;padding:16px 0 12px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-right:auto}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.count-note{color:var(--muted);font-size:13px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding-bottom:56px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.tile{aspect-ratio:4/3;display:grid;place-items:center;font-weight:700;font-size:34px;letter-spacing:-.02em;color:rgba(0,0,0,.45)}
+.info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.cat{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.name{font-weight:600}
+.desc{font-size:13px;color:var(--muted);margin:0 0 6px}
+.meta{display:flex;justify-content:space-between;align-items:baseline;font-size:14px}
+.price{font-weight:700}
+.rating{font-size:12px;color:var(--muted)}
+.card .btn{margin-top:auto;margin-top:12px}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:48px 0}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);border-left:1px solid var(--line);transform:translateX(100%);visibility:hidden;transition:transform .25s ease,visibility .25s;z-index:11;display:flex;flex-direction:column}
+.drawer.open{transform:none;visibility:visible}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.dhead h2{font-size:17px;margin:0}
+.items{flex:1;overflow:auto;padding:4px 20px}
+.line{display:grid;grid-template-columns:56px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}
+.thumb{width:56px;height:56px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:15px;color:rgba(0,0,0,.45)}
+.lname{font-weight:600;font-size:14px}
+.lprice{color:var(--muted);font-size:13px}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;margin-top:8px}
+.stepper button{background:none;border:0;padding:4px 11px;font-size:16px;line-height:1}
+.stepper span{min-width:22px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+.remove{background:none;border:0;color:var(--muted);font-size:12px;text-decoration:underline;padding:0;margin-top:8px;display:block}
+.line-total{font-weight:600;text-align:right}
+.drawer-empty{color:var(--muted);text-align:center;padding:60px 0}
+.summary{border-top:1px solid var(--line);padding:16px 20px 20px;display:grid;gap:8px}
+.srow{display:flex;justify-content:space-between;color:var(--muted);font-size:14px}
+.srow.total{color:var(--ink);font-weight:700;font-size:16px;padding-top:8px;border-top:1px dashed var(--line)}
+.note{font-size:12px;color:var(--muted)}
+.summary .btn{margin-top:6px}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:520px){
+  .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .tile{font-size:26px}
+  .search input{max-width:none;width:100%}
+  .search{flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="brand">Northfield Supply</div>
+    <label class="search"><input id="q" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off"></label>
+    <select id="sort" class="sort" aria-label="Sort products">
+      <option value="featured">Featured</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="rating">Top rated</option>
+    </select>
+    <button class="btn" id="openCart" aria-controls="drawer">Bag (<span id="count">0</span>)</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="chips" id="chips"></div>
+    <div class="count-note" id="resultCount"></div>
+  </div>
+  <section class="grid" id="grid" aria-live="polite"></section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true">
+  <div class="dhead">
+    <h2 id="cartTitle">Your bag</h2>
+    <button class="btn ghost" id="closeCart">Close</button>
+  </div>
+  <div class="items" id="items"></div>
+  <div class="summary" id="summary"></div>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const PRODUCTS = [
+  { id:'p1',  name:'Canvas Tote',              cat:'Bags',       price:38,  rating:4.6, reviews:212, hue:'#e7d8bd', mark:'CT', desc:'12oz cotton canvas with leather handles and a zip inner pocket.' },
+  { id:'p2',  name:'Merino Crew Sweater',      cat:'Apparel',    price:89,  rating:4.8, reviews:148, hue:'#c9d6d1', mark:'MC', desc:'Fine-gauge merino wool that breathes and resists odor.' },
+  { id:'p3',  name:'Field Notebook, 3-pack',   cat:'Stationery', price:18,  rating:4.7, reviews:530, hue:'#f1e3e0', mark:'FN', desc:'Dot-grid pages, waterproof paper, lay-flat binding.' },
+  { id:'p4',  name:'Insulated Bottle 750 ml',  cat:'Outdoor',    price:32,  rating:4.5, reviews:301, hue:'#cfd9e8', mark:'IB', desc:'Double-wall steel keeps drinks cold 24h or hot 12h.' },
+  { id:'p5',  name:'Selvedge Slim Denim',      cat:'Apparel',    price:118, rating:4.4, reviews:97,  hue:'#cbd2dc', mark:'SD', desc:'14oz Japanese selvedge with a slim taper and rivet detail.' },
+  { id:'p6',  name:'Brass Desk Lamp',          cat:'Home',       price:146, rating:4.9, reviews:64,  hue:'#e9dcc5', mark:'DL', desc:'Solid brass arm, linen shade, warm 2700K LED included.' },
+  { id:'p7',  name:'Waxed Canvas Jacket',      cat:'Outdoor',    price:210, rating:4.7, reviews:88,  hue:'#d6cbb8', mark:'WJ', desc:'Water-resistant waxed cotton with corduroy collar.' },
+  { id:'p8',  name:'Ceramic Pour-Over Set',    cat:'Home',       price:54,  rating:4.6, reviews:175, hue:'#e4e0da', mark:'PO', desc:'Dripper, server and two stoneware mugs in matte glaze.' },
+  { id:'p9',  name:'Trail Running Cap',        cat:'Outdoor',    price:26,  rating:4.2, reviews:66,  hue:'#d4e3d3', mark:'TC', desc:'Quick-dry nylon with a packable brim and mesh panels.' },
+  { id:'p10', name:'Leather Card Wallet',      cat:'Bags',       price:44,  rating:4.5, reviews:240, hue:'#e6d3c9', mark:'LW', desc:'Full-grain vegetable-tanned leather, holds eight cards.' },
+  { id:'p11', name:'Linen Bed Sheet Set',      cat:'Home',       price:129, rating:4.8, reviews:412, hue:'#dfe5e8', mark:'LS', desc:'Stonewashed European flax, queen set with two pillowcases.' },
+  { id:'p12', name:'Graphite Pencil Set',      cat:'Stationery', price:12,  rating:4.3, reviews:128, hue:'#dcdcdc', mark:'GP', desc:'Six drawing grades in a cedar-free recycled sleeve.' }
+];
+const FREE_SHIP = 75, SHIP_FEE = 6.95, TAX_RATE = 0.08, MAX_QTY = 10;
+
+const state = { q:'', cat:'All', sort:'featured', cart:{} };
+
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId = id => PRODUCTS.find(p => p.id === id);
+
+function visible(){
+  const q = state.q.trim().toLowerCase();
+  const list = PRODUCTS.filter(p =>
+    (state.cat === 'All' || p.cat === state.cat) &&
+    (!q || `${p.name} ${p.cat} ${p.desc}`.toLowerCase().includes(q)));
+  const cmp = {
+    'featured':   (a,b) => PRODUCTS.indexOf(a) - PRODUCTS.indexOf(b),
+    'price-asc':  (a,b) => a.price - b.price,
+    'price-desc': (a,b) => b.price - a.price,
+    'rating':     (a,b) => b.rating - a.rating
+  }[state.sort];
+  return list.sort(cmp);
+}
+
+function totals(){
+  const lines = Object.entries(state.cart)
+    .map(([id,qty]) => ({ p: byId(id), qty }))
+    .filter(l => l.p);
+  const count = lines.reduce((s,l) => s + l.qty, 0);
+  const subtotal = lines.reduce((s,l) => s + l.p.price * l.qty, 0);
+  const shipping = subtotal === 0 || subtotal >= FREE_SHIP ? 0 : SHIP_FEE;
+  const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
+  const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+  return { lines, count, subtotal, shipping, tax, total };
+}
+
+function renderChips(){
+  const cats = ['All', ...new Set(PRODUCTS.map(p => p.cat))];
+  $('chips').innerHTML = cats.map(c =>
+    `<button class="chip" data-cat="${esc(c)}" aria-pressed="${c === state.cat}">${esc(c)}</button>`).join('');
+}
+
+function card(p){
+  const qty = state.cart[p.id] || 0;
+  return `<article class="card">
+    <div class="tile" style="background:${p.hue}">${esc(p.mark)}</div>
+    <div class="info">
+      <div class="cat">${esc(p.cat)}</div>
+      <div class="name">${esc(p.name)}</div>
+      <p class="desc">${esc(p.desc)}</p>
+      <div class="meta"><span class="price">${money(p.price)}</span><span class="rating">&#9733; ${p.rating.toFixed(1)} (${p.reviews})</span></div>
+      <button class="btn full ${qty ? 'added' : ''}" data-add="${p.id}">${qty ? `In bag: ${qty} (add one more)` : 'Add to bag'}</button>
+    </div>
+  </article>`;
+}
+
+function renderGrid(){
+  const list = visible();
+  $('resultCount').textContent = `${list.length} of ${PRODUCTS.length} products`;
+  $('grid').innerHTML = list.length
+    ? list.map(card).join('')
+    : `<div class="empty">No products match these filters.</div>`;
+}
+
+function renderCart(){
+  const t = totals();
+  $('count').textContent = t.count;
+  $('items').innerHTML = t.lines.length ? t.lines.map(l => `
+    <div class="line">
+      <div class="thumb" style="background:${l.p.hue}">${esc(l.p.mark)}</div>
+      <div>
+        <div class="lname">${esc(l.p.name)}</div>
+        <div class="lprice">${money(l.p.price)} each</div>
+        <div class="stepper">
+          <button data-dec="${l.p.id}" aria-label="Decrease quantity">&minus;</button>
+          <span>${l.qty}</span>
+          <button data-inc="${l.p.id}" aria-label="Increase quantity">+</button>
+        </div>
+        <button class="remove" data-remove="${l.p.id}">Remove</button>
+      </div>
+      <div class="line-total">${money(l.p.price * l.qty)}</div>
+    </div>`).join('')
+    : `<div class="drawer-empty">Your bag is empty.<br><br><button class="btn ghost" data-close>Keep shopping</button></div>`;
+
+  $('summary').innerHTML = `
+    <div class="srow"><span>Subtotal</span><span>${money(t.subtotal)}</span></div>
+    <div class="srow"><span>Shipping</span><span>${t.count ? (t.shipping ? money(t.shipping) : 'Free') : '&mdash;'}</span></div>
+    <div class="srow"><span>Estimated tax (8%)</span><span>${money(t.tax)}</span></div>
+    <div class="srow total"><span>Total</span><span>${money(t.total)}</span></div>
+    ${t.count && t.shipping ? `<div class="note">Add ${money(FREE_SHIP - t.subtotal)} more for free shipping.</div>` : ''}
+    <button class="btn full" id="checkout" ${t.count ? '' : 'disabled'}>Checkout</button>`;
+}
+
+function setQty(id, n){
+  const p = byId(id);
+  if (n > MAX_QTY){ toast(`Limit ${MAX_QTY} per item`); return false; }
+  if (n < 1) delete state.cart[id];
+  else state.cart[id] = n;
+  renderGrid();
+  renderCart();
+  return true;
+}
+
+function add(id){
+  const p = byId(id);
+  if (setQty(id, (state.cart[id] || 0) + 1)) toast(`Added ${p.name}`);
+}
+
+function openCart(){
+  $('drawer').classList.add('open');
+  $('drawer').setAttribute('aria-hidden','false');
+  $('scrim').classList.add('open');
+  $('closeCart').focus();
+}
+function closeCart(){
+  $('drawer').classList.remove('open');
+  $('drawer').setAttribute('aria-hidden','true');
+  $('scrim').classList.remove('open');
+  $('openCart').focus();
+}
+
+function checkout(){
+  const t = totals();
+  if (!t.count) return;
+  state.cart = {};
+  renderGrid();
+  renderCart();
+  closeCart();
+  toast(`Order placed: ${t.count} item${t.count > 1 ? 's' : ''}, ${money(t.total)}`);
+}
+
+let toastTimer;
+function toast(msg){
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// Events
+$('grid').addEventListener('click', e => {
+  const b = e.target.closest('[data-add]');
+  if (b) add(b.dataset.add);
+});
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]');
+  if (!b) return;
+  state.cat = b.dataset.cat;
+  renderChips();
+  renderGrid();
+});
+$('q').addEventListener('input', e => { state.q = e.target.value; renderGrid(); });
+$('sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+
+$('items').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const d = b.dataset;
+  if (d.inc) setQty(d.inc, (state.cart[d.inc] || 0) + 1);
+  else if (d.dec) setQty(d.dec, (state.cart[d.dec] || 0) - 1);
+  else if (d.remove) setQty(d.remove, 0);
+  else if ('close' in d) closeCart();
+});
+$('summary').addEventListener('click', e => {
+  if (e.target.closest('#checkout')) checkout();
+});
+
+$('openCart').addEventListener('click', openCart);
+$('closeCart').addEventListener('click', closeCart);
+$('scrim').addEventListener('click', closeCart);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('drawer').classList.contains('open')) closeCart();
+});
+
+// Init
+renderChips();
+renderGrid();
+renderCart();
+</script>
+</body>
+</html>

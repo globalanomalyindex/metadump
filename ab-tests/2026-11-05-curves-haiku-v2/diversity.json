@@ -1,0 +1,24 @@
+{
+ "within_build": {
+  "A-r1": 0.293,
+  "A-r2": 0.247,
+  "A-r3": 0.299,
+  "A-r4": 0.267,
+  "B-r1": 0.228,
+  "B-r2": 0.075,
+  "B-r3": 0.269,
+  "B-r4": 0.258
+ },
+ "arms": {
+  "A": {
+   "curves": 12,
+   "distinct_tuples": 11,
+   "mean_within_build_distance": 0.276
+  },
+  "B": {
+   "curves": 12,
+   "distinct_tuples": 12,
+   "mean_within_build_distance": 0.208
+  }
+ }
+}

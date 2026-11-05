@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and punchy curves</title>
+<style>
+:root {
+  --bg: #f4f4f1;
+  --panel: #ffffff;
+  --ink: #1c1c1a;
+  --muted: #64645d;
+  --line: #d8d8d1;
+  --accent: #2f5bd3;
+  --ref: #9b9b93;
+  --mark: #1c1c1a;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413;
+    --panel: #1e1e1c;
+    --ink: #ecebe6;
+    --muted: #a4a39a;
+    --line: #3a3a36;
+    --accent: #8fb0ff;
+    --ref: #6f6f67;
+    --mark: #ecebe6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413;
+  --panel: #1e1e1c;
+  --ink: #ecebe6;
+  --muted: #a4a39a;
+  --line: #3a3a36;
+  --accent: #8fb0ff;
+  --ref: #6f6f67;
+  --mark: #ecebe6;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px 24px;
+  margin-bottom: 20px;
+}
+h1 { font-size: 1.5rem; line-height: 1.2; margin: 0 0 6px; }
+.lede { color: var(--muted); margin: 0; max-width: 62ch; }
+button#pause {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+  min-width: 88px;
+}
+button#pause:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.name { font-weight: 650; font-size: 1.05rem; }
+.tag {
+  font-size: 0.78rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.reading { color: var(--muted); font-size: 0.92rem; margin: 0; }
+
+/* plain track: timing reads as position over time */
+.lane {
+  position: relative;
+  height: 44px;
+  container-type: inline-size;
+  --travel: calc(100cqw - 28px);
+}
+.lane::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--line);
+  border-radius: 2px;
+}
+.mark {
+  position: absolute;
+  right: 13px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--mark);
+  opacity: 0.5;
+  border-radius: 1px;
+}
+.dot {
+  position: absolute;
+  left: 0; top: 8px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  will-change: transform;
+}
+
+/* curve graph with a playhead on the same clock */
+.graph { position: relative; height: 120px; }
+.graph svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.graph path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.graph path.curve { stroke: var(--accent); stroke-width: 2.5; }
+.graph path.ref { stroke: var(--ref); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.graph line.target { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+.playhead {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 5%;
+  width: 0;
+  border-left: 1.5px solid var(--ink);
+  opacity: 0.55;
+}
+
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; font-size: 0.85rem; color: var(--muted); }
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 2px 6px;
+  overflow-wrap: anywhere;
+}
+.readout { margin: 0; font-size: 0.85rem; color: var(--muted); }
+
+footer { margin-top: 20px; color: var(--muted); font-size: 0.88rem; max-width: 70ch; }
+footer p { margin: 0 0 8px; }
+
+/* paused state stops the dots and playheads together */
+.paused .dot,
+.paused .playhead { animation-play-state: paused !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dot, .playhead { animation-play-state: paused; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Sticky and punchy curves</h1>
+      <p class="lede">Three cubic bezier timing curves, each run as a loop: forward on its curve, then back. The graph playhead and the dot share one clock.</p>
+    </div>
+    <button id="pause" type="button" aria-pressed="false">Pause</button>
+  </header>
+
+  <div class="grid">
+    <section class="card" data-i="0">
+      <div class="head"><span class="name">Press</span><span class="tag">punchy</span></div>
+      <p class="reading">Fast attack with a short kick. Most of the change lands in the first frames, progress peaks just past the target, and it clears quickly.</p>
+      <div class="lane" aria-hidden="true"><div class="mark"></div><div class="dot"></div></div>
+      <div class="graph" aria-hidden="true">
+        <svg viewBox="0 0 200 120" preserveAspectRatio="none">
+          <line class="target" x1="10" y1="26.8" x2="190" y2="26.8"></line>
+          <path class="ref" d=""></path>
+          <path class="curve" d=""></path>
+        </svg>
+        <div class="playhead"></div>
+      </div>
+      <div class="meta"><code class="bz"></code><span class="dur"></span></div>
+      <p class="readout"><span class="peak"></span>. <span class="settle"></span>.</p>
+    </section>
+
+    <section class="card" data-i="1">
+      <div class="head"><span class="name">Release</span><span class="tag">sticky</span></div>
+      <p class="reading">Grip, then release. A slow first fifth holds the start back before the middle lets go. No overshoot, so it lands clean.</p>
+      <div class="lane" aria-hidden="true"><div class="mark"></div><div class="dot"></div></div>
+      <div class="graph" aria-hidden="true">
+        <svg viewBox="0 0 200 120" preserveAspectRatio="none">
+          <line class="target" x1="10" y1="26.8" x2="190" y2="26.8"></line>
+          <path class="ref" d=""></path>
+          <path class="curve" d=""></path>
+        </svg>
+        <div class="playhead"></div>
+      </div>
+      <div class="meta"><code class="bz"></code><span class="dur"></span></div>
+      <p class="readout"><span class="peak"></span>. <span class="settle"></span>.</p>
+    </section>
+
+    <section class="card" data-i="2">
+      <div class="head"><span class="name">Catch</span><span class="tag">sticky</span></div>
+      <p class="reading">Overshoot that snaps back and holds. Progress passes the target mid-curve, returns in the last third, and then rests on the mark.</p>
+      <div class="lane" aria-hidden="true"><div class="mark"></div><div class="dot"></div></div>
+      <div class="graph" aria-hidden="true">
+        <svg viewBox="0 0 200 120" preserveAspectRatio="none">
+          <line class="target" x1="10" y1="26.8" x2="190" y2="26.8"></line>
+          <path class="ref" d=""></path>
+          <path class="curve" d=""></path>
+        </svg>
+        <div class="playhead"></div>
+      </div>
+      <div class="meta"><code class="bz"></code><span class="dur"></span></div>
+      <p class="readout"><span class="peak"></span>. <span class="settle"></span>.</p>
+    </section>
+  </div>
+
+  <footer>
+    <p>Which reading each curve carries is a choice; these three take one each: Press for punchy, Release and Catch for sticky.</p>
+    <p>Dashed grey curve: ease-out, for reference. Dashed line: the target. The dot passing its mark and returning is the overshoot.</p>
+  </footer>
+</main>
+
+<script>
+// The three curves. Every animation on the page is built from these values.
+const CURVES = [
+  { "name": "Press",   "bezier": [0.2, 1.45, 0.35, 1],     "duration_ms": 300 },
+  { "name": "Release", "bezier": [0.62, 0, 0.24, 1],       "duration_ms": 460 },
+  { "name": "Catch",   "bezier": [0.25, 1.1, 0.2, 1.12],   "duration_ms": 520 }
+];
+window.CURVES = CURVES;
+
+const EASE_OUT = [0, 0, 0.58, 1];
+
+// Cubic bezier polynomials with P0 = (0,0) and P3 = (1,1). Used only for the graph and readouts.
+function polynomials(b) {
+  const [x1, y1, x2, y2] = b;
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  return {
+    X: s => ((ax * s + bx) * s + cx) * s,
+    Y: s => ((ay * s + by) * s + cy) * s
+  };
+}
+
+// Map time 0..1 and progress onto the 200 x 120 graph box.
+const gx = t => 10 + 180 * t;
+const gy = v => 108 - (v + 0.1) / 1.3 * 96;
+
+function pathFor(b) {
+  const p = polynomials(b);
+  const N = 200;
+  let d = "";
+  for (let k = 0; k <= N; k++) {
+    const s = k / N;
+    d += (k ? "L" : "M") + gx(p.X(s)).toFixed(2) + "," + gy(p.Y(s)).toFixed(2);
+  }
+  return d;
+}
+
+// Keyframes: the dot travels the track; the playhead sweeps the graph. Both use the same duration and timing.
+const style = document.createElement("style");
+style.textContent = CURVES.map((c, i) =>
+  `@keyframes travel-${i} { from { transform: translateX(0); } to { transform: translateX(var(--travel)); } }` +
+  `@keyframes sweep-${i} { from { left: 5%; } to { left: 95%; } }`
+).join("\n");
+document.head.appendChild(style);
+
+document.querySelectorAll(".card[data-i]").forEach(card => {
+  const i = Number(card.dataset.i);
+  const c = CURVES[i];
+  const b = c.bezier;
+  const timing = `cubic-bezier(${b.join(", ")})`;
+  const dur = `${c.duration_ms}ms`;
+
+  card.querySelector(".bz").textContent = timing;
+  card.querySelector(".dur").textContent = `${c.duration_ms} ms per pass, alternate`;
+  card.querySelector(".dot").style.animation = `travel-${i} ${dur} ${timing} infinite alternate`;
+  card.querySelector(".playhead").style.animation = `sweep-${i} ${dur} linear infinite alternate`;
+
+  card.querySelector("path.curve").setAttribute("d", pathFor(b));
+  card.querySelector("path.ref").setAttribute("d", pathFor(EASE_OUT));
+
+  // Readouts measured from the same polynomial.
+  const p = polynomials(b);
+  let peak = -Infinity, peakT = 0, settleT = 0;
+  for (let k = 0; k <= 400; k++) {
+    const s = k / 400;
+    const x = p.X(s), y = p.Y(s);
+    if (y > peak) { peak = y; peakT = x; }
+    if (Math.abs(y - 1) > 0.01) settleT = x;
+  }
+  card.querySelector(".peak").textContent = peak > 1.0005
+    ? `Peak ${peak.toFixed(3)} at ${Math.round(peakT * 100)}% of the pass`
+    : "No overshoot";
+  card.querySelector(".settle").textContent = `Within 1% of rest by ${Math.round(settleT * 100)}%`;
+});
+
+// Pause and play for all loops at once. Reduced motion starts paused.
+const btn = document.getElementById("pause");
+let paused = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function applyPause() {
+  document.documentElement.classList.toggle("paused", paused);
+  btn.textContent = paused ? "Play" : "Pause";
+  btn.setAttribute("aria-pressed", String(paused));
+}
+btn.addEventListener("click", () => { paused = !paused; applyPause(); });
+applyPause();
+</script>
+</body>
+</html>

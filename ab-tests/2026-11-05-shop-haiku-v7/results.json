@@ -1,0 +1,113 @@
+{
+ "scores": {
+  "A": {
+   "compact": 6.33,
+   "minimal": 6.0,
+   "modern": 5.5,
+   "usability": 8.33,
+   "craft": 6.25,
+   "overall": 6.17,
+   "mean_rank": 3,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 7.0,
+    "A-r2": 6.33,
+    "A-r3": 5.0,
+    "A-r4": 6.33
+   }
+  },
+  "B": {
+   "compact": 7.08,
+   "minimal": 8.58,
+   "modern": 7.42,
+   "usability": 7.08,
+   "craft": 6.75,
+   "overall": 6.92,
+   "mean_rank": 2,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 6.33,
+    "B-r2": 8.0,
+    "B-r3": 5.33,
+    "B-r4": 8.0
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 15,
+   "losses": 6,
+   "ties": 3,
+   "win_rate": 0.69
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 5
+  },
+  "B": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 90314,
+   "mean_seconds": 65.3,
+   "mean_tool_uses": 3.5
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 120293,
+   "mean_seconds": 154.1,
+   "mean_tool_uses": 10.8
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 150177,
+   "ms": 162234,
+   "tool_uses": 26
+  }
+ },
+ "judge_agreement_mean_pearson": 0.6,
+ "notes": {
+  "b1/j1/B-r1": "Restrained tinted flat-art cards with a real add-to-bag cycle and a sticky bag bar that expands to editable lines, but the 4:5 tiles make each card tall and leave the desktop grid sparse.",
+  "b1/j1/A-r1": "The most complete shop flow (search, filters, sort, sold-out and low-stock states, drawer with totals and free-shipping hint) in a dense grid, though emoji glyphs and shadowed cards read less refined.",
+  "b1/j1/B-r2": "The tightest and most refined layout, with consistent stroke line art, inline variant and quantity controls, and an always-visible bag with live feedback, but it has no checkout step and the bag sits below the grid on mobile.",
+  "b1/j1/A-r2": "Card-level stepper and drawer work are solid, but the gradient initial tiles look like placeholders, the tall description cards cost density, and the closed drawer's box-shadow bleeds onto the right edge of the viewport.",
+  "b1/j2/B-r2": "Cohesive restrained line-art product glyphs, tight four-up grid, labeled steppers and selects, real sold-out and low-stock states, and a clear bag with per-line controls and subtotal; it lacks a checkout action and goes single-column and tall on mobile.",
+  "b1/j2/A-r2": "Solid search, category, sort and slide-over cart with totals and checkout, but the generic gradient initial tiles look templated, the mobile cards are oversized, and the drawer shadow bleeds visibly along the right edge in both screenshots.",
+  "b1/j2/A-r1": "The densest layout (six columns on desktop, two on mobile) with stock flags, a labeled cart drawer with tax, shipping hint and checkout, but the emoji product art and drop shadows feel dated and decorative.",
+  "b1/j2/B-r1": "Refined flat illustrations on tinted fields and a collapsed sticky bag bar feel restrained and current, but the tall 4:5 cards leave the desktop sparse with a lone fourth card under the bar, and there is no visible checkout path.",
+  "b1/j3/A-r2": "Tidy four-up grid with search, category chips, sort, and a real cart drawer with totals and checkout, though the gradient initials tiles read as placeholders and the mobile cards are tall.",
+  "b1/j3/B-r2": "The densest and most restrained design, with refined line-art glyphs, a blue accent, and clear add/adjust/remove feedback in an inline bag, but it has no checkout action, search, or filtering.",
+  "b1/j3/B-r1": "Tall 4:5 tiles leave a stranded third-row card under a sticky review bar that covers content on mobile, so it is less compact than the others despite clean per-card status text.",
+  "b1/j3/A-r1": "The most complete shopping flow (search, sort, stock flags, sold-out state, drawer with tax and free-shipping hint), but emoji product art, shadows, and badges add clutter and a dated feel, and the mobile chip row clips.",
+  "b2/j1/B-r3": "Very compact and restrained with a clean mobile layout, but on desktop the Add to bag label wraps to two lines and is clipped inside its 36px button, a visible defect on the primary view.",
+  "b2/j1/A-r3": "Feature-complete shop (search, filters, sort, stock badges, drawer with shipping and tax totals), but the 150px emoji tiles and tall cards are far from compact or minimal, and on mobile the Cart button is stranded under the brand instead of sitting with the search.",
+  "b2/j1/B-r4": "Refined thin line-art and a restrained blue accent with a sticky Bag total and Checkout bar keep the shopping job clear; minor issues are a lone sixth card orphaned on desktop and a noisy Minimum 1 note that appears after adding.",
+  "b2/j1/A-r4": "Strong feedback (In bag labels, toasts, drawer with qty and shipping hint, max-qty message), but the descriptions make cards tall, the letter-monogram tiles read as placeholders, and Add to bag buttons sit at uneven heights across each row.",
+  "b2/j2/B-r4": "Restrained line-art products, one blue accent, a sticky bag bar with total and checkout, and labeled steppers and feedback notes; the pantry grid is dense and clean on both viewports.",
+  "b2/j2/A-r4": "Solid cart drawer with shipping, tax and free-shipping hint, but the initials placeholder tiles, pill chips, native select and tall cards with descriptions read as generic template, and the mobile header stacks awkwardly.",
+  "b2/j2/A-r3": "Stock states (sold out, only N left) and a full cart drawer are well handled, but emoji product art and badges add clutter and look dated, and on mobile the Cart button sits above the search field.",
+  "b2/j2/B-r3": "Consistent line-art and a compact, minimal bag panel are good, but the primary Add to bag label wraps and clips inside its button on the desktop layout, a visible defect on the main action.",
+  "b2/j3/A-r4": "Clean stone palette with a labeled drawer, quantity states and free-shipping hint, but initials-on-tiles look template-like, card buttons misalign across rows, and the mobile header wraps awkwardly.",
+  "b2/j3/B-r4": "Cohesive line-art product illustrations, a restrained layout, a sticky bag bar with checkout always reachable, and clear busy, min and max states, with only minor card-height misalignment and a slightly default blue accent.",
+  "b2/j3/B-r3": "Tidy minimal cards, but the Add to bag label clips at desktop width, mobile shows one large card per row with wasted space, and checkout is hidden behind the bag toggle.",
+  "b2/j3/A-r3": "Solid cart drawer, stock badges and sold-out handling, but emoji art reads as decorative clutter, cards go single-column with large art on mobile, and the mobile header order is broken."
+ }
+}

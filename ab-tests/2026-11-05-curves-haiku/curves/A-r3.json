@@ -1,0 +1,59 @@
+[
+ {
+  "name": "Sticky Punch",
+  "bezier": [
+   0.34,
+   1.56,
+   0.64,
+   1
+  ],
+  "duration_ms": 500,
+  "metrics": {
+   "overshoot_pct": 9.8,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 30,
+   "start_speed": 4.31,
+   "end_speed": -0.07,
+   "peak_speed": 4.56,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "Sticky Glide",
+  "bezier": [
+   0.16,
+   1,
+   0.3,
+   1
+  ],
+  "duration_ms": 700,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 33,
+   "start_speed": 5.62,
+   "end_speed": 0,
+   "peak_speed": 6.19,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "Snap Overshoot",
+  "bezier": [
+   0.68,
+   -0.55,
+   0.27,
+   1.55
+  ],
+  "duration_ms": 620,
+  "metrics": {
+   "overshoot_pct": 9.3,
+   "undershoot_pct": 9.3,
+   "time_to_90_pct": 59,
+   "start_speed": -0.74,
+   "end_speed": -0.69,
+   "peak_speed": 5.26,
+   "peak_speed_at_pct": 48
+  }
+ }
+]

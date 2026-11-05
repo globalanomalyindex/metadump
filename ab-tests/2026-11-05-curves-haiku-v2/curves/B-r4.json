@@ -1,0 +1,59 @@
+[
+ {
+  "name": "Press",
+  "bezier": [
+   0.2,
+   1.45,
+   0.35,
+   1
+  ],
+  "duration_ms": 300,
+  "metrics": {
+   "overshoot_pct": 6.6,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 21,
+   "start_speed": 6.57,
+   "end_speed": -0.02,
+   "peak_speed": 7.19,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "Release",
+  "bezier": [
+   0.62,
+   0,
+   0.24,
+   1
+  ],
+  "duration_ms": 460,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 67,
+   "start_speed": 0.05,
+   "end_speed": 0.03,
+   "peak_speed": 3.26,
+   "peak_speed_at_pct": 44
+  }
+ },
+ {
+  "name": "Catch",
+  "bezier": [
+   0.25,
+   1.1,
+   0.2,
+   1.12
+  ],
+  "duration_ms": 520,
+  "metrics": {
+   "overshoot_pct": 4.9,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 26,
+   "start_speed": 4.44,
+   "end_speed": -0.15,
+   "peak_speed": 4.46,
+   "peak_speed_at_pct": 4
+  }
+ }
+]

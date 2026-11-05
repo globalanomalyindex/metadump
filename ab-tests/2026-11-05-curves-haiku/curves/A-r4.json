@@ -1,0 +1,59 @@
+[
+ {
+  "name": "sticky-punch",
+  "bezier": [
+   0.34,
+   1.56,
+   0.64,
+   1
+  ],
+  "duration_ms": 600,
+  "metrics": {
+   "overshoot_pct": 9.8,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 30,
+   "start_speed": 4.31,
+   "end_speed": -0.07,
+   "peak_speed": 4.56,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "snap-settle",
+  "bezier": [
+   0.16,
+   1,
+   0.3,
+   1.2
+  ],
+  "duration_ms": 450,
+  "metrics": {
+   "overshoot_pct": 7,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 26,
+   "start_speed": 5.74,
+   "end_speed": -0.28,
+   "peak_speed": 6.21,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "wind-up-pop",
+  "bezier": [
+   0.6,
+   -0.5,
+   0.1,
+   1.4
+  ],
+  "duration_ms": 800,
+  "metrics": {
+   "overshoot_pct": 5.6,
+   "undershoot_pct": 8.4,
+   "time_to_90_pct": 52,
+   "start_speed": -0.76,
+   "end_speed": -0.41,
+   "peak_speed": 6.1,
+   "peak_speed_at_pct": 37
+  }
+ }
+]

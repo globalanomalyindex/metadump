@@ -6,9 +6,25 @@ Pick a mechanism by the question it answers, not by the domain. "What words shou
 
 Prefer mechanisms that hold objective, specific data (measured parameters, scraped facts, timelines, transcripts, observed exemplars, library facts) over ones that only hold the builder's opinions, and mechanisms that widen (readings, decision points, associations, exemplars, candidate pools) over ones that narrow. A dump seeds the work: it gives the consumer more to draw on, never a smaller task. Where a section needs a choice nobody has made, put it in the section's options area (`schema.md` §3), labeled as an option, or make it a decision point.
 
-Contents: Task ladder · Discipline primer · Distillation · Lexicon · Senses · Readings · Decision points · Associations · Bindings · Invariant/variable contract · Conditional grammar · Forbidden shortcuts · Motif vs transferable relationship · Cue → descriptor · Parameters · Exemplars · Tensions · Influences and analogies · Candidate pools · Layers · Variant catalog · Search vocabulary · Detectable signals · Scraped facts · Timeline · Transcript · Moodboard · Engineering set (seams, test list, examples, API surface, error taxonomy, library facts, budgets, environment) · Prompt recipes
+Contents: Facet · Keyword taxonomy · Formula · Reference descriptors · Task ladder · Discipline primer · Distillation · Lexicon · Senses · Readings · Decision points · Associations · Bindings · Invariant/variable contract · Conditional grammar · Forbidden shortcuts · Motif vs transferable relationship · Cue → descriptor · Parameters · Exemplars · Tensions · Influences and analogies · Candidate pools · Layers · Variant catalog · Search vocabulary · Detectable signals · Scraped facts · Timeline · Transcript · Moodboard · Engineering set (seams, test list, examples, API surface, error taxonomy, library facts, budgets, environment) · Prompt recipes
 
 ---
+
+### Facet (the default shape of every entry)
+
+**Answers:** "what is this area like, how does it behave, and why?" **Every section is written in facets**, the shape of the hand-made dumps this skill grew out of: one object per area or quality, with a line of `text`, `properties` (short phrases), `behaviors` (cause and effect), a `principle`, `signals`, and `tokens` with a `status`. Format in `schema.md` §3. Behaviors carry the most weight: "thin edges catch and transmit more light" or "a malformed line lands in Unparsed" is what lets a consumer recreate a feel or a design rather than copy it. Most other mechanisms below are facets with extra fields.
+
+### Keyword taxonomy (many words for the same thing)
+
+**Answers:** "what are all the ways to say it?" One entry per register, each a `keywords` list: core words, technical, perceptual, emotional and atmosphere, cultural and lineage, and the domain's own objects (materials, components, test kinds). The hand-made dumps had more of this than anything else: luminous, translucent, subsurface scattering, halation, summer nostalgia and Frutiger Aero all describe one look from different directions. Associations and lineage sit at tier 3–4, so a consumer draws on them without naming them in the output.
+
+### Formula (the recipe, with roles)
+
+**Answers:** "what's the whole thing in one line, and what does each part do?" Lives in `essence.formula`: `full` ("extremely saturated color + high-key illumination + translucent materials + minimal compositions"), `essential` (the shortest version) and `roles` (`{"blue": "identity", "white": "luminosity", "green": "surreal vitality"}`). For TDD: "one failing test + the smallest change + refactor on green", with roles such as the test list as the plan and the seam as the place tests attach.
+
+### Reference descriptors (one per reference)
+
+**Answers:** "what is in each reference?" One facet per image, page or video: `kind: "reference"`, `term` (what it shows, in a few words), `signals` (what you can see), `method: "visual"`, and its source. "Transparent cyan vinyl on a white record player: translucent blue vinyl, thickness variation, blue light transmission, white reflections." finalize counts a descriptor as someone having looked at the image.
 
 ### Task ladder (from the disciplines down to the specifics)
 
@@ -42,7 +58,7 @@ Examples: "Counter" (brand, not countertop); "glass" (physical glass, not glassm
 
 ### Readings (scope senses, kept side by side)
 
-**Answers:** "what could this request be?" When the request's scope allows several readings, each one with what it includes, and which is the default. Lives in `essence.readings` (`{"reading", "includes", "default"}`), with detail entries if needed. "Shopping component": a product card with quick add (default), a mini cart with quantity and checkout, a product list with filters, a checkout summary. "Add auth": session cookies, JWT, OAuth via a provider. Keeping every reading is what stops a dump from narrowing a request; a consumer picks or combines them. Readings the build thought of are `inferred`, tier 2.
+**Answers:** "what could this request be?" When the request's scope allows several readings, each one with what it includes, and which is the default. Lives in `essence.readings` (`{"reading", "includes", "default"}`), with detail entries if needed. "Shopping component": a product card with quick add (default), a mini cart with quantity and checkout, a product list with filters, a checkout summary. "Add auth": session cookies, JWT, OAuth via a provider. Keeping every reading is what stops a dump from narrowing a request; a consumer picks or combines them. Readings the build thought of are `inferred`, tier 2. **Quality words get readings too.** For each quality word in the prompt, a facet with `kind: "quality"` and `readings` side by side, with no default: "sticky" in motion is a slow start that grips, an early settle that holds, an overshoot that snaps back, or a magnetic pull. Each reading says what it looks like in practice and gets an exemplar in the pool. Test 8's dump defined "sticky" once and fitted its curves to that; every build copied them.
 
 ### Decision points (choices with options, tradeoffs and signals)
 
@@ -135,7 +151,7 @@ Covers design tokens, sampled hex values (`status: "photo sample"`, `method: "pi
 
 ### Candidate pools (tier 4)
 
-**Answers:** "give me options." Labeled alternatives a consumer may sample (at most two) for variety: alternative palettes, title options, metaphors. Never constraints. This counters the pull toward the most typical output.
+**Answers:** "give me options." Labeled alternatives a consumer may sample (at most two) for variety: alternative palettes, title options, metaphors. Never constraints. This counters the pull toward the most typical output. When the task asks for N things, the pool holds one or two exemplars per reading of each quality, labeled with the reading each serves, never a finished set of N called the default: the dump never produces the deliverable, and a set a consumer could paste is the dump doing the task.
 
 ### Layers
 

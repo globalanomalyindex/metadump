@@ -27,24 +27,26 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 20–35K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
-| `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 40–90K tokens | ~2–4M, 40–70 min (estimate) |
-| `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 90–150K+ tokens, still routed | ~4–7M, 1–2 h (estimate) |
+| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 8–15K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
+| `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 15–30K tokens | ~2–4M, 40–70 min (estimate) |
+| `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 30–50K tokens, still routed | ~4–7M, 1–2 h (estimate) |
 
 "Tokens processed" counts every agent re-reading its context across its tool calls. It is far more than the dump's own size.
 
-**Entry budgets per shard** (the Workflow script puts these in each worker's prompt; give them to Agent-tool workers yourself):
+**Entry budgets per shard** (the Workflow script puts these in each worker's prompt; give them to Agent-tool workers yourself). They count **facets**: one object per area, with a line of text and lists of short phrases, behaviors and a principle, the shape of the hand-made dumps this skill grew out of (`briefs.md`, opener). Atomic entries like anti-keywords, timelines and cues still count one each.
 
 | Type | lite | standard | deep |
 |---|---|---|---|
-| research | 8–12 | 10–20 | 15–30 |
-| specialist | 12–20 | 20–35 | 30–50 |
-| lexicon | 10–15 | 15–30 | 25–45 |
-| exclusion | 10–15 | 15–25 | 20–35 |
-| observe | 10–20 | 20–35 | 30–50 |
-| scrape | 8–15 | 15–25 | 25–40 |
-| watch | 8–15 | 15–30 | 25–45 |
-| moodboard | 6–12 | 10–20 | 15–30 |
+| research | 4–8 | 6–10 | 8–14 |
+| specialist | 4–8 | 6–12 | 10–16 |
+| lexicon | 4–8 | 6–10 | 8–14 |
+| exclusion | 6–10 | 8–14 | 10–18 |
+| observe | 4–8 | 6–12 | 8–16 |
+| scrape | 3–6 | 4–8 | 6–12 |
+| watch | 3–8 | 4–10 | 6–14 |
+| moodboard | 3–6 | 4–8 | 6–12 |
+
+Reference descriptors (one per image or reference) come on top of the observe and moodboard budgets.
 
 Without budgets, workers write everything they can think of: the first lite run produced 212 entries against a plan of about 80.
 
@@ -92,8 +94,13 @@ Charting decides the dump's shape. Do it in the main loop, carefully: everything
 <!-- when the request's scope allows several readings, list them all with what each includes, and pick a default without dropping the others. They go into essence.readings. Collapsing to one reading is how a dump narrows a request. -->
 - "shopping component": product card with quick add and a mini cart that reaches checkout (default, covers the whole job) / mini cart with quantity and checkout / product list with filters / checkout summary
 
+## Quality readings
+<!-- for each quality word in the prompt, the ways it can be read for this task, side by side, with no default. They become `kind: "quality"` facets (lexicon) and research covers an exemplar per reading. Defining a quality once and tuning values to it is how test 8's dump made every build the same. -->
+- "sticky" (motion): a slow start that grips then releases / an early settle that holds / an overshoot that snaps back / a magnetic pull toward the end
+- "punchy" (motion): a fast attack / a hard stop / a short overshoot kick
+
 ## Research facets
-<!-- for each rung of the ladder and each key quality in the prompt, which facets the research tickets cover. The top rungs get a discipline primer (principles, laws, heuristics, standards, vocabulary, common mistakes); the lower rungs get exemplars, patterns, needs and specifics. Facets: vocabulary and human descriptors, principles and heuristics, exemplars (brands, products, sites, codebases, works, people) with what transfers, patterns and anti-patterns, needs of the people involved, specifics, decision points. Lite: one primer ticket for the discipline rungs and one ticket for the specific rungs; standard: one or two rungs or facets per ticket. -->
+<!-- for each rung of the ladder, each key quality in the prompt and each reading of it, which facets the research tickets cover. The top rungs get a discipline primer (principles, laws, heuristics, standards, vocabulary, common mistakes); the lower rungs get exemplars, patterns, needs and specifics. Facets: vocabulary and human descriptors, principles and heuristics, exemplars (brands, products, sites, codebases, works, people) with what transfers, patterns and anti-patterns, needs of the people involved, specifics, decision points. Lite: one primer ticket for the discipline rungs and one ticket for the specific rungs; standard: one or two rungs or facets per ticket. -->
 
 ## Decision points
 <!-- the choices the work will face, each with its options; the dump gives options, tradeoffs and sources, the consumer decides. Design: density vs breathing room, one product vs a list. TDD: which test first, where the seam goes, outside-in vs inside-out, when to refactor. -->
@@ -150,6 +157,18 @@ How to choose the section plan for any domain:
 4. Survival rule: drop any section no job or query needs. Breadth comes from the query log, not from symmetry.
 5. Give each section a place for objective data first (measured, scraped, transcribed, observed, researched) and an options area for the builder's proposals.
 6. Plan for breadth as well as specifics: readings, decision points (with options and tradeoffs), exemplars, associations and candidate pools are sections or groups too, routed to an "explore options" job.
+
+7. Write every section as facets. A dump reads like the owner's hand-made ones when it has, in some form:
+   - a **thesis** and a one-line **summary** (`essence.one_sentence`, `essence.summary`);
+   - an **identity** facet: descriptors and principles;
+   - one section per **facet area**, named in the domain's words (geometry, color, materials, motion; or seams, test list, error model), each holding a few facets with properties, behaviors and a principle;
+   - a **keyword taxonomy** across registers, and **influences** with what each contributes;
+   - a **formula** with the role of each element, and **tensions** as pairs (`essence.formula`, `essence.tensions`);
+   - **signals** for recognizing the result, **search queries** by focus, a **descriptor** per reference;
+   - numbers labeled as measured, sourced or illustrative;
+   - anti-keywords with their `instead`, and a ready prompt with a negative prompt in `exports`.
+
+   Most dumps don't need every part, and the task's own words decide the names.
 
 `references/worked-plans.md` has three example plans (visual packaging, an engineering CLI with TDD, a short story) to calibrate against. They are illustrations, not templates.
 

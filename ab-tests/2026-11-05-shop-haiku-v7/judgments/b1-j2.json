@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {"compact": 8, "minimal": 9, "modern": 7, "usability": 8, "craft": 8, "overall": 8, "note": "Cohesive restrained line-art product glyphs, tight four-up grid, labeled steppers and selects, real sold-out and low-stock states, and a clear bag with per-line controls and subtotal; it lacks a checkout action and goes single-column and tall on mobile."},
+    "X": {"compact": 6, "minimal": 7, "modern": 6, "usability": 8, "craft": 6, "overall": 6, "note": "Solid search, category, sort and slide-over cart with totals and checkout, but the generic gradient initial tiles look templated, the mobile cards are oversized, and the drawer shadow bleeds visibly along the right edge in both screenshots."},
+    "Y": {"compact": 9, "minimal": 6, "modern": 5, "usability": 9, "craft": 7, "overall": 7, "note": "The densest layout (six columns on desktop, two on mobile) with stock flags, a labeled cart drawer with tax, shipping hint and checkout, but the emoji product art and drop shadows feel dated and decorative."},
+    "Z": {"compact": 5, "minimal": 9, "modern": 8, "usability": 7, "craft": 7, "overall": 7, "note": "Refined flat illustrations on tinted fields and a collapsed sticky bag bar feel restrained and current, but the tall 4:5 cards leave the desktop sparse with a lone fourth card under the bar, and there is no visible checkout path."}
+  },
+  "ranking": ["W", "Z", "Y", "X"]
+}

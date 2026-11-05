@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and Punchy Curves</title>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --ink: #1b1b1f;
+  --muted: #5d5d66;
+  --line: #d8d6cf;
+  --track: #ece9e2;
+  --accent: #d9482b;
+  --accent-ink: #ffffff;
+  --target: #8f8f98;
+  --curve: #1b1b1f;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131316;
+    --surface: #1d1d22;
+    --ink: #f2f1ee;
+    --muted: #a4a4ae;
+    --line: #34343c;
+    --track: #2a2a31;
+    --accent: #ff7a5c;
+    --accent-ink: #131316;
+    --target: #6b6b74;
+    --curve: #f2f1ee;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131316;
+  --surface: #1d1d22;
+  --ink: #f2f1ee;
+  --muted: #a4a4ae;
+  --line: #34343c;
+  --track: #2a2a31;
+  --accent: #ff7a5c;
+  --accent-ink: #131316;
+  --target: #6b6b74;
+  --curve: #f2f1ee;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 8px; }
+.lede { color: var(--muted); max-width: 62ch; margin: 0 0 12px; }
+.key {
+  color: var(--muted);
+  font-size: 0.92rem;
+  max-width: 62ch;
+  margin: 0 0 24px;
+}
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 820px) {
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.card h2 { font-size: 1.05rem; margin: 0; }
+.curve-code {
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.track {
+  position: relative;
+  height: 56px;
+  background: var(--track);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.track::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 1px;
+  background: var(--line);
+}
+.dot {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.graph {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.graph .axis { stroke: var(--line); stroke-width: 1; }
+.graph .target { stroke: var(--target); stroke-width: 1; stroke-dasharray: 3 3; }
+.graph .curve { fill: none; stroke: var(--curve); stroke-width: 2; }
+.graph .marker { fill: var(--accent); }
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.readout {
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--muted);
+  margin: 0;
+}
+button {
+  font: inherit;
+  font-size: 14px;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 16px;
+  min-height: 40px;
+  cursor: pointer;
+}
+button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.92rem;
+}
+dt { color: var(--muted); }
+dd { margin: 0; }
+.fit, .check { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.fit strong, .check strong { color: var(--ink); font-weight: 600; }
+.foot {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 24px 0 0;
+  max-width: 70ch;
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Sticky and punchy curves</h1>
+  <p class="lede">Three cubic-bezier curves, each looped as one move, a held rest, then a reset. Punchy is the fast leave and the visible impact. Sticky is the landing that holds with no drift after it.</p>
+  <p class="key">Each loop: move on its curve, hold at rest for 1.44 s, reset. The graph marker tracks the curve and the readout shows its eased progress. With reduced motion on, nothing loops: the dot rests at its end and Play once runs one move.</p>
+
+  <section class="grid" id="grid">
+    <article class="card" id="loop-0">
+      <h2>Punch and stick</h2>
+      <p class="curve-code" data-role="code"></p>
+      <div class="track"><div class="dot"></div></div>
+      <svg class="graph" viewBox="0 0 120 120" role="img" aria-label="Progress curve for punch and stick">
+        <line class="axis" x1="8" y1="104" x2="112" y2="104"></line>
+        <line class="axis" x1="8" y1="8" x2="8" y2="104"></line>
+        <line class="target" x1="8" y1="24" x2="112" y2="24"></line>
+        <path class="curve" data-role="path"></path>
+        <circle class="marker" r="3.5" cx="8" cy="104"></circle>
+      </svg>
+      <div class="row">
+        <button type="button" data-role="toggle">Pause</button>
+        <p class="readout" data-role="readout"></p>
+      </div>
+      <dl data-role="stats"></dl>
+      <p class="fit" data-role="fit"></p>
+      <p class="check" data-role="check"></p>
+    </article>
+
+    <article class="card" id="loop-1">
+      <h2>Sticky settle</h2>
+      <p class="curve-code" data-role="code"></p>
+      <div class="track"><div class="dot"></div></div>
+      <svg class="graph" viewBox="0 0 120 120" role="img" aria-label="Progress curve for sticky settle">
+        <line class="axis" x1="8" y1="104" x2="112" y2="104"></line>
+        <line class="axis" x1="8" y1="8" x2="8" y2="104"></line>
+        <line class="target" x1="8" y1="24" x2="112" y2="24"></line>
+        <path class="curve" data-role="path"></path>
+        <circle class="marker" r="3.5" cx="8" cy="104"></circle>
+      </svg>
+      <div class="row">
+        <button type="button" data-role="toggle">Pause</button>
+        <p class="readout" data-role="readout"></p>
+      </div>
+      <dl data-role="stats"></dl>
+      <p class="fit" data-role="fit"></p>
+      <p class="check" data-role="check"></p>
+    </article>
+
+    <article class="card" id="loop-2">
+      <h2>Visible kick</h2>
+      <p class="curve-code" data-role="code"></p>
+      <div class="track"><div class="dot"></div></div>
+      <svg class="graph" viewBox="0 0 120 120" role="img" aria-label="Progress curve for visible kick">
+        <line class="axis" x1="8" y1="104" x2="112" y2="104"></line>
+        <line class="axis" x1="8" y1="8" x2="8" y2="104"></line>
+        <line class="target" x1="8" y1="24" x2="112" y2="24"></line>
+        <path class="curve" data-role="path"></path>
+        <circle class="marker" r="3.5" cx="8" cy="104"></circle>
+      </svg>
+      <div class="row">
+        <button type="button" data-role="toggle">Pause</button>
+        <p class="readout" data-role="readout"></p>
+      </div>
+      <dl data-role="stats"></dl>
+      <p class="fit" data-role="fit"></p>
+      <p class="check" data-role="check"></p>
+    </article>
+  </section>
+
+  <p class="foot">Values come from the two-decimal curves measured in this build (overshoot, and the progress at which the curve is within 1 or 5 percent of rest). The 1 percent band is the strict stop; the 5 percent band is the loose one that allows the kick.</p>
+</main>
+
+<script>
+// The three curves. These exact values drive the animations below.
+const CURVES = [
+  { name: "punchy-sticky", bezier: [0.15, 1, 0.2, 1.04], duration_ms: 300 },
+  { name: "sticky-settle", bezier: [0.18, 0.98, 0.3, 1], duration_ms: 250 },
+  { name: "punchy-kick", bezier: [0.2, 1, 0.25, 1.15], duration_ms: 350 }
+];
+window.CURVES = CURVES;
+
+const HOLD_MS = 1440;
+
+// Notes per curve, from the measured values for each curve.
+const NOTES = [
+  {
+    title: "Punch and stick",
+    stats: [["Overshoot", "0.97% once"], ["Peak", "at 70% of the run"], ["90% of distance", "by 27% of the run"], ["Within 1%", "by 46% of the run"]],
+    fit: "<strong>Fits:</strong> a press or a card or popover that enters. One faint pass over the target, then a quick stop.",
+    check: "<strong>Check:</strong> passes the strict 1% stop (by 0.65 of the run) and the start check."
+  },
+  {
+    title: "Sticky settle",
+    stats: [["Overshoot", "0%, monotone"], ["Peak", "none"], ["90% of distance", "by 34% of the run"], ["Within 1%", "by 64% of the run"]],
+    fit: "<strong>Fits:</strong> a toggle thumb or a drawer that travels a long way. Lands and holds with no rebound.",
+    check: "<strong>Check:</strong> passes the strict 1% stop with nothing passing the target, so no drift after landing."
+  },
+  {
+    title: "Visible kick",
+    stats: [["Overshoot", "4.97% once"], ["Peak", "at 61% of the run"], ["90% of distance", "by 27% of the run"], ["Within 5%", "by 31% of the run"]],
+    fit: "<strong>Fits:</strong> a larger card or popover that needs a visible impact. Use only under the loose 5% band.",
+    check: "<strong>Check:</strong> fails the strict 1% stop (it is within 1% only at 95%); passes the loose 5% stop (by 0.35 of the run)."
+  }
+];
+
+// Cubic-bezier helpers: the same curve as the CSS easing, sampled for the graph and readout.
+function makeEase(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const X = s => ((ax * s + bx) * s + cx) * s;
+  const Y = s => ((ay * s + by) * s + cy) * s;
+  const solveS = x => {
+    let lo = 0, hi = 1, s = x;
+    for (let i = 0; i < 60; i++) {
+      const d = X(s) - x;
+      if (Math.abs(d) < 1e-7) break;
+      if (d > 0) hi = s; else lo = s;
+      s = (lo + hi) / 2;
+    }
+    return s;
+  };
+  return { X, Y, yAt: x => (x <= 0 ? 0 : x >= 1 ? 1 : Y(solveS(x))) };
+}
+
+// Graph y-range: -0.1 to 1.2, mapped to the SVG box (y 8 to 104 for 1.2 to 0 band).
+function graphY(y) { return 112 - ((y + 0.1) / 1.3) * 104; }
+function graphX(x) { return 8 + x * 104; }
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+CURVES.forEach((curve, i) => {
+  const root = document.getElementById("loop-" + i);
+  const note = NOTES[i];
+  const [x1, y1, x2, y2] = curve.bezier;
+  const easing = `cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})`;
+  const move = curve.duration_ms;
+  const period = move + HOLD_MS;
+  const ease = makeEase(x1, y1, x2, y2);
+
+  const track = root.querySelector(".track");
+  const dot = root.querySelector(".dot");
+  const btn = root.querySelector('[data-role="toggle"]');
+  const readout = root.querySelector('[data-role="readout"]');
+  const marker = root.querySelector(".marker");
+
+  root.querySelector('[data-role="code"]').textContent = `${curve.name}: ${easing}, ${move} ms`;
+  root.querySelector('[data-role="fit"]').innerHTML = note.fit;
+  root.querySelector('[data-role="check"]').innerHTML = note.check;
+  root.querySelector("h2").textContent = note.title;
+  root.querySelector('[data-role="stats"]').innerHTML =
+    note.stats.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+
+  // Plot the curve: x is the share of the move, y is the eased progress.
+  let d = "";
+  for (let s = 0; s <= 60; s++) {
+    const t = s / 60;
+    const px = graphX(ease.X(t)), py = graphY(ease.Y(t));
+    d += (s === 0 ? "M" : "L") + px.toFixed(2) + " " + py.toFixed(2) + " ";
+  }
+  root.querySelector('[data-role="path"]').setAttribute("d", d.trim());
+
+  let travel = 0;
+  let once = false;
+  const anim = dot.animate([], { duration: period, iterations: Infinity, fill: "both" });
+
+  // One loop: the curve runs on the first segment, a linear hold on the second, then a reset at 100%.
+  function frames() {
+    return [
+      { transform: "translateX(0px)", easing: easing },
+      { transform: `translateX(${travel}px)`, offset: move / period, easing: "linear" },
+      { transform: `translateX(${travel}px)`, offset: 1 }
+    ];
+  }
+  function layout() {
+    travel = Math.max(0, track.clientWidth - 16 - dot.offsetWidth);
+    anim.effect.setKeyframes(frames());
+  }
+  new ResizeObserver(layout).observe(track);
+  layout();
+
+  function setOnce(v) {
+    once = v;
+    anim.effect.updateTiming({ iterations: v ? 1 : Infinity });
+  }
+
+  function applyMode() {
+    if (reduceMotion.matches) {
+      setOnce(true);
+      anim.pause();
+      anim.currentTime = period;
+      btn.textContent = "Play once";
+    } else {
+      setOnce(false);
+      anim.play();
+      btn.textContent = "Pause";
+    }
+  }
+
+  btn.addEventListener("click", () => {
+    if (reduceMotion.matches) {
+      setOnce(true);
+      anim.currentTime = 0;
+      anim.play();
+      return;
+    }
+    if (anim.playState === "running") {
+      anim.pause();
+      btn.textContent = "Play";
+    } else {
+      anim.play();
+      btn.textContent = "Pause";
+    }
+  });
+  reduceMotion.addEventListener("change", applyMode);
+  applyMode();
+
+  const marker_ = marker;
+  function tick() {
+    const ct = anim.currentTime || 0;
+    const t = once ? Math.min(ct, period) : ct % period;
+    const p = Math.min(1, t / move);
+    const y = ease.yAt(p);
+    marker_.setAttribute("cx", graphX(p).toFixed(2));
+    marker_.setAttribute("cy", graphY(y).toFixed(2));
+    readout.textContent = (t < move ? "moving" : "holding at rest") + "  progress " + y.toFixed(3);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>

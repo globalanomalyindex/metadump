@@ -4,3 +4,9 @@
 */metadumps/*.moodboard.html
 # Label-shuffled copies of runs and shots for the blind graders; regenerate with blind.py (key.json maps them back).
 */blind/
+
+# metadump work dirs are resumable scratch, not deliverables
+*/metadumps/.work/
+
+# Raw frames motion.mjs captures; the frame strips in shots/ hold the same frames
+*/frames/

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compact Shop Component</title>
+<style>
+  :root {
+    --bg: #f6f6f4;
+    --surface: #ffffff;
+    --field: #f1f1ee;
+    --ink: #14161b;
+    --muted: #5d6370;
+    --line: #e4e4df;
+    --accent: #2350d8;
+    --on-accent: #ffffff;
+    --warn: #8a4b00;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 16px rgb(0 0 0 / 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115;
+      --surface: #171a21;
+      --field: #1f232c;
+      --ink: #f2f3f5;
+      --muted: #a3a9b5;
+      --line: #2a2f3a;
+      --accent: #8fb0ff;
+      --on-accent: #0b0d12;
+      --warn: #f0b86a;
+      --shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --field: #1f232c;
+    --ink: #f2f3f5;
+    --muted: #a3a9b5;
+    --line: #2a2f3a;
+    --accent: #8fb0ff;
+    --on-accent: #0b0d12;
+    --warn: #f0b86a;
+    --shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; }
+  .bag-link {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink);
+    font: inherit; font-weight: 500; cursor: pointer;
+  }
+  .badge {
+    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--ink); color: var(--bg);
+    font-size: 12px; line-height: 22px; text-align: center; font-variant-numeric: tabular-nums;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+
+  .card {
+    position: relative; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    transition: box-shadow 0.2s ease;
+  }
+  .card:hover, .card:focus-within { box-shadow: var(--shadow); }
+  .media {
+    aspect-ratio: 4 / 3; display: grid; place-items: center;
+    background: var(--field); color: var(--muted);
+  }
+  .media svg { width: 44%; height: auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+  .info { display: flex; flex-direction: column; gap: 8px; padding: 12px; flex: 1; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .name { margin: 0; font-size: 15px; font-weight: 500; }
+  .price { margin: 0; font-size: 17px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .meta { margin: 0; font-size: 13px; color: var(--muted); }
+  select {
+    font: inherit; font-size: 13px; min-height: 36px; padding: 0 8px; width: 100%;
+    border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink);
+  }
+  .note { margin: 0; min-height: 16px; font-size: 12px; color: var(--warn); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+
+  .stepper {
+    display: inline-flex; align-items: center; height: 40px;
+    border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden;
+  }
+  .step {
+    width: 36px; height: 100%; border: 0; background: none; color: var(--ink);
+    font: inherit; font-size: 18px; cursor: pointer;
+  }
+  .step:disabled { color: var(--muted); opacity: 0.4; cursor: not-allowed; }
+  .qty { min-width: 28px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  .add {
+    flex: 1 1 120px; height: 40px; padding: 0 12px; border: 0; border-radius: var(--radius-sm);
+    background: var(--accent); color: var(--on-accent); font: inherit; font-weight: 500; cursor: pointer;
+  }
+  .add:disabled { opacity: 0.55; cursor: not-allowed; }
+  .add:not(:disabled):active { transform: scale(0.98); }
+
+  .bag {
+    margin-top: 32px; padding: 16px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: var(--radius);
+  }
+  .bag h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .empty { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+  .lines { list-style: none; margin: 8px 0 0; padding: 0; }
+  .line {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 0; border-top: 1px solid var(--line);
+  }
+  .line .name { font-size: 14px; }
+  .line-end { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .line-total { margin: 0; min-width: 64px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .text-btn {
+    min-height: 36px; padding: 0 6px; border: 0; background: none; color: var(--muted);
+    font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer;
+  }
+  .text-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .summary {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    padding-top: 12px; border-top: 1px solid var(--line); margin-top: 4px;
+  }
+  .summary-label { margin: 0; font-weight: 600; }
+  .summary-note { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .subtotal { margin: 0; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bag-foot { display: flex; justify-content: flex-end; margin-top: 4px; }
+
+  .sr {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .add:not(:disabled):active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Shop</h1>
+    <button class="bag-link" id="bag-link" type="button">Bag <span class="badge" id="bag-count">0</span></button>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <section class="bag" id="bag" aria-labelledby="bag-title">
+    <h2 id="bag-title">Bag</h2>
+    <p class="empty" id="bag-empty" hidden>Your bag is empty.</p>
+    <ul class="lines" id="bag-lines"></ul>
+    <div class="summary" id="bag-summary">
+      <div>
+        <p class="summary-label">Subtotal</p>
+        <p class="summary-note">Shipping calculated at checkout</p>
+      </div>
+      <p class="subtotal" id="bag-subtotal">$0.00</p>
+    </div>
+    <div class="bag-foot">
+      <button class="text-btn" id="bag-clear" type="button">Clear bag</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- sample data (prices in cents, stock per variant) ----------
+  var MAX_QTY = 9;   // per-line order limit
+  var LOW = 3;       // show "Only N left" at or below this
+
+  var PRODUCTS = [
+    { id: 'oat-milk', name: 'Oat milk, barista edition', glyph: 'bottle', opt: 'Size',
+      variants: [ { label: '1 L', price: 349, stock: 12 }, { label: '2 L', price: 569, stock: 5 } ] },
+    { id: 'cold-brew', name: 'Cold brew concentrate', glyph: 'jar', opt: 'Size',
+      variants: [ { label: '350 ml', price: 695, stock: 8 } ] },
+    { id: 'dark-choc', name: 'Sea salt dark chocolate', glyph: 'bar', opt: 'Size',
+      variants: [ { label: '80 g', price: 425, stock: 3 } ] },
+    { id: 'dripper', name: 'Ceramic pour-over dripper', glyph: 'mug', opt: 'Colour',
+      variants: [ { label: 'White', price: 2800, stock: 6 }, { label: 'Sage', price: 2800, stock: 0 }, { label: 'Black', price: 3000, stock: 4 } ] }
+  ];
+
+  var GLYPHS = {
+    bottle: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M26 8h12v8l6 8v30a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4V24l6-8z"/><path d="M26 30h12"/></svg>',
+    jar:    '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect x="14" y="20" width="36" height="34" rx="6"/><path d="M18 20v-6h28v6"/><path d="M14 34h36"/></svg>',
+    bar:    '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect x="16" y="14" width="32" height="38" rx="3"/><path d="M16 26h32M16 38h32"/></svg>',
+    mug:    '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M16 22h28v22a8 8 0 0 1-8 8H24a8 8 0 0 1-8-8z"/><path d="M44 28h4a6 6 0 0 1 0 12h-4"/><path d="M12 54h40"/></svg>'
+  };
+
+  var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  function fmt(cents) { return money.format(cents / 100); }
+
+  // ---------- state ----------
+  // bag: key "productId::variantIndex" -> { productId, variantIndex, qty }
+  var bag = {};
+  bag[key('oat-milk', 0)] = { productId: 'oat-milk', variantIndex: 0, qty: 1 };
+  var cards = [];
+
+  function key(pid, vi) { return pid + '::' + vi; }
+  function bagQty(pid, vi) { var it = bag[key(pid, vi)]; return it ? it.qty : 0; }
+  function productById(id) {
+    for (var i = 0; i < PRODUCTS.length; i++) if (PRODUCTS[i].id === id) return PRODUCTS[i];
+    return null;
+  }
+
+  // ---------- tiny DOM helper ----------
+  function el(tag, attrs) {
+    var n = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (k === 'text') n.textContent = v;
+      else if (k.indexOf('on') === 0) n.addEventListener(k.slice(2), v);
+      else if (v === true) n.setAttribute(k, '');
+      else if (v !== false && v != null) n.setAttribute(k, v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return n;
+  }
+
+  function makeStepper(label, value, onDec, onInc) {
+    var dec = el('button', { type: 'button', class: 'step', 'aria-label': 'Decrease ' + label, text: '−', onclick: onDec });
+    var out = el('output', { class: 'qty', text: String(value) });
+    var inc = el('button', { type: 'button', class: 'step', 'aria-label': 'Increase ' + label, text: '+', onclick: onInc });
+    var root = el('div', { class: 'stepper', role: 'group', 'aria-label': label }, dec, out, inc);
+    return { root: root, dec: dec, out: out, inc: inc };
+  }
+
+  // ---------- card component ----------
+  function limitsFor(card) {
+    var v = card.p.variants[card.st.variant];
+    var avail = Math.max(0, v.stock - bagQty(card.p.id, card.st.variant));
+    return { v: v, avail: avail, lim: Math.min(avail, MAX_QTY) };
+  }
+
+  function clearTimers(st) {
+    st.timers.forEach(clearTimeout);
+    st.timers = [];
+  }
+
+  function createCard(p) {
+    var st = { variant: 0, qty: 1, status: 'idle', timers: [] };
+    var card = { p: p, st: st, r: {} };
+
+    var media = el('div', { class: 'media' });
+    media.innerHTML = GLYPHS[p.glyph];
+
+    var price = el('p', { class: 'price' });
+    var head = el('div', { class: 'head' }, el('h3', { class: 'name', text: p.name }), price);
+
+    var option;
+    if (p.variants.length > 1) {
+      var select = el('select', { 'aria-label': p.opt });
+      p.variants.forEach(function (v, i) {
+        select.appendChild(el('option', { value: String(i), text: v.stock === 0 ? v.label + ' (sold out)' : v.label }));
+      });
+      select.addEventListener('change', function () {
+        clearTimers(st);
+        st.variant = parseInt(select.value, 10);
+        st.qty = 1;
+        st.status = 'idle';
+        renderAll();
+      });
+      option = select;
+    } else {
+      option = el('p', { class: 'meta', text: p.variants[0].label });
+    }
+
+    var stepper = makeStepper('Quantity', 1,
+      function () { if (st.status !== 'pending') { st.qty = Math.max(1, st.qty - 1); renderAll(); } },
+      function () { if (st.status !== 'pending' && st.qty < limitsFor(card).lim) { st.qty += 1; renderAll(); } });
+
+    var add = el('button', { type: 'button', class: 'add', onclick: function () { addToBag(card); } });
+    var note = el('p', { class: 'note', 'aria-live': 'off' });
+    var live = el('p', { class: 'sr', 'aria-live': 'polite' });
+
+    var info = el('div', { class: 'info' }, head, option, note,
+      el('div', { class: 'actions' }, stepper.root, add), live);
+
+    card.el = el('article', { class: 'card' }, media, info);
+    card.r = { price: price, qty: stepper.out, dec: stepper.dec, inc: stepper.inc, note: note, add: add, live: live };
+    return card;
+  }
+
+  function renderCard(card) {
+    var st = card.st, r = card.r;
+    var lim = limitsFor(card);
+    if (st.qty > lim.lim) st.qty = Math.max(1, lim.lim);
+    var busy = st.status === 'pending';
+
+    r.price.textContent = fmt(lim.v.price);
+    r.qty.textContent = String(st.qty);
+    r.dec.disabled = busy || st.qty <= 1;
+    r.inc.disabled = busy || st.qty >= lim.lim;
+
+    var note = '';
+    if (lim.v.stock === 0) note = 'Sold out';
+    else if (lim.avail === 0) note = 'All ' + lim.v.stock + ' already in your bag';
+    else if (st.qty >= MAX_QTY) note = 'Maximum ' + MAX_QTY + ' per order';
+    else if (lim.avail <= LOW) note = 'Only ' + lim.avail + ' left';
+    r.note.textContent = note;
+
+    r.add.disabled = busy || lim.lim < 1;
+    if (busy) r.add.textContent = 'Adding…';
+    else if (st.status === 'added') r.add.textContent = 'Added: ' + bagQty(card.p.id, st.variant) + ' in bag';
+    else if (lim.lim < 1) r.add.textContent = 'Unavailable';
+    else r.add.textContent = 'Add to bag';
+  }
+
+  function addToBag(card) {
+    var st = card.st, lim = limitsFor(card);
+    if (st.status === 'pending' || lim.lim < 1) return;
+    var qty = Math.min(st.qty, lim.lim);
+    var vi = st.variant, p = card.p, v = lim.v;
+
+    clearTimers(st);
+    st.status = 'pending';
+    renderAll();
+
+    st.timers.push(setTimeout(function () {
+      var k = key(p.id, vi);
+      var cur = bag[k] || { productId: p.id, variantIndex: vi, qty: 0 };
+      bag[k] = { productId: p.id, variantIndex: vi, qty: cur.qty + qty };
+      st.status = 'added';
+      st.qty = 1;
+      card.r.live.textContent = 'Added ' + qty + ' × ' + p.name + ', ' + v.label + ', to bag.';
+      renderAll();
+      st.timers.push(setTimeout(function () {
+        st.status = 'idle';
+        renderAll();
+      }, 1800));
+    }, 350));
+  }
+
+  // ---------- bag ----------
+  function changeBagLine(k, delta) {
+    var it = bag[k];
+    if (!it) return;
+    it.qty += delta;
+    if (it.qty <= 0) delete bag[k];
+    renderAll();
+  }
+
+  function renderBag() {
+    var lines = document.getElementById('bag-lines');
+    lines.textContent = '';
+    var count = 0, subtotal = 0;
+
+    Object.keys(bag).forEach(function (k) {
+      var it = bag[k];
+      if (it.qty <= 0) return;
+      var p = productById(it.productId);
+      var v = p.variants[it.variantIndex];
+      count += it.qty;
+      subtotal += it.qty * v.price;
+
+      var stepper = makeStepper('Quantity of ' + p.name + ', ' + v.label, it.qty,
+        function () { changeBagLine(k, -1); },
+        function () { changeBagLine(k, 1); });
+      stepper.inc.disabled = it.qty >= Math.min(MAX_QTY, v.stock);
+
+      var remove = el('button', { type: 'button', class: 'text-btn', text: 'Remove',
+        'aria-label': 'Remove ' + p.name + ', ' + v.label,
+        onclick: function () { delete bag[k]; renderAll(); } });
+
+      lines.appendChild(el('li', { class: 'line' },
+        el('div', null,
+          el('p', { class: 'name', text: p.name }),
+          el('p', { class: 'meta', text: v.label + ' · ' + fmt(v.price) + ' each' })),
+        el('div', { class: 'line-end' },
+          stepper.root,
+          el('p', { class: 'line-total', text: fmt(it.qty * v.price) }),
+          remove)));
+    });
+
+    document.getElementById('bag-empty').hidden = count > 0;
+    document.getElementById('bag-subtotal').textContent = fmt(subtotal);
+    document.getElementById('bag-count').textContent = String(count);
+    document.getElementById('bag-clear').disabled = count === 0;
+  }
+
+  function renderAll() {
+    cards.forEach(renderCard);
+    renderBag();
+  }
+
+  // ---------- init ----------
+  var grid = document.getElementById('grid');
+  PRODUCTS.forEach(function (p) {
+    var c = createCard(p);
+    cards.push(c);
+    grid.appendChild(c.el);
+  });
+
+  document.getElementById('bag-clear').addEventListener('click', function () {
+    cards.forEach(function (c) { clearTimers(c.st); c.st.status = 'idle'; });
+    bag = {};
+    renderAll();
+  });
+
+  document.getElementById('bag-link').addEventListener('click', function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('bag').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

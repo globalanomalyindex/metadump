@@ -1,0 +1,59 @@
+[
+ {
+  "name": "punchy-leave",
+  "bezier": [
+   0.2,
+   1.2,
+   0.2,
+   1
+  ],
+  "duration_ms": 250,
+  "metrics": {
+   "overshoot_pct": 1.2,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 23,
+   "start_speed": 5.84,
+   "end_speed": -0.01,
+   "peak_speed": 5.99,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "punchy-sticky",
+  "bezier": [
+   0.15,
+   1,
+   0.2,
+   1.04
+  ],
+  "duration_ms": 300,
+  "metrics": {
+   "overshoot_pct": 1,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 27,
+   "start_speed": 6.27,
+   "end_speed": -0.05,
+   "peak_speed": 6.64,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "sticky-settle",
+  "bezier": [
+   0.18,
+   0.98,
+   0.3,
+   1
+  ],
+  "duration_ms": 250,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 35,
+   "start_speed": 5.06,
+   "end_speed": 0,
+   "peak_speed": 5.41,
+   "peak_speed_at_pct": 0
+  }
+ }
+]

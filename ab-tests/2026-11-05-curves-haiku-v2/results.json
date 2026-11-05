@@ -1,0 +1,109 @@
+{
+ "scores": {
+  "A": {
+   "sticky": 5.42,
+   "punchy": 6.0,
+   "distinct": 6.0,
+   "presentation": 3.67,
+   "craft": 4.17,
+   "overall": 4.5,
+   "mean_rank": 3.5,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 5.0,
+    "A-r2": 4.0,
+    "A-r3": 4.33,
+    "A-r4": 4.67
+   }
+  },
+  "B": {
+   "sticky": 7.0,
+   "punchy": 7.0,
+   "distinct": 7.08,
+   "presentation": 8.5,
+   "craft": 7.67,
+   "overall": 7.67,
+   "mean_rank": 1.5,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 8.33,
+    "B-r2": 7.0,
+    "B-r3": 8.0,
+    "B-r4": 7.33
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 24,
+   "losses": 0,
+   "ties": 0,
+   "win_rate": 1.0
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "curves_valid": "4/4",
+   "animating": "4/4",
+   "curves_used": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0
+  },
+  "B": {
+   "works": "4/4",
+   "curves_valid": "4/4",
+   "animating": "4/4",
+   "curves_used": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 76425,
+   "mean_seconds": 23.8,
+   "mean_tool_uses": 3
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 131799,
+   "mean_seconds": 117.5,
+   "mean_tool_uses": 13
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 212746,
+   "ms": 1559504,
+   "tool_uses": 37
+  }
+ },
+ "judge_agreement_mean_pearson": 0.96,
+ "notes": {
+  "b1/j1/B-r1": "Fast press, a shallow kick-and-catch release, and a slow-grip settle give three clearly different moves, shown with labeled graphs, a playhead, phase and progress readouts, a reference curve, a pause toggle, and JS reduced-motion handling.",
+  "b1/j1/A-r1": "The Sticky Anticipation undershoot-then-snap is the most grip-like motion in the set, but the Punch Overshoot peak is clipped by the SVG viewBox, dots clip at the pill edges, values are only in the spec line, and reduced motion is not actually honored (the CSS rule only sets will-change).",
+  "b1/j1/B-r2": "Clean, well-labeled cards with live curve and reference outputs, a pause toggle, reduced-motion start-paused handling, and good mobile layout, but Plant and Snap are both ease-out shapes and the stickiness is only a long tail.",
+  "b1/j1/A-r2": "Bare ball-on-track loops with no curve graph, no readings or live values, no pause, and no hold at the ends; reduced motion only shortens the CSS animation to 1ms, and Sticky Snap is close to a plain ease-in-out.",
+  "b1/j2/B-r2": "Catch's kick and Plant's long tail give real clinging, with labeled graphs, live readouts, a pause control and a reference track, though Plant and Snap are similar ease-outs and the Catch overshoot is shallow.",
+  "b1/j2/A-r2": "Balls ping-pong on infinite alternate with no hold at either end, so nothing lingers, and there are no graphs, values, pause control or per-curve reading, only the spec line.",
+  "b1/j2/A-r1": "The three curve shapes are the most varied and Sticky Anticipation's wind-up is genuinely sticky, but the Punch and Settle graphs are clipped at the top, dots clip at the track edges, loops hard-reset instead of returning, and the JS ignores prefers-reduced-motion.",
+  "b1/j2/B-r1": "Press, Release and Settle are clearly different, each card shows a playhead, progress value, phase label and mirrored return on the curve, and the Settle slow grip reads as sticky, with reduced motion starting paused and mobile working.",
+  "b1/j3/A-r2": "Clean and small with reduced motion collapsed to a static end state, but it has no pause, no graph, and only the spec string as a readout, so the curves are hard to judge.",
+  "b1/j3/B-r2": "Graphs with live progress readouts, a pause control, a reversed return pass and a ease-out reference make each curve legible, though Plant and Snap are both front-loaded ease-outs and the 320 ms spec wraps awkwardly.",
+  "b1/j3/B-r1": "Press, Release and Settle have clearly different shapes, each card shows a playhead, progress and peak values, the loops return seamlessly, and reduced motion starts paused, with only minor dot overflow past the track on Release.",
+  "b1/j3/A-r1": "The undershoot anticipation gives a real grip, but the graphs clip at the top, the dots spill past the track, loops hard-reset instead of returning, and reduced motion is ignored.",
+  "b2/j1/B-r3": "Grip's slow start and Stop's fast launch are clearly different, Catch adds a visible kick, the shared 1.6 s clock with hold and rest reads cleanly, and the graph playhead, values, reduced-motion start and pause all work.",
+  "b2/j1/A-r3": "Snap, Stick and Thud are distinct on paper, but the page is bare track-and-ball with only a spec line, no pause control, no curve graph, and no reduced-motion handling.",
+  "b2/j1/B-r4": "The graph with a time playhead, computed peak and settle readouts, and the ease-out reference make the curves very legible, though Press and Catch overlap in shape and the CSS pause rule blocks Play under reduced motion.",
+  "b2/j1/A-r4": "Values are copyable and the names say sticky or punchy, but there is no graph, no pause, no reduced-motion handling, and Sticky Snap is a generic ease-in-out that overlaps the others, while Sticky Punch's undershoot pushes the ball past the track edge.",
+  "b2/j2/B-r4": "Release's slow first fifth gives a real grip and Press has a strong attack, with a graph, tags and peak/settle readouts, but Pause/Play is broken under reduced motion because the CSS media rule keeps the dots paused after Play is pressed, and Press and Catch overlap in character.",
+  "b2/j2/A-r4": "Three distinct curves and correct values, but there is no graph, no reading copy, no pause control and no reduced-motion handling, and the Punchy Overshoot and Sticky Punch balls visibly overhang the track ends.",
+  "b2/j2/A-r3": "The bare track-and-ball layout with copyable values is clean but never says which curve is sticky or punchy, shows no graph or readouts, and ignores reduced motion and pausing entirely.",
+  "b2/j2/B-r3": "The shared 1.6 s clock with explicit forward, hold, pass-back and rest phases makes the grip visibly linger and gives seamless loops, and it pairs a graph playhead with readouts, starts paused under reduced motion, and has a working Pause/Play, though its readouts omit settle time.",
+  "b2/j3/A-r4": "Plain ball-on-track loops with the exact cubic-bezier values in each header and no graph, readouts or explanation, and no reduced-motion handling, so the curves are shown but not really explained.",
+  "b2/j3/B-r4": "Best presentation: each curve has a sticky or punchy tag, a plain-language reading, a lane plus graph on one clock, measured peak and settle values in copyable code, pause, and reduced-motion handling; Press and Catch are somewhat similar fast-attack overshoots.",
+  "b2/j3/B-r3": "Shared 1.6 s clock with hold and rest phases and phase labels makes the loops readable, Grip clearly lingers while Stop is a hard launch-and-stop, and the set is the most clearly distinct, though it lacks per-curve sticky/punchy labels and the sheet values are less prominent.",
+  "b2/j3/A-r3": "Three bare tracks with a title and values and no description, graph or pause, and no reduced-motion handling, so the page does little to show what each curve does."
+ }
+}

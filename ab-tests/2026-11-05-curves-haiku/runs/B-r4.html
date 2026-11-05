@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and punchy curves</title>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --panel: #ffffff;
+  --ink: #1d1d1b;
+  --muted: #6b6a64;
+  --line: #d9d7d0;
+  --accent: #e4572e;
+  --track: #ecebe6;
+  --target: #9b9a93;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413;
+    --panel: #1d1d1b;
+    --ink: #f2f1ec;
+    --muted: #a3a29a;
+    --line: #34332f;
+    --accent: #ff7a4d;
+    --track: #262622;
+    --target: #66655f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413;
+  --panel: #1d1d1b;
+  --ink: #f2f1ec;
+  --muted: #a3a29a;
+  --line: #34332f;
+  --accent: #ff7a4d;
+  --track: #262622;
+  --target: #66655f;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 16px 56px;
+}
+h1 { font-size: 1.6rem; margin: 0 0 6px; }
+.lede { color: var(--muted); margin: 0 0 24px; max-width: 64ch; }
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 860px) {
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+h2 { font-size: 1.1rem; margin: 0; }
+.pill {
+  font-size: .8rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+.feel, .fit { margin: 0; color: var(--muted); font-size: .92rem; }
+.fit strong { color: var(--ink); font-weight: 600; }
+
+.stage {
+  position: relative;
+  height: 52px;
+  background: var(--track);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dot {
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  will-change: transform;
+}
+
+svg.graph { width: 100%; height: auto; display: block; }
+.graph .curve { fill: none; stroke: var(--ink); stroke-width: 2; }
+.graph .target { stroke: var(--target); stroke-dasharray: 3 3; stroke-width: 1; }
+.graph .axis { stroke: var(--line); stroke-width: 1; }
+.graph .marker { fill: var(--accent); }
+.graph text { fill: var(--muted); font: 9px system-ui, sans-serif; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  font-size: .8rem;
+}
+.stats div { background: var(--track); border-radius: 8px; padding: 6px 8px; min-width: 0; }
+.stats b {
+  display: block;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.stats span { color: var(--muted); }
+
+code {
+  font: .85rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-all;
+}
+
+.once {
+  font: inherit;
+  font-size: .9rem;
+  color: var(--ink);
+  background: var(--track);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  align-self: flex-start;
+  display: none;
+}
+body.reduced .once { display: inline-block; }
+
+.note { color: var(--muted); font-size: .85rem; margin: 22px 0 0; max-width: 72ch; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Three curves: sticky and punchy</h1>
+  <p class="lede">
+    Each curve leaves fast (punchy) and lands early into a held rest (sticky).
+    Every loop plays the move at the curve's own duration, holds at rest for 1.4 s, then resets.
+    The marker on the graph and the dot run on the same clock.
+  </p>
+
+  <section class="grid" id="cards" aria-label="Looping curve demos"></section>
+
+  <p class="note">
+    With reduced motion on, the loops stop and each dot sits at its rest position.
+    Use "Play once" on a card to see one move. Stop check: each curve is within 1 percent of rest by about 0.65 of its run.
+  </p>
+</main>
+
+<script>
+// The three curves. Values are the exact ones the loops animate with.
+window.CURVES = [
+  { "name": "Punch and stick", "bezier": [0.15, 1, 0.2, 1.04], "duration_ms": 300 },
+  { "name": "Snap leave", "bezier": [0.2, 1.2, 0.2, 1], "duration_ms": 250 },
+  { "name": "Decisive settle", "bezier": [0.18, 0.98, 0.3, 1], "duration_ms": 250 }
+];
+
+const CURVES = window.CURVES;
+const HOLD_MS = 1400;
+const SETTLE = 0.01;
+const VB_W = 200, VB_H = 140;
+const Y_MIN = -0.1, Y_MAX = 1.3;
+
+const COPY = [
+  {
+    feel: "Leaves fast, passes its target by under 1 percent once, and is at rest by about 46 percent of the run. One curve that carries both the punch and the stop.",
+    fit: "<strong>Fits:</strong> press or toggle, where one move should both hit and land."
+  },
+  {
+    feel: "The sharpest start: about 1.25 percent overshoot, one small return, and rest by about 64 percent of the run. A small kick before the stop.",
+    fit: "<strong>Fits:</strong> press feedback, with the kick read as the impact."
+  },
+  {
+    feel: "Leaves fast and lands with no overshoot, reaching rest by about 64 percent of the run. The hold reads as already done.",
+    fit: "<strong>Fits:</strong> toggles and drawers, where the stop is the moment the user reads."
+  }
+];
+
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (reduced) document.body.classList.add("reduced");
+
+// Cubic-bezier with endpoints (0,0) and (1,1). x(t) and y(t) are the standard Bezier forms.
+function bzA(a, b, t) {
+  const m = 1 - t;
+  return 3 * m * m * t * a + 3 * m * t * t * b + t * t * t;
+}
+// Given x in [0,1], find y on the curve by bisecting t.
+function solveY(c, x) {
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    if (bzA(c[0], c[2], mid) < x) lo = mid; else hi = mid;
+  }
+  return bzA(c[1], c[3], (lo + hi) / 2);
+}
+// Peak, overshoot and the x where the curve last leaves the 1 percent band.
+function analyse(c) {
+  const N = 1000;
+  let peak = -Infinity, last = 0;
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    const y = solveY(c, x);
+    if (y > peak) peak = y;
+    if (Math.abs(y - 1) > SETTLE) last = x;
+  }
+  return { peak, over: Math.max(0, (peak - 1) * 100), settle: Math.min(1, last + 1 / N) };
+}
+const X = x => 8 + x * (VB_W - 16);
+const Y = y => VB_H - 12 - ((y - Y_MIN) / (Y_MAX - Y_MIN)) * (VB_H - 24);
+const cssBez = c => `cubic-bezier(${c.join(", ")})`;
+
+function graphSvg(c) {
+  const pts = [];
+  for (let i = 0; i <= 120; i++) {
+    const x = i / 120;
+    pts.push(`${X(x).toFixed(2)},${Y(solveY(c, x)).toFixed(2)}`);
+  }
+  return `
+    <line class="axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(1)}" y2="${Y(0)}"></line>
+    <line class="axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(0)}" y2="${Y(1.2)}"></line>
+    <line class="target" x1="${X(0)}" y1="${Y(1)}" x2="${X(1)}" y2="${Y(1)}"></line>
+    <text x="${X(0) + 2}" y="${Y(1) - 3}">1.0</text>
+    <text x="${X(0) + 2}" y="${Y(0) - 3}">0</text>
+    <polyline class="curve" points="${pts.join(" ")}"></polyline>
+    <circle class="marker" r="5" cx="${X(0)}" cy="${Y(0)}"></circle>`;
+}
+
+const cardsEl = document.getElementById("cards");
+cardsEl.innerHTML = CURVES.map((c, i) => `
+  <article class="card" data-i="${i}">
+    <div class="head"><h2>${c.name}</h2><span class="pill">${c.duration_ms} ms</span></div>
+    <p class="feel">${COPY[i].feel}</p>
+    <div class="stage"><div class="dot"></div></div>
+    <svg class="graph" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="${c.name} curve graph">${graphSvg(c.bezier)}</svg>
+    <div class="stats">
+      <div><b class="now">0.000</b><span>progress</span></div>
+      <div><b class="peak">-</b><span>peak</span></div>
+      <div><b class="rest">-</b><span>rest by</span></div>
+    </div>
+    <code>${cssBez(c.bezier)}</code>
+    <p class="fit">${COPY[i].fit}</p>
+    <button class="once" type="button">Play once</button>
+  </article>`).join("");
+
+const states = CURVES.map((c, i) => {
+  const card = cardsEl.querySelector(`[data-i="${i}"]`);
+  const a = analyse(c.bezier);
+  card.querySelector(".peak").textContent = a.peak.toFixed(3) + (a.over > 0 ? ` (+${a.over.toFixed(2)}%)` : "");
+  card.querySelector(".rest").textContent = a.settle.toFixed(2) + " of run";
+  return {
+    c,
+    card,
+    dot: card.querySelector(".dot"),
+    stage: card.querySelector(".stage"),
+    marker: card.querySelector(".marker"),
+    now: card.querySelector(".now"),
+    anim: null,
+    once: false,
+    period: c.duration_ms + HOLD_MS,
+    travel: 0
+  };
+});
+
+function measure(s) {
+  s.travel = Math.max(0, s.stage.clientWidth - 16 - s.dot.offsetWidth);
+}
+
+function setRest(s) {
+  s.dot.style.transform = `translateX(${s.travel}px)`;
+  setMarker(s, 1, 1);
+}
+
+function setMarker(s, x, y) {
+  s.marker.setAttribute("cx", X(x).toFixed(2));
+  s.marker.setAttribute("cy", Y(y).toFixed(2));
+  s.now.textContent = y.toFixed(3);
+}
+
+function startLoop(s) {
+  if (s.anim) s.anim.cancel();
+  const D = s.c.duration_ms, P = s.period, cur = cssBez(s.c.bezier);
+  s.dot.style.transform = "";
+  s.anim = s.dot.animate([
+    { transform: "translateX(0px)", easing: cur, offset: 0 },
+    { transform: `translateX(${s.travel}px)`, easing: "linear", offset: D / P },
+    { transform: `translateX(${s.travel}px)`, offset: 1 }
+  ], { duration: P, iterations: Infinity });
+}
+
+function playOnce(s) {
+  if (s.anim) s.anim.cancel();
+  s.once = true;
+  const D = s.c.duration_ms, cur = cssBez(s.c.bezier);
+  s.anim = s.dot.animate([
+    { transform: "translateX(0px)", easing: cur, offset: 0 },
+    { transform: `translateX(${s.travel}px)`, offset: 1 }
+  ], { duration: D, iterations: 1 });
+  s.anim.onfinish = () => { s.once = false; setRest(s); };
+}
+
+function layout() {
+  states.forEach(s => {
+    measure(s);
+    if (reduced) {
+      setRest(s);
+    } else {
+      startLoop(s);
+    }
+  });
+}
+
+function tick() {
+  states.forEach(s => {
+    if (!s.anim) return;
+    const ct = s.anim.currentTime;
+    if (ct == null) return;
+    const D = s.c.duration_ms;
+    if (s.once) {
+      const x = Math.min(ct / D, 1);
+      setMarker(s, x, solveY(s.c.bezier, x));
+    } else {
+      const t = ct % s.period;
+      if (t >= D) {
+        setMarker(s, 1, 1);
+      } else {
+        const x = t / D;
+        setMarker(s, x, solveY(s.c.bezier, x));
+      }
+    }
+  });
+  requestAnimationFrame(tick);
+}
+
+states.forEach(s => {
+  s.card.querySelector(".once").addEventListener("click", () => playOnce(s));
+});
+
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(layout, 120);
+});
+
+layout();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

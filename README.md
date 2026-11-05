@@ -29,17 +29,21 @@ Before this, I was making meta dumps by asking an agent to make one from a text 
 
 ## Does it actually help?
 
-I A/B tested it: the same task built by Haiku with and without a dump, then graded blind by Haiku 5.5 graders. The latest round is a "compact, minimal, modern shopping component":
+I A/B tested it: the same task built by Haiku with and without a dump, then graded blind by Haiku 5.5 graders. So far there are two tasks, a "compact, minimal, modern shopping component" and "a set of three custom bezier curves that are described as feeling 'sticky and punchy', present them as loops":
 
-| Version | Prompt only | Prompt + meta dump | Dump wins head to head |
-|---|---|---|---|
-| 0.3.0 | 7.04 | 6.33 | 29% |
-| 0.5.0 | 5.58 | **7.17** | 83% |
-| 0.5.1 | 6.42 | **7.50** | 75% |
+| Version | Task | Prompt only | Prompt + meta dump | Dump wins head to head |
+|---|---|---|---|---|
+| 0.3.0 | shopping component | 7.04 | 6.33 | 29% |
+| 0.5.0 | shopping component | 5.58 | **7.17** | 83% |
+| 0.5.1 | shopping component | 6.42 | **7.50** | 75% |
+| 0.7.0, first try | sticky and punchy curves | 4.83 | **6.17** | 58% |
+| 0.7.0 | sticky and punchy curves | 4.50 | **7.67** | **100%** |
 
 The early versions lost. When a dump carried a wrong made-up number, the model followed it instead of what I asked for. Another time the dump decided on its own that "compact" meant one product and nothing else, so every build that read it made a bare little card with no cart. The fixes behind 0.4.0 to 0.5.1 came straight out of those losses. In the 0.5.1 round, the dump builds won on every criterion, including usability, and every one of them covered the whole shopping job: size, quantity, add to bag, a bag you can review, and checkout.
 
-It's still small (4 runs per side, one task), so read it as a direction and not proof. Everything is in [`ab-tests/`](ab-tests/README.md): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
+The curves test caught the same kind of thing in a new form. On the first try the dump decided for itself what "sticky" meant and proposed a set of three curves, and every build that read it pasted that set, so the curves all came out nearly the same. 0.7.0 keeps every reading of words like "sticky" side by side (a slow start that grips, a settle that holds, an overshoot that snaps back) and never hands over the finished thing. On the rerun the dump builds won every single head-to-head (24 of 24), all 12 of their curves were different, none were copied from the dump, and they beat the prompt-only builds on every criterion.
+
+It's still small (4 runs per side per test), so read it as a direction and not proof. Everything is in [`ab-tests/`](ab-tests/README.md): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
 
 ## What makes it work
 
@@ -48,9 +52,10 @@ It's still small (4 runs per side, one task), so read it as a direction and not 
 - **It distills, it doesn't copy.** If I say "Apple's UI" or hand it screenshots, it turns them into brand-agnostic numbers, descriptions, patterns and principles. Brand names stay in the sources, not in the stuff another agent reuses.
 - **Every entry says where it came from.** The ranking is `user_stated` > `reference_observed` > `researched` > `inferred` > `proposed`, plus `unknown`. That way the model can tell what I actually asked for from what it made up, and it reaches for the real stuff first. A build script enforces it: a subagent can't claim it researched something it didn't, anything marked `user_stated` has to quote my actual prompt, and anything found online can never pass as my reference.
 - **Tiers mean relevance, not rules.** Tier 1 is what the task is most about (12 max), 2 is supporting, 3 is context, and 4 is exploratory ideas to pull from. Only things that were actually collected (my words, my references, things it researched) can be tier 1. The builder's own takes top out at tier 2, so they can't redefine what I asked for.
-- **Readings and decisions, not answers.** If a request can mean a few things ("shopping component" could be a product card, a mini cart or a product list), it keeps all of them with a default. The choices coming up (which test to write first, how dense to go) get written down with their options and tradeoffs instead of being decided for you.
+- **Readings and decisions, not answers.** If a request can mean a few things ("shopping component" could be a product card, a mini cart or a product list), it keeps all of them with a default. The choices coming up (which test to write first, how dense to go) get written down with their options and tradeoffs instead of being decided for you. Same for the quality words in the prompt: "sticky" gets every reading it could have, side by side, and the dump never hands over the finished thing itself (a default set of curves, a palette), because a small model will paste it.
 - **Anti-keywords.** The opposite of a keyword: something that tells the model "this is not what I mean" (like "acrylic" meaning clear plastic here, not acrylic paint), or just stuff we don't want. Every one comes with an `instead`. A lot of image models (FLUX.2, gpt-image, Gemini) don't have negative prompts, so the only way to say no is to say what to do instead.
 - **It indexes itself.** A routing table at the top maps each job ("write the image prompt", "pick the next test", "build the landing page") to the exact JSON paths it needs, with token costs. There's a word index like a real search engine has, and every entry sits on one line so grep works. The model never loads the whole thing, because loading a 100K-token file all at once actually makes the output worse. It only pulls the slice for the step it's on.
+- **It reads like the ones I made by hand.** Every entry is a facet: one area of the task with a line of description, lists of short keywords, how it behaves ("thicker transparent material looks darker") and the principle behind it. The dump opens with one central idea, a one-line summary and a formula that says what each part does, then keyword lists from every angle (technical, feel, emotional, cultural, search), influences and what each brings, signals to recognize it, and a description of each reference. It keeps the tiers, sources and `instead` rewrites, because my hand-made files drifted without them.
 - **No template.** The sections get designed for whatever you're making. A REST API dump doesn't get a color palette, and a packaging dump doesn't get an error model.
 - **Checks that keep it honest.** Dry runs look for numbers that fight with what I asked for and for anything that narrows the request, then a widening round fixes those. Every build prints how much of the dump was actually collected and from how many websites. It warns when the dump is mostly its own guesses, when its sources come from only one or two sites, or when nobody looked at an image it collected.
 - **Ticket-driven.** It charts a map of what the dump needs to answer, then hands out tickets to subagents: research, finding videos and images, scraping pages, watching videos, moodboards, specialists, anti-keywords, cleanup, synthesis and dry runs. It runs through the Workflow tool (works with ultracode) or regular subagents, and every subagent runs on Haiku. Before the dump gets written, a digest step breaks everything down into one body, so no page or reference passes through whole. Then a script validates everything, builds the index and writes the final file.

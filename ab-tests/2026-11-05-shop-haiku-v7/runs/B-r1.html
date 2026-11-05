@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop: product cards and bag</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --line: #e4e4df;
+    --text: #1b1c1f;
+    --muted: #5b5e66;
+    --accent: #2c5bd1;
+    --accent-hover: #2349b0;
+    --accent-ink: #ffffff;
+    --ink: #1b1c1f;
+    --focus: #1b1c1f;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111214;
+      --surface: #1a1c1f;
+      --line: #2c2f35;
+      --text: #f1f1ef;
+      --muted: #a4a8b1;
+      --accent: #6d93f0;
+      --accent-hover: #89a8f6;
+      --accent-ink: #0d1220;
+      --ink: #f1f1ef;
+      --focus: #f1f1ef;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111214;
+    --surface: #1a1c1f;
+    --line: #2c2f35;
+    --text: #f1f1ef;
+    --muted: #a4a8b1;
+    --accent: #6d93f0;
+    --accent-hover: #89a8f6;
+    --accent-ink: #0d1220;
+    --ink: #f1f1ef;
+    --focus: #f1f1ef;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.4; }
+  button, select { font: inherit; }
+  button:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  .shop { max-width: 880px; margin: 0 auto; padding: 24px 16px 32px; }
+  .shop-head { margin-bottom: 16px; }
+  h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; margin: 0; }
+  .sub { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow 180ms var(--ease);
+  }
+  .card:hover, .card:focus-within {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 20px rgb(0 0 0 / 0.06);
+  }
+  .media {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-sm);
+    background: var(--field, #eeeeea);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .media svg { width: 56%; height: auto; display: block; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .name { font-size: 15px; font-weight: 600; line-height: 1.3; margin: 0; }
+  .price { font-size: 17px; font-weight: 650; margin: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .meta { margin: 0; font-size: 13px; color: var(--muted); }
+  .variant { margin: 0; font-size: 13px; }
+  .variant-select {
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .add-row { display: flex; gap: 8px; margin-top: auto; }
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .stepper button {
+    width: 36px;
+    height: 100%;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .stepper button:disabled { color: var(--muted); opacity: 0.45; cursor: default; }
+  .qty { min-width: 24px; text-align: center; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .add {
+    flex: 1;
+    height: 40px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 180ms var(--ease);
+  }
+  .add:hover:not(:disabled) { background: var(--accent-hover); }
+  .add:disabled { cursor: default; }
+  .add[data-state="pending"] { opacity: 0.7; }
+  .add[data-state="added"] { background: var(--text); color: var(--surface); }
+  .note { min-height: 16px; margin: 0; font-size: 12px; color: var(--muted); }
+
+  .bag {
+    position: sticky;
+    bottom: 12px;
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 0.08);
+  }
+  .bag-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+  .bag-summary { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .btn-ghost {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .bag-panel { border-top: 1px solid var(--line); padding: 4px 16px 16px; }
+  .empty { margin: 0; padding: 12px 0; font-size: 14px; color: var(--muted); }
+  .lines { list-style: none; margin: 0; padding: 0; }
+  .line {
+    display: grid;
+    grid-template-columns: 1fr auto 72px auto;
+    grid-template-areas: "info stepper total remove";
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .line-info { grid-area: info; display: flex; flex-direction: column; min-width: 0; }
+  .line-name { font-size: 14px; font-weight: 600; }
+  .line-meta { font-size: 12px; color: var(--muted); }
+  .line .stepper { grid-area: stepper; }
+  .line-total { grid-area: total; text-align: right; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .line .link { grid-area: remove; justify-self: end; }
+  .link {
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 8px 0 8px 4px;
+  }
+  .bag-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 12px; }
+  .bag-subtotal { margin: 0; font-size: 14px; color: var(--muted); }
+  .bag-subtotal strong { color: var(--text); font-variant-numeric: tabular-nums; }
+  .btn-ink {
+    height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-ink:disabled { opacity: 0.4; cursor: default; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 480px) {
+    .line {
+      grid-template-columns: 1fr auto;
+      grid-template-areas: "info total" "stepper remove";
+    }
+    .line-total { text-align: right; }
+    .line .link { justify-self: end; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .add { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="shop">
+  <header class="shop-head">
+    <h1>Everyday goods</h1>
+    <p class="sub">Sample catalog, prices in USD</p>
+  </header>
+
+  <div id="grid" class="grid"></div>
+
+  <section class="bag" aria-labelledby="bag-title">
+    <h2 id="bag-title" class="sr-only">Bag</h2>
+    <div class="bag-bar">
+      <p id="bag-summary" class="bag-summary">0 items · $0.00</p>
+      <button type="button" id="bag-toggle" class="btn-ghost" data-act="bag-toggle" aria-expanded="false" aria-controls="bag-panel">Review bag</button>
+    </div>
+    <div id="bag-panel" class="bag-panel" hidden>
+      <p id="bag-empty" class="empty">Your bag is empty.</p>
+      <ul id="bag-lines" class="lines"></ul>
+      <div class="bag-foot">
+        <p class="bag-subtotal">Subtotal <strong id="bag-subtotal">$0.00</strong></p>
+        <button type="button" id="checkout" class="btn-ink" data-act="checkout" disabled>Checkout</button>
+      </div>
+      <p id="checkout-note" class="note"></p>
+    </div>
+  </section>
+</main>
+
+<div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const MAX_QTY = 9;        // most of one item per order
+  const LOW_STOCK = 5;      // show a short status word at or below this
+  const ADD_DELAY_MS = 350; // stands in for the add request (no network in this demo)
+  const ADDED_MS = 2400;    // how long the "Added" label stays before returning to rest
+
+  // Inline product art: flat shapes on a neutral field, no remote images.
+  const ART = {
+    tote: '<svg viewBox="0 0 160 200" aria-hidden="true"><path d="M58 70 Q58 34 80 34 Q102 34 102 70" fill="none" stroke="#b5aa93" stroke-width="6"/><rect x="36" y="70" width="88" height="106" rx="6" fill="#d8ccb5"/><rect x="36" y="150" width="88" height="10" fill="#c4b79f"/></svg>',
+    dripper: '<svg viewBox="0 0 160 200" aria-hidden="true"><path d="M46 70 H114 L98 130 H62 Z" fill="#c4d0d8"/><rect x="62" y="130" width="36" height="8" fill="#a3b3be"/><rect x="48" y="138" width="64" height="40" rx="6" fill="#dbe4ea"/></svg>',
+    socks: '<svg viewBox="0 0 160 200" aria-hidden="true"><rect x="50" y="40" width="34" height="110" rx="8" fill="#bcc7ad"/><rect x="50" y="130" width="62" height="34" rx="14" fill="#bcc7ad"/><rect x="92" y="60" width="34" height="90" rx="8" fill="#d3dcc6"/><rect x="92" y="130" width="50" height="30" rx="12" fill="#d3dcc6"/></svg>',
+    organizer: '<svg viewBox="0 0 160 200" aria-hidden="true"><rect x="26" y="90" width="108" height="60" rx="4" fill="#a98a66"/><rect x="34" y="98" width="38" height="44" fill="#8c7150"/><rect x="80" y="98" width="46" height="20" fill="#8c7150"/><rect x="80" y="122" width="46" height="20" fill="#8c7150"/><rect x="50" y="150" width="60" height="6" fill="#7b6144"/></svg>'
+  };
+
+  // Sample catalog. Prices in cents.
+  const PRODUCTS = [
+    { id: 'tote', name: 'Linen Tote', maker: 'Oat and Ash', price: 4800, stock: 24,
+      tint: '#ece8e0', art: ART.tote, variantText: 'Natural, 38 × 42 cm' },
+    { id: 'dripper', name: 'Ceramic Pour-over Dripper', maker: 'Kiln Studio', price: 3600, stock: 12,
+      tint: '#e5eaed', art: ART.dripper,
+      variants: [{ id: 'white', label: 'White' }, { id: 'sage', label: 'Sage' }, { id: 'clay', label: 'Clay' }] },
+    { id: 'socks', name: 'Merino Crew Socks, 3-pack', maker: 'Northfold', price: 2200, stock: 40,
+      tint: '#eaede6', art: ART.socks,
+      variants: [{ id: 'sm', label: 'S/M' }, { id: 'lxl', label: 'L/XL' }] },
+    { id: 'organizer', name: 'Walnut Desk Organizer', maker: 'Parr Workshop', price: 6400, stock: 3,
+      tint: '#efeae4', art: ART.organizer, variantText: 'Walnut, 30 cm' }
+  ];
+
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const fmt = cents => money.format(cents / 100);
+  const $ = (sel, root = document) => root.querySelector(sel);
+
+  // State: the only source of truth. The DOM is painted from it.
+  const state = { bag: [], bagOpen: false, cards: {} };
+
+  const productById = id => PRODUCTS.find(p => p.id === id);
+  const lineFor = (id, variant) => state.bag.find(l => l.id === id && l.variant === variant);
+  const bagQtyOf = id => state.bag.filter(l => l.id === id).reduce((n, l) => n + l.qty, 0);
+  const bagCount = () => state.bag.reduce((n, l) => n + l.qty, 0);
+  const stockCap = p => Math.min(MAX_QTY, p.stock);
+  const remaining = p => Math.max(0, stockCap(p) - bagQtyOf(p.id));
+  const variantLabel = (p, vid) => (p.variants ? p.variants.find(v => v.id === vid).label : p.variantText);
+  const cardRoot = p => document.querySelector(`.card[data-id="${p.id}"]`);
+
+  function cardHTML(p) {
+    const control = p.variants
+      ? `<select class="variant-select" data-act="variant" aria-label="${p.name} variant">
+           ${p.variants.map(v => `<option value="${v.id}">${v.label}</option>`).join('')}
+         </select>`
+      : `<p class="variant">${p.variantText}</p>`;
+    return `
+      <article class="card" data-id="${p.id}">
+        <div class="media" style="--field:${p.tint}">${p.art}</div>
+        <div class="row">
+          <h2 class="name">${p.name}</h2>
+          <p class="price">${fmt(p.price)}</p>
+        </div>
+        <p class="meta">${p.maker} · <span data-f="bag"></span></p>
+        ${control}
+        <div class="add-row">
+          <div class="stepper" role="group" aria-label="Quantity for ${p.name}">
+            <button type="button" data-act="dec" aria-label="Decrease ${p.name} quantity">−</button>
+            <span class="qty" data-f="qty">1</span>
+            <button type="button" data-act="inc" aria-label="Increase ${p.name} quantity">+</button>
+          </div>
+          <button type="button" class="add" data-act="add" data-state="rest">Add to bag</button>
+        </div>
+        <p class="note" data-f="note"></p>
+      </article>`;
+  }
+
+  function paintCard(p) {
+    const root = cardRoot(p);
+    const c = state.cards[p.id];
+    const cap = remaining(p);
+    const bagQty = bagQtyOf(p.id);
+    c.qty = Math.min(Math.max(c.qty, 1), Math.max(cap, 1));
+
+    $('[data-f="qty"]', root).textContent = c.qty;
+    $('[data-f="bag"]', root).textContent = bagQty ? `In bag: ${bagQty}` : 'Not in bag';
+    $('[data-act="dec"]', root).disabled = c.qty <= 1;
+    $('[data-act="inc"]', root).disabled = c.qty >= cap;
+
+    const add = $('[data-act="add"]', root);
+    add.disabled = c.pending || cap === 0;
+    add.dataset.state = c.pending ? 'pending' : (c.added ? 'added' : 'rest');
+    add.textContent = c.pending ? 'Adding…' : (c.added ? `Added: ${c.added} in bag` : 'Add to bag');
+
+    const notes = [];
+    if (p.stock <= LOW_STOCK) notes.push(`Only ${p.stock} left`);
+    if (cap === 0) notes.push('Maximum already in your bag');
+    else if (c.qty >= cap && p.stock > LOW_STOCK) notes.push(`Maximum ${cap} to add`);
+    $('[data-f="note"]', root).textContent = notes.join(' · ');
+  }
+
+  function paintAll() { PRODUCTS.forEach(paintCard); }
+
+  function stepCard(p, dir) {
+    const c = state.cards[p.id];
+    c.qty = dir > 0 ? Math.min(c.qty + 1, remaining(p)) : Math.max(c.qty - 1, 1);
+    paintCard(p);
+  }
+
+  function setVariant(p, vid) {
+    const c = state.cards[p.id];
+    c.variant = vid;
+    c.qty = 1;
+    c.added = 0;
+    paintCard(p);
+  }
+
+  function announce(msg) {
+    const el = $('#announcer');
+    el.textContent = '';
+    setTimeout(() => { el.textContent = msg; }, 20);
+  }
+
+  function addToBag(p) {
+    const c = state.cards[p.id];
+    if (c.pending || remaining(p) < 1) return;
+    c.pending = true;
+    paintCard(p);
+
+    setTimeout(() => {
+      c.pending = false;
+      const n = Math.min(c.qty, remaining(p));
+      if (n > 0) {
+        let line = lineFor(p.id, c.variant);
+        if (!line) {
+          line = { id: p.id, variant: c.variant, qty: 0 };
+          state.bag.push(line);
+        }
+        line.qty += n;
+      }
+      c.added = n;
+      clearTimeout(c.timer);
+      c.timer = setTimeout(() => { c.added = 0; paintCard(p); }, ADDED_MS);
+
+      const v = p.variants ? `, ${variantLabel(p, c.variant)}` : '';
+      announce(n
+        ? `Added ${n} ${p.name}${v} to your bag. ${bagCount()} items in bag.`
+        : `${p.name} is already at your limit in your bag.`);
+      paintAll();
+      renderBag();
+    }, ADD_DELAY_MS);
+  }
+
+  function lineHTML(l) {
+    const p = productById(l.id);
+    const canInc = bagQtyOf(p.id) < stockCap(p);
+    return `
+      <li class="line" data-id="${l.id}" data-variant="${l.variant || ''}">
+        <div class="line-info">
+          <span class="line-name">${p.name}</span>
+          <span class="line-meta">${variantLabel(p, l.variant)}</span>
+        </div>
+        <div class="stepper" role="group" aria-label="Quantity for ${p.name}">
+          <button type="button" data-act="line-dec" aria-label="Decrease ${p.name} quantity" ${l.qty <= 1 ? 'disabled' : ''}>−</button>
+          <span class="qty">${l.qty}</span>
+          <button type="button" data-act="line-inc" aria-label="Increase ${p.name} quantity" ${canInc ? '' : 'disabled'}>+</button>
+        </div>
+        <span class="line-total">${fmt(p.price * l.qty)}</span>
+        <button type="button" class="link" data-act="remove">Remove<span class="sr-only"> ${p.name}</span></button>
+      </li>`;
+  }
+
+  function renderBag() {
+    const lines = state.bag.filter(l => l.qty > 0);
+    const count = bagCount();
+    const subtotal = lines.reduce((s, l) => s + productById(l.id).price * l.qty, 0);
+    $('#bag-summary').textContent = `${count} ${count === 1 ? 'item' : 'items'} · ${fmt(subtotal)}`;
+    $('#bag-toggle').setAttribute('aria-expanded', String(state.bagOpen));
+    $('#bag-panel').hidden = !state.bagOpen;
+    $('#bag-lines').innerHTML = lines.map(lineHTML).join('');
+    $('#bag-empty').hidden = lines.length > 0;
+    $('#bag-subtotal').textContent = fmt(subtotal);
+    $('#checkout').disabled = lines.length === 0;
+  }
+
+  function changeLine(li, act) {
+    const p = productById(li.dataset.id);
+    const variant = li.dataset.variant || null;
+    const l = lineFor(p.id, variant);
+    if (!l) return;
+    if (act === 'line-inc' && bagQtyOf(p.id) < stockCap(p)) l.qty += 1;
+    if (act === 'line-dec' && l.qty > 1) l.qty -= 1;
+    if (act === 'remove') state.bag = state.bag.filter(x => x !== l);
+
+    paintAll();
+    renderBag();
+
+    // The list is rebuilt on each change, so put keyboard focus back on the control.
+    const sel = `.line[data-id="${p.id}"][data-variant="${li.dataset.variant}"]`;
+    const same = $(`${sel} [data-act="${act}"]`);
+    const other = $(`${sel} [data-act="${act === 'line-inc' ? 'line-dec' : 'line-inc'}"]`);
+    const target = (same && !same.disabled) ? same : (other && !other.disabled ? other : $('#bag-toggle'));
+    if (act === 'remove') $('#bag-toggle').focus(); else target.focus();
+  }
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    const act = el.dataset.act;
+
+    const li = el.closest('.line');
+    if (li) { changeLine(li, act); return; }
+
+    if (act === 'bag-toggle') {
+      state.bagOpen = !state.bagOpen;
+      renderBag();
+      return;
+    }
+    if (act === 'checkout') {
+      $('#checkout-note').textContent = 'Checkout is not connected in this demo.';
+      return;
+    }
+
+    const card = el.closest('.card');
+    if (!card) return;
+    const p = productById(card.dataset.id);
+    if (act === 'inc') stepCard(p, 1);
+    if (act === 'dec') stepCard(p, -1);
+    if (act === 'add') addToBag(p);
+  });
+
+  document.addEventListener('change', e => {
+    if (e.target.dataset.act !== 'variant') return;
+    setVariant(productById(e.target.closest('.card').dataset.id), e.target.value);
+  });
+
+  PRODUCTS.forEach(p => {
+    state.cards[p.id] = { qty: 1, variant: p.variants ? p.variants[0].id : null, pending: false, added: 0, timer: 0 };
+  });
+  $('#grid').innerHTML = PRODUCTS.map(cardHTML).join('');
+  paintAll();
+  renderBag();
+})();
+</script>
+</body>
+</html>

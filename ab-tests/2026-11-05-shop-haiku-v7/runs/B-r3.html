@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compact Shop</title>
+<style>
+  :root {
+    --bg: #f6f6f4;
+    --surface: #ffffff;
+    --line: #e4e4e0;
+    --text: #17171a;
+    --text-2: #5b5b63;
+    --accent: #2a4fd1;
+    --accent-ink: #ffffff;
+    --field: #eeeeea;
+    --focus: #17171a;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+    --ctl: 36px;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101012;
+      --surface: #18181b;
+      --line: #2a2a2f;
+      --text: #f2f2f4;
+      --text-2: #a3a3ad;
+      --accent: #5b7cf0;
+      --accent-ink: #0b0b0d;
+      --field: #222227;
+      --focus: #f2f2f4;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101012;
+    --surface: #18181b;
+    --line: #2a2a2f;
+    --text: #f2f2f4;
+    --text-2: #a3a3ad;
+    --accent: #5b7cf0;
+    --accent-ink: #0b0b0d;
+    --field: #222227;
+    --focus: #f2f2f4;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: var(--s4);
+  }
+
+  .shop { max-width: 880px; margin: 0 auto; }
+
+  .shop-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s3); margin-bottom: var(--s4); flex-wrap: wrap;
+  }
+  .shop-head h1 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+
+  .bag-toggle {
+    min-height: var(--ctl); padding: 0 var(--s4);
+    border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--text);
+    font: inherit; font-weight: 500; cursor: pointer;
+    display: inline-flex; align-items: center; gap: var(--s2);
+  }
+  .bag-toggle .muted { color: var(--text-2); font-weight: 400; }
+
+  .bag {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: var(--s4);
+    margin-bottom: var(--s4);
+  }
+  .bag h2 { font-size: 14px; font-weight: 600; margin: 0 0 var(--s3); }
+  .bag-lines { list-style: none; margin: 0; padding: 0; }
+  .bag-line {
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center;
+    gap: var(--s3); padding: var(--s3) 0; border-top: 1px solid var(--line);
+  }
+  .bag-line:first-child { border-top: 0; padding-top: 0; }
+  .bag-line .name { font-weight: 500; }
+  .bag-line .unit { color: var(--text-2); font-size: 13px; }
+  .bag-line .line-total { font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+  .bag-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s3); border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s2); flex-wrap: wrap;
+  }
+  .bag-empty { color: var(--text-2); margin: 0; }
+  .subtotal { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s4);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: var(--s3);
+    display: flex; flex-direction: column; gap: var(--s3);
+  }
+  .media {
+    aspect-ratio: 4 / 3; border-radius: var(--radius-sm);
+    background: var(--field); display: grid; place-items: center; overflow: hidden;
+  }
+  .media svg { width: 56%; height: auto; display: block; }
+  .info { display: grid; gap: 2px; }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+  .name { margin: 0; font-size: 15px; font-weight: 600; }
+  .price { font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .meta { margin: 0; color: var(--text-2); font-size: 13px; }
+
+  .actions { display: flex; align-items: center; gap: var(--s2); margin-top: auto; }
+
+  .stepper {
+    display: inline-flex; align-items: center; height: var(--ctl);
+    border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: none;
+  }
+  .stepper output {
+    min-width: 28px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 500;
+  }
+  .stepper button {
+    width: 32px; height: 100%; border: 0; background: transparent; color: var(--text);
+    font: inherit; font-size: 18px; line-height: 1; cursor: pointer;
+  }
+  .stepper button:disabled { color: var(--text-2); opacity: 0.4; cursor: default; }
+
+  .add {
+    flex: 1; height: var(--ctl); border: 0; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink);
+    font: inherit; font-weight: 600; cursor: pointer; padding: 0 var(--s3);
+    transition: opacity 160ms var(--ease);
+  }
+  .add:disabled { opacity: 0.7; cursor: progress; }
+
+  .limit, .confirm { margin: 0; font-size: 13px; min-height: 18px; color: var(--text-2); }
+  .confirm { color: var(--text); font-weight: 500; }
+  .confirm:empty { display: none; }
+
+  .confirm:not(:empty) {
+    animation: in 180ms var(--ease) both;
+  }
+  @keyframes in { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .confirm:not(:empty) { animation-name: in-move; }
+    @keyframes in-move { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  }
+
+  button:focus-visible, .stepper:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .add:focus-visible { outline-offset: 3px; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  @media (max-width: 380px) {
+    body { padding: 12px; }
+    .grid { grid-template-columns: 1fr 1fr; gap: var(--s3); }
+    .actions { flex-wrap: wrap; }
+    .add { flex-basis: 100%; order: 2; }
+    .stepper { order: 1; }
+  }
+</style>
+</head>
+<body>
+<main class="shop">
+  <header class="shop-head">
+    <h1>Pantry &amp; Home</h1>
+    <button class="bag-toggle" id="bag-toggle" type="button" aria-expanded="false" aria-controls="bag">
+      Bag <span id="bag-count">0</span> <span class="muted" id="bag-total">$0.00</span>
+    </button>
+  </header>
+
+  <section class="bag" id="bag" aria-labelledby="bag-title" hidden>
+    <h2 id="bag-title">Your bag</h2>
+    <ul class="bag-lines" id="bag-lines"></ul>
+    <div class="bag-foot" id="bag-foot">
+      <span>Subtotal <span class="subtotal" id="subtotal">$0.00</span></span>
+      <button class="add" id="checkout" type="button" style="flex:none;padding:0 var(--s4)">Checkout</button>
+    </div>
+    <p class="confirm" id="checkout-note" aria-live="polite"></p>
+  </section>
+
+  <ul class="grid" id="grid"></ul>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var MAX = 9;
+  var PRODUCTS = [
+    { id: "oat", name: "Oat Milk, Barista", meta: "1 L · Chilled", price: 450, art: "carton" },
+    { id: "dripper", name: "Pour-Over Dripper", meta: "White ceramic · 1 cup", price: 2800, art: "cone" },
+    { id: "tote", name: "Linen Tote", meta: "Natural · 38 × 40 cm", price: 3600, art: "tote" },
+    { id: "mug", name: "Stoneware Mug", meta: "350 ml · Sand", price: 1800, art: "mug" }
+  ];
+  var BY_ID = {};
+  PRODUCTS.forEach(function (p) { BY_ID[p.id] = p; });
+
+  var ART = {
+    carton: '<rect x="30" y="20" width="60" height="84" rx="4" fill="#ffffff" stroke="#17171a" stroke-width="2"/><path d="M30 34 L60 16 L90 34" fill="none" stroke="#17171a" stroke-width="2"/><rect x="30" y="56" width="60" height="22" fill="#2a4fd1" opacity=".85"/>',
+    cone: '<path d="M34 40 L86 40 L66 80 L54 80 Z" fill="#ffffff" stroke="#17171a" stroke-width="2" stroke-linejoin="round"/><rect x="50" y="80" width="20" height="12" fill="#ffffff" stroke="#17171a" stroke-width="2"/><ellipse cx="60" cy="40" rx="26" ry="5" fill="#dcdcd6" stroke="#17171a" stroke-width="2"/>',
+    tote: '<path d="M42 46 Q42 22 60 22 Q78 22 78 46" fill="none" stroke="#17171a" stroke-width="3"/><rect x="28" y="46" width="64" height="58" rx="3" fill="#e8dcc4" stroke="#17171a" stroke-width="2"/>',
+    mug: '<rect x="34" y="34" width="46" height="56" rx="6" fill="#d9c7a7" stroke="#17171a" stroke-width="2"/><path d="M80 48 Q98 48 98 66 Q98 80 80 80" fill="none" stroke="#17171a" stroke-width="3"/><ellipse cx="57" cy="34" rx="23" ry="4" fill="#efe6d4" stroke="#17171a" stroke-width="2"/>'
+  };
+
+  var money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+  function fmt(cents) { return money.format(cents / 100); }
+
+  var state = {
+    qty: {},        // quantity chosen on each card (1..MAX)
+    bag: {},        // id -> quantity in the bag
+    pending: {},    // id -> true while an add is in flight
+    message: {},    // id -> confirmation text shown on the card
+    bagOpen: false,
+    checkoutNote: ""
+  };
+  var timers = {};
+
+  PRODUCTS.forEach(function (p) { state.qty[p.id] = 1; state.pending[p.id] = false; state.message[p.id] = ""; });
+
+  var grid = document.getElementById("grid");
+  var bagPanel = document.getElementById("bag");
+  var bagLines = document.getElementById("bag-lines");
+  var toggle = document.getElementById("bag-toggle");
+  var bagCount = document.getElementById("bag-count");
+  var bagTotal = document.getElementById("bag-total");
+  var subtotal = document.getElementById("subtotal");
+  var checkoutNote = document.getElementById("checkout-note");
+  var bagFoot = document.getElementById("bag-foot");
+
+  // Build cards once; render() only updates their text and disabled states.
+  grid.innerHTML = PRODUCTS.map(function (p) {
+    return '' +
+      '<li class="card" data-card="' + p.id + '">' +
+        '<div class="media"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">' + ART[p.art] + '</svg></div>' +
+        '<div class="info">' +
+          '<div class="row"><h2 class="name">' + p.name + '</h2><span class="price">' + fmt(p.price) + '</span></div>' +
+          '<p class="meta">' + p.meta + '</p>' +
+        '</div>' +
+        '<div class="actions">' +
+          '<div class="stepper" role="group" aria-label="Quantity, ' + p.name + '">' +
+            '<button type="button" data-act="dec" data-key="dec-' + p.id + '" aria-label="Decrease quantity, ' + p.name + '">&minus;</button>' +
+            '<output aria-live="off" data-qty="' + p.id + '">1</output>' +
+            '<button type="button" data-act="inc" data-key="inc-' + p.id + '" aria-label="Increase quantity, ' + p.name + '">+</button>' +
+          '</div>' +
+          '<button class="add" type="button" data-act="add" data-key="add-' + p.id + '"></button>' +
+        '</div>' +
+        '<p class="limit" data-limit="' + p.id + '" hidden>Maximum ' + MAX + ' per order</p>' +
+        '<p class="confirm" data-confirm="' + p.id + '" aria-live="polite"></p>' +
+      '</li>';
+  }).join("");
+
+  function setQty(id, n) {
+    state.qty[id] = Math.max(1, Math.min(MAX, n));
+    render();
+  }
+
+  function addToBag(id) {
+    if (state.pending[id]) return;
+    var p = BY_ID[id];
+    var n = state.qty[id];
+    state.pending[id] = true;
+    state.message[id] = "";
+    render();
+    setTimeout(function () {
+      state.pending[id] = false;
+      state.bag[id] = Math.min(MAX, (state.bag[id] || 0) + n);
+      state.qty[id] = 1;
+      state.message[id] = "Added " + n + " × " + p.name + " to bag";
+      render();
+      clearTimeout(timers[id]);
+      timers[id] = setTimeout(function () {
+        state.message[id] = "";
+        render();
+      }, 2600);
+    }, 180);
+  }
+
+  function setBag(id, n) {
+    if (n <= 0) delete state.bag[id];
+    else state.bag[id] = Math.min(MAX, n);
+    state.checkoutNote = "";
+    render();
+  }
+
+  function bagSummary() {
+    var count = 0, cents = 0;
+    Object.keys(state.bag).forEach(function (id) {
+      count += state.bag[id];
+      cents += state.bag[id] * BY_ID[id].price;
+    });
+    return { count: count, cents: cents };
+  }
+
+  function renderBagLines() {
+    var ids = Object.keys(state.bag);
+    if (!ids.length) {
+      bagLines.innerHTML = '<li class="bag-empty">Your bag is empty.</li>';
+      bagFoot.hidden = true;
+      return;
+    }
+    bagFoot.hidden = false;
+    bagLines.innerHTML = ids.map(function (id) {
+      var p = BY_ID[id], q = state.bag[id];
+      return '' +
+        '<li class="bag-line">' +
+          '<div><div class="name">' + p.name + '</div><div class="unit">' + fmt(p.price) + ' each</div></div>' +
+          '<div class="stepper" role="group" aria-label="Bag quantity, ' + p.name + '">' +
+            '<button type="button" data-bag="dec" data-id="' + id + '" data-key="bdec-' + id + '" aria-label="Decrease bag quantity, ' + p.name + '">&minus;</button>' +
+            '<output aria-live="off">' + q + '</output>' +
+            '<button type="button" data-bag="inc" data-id="' + id + '" data-key="binc-' + id + '" aria-label="Increase bag quantity, ' + p.name + '"' + (q >= MAX ? ' disabled' : '') + '>+</button>' +
+          '</div>' +
+          '<div class="line-total">' + fmt(q * p.price) + '</div>' +
+        '</li>';
+    }).join("");
+  }
+
+  function render() {
+    // Remember the focused control so a re-render inside the bag does not drop focus.
+    var active = document.activeElement;
+    var focusKey = active && active.getAttribute && active.getAttribute("data-key");
+
+    var sum = bagSummary();
+    bagCount.textContent = String(sum.count);
+    bagTotal.textContent = fmt(sum.cents);
+    subtotal.textContent = fmt(sum.cents);
+    toggle.setAttribute("aria-expanded", String(state.bagOpen));
+    bagPanel.hidden = !state.bagOpen;
+    checkoutNote.textContent = state.checkoutNote;
+    renderBagLines();
+
+    PRODUCTS.forEach(function (p) {
+      var id = p.id, q = state.qty[id];
+      var card = grid.querySelector('[data-card="' + id + '"]');
+      card.querySelector('[data-qty="' + id + '"]').textContent = String(q);
+      card.querySelector('[data-act="dec"]').disabled = q <= 1;
+      card.querySelector('[data-act="inc"]').disabled = q >= MAX;
+      card.querySelector('[data-limit="' + id + '"]').hidden = q < MAX;
+      var add = card.querySelector('[data-act="add"]');
+      add.disabled = !!state.pending[id];
+      add.textContent = state.pending[id] ? "Adding…" : "Add to bag";
+      card.querySelector('[data-confirm="' + id + '"]').textContent = state.message[id];
+    });
+
+    if (focusKey) {
+      var next = document.querySelector('[data-key="' + focusKey + '"]');
+      if (next && !next.disabled) next.focus();
+    }
+  }
+
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-act]");
+    if (!btn || btn.disabled) return;
+    var id = btn.closest("[data-card]").getAttribute("data-card");
+    var act = btn.getAttribute("data-act");
+    if (act === "inc") setQty(id, state.qty[id] + 1);
+    else if (act === "dec") setQty(id, state.qty[id] - 1);
+    else if (act === "add") addToBag(id);
+  });
+
+  bagLines.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-bag]");
+    if (!btn || btn.disabled) return;
+    var id = btn.getAttribute("data-id");
+    var n = state.bag[id] + (btn.getAttribute("data-bag") === "inc" ? 1 : -1);
+    setBag(id, n);
+  });
+
+  toggle.addEventListener("click", function () {
+    state.bagOpen = !state.bagOpen;
+    render();
+  });
+
+  document.getElementById("checkout").addEventListener("click", function () {
+    var sum = bagSummary();
+    state.checkoutNote = sum.count
+      ? "Demo only: checkout is not connected. " + sum.count + " items, " + fmt(sum.cents) + "."
+      : "Add an item before checkout.";
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

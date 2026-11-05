@@ -24,15 +24,16 @@ const MAX_ROUNDS = A.max_rounds || (DEPTH === 'lite' ? 1 : DEPTH === 'deep' ? 3 
 const MAX_VERIFY = DEPTH === 'lite' ? 2 : DEPTH === 'deep' ? 8 : 6
 const LITE = DEPTH === 'lite' // lite skips the audit (verify still traces); every depth digests (normalize)
 const BRIEFS = `${SKILL}/references/briefs.md`
-// Entries per shard by depth. Without a budget, workers write everything they can think of
-// (the first lite smoke test produced 212 entries, ~3x the plan). Mirrors create.md.
+// Entries per shard by depth. Entries are facets (one object per area: a line of text plus lists of short
+// phrases, behaviors and a principle), the shape of the hand-made dumps this skill grew out of (ADR 0009), so the counts are
+// small. Without a budget, workers write everything they can think of. Mirrors create.md.
 const BUDGETS = {
-  lite: { research: '8-12', specialist: '12-20', lexicon: '10-15', exclusion: '10-15', observe: '10-20', inherit: 'as needed',
-    scrape: '8-15', watch: '8-15', moodboard: '10-20' },
-  standard: { research: '10-20', specialist: '20-35', lexicon: '15-30', exclusion: '15-25', observe: '20-35', inherit: 'as needed',
-    scrape: '15-25', watch: '15-30', moodboard: '16-30' },
-  deep: { research: '15-30', specialist: '30-50', lexicon: '25-45', exclusion: '20-35', observe: '30-50', inherit: 'as needed',
-    scrape: '25-40', watch: '25-45', moodboard: '24-45' },
+  lite: { research: '4-8', specialist: '4-8', lexicon: '4-8', exclusion: '6-10', observe: '4-8', inherit: 'as needed',
+    scrape: '3-6', watch: '3-8', moodboard: '3-6' },
+  standard: { research: '6-10', specialist: '6-12', lexicon: '6-10', exclusion: '8-14', observe: '6-12', inherit: 'as needed',
+    scrape: '4-8', watch: '4-10', moodboard: '4-8' },
+  deep: { research: '8-14', specialist: '10-16', lexicon: '8-14', exclusion: '10-18', observe: '8-16', inherit: 'as needed',
+    scrape: '6-12', watch: '6-14', moodboard: '6-12' },
 }
 const budgetFor = type => (BUDGETS[DEPTH] || BUDGETS.standard)[type]
 const SCHEMA = `${SKILL}/references/schema.md`
@@ -147,7 +148,7 @@ const GAPS = {
 const opener = (id, type, extra) => `You are resolving one ticket of a meta dump build.
 Work dir:  ${WORK}
 Skill dir: ${SKILL}
-Ticket id: ${id}   Type: ${type}   Depth: ${DEPTH}${budgetFor(type) ? `   Entry budget: ${budgetFor(type)} entries (fewer, sharper entries beat more; merge near-synonyms into aliases)` : ''}
+Ticket id: ${id}   Type: ${type}   Depth: ${DEPTH}${budgetFor(type) ? `   Entry budget: ${budgetFor(type)} entries, written as facets (one object per area: a line of text, lists of short phrases, behaviors and a principle; see the opener in briefs.md)` : ''}
 Ticket file: ${WORK}/tickets/${id}.md (read it first if it exists)
 Context: ${WORK}/map.md (destination jobs, query log, senses, layers, section plan) and ${WORK}/manifest.json (verbatim prompt)
 Instructions: follow the "Opener" section and the "${type}" section of ${BRIEFS} exactly. The format is ${SCHEMA}.

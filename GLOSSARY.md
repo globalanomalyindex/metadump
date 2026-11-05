@@ -34,6 +34,18 @@ _Avoid_: chunk, excerpt
 A single item in a meta dump that carries its own provenance and tier.
 _Avoid_: record, item, field
 
+**Facet**:
+The shape every entry takes, from the owner's hand-made dumps: one object per area or quality of the task, holding a line of text, lists of short phrases, its behaviors (how it acts, cause and effect) and its principle (why). One facet replaces many one-fact entries.
+_Avoid_: card, record, item
+
+**Thesis**:
+The one idea at the top of a meta dump that explains the rest ("colors appear to exist inside materials rather than on their surfaces"). Recorded in the essence.
+_Avoid_: summary, tagline, headline
+
+**Formula**:
+The task compressed into a recipe ("saturated color + high-key light + translucent materials + minimal composition"), with the role each element plays. Recorded in the essence.
+_Avoid_: template, rule
+
 **Provenance**:
 The tag on every entry saying where it came from: `user_stated`, `reference_observed`, `researched`, `inferred`, `proposed`, or `unknown`, ranked in that order when entries conflict. A user-supplied video or image gives `reference_observed`; something found on the web gives `researched`.
 _Avoid_: evidence class, source tag, confidence
@@ -87,7 +99,7 @@ An entry the build gathered rather than thought up: the user's words (`user_stat
 _Avoid_: fact, ground truth, verified
 
 **Reading**:
-One plausible interpretation of the request's scope, with what it includes ("shopping component" read as a product card, a mini cart or a product list). A meta dump keeps every reading side by side with a default, so the consumer chooses or combines; collapsing to one is narrowing.
+One plausible interpretation of the request's scope, with what it includes ("shopping component" read as a product card, a mini cart or a product list), or of a quality word in it ("sticky" read as a slow start that grips, or an early settle that holds). A meta dump keeps every reading side by side, so the consumer chooses or combines; collapsing to one is narrowing. Scope readings have a default; quality readings have none.
 _Avoid_: interpretation, scope, sense (a sense is the meaning of one word)
 
 **Decision point**:

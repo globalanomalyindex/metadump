@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and Punchy Curves</title>
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --card: #ffffff;
+    --ink: #1c1b19;
+    --muted: #6b6862;
+    --line: #d9d5cc;
+    --track: #ebe8e2;
+    --accent: #e4572e;
+    --ref: #9a958c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413;
+      --card: #1e1d1b;
+      --ink: #f1efea;
+      --muted: #a09c93;
+      --line: #3a3834;
+      --track: #2a2926;
+      --accent: #ff7a4d;
+      --ref: #77736b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413;
+    --card: #1e1d1b;
+    --ink: #f1efea;
+    --muted: #a09c93;
+    --line: #3a3834;
+    --track: #2a2926;
+    --accent: #ff7a4d;
+    --ref: #77736b;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    padding: 32px 16px 48px;
+  }
+  main { max-width: 1040px; margin: 0 auto; }
+
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  h1 { font-size: 22px; font-weight: 650; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0; max-width: 60ch; }
+  button.toggle {
+    font: inherit;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 16px;
+    cursor: pointer;
+  }
+  button.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .set {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 820px) {
+    .set { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .card h2 { font-size: 17px; margin: 0; font-weight: 650; }
+  .reading { color: var(--muted); margin: 2px 0 0; font-size: 13.5px; }
+  .spec {
+    font: 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--muted);
+    word-break: break-all;
+  }
+
+  .track {
+    position: relative;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--track);
+    margin: 8px 0 4px;
+  }
+  .track .end {
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    right: 8px;
+    width: 2px;
+    background: var(--ink);
+    opacity: 0.35;
+    border-radius: 1px;
+  }
+  .track .dot {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  svg.graph { width: 100%; height: auto; display: block; overflow: visible; }
+  svg .axis { stroke: var(--line); stroke-width: 1; }
+  svg .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 3; }
+  svg .ref { fill: none; stroke: var(--ref); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  svg .curve { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+  svg .playhead { stroke: var(--accent); stroke-width: 1.5; }
+  svg .marker { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
+  svg .marker.is-return { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+  svg text { fill: var(--muted); font: 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  .note { color: var(--muted); font-size: 12.5px; margin: 0; }
+  .phase { color: var(--muted); font-size: 12.5px; margin: 0; font-variant-numeric: tabular-nums; }
+  .ref-key { color: var(--muted); font-size: 12.5px; margin: 0; }
+  .ref-key i {
+    display: inline-block;
+    width: 18px;
+    border-top: 1.5px dashed var(--ref);
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  footer.foot { color: var(--muted); font-size: 13px; margin-top: 20px; max-width: 80ch; }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1>Sticky and punchy: three curves</h1>
+      <p class="lede">One interaction in three moments. Each card loops its curve forward, holds at the target, and returns on the same curve mirrored, so the full path shows.</p>
+    </div>
+    <button class="toggle" id="toggle" type="button" aria-pressed="false" aria-label="Pause all loops">Pause</button>
+  </header>
+
+  <section class="set" id="set" aria-label="Three looping curves"></section>
+
+  <footer class="foot">
+    Press reads as punchy: a fast attack and a hard stop. Release reads as punchy and sticky: one shallow kick past the target that catches and holds. Settle reads as sticky: a slow grip, then a release into a quiet tail. The dashed grey curve in each graph is ease-out, for comparison.
+  </footer>
+</main>
+
+<script>
+  // The exact values the loops run on. Also exposed for the test harness.
+  window.CURVES = [
+    { "name": "Press", "bezier": [0.10, 0.85, 0.25, 1], "duration_ms": 240 },
+    { "name": "Release", "bezier": [0.25, 0.9, 0.35, 1.2], "duration_ms": 360 },
+    { "name": "Settle", "bezier": [0.6, 0, 0.25, 1], "duration_ms": 480 }
+  ];
+
+  const READINGS = [
+    "punchy: most of the travel lands in the first third, then it stops hard",
+    "punchy and sticky: one shallow peak past the target, then it returns and holds",
+    "sticky: a slow grip holds the start back, then it releases into a quiet tail"
+  ];
+  const REF_EASE_OUT = [0, 0, 0.58, 1];
+  const DWELL_MS = 450;
+  const GRAPH = { w: 240, h: 160, x0: 16, x1: 224, yTop: 12, yBot: 140, yMax: 1.15, yMin: -0.05 };
+
+  function bez(s, a, b) {
+    const m = 1 - s;
+    return 3 * m * m * s * a + 3 * m * s * s * b + s * s * s;
+  }
+
+  // Progress at elapsed fraction u (0..1) for a cubic-bezier(x1, y1, x2, y2).
+  function progressAt(u, c) {
+    if (u <= 0) return 0;
+    if (u >= 1) return 1;
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      if (bez(mid, c[0], c[2]) < u) lo = mid; else hi = mid;
+    }
+    return bez((lo + hi) / 2, c[1], c[3]);
+  }
+
+  function peakOf(c) {
+    let peak = 0, at = 0;
+    for (let i = 0; i <= 400; i++) {
+      const u = i / 400;
+      const p = progressAt(u, c);
+      if (p > peak) { peak = p; at = u; }
+    }
+    return { peak, at };
+  }
+
+  function px(u) { return GRAPH.x0 + u * (GRAPH.x1 - GRAPH.x0); }
+  function py(y) {
+    return GRAPH.yTop + ((GRAPH.yMax - y) / (GRAPH.yMax - GRAPH.yMin)) * (GRAPH.yBot - GRAPH.yTop);
+  }
+  function pathFor(c) {
+    let d = "";
+    for (let i = 0; i <= 120; i++) {
+      const u = i / 120;
+      d += (i === 0 ? "M" : "L") + px(u).toFixed(2) + " " + py(progressAt(u, c)).toFixed(2) + " ";
+    }
+    return d.trim();
+  }
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    const n = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function fmt(n) { return n.toFixed(2); }
+
+  const cards = [];
+  const set = document.getElementById("set");
+
+  window.CURVES.forEach((curve, i) => {
+    const c = curve.bezier;
+    const T = curve.duration_ms;
+    const { peak } = peakOf(c);
+
+    const article = document.createElement("article");
+    article.className = "card";
+    article.innerHTML =
+      '<div>' +
+        '<h2></h2>' +
+        '<p class="reading"></p>' +
+      '</div>' +
+      '<div class="spec"></div>' +
+      '<div class="track" aria-hidden="true"><span class="end"></span><span class="dot"></span></div>' +
+      '<svg class="graph" viewBox="0 0 ' + GRAPH.w + ' ' + GRAPH.h + '" role="img" aria-label=""></svg>' +
+      '<p class="phase"></p>' +
+      '<p class="ref-key"><i></i>ease-out (0, 0, 0.58, 1)</p>' +
+      '<p class="note"></p>';
+
+    article.querySelector("h2").textContent = curve.name;
+    article.querySelector(".reading").textContent = READINGS[i];
+    article.querySelector(".spec").textContent =
+      "cubic-bezier(" + c.map(v => v.toFixed(2)).join(", ") + ") · " + T + " ms";
+    article.querySelector(".note").textContent =
+      "Peak " + fmt(peak) + (peak > 1.001 ? ": passes the target, then returns and holds." : ": no overshoot.");
+    const svg = article.querySelector("svg.graph");
+    svg.setAttribute("aria-label", curve.name + " curve, cubic-bezier " + c.join(", "));
+
+    // Axes and reference lines
+    el("line", { x1: GRAPH.x0, y1: py(0), x2: GRAPH.x1, y2: py(0), class: "axis" }, svg);
+    el("line", { x1: GRAPH.x0, y1: py(0), x2: GRAPH.x0, y2: py(GRAPH.yMax), class: "axis" }, svg);
+    el("line", { x1: GRAPH.x0, y1: py(1), x2: GRAPH.x1, y2: py(1), class: "grid" }, svg);
+    const t1 = el("text", { x: GRAPH.x1, y: py(0) + 12, "text-anchor": "end" }, svg);
+    t1.textContent = "time";
+    const t2 = el("text", { x: GRAPH.x0 + 3, y: py(1) - 4 }, svg);
+    t2.textContent = "1";
+
+    el("path", { d: pathFor(REF_EASE_OUT), class: "ref" }, svg);
+    el("path", { d: pathFor(c), class: "curve" }, svg);
+    const playhead = el("line", { x1: px(0), y1: py(-0.05), x2: px(0), y2: py(1.15), class: "playhead" }, svg);
+    const marker = el("circle", { cx: px(0), cy: py(0), r: 4.5, class: "marker" }, svg);
+
+    document.getElementById("set").appendChild(article);
+
+    cards.push({
+      curve, c, T,
+      dot: article.querySelector(".dot"),
+      phase: article.querySelector(".phase"),
+      playhead, marker
+    });
+  });
+
+  // Playback clock: all loops share it, so the set stays in step.
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let playing = !reduceMotion;
+  let clock = 0;
+  let last = null;
+
+  const toggle = document.getElementById("toggle");
+  function syncToggle() {
+    toggle.textContent = playing ? "Pause" : "Play";
+    toggle.setAttribute("aria-pressed", String(!playing));
+    toggle.setAttribute("aria-label", playing ? "Pause all loops" : "Play all loops");
+  }
+  toggle.addEventListener("click", () => { playing = !playing; syncToggle(); });
+  syncToggle();
+
+  // One loop: forward pass on the curve, hold at the target, return pass on
+  // the same curve mirrored, hold at rest.
+  function stateAt(card, t) {
+    const T = card.T;
+    const cycle = 2 * T + 2 * DWELL_MS;
+    let m = t % cycle;
+    if (m < T) return { p: progressAt(m / T, card.c), u: m / T, phase: "forward" };
+    m -= T;
+    if (m < DWELL_MS) return { p: 1, u: 1, phase: "hold at target" };
+    m -= DWELL_MS;
+    if (m < T) return { p: 1 - progressAt(m / T, card.c), u: m / T, phase: "return" };
+    return { p: 0, u: 0, phase: "hold at rest" };
+  }
+
+  function draw(card, s) {
+    const trackInset = 8;
+    card.dot.style.left = "calc(" + trackInset + "px + " + s.p.toFixed(4) + " * (100% - " + (trackInset * 2) + "px))";
+    const u = s.u;
+    const y = progressAt(u, card.c);
+    card.playhead.setAttribute("x1", px(u).toFixed(2));
+    card.playhead.setAttribute("x2", px(u).toFixed(2));
+    card.marker.setAttribute("cx", px(u).toFixed(2));
+    card.marker.setAttribute("cy", py(y).toFixed(2));
+    card.marker.setAttribute("class", "marker" + (s.phase === "return" ? " is-return" : ""));
+    card.phase.textContent = s.phase + " · progress " + (s.p * 100).toFixed(1) + "%";
+  }
+
+  function frame(now) {
+    if (last === null) last = now;
+    const dt = Math.min(now - last, 50);
+    last = now;
+    if (playing) clock += dt;
+    for (const card of cards) draw(card, stateAt(card, clock));
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

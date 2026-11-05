@@ -341,7 +341,7 @@ def _words(text):
         yield w
         if len(w) > 4 and w.endswith("s") and not w.endswith("ss"):
             yield w[:-1]
-TERM_LIST_FIELDS = ("aliases", "variants", "keywords")
+TERM_LIST_FIELDS = ("aliases", "variants", "keywords")   # facet phrases (properties, descriptors, signals) are found by grep, not indexed: the index would double the file
 SLICE_CAP_TOKENS = 8000
 
 
@@ -794,6 +794,12 @@ def build_dump(dump):
         out[k] = src.get(k) if src.get(k) is not None else default
     for k in sections:
         out[k] = src[k]
+    for k in list(sections):   # a section left with only `_` notes (normalize merged it away) is nothing a consumer can use
+        holder = out[k]
+        if isinstance(holder, dict) and not any(h == k for _e, _p, _en, h in iter_entries({k: holder})):
+            _note(report, "fixes", "empty_section_dropped", "/" + _esc(k), "section had no entries, only notes; dropped")
+            del out[k]
+            sections.remove(k)
     out["index"] = {}
     out["sources"] = src.get("sources") or {}
     _validate_spine(out, report)
@@ -803,7 +809,51 @@ def build_dump(dump):
     out["index"] = _build_index(out)
     _validate_routes(out, sections, report)
     _check_digested(out, sections, report)
+    _check_wordy(out, report)
+    _check_quality_readings(out, report)
     return out, report
+
+
+QUALITY_MIN_READINGS = 2
+
+
+def _check_quality_readings(out, report):
+    """A quality word from the prompt keeps its readings side by side. One definition, tuned against, is how a dump
+    narrows a creative task (test 8: every build copied the curves fitted to the dump's own idea of "sticky")."""
+    for _eid, ptr, entry, _h in iter_entries(out):
+        if entry.get("kind") != "quality":
+            continue
+        readings = entry.get("readings")
+        n = len(readings) if isinstance(readings, list) else 0
+        if n < QUALITY_MIN_READINGS:
+            _note(report, "warnings", "quality_one_reading", ptr,
+                  "a quality facet needs at least %d `readings` side by side (it has %d): the ways '%s' can be read for this task, "
+                  "each with what it looks like in practice, so the consumer chooses or combines instead of copying one definition"
+                  % (QUALITY_MIN_READINGS, n, entry.get("term", "?")))
+
+
+WORDY_TEXT_WORDS = 40      # a facet's prose is a line or two; the rest belongs in lists of short phrases
+WORDY_INSTEAD_WORDS = 20   # an `instead` is pasted into prompts as a rewrite, so it stays a phrase
+ENTRY_MAX_TOKENS = 300     # a facet is 100-200 tokens in the hand-made dumps; past this it has become a section
+LONG_KINDS = {"timeline", "transcript", "media"}   # measured data is long by nature
+
+
+def _check_wordy(out, report):
+    """Warn about prose that should have been lists, and facets that grew into sections: the hand-made dumps this
+    format follows were short phrases in small objects."""
+    for _eid, ptr, entry, _h in iter_entries(out):
+        size = _tokens(entry)
+        if size > ENTRY_MAX_TOKENS and entry.get("kind") not in LONG_KINDS:
+            _note(report, "warnings", "oversized_entry", ptr,
+                  "entry is ~%d tokens (limit %d): split it into facets of one area each, or move detail into other entries"
+                  % (size, ENTRY_MAX_TOKENS))
+        for field, limit in (("text", WORDY_TEXT_WORDS), ("instead", WORDY_INSTEAD_WORDS)):
+            n = len(str(entry.get(field) or "").split())
+            if n > limit:
+                _note(report, "warnings", "wordy_entry", ptr,
+                      "`%s` runs %d words (limit %d): keep it to a line and move the rest into lists of short phrases "
+                      "(properties, keywords, behaviors)" % (field, n, limit))
+                break
 
 
 def _check_digested(out, sections, report):

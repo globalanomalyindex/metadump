@@ -1,0 +1,59 @@
+[
+ {
+  "name": "Press",
+  "bezier": [
+   0.1,
+   0.85,
+   0.25,
+   1
+  ],
+  "duration_ms": 240,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 37,
+   "start_speed": 6.72,
+   "end_speed": 0,
+   "peak_speed": 8.31,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "Release",
+  "bezier": [
+   0.25,
+   0.9,
+   0.35,
+   1.2
+  ],
+  "duration_ms": 360,
+  "metrics": {
+   "overshoot_pct": 5.9,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 34,
+   "start_speed": 3.57,
+   "end_speed": -0.29,
+   "peak_speed": 3.6,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "Settle",
+  "bezier": [
+   0.6,
+   0,
+   0.25,
+   1
+  ],
+  "duration_ms": 480,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 68,
+   "start_speed": 0.05,
+   "end_speed": 0.03,
+   "peak_speed": 3.12,
+   "peak_speed_at_pct": 43
+  }
+ }
+]

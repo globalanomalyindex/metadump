@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and punchy curves</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f6f5f2;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --muted: #6b6a66;
+  --line: #dcd8cf;
+  --track: #ebe8e1;
+  --accent: #e4572e;
+  --accent-soft: rgba(228, 87, 46, 0.16);
+  --axis: #b3aea3;
+  --graph: #faf9f6;
+  --btn: #1d1d1f;
+  --btn-ink: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131312;
+    --card: #1c1c1a;
+    --ink: #f2f0ea;
+    --muted: #9d9a92;
+    --line: #2e2d2a;
+    --track: #262623;
+    --accent: #ff7a4d;
+    --accent-soft: rgba(255, 122, 77, 0.2);
+    --axis: #55534d;
+    --graph: #171715;
+    --btn: #f2f0ea;
+    --btn-ink: #131312;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131312;
+  --card: #1c1c1a;
+  --ink: #f2f0ea;
+  --muted: #9d9a92;
+  --line: #2e2d2a;
+  --track: #262623;
+  --accent: #ff7a4d;
+  --accent-soft: rgba(255, 122, 77, 0.2);
+  --axis: #55534d;
+  --graph: #171715;
+  --btn: #f2f0ea;
+  --btn-ink: #131312;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+h1 { font-size: 26px; line-height: 1.2; margin: 0 0 8px; }
+.intro { color: var(--muted); margin: 0; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 16px;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+h2 { font-size: 18px; margin: 0; }
+.bez {
+  font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--muted);
+  word-break: break-all;
+}
+.desc { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+
+.lane {
+  position: relative;
+  height: 44px;
+  margin: 16px 0 4px;
+  background: var(--track);
+  border-radius: 10px;
+}
+.lane::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  right: 0;
+  width: 2px;
+  background: var(--axis);
+  border-radius: 1px;
+}
+.dot {
+  position: absolute;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  left: calc(var(--p, 0) * (100% - 24px));
+  will-change: left;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 12px;
+}
+@media (min-width: 600px) {
+  .row { grid-template-columns: 1.3fr 1fr; align-items: center; }
+}
+svg.graph {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--graph);
+  border-radius: 10px;
+}
+.band { fill: var(--accent-soft); }
+.zero { stroke: var(--axis); stroke-width: 1; }
+.target { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.tick { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 1 3; }
+.curve { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.mark { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
+.lbl { fill: var(--muted); font: 9px system-ui, sans-serif; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.stat b {
+  display: block;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.stat span { font-size: 12px; color: var(--muted); }
+.meta { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+
+button {
+  margin-top: 12px;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--btn);
+  color: var(--btn-ink);
+  cursor: pointer;
+}
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.foot { color: var(--muted); font-size: 14px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sticky and punchy curves</h1>
+  <p class="intro">Three custom cubic-bezier curves. Each loop runs its move, holds at rest for 1.44 s, then resets. The graph shows the curve with the live position on it, and the 1 percent band the stop is judged against.</p>
+
+  <div id="cards"></div>
+
+  <p class="foot">Loops stop under reduced motion. Press Replay to play one move and hold at rest.</p>
+</main>
+
+<script>
+// The three curves used by the animations below. Values are exact.
+window.CURVES = [
+  { "name": "Snap and land", "bezier": [0.15, 1, 0.2, 1.04], "duration_ms": 300 },
+  { "name": "Snap out", "bezier": [0.2, 1.2, 0.2, 1], "duration_ms": 250 },
+  { "name": "Decisive landing", "bezier": [0.18, 0.98, 0.3, 1], "duration_ms": 250 }
+];
+
+const HOLD_MS = 1440;
+const DESC = {
+  "Snap and land": "Leaves fast, makes one small pass beyond its target, then lands early and holds.",
+  "Snap out": "The fastest leave of the three. One pass beyond the target, then a quick stop.",
+  "Decisive landing": "Leaves fast and lands without passing its target, so the hold reads as already done."
+};
+const REDUCED = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+
+// Graph geometry (viewBox 0 0 240 150). Progress axis runs -0.05 to 1.15.
+const PX0 = 12, PX1 = 228, PY0 = 10, PY1 = 140, YMIN = -0.05, YMAX = 1.15;
+const xp = u => PX0 + u * (PX1 - PX0);
+const yp = v => PY1 - (v - YMIN) / (YMAX - YMIN) * (PY1 - PY0);
+
+// Cubic bezier with endpoints (0,0) and (1,1), as in CSS cubic-bezier().
+function bx(t, a, b) { const m = 1 - t; return 3 * m * m * t * a + 3 * m * t * t * b + t * t * t; }
+function by(t, a, b) { const m = 1 - t; return 3 * m * m * t * a + 3 * m * t * t * b + t * t * t; }
+function tForX(u, x1, x2) {
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 50; i++) {
+    const m = (lo + hi) / 2;
+    if (bx(m, x1, x2) < u) lo = m; else hi = m;
+  }
+  return (lo + hi) / 2;
+}
+function yForU(u, b) {
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  return by(tForX(u, b[0], b[2]), b[1], b[3]);
+}
+
+// Peak overshoot in percent, and the last moment outside the 1 percent band.
+function analyse(b) {
+  let max = 0, settle = 0;
+  const N = 20000;
+  for (let i = 0; i <= N; i++) {
+    const u = i / N;
+    const y = yForU(u, b);
+    if (y > max) max = y;
+    if (Math.abs(y - 1) > 0.01) settle = u;
+  }
+  return { peak: Math.max(0, (max - 1) * 100), settle };
+}
+
+function buildCard(c) {
+  const b = c.bezier, dur = c.duration_ms, cycle = dur + HOLD_MS;
+  const a = analyse(b);
+  const root = document.createElement("article");
+  root.className = "card";
+
+  let path = "";
+  for (let i = 0; i <= 120; i++) {
+    const u = i / 120;
+    path += (i ? "L" : "M") + xp(u).toFixed(1) + " " + yp(yForU(u, b)).toFixed(1);
+  }
+
+  root.innerHTML =
+    '<div class="head"><h2></h2><code class="bez"></code></div>' +
+    '<p class="desc"></p>' +
+    '<div class="lane" aria-hidden="true"><div class="dot"></div></div>' +
+    '<div class="row">' +
+      '<svg class="graph" viewBox="0 0 240 150" role="img" aria-label="Progress curve with a live marker">' +
+        '<rect class="band" x="' + PX0 + '" y="' + yp(1.01).toFixed(1) + '" width="' + (PX1 - PX0) + '" height="' + (yp(0.99) - yp(1.01)).toFixed(1) + '"></rect>' +
+        '<line class="zero" x1="' + PX0 + '" x2="' + PX1 + '" y1="' + yp(0).toFixed(1) + '" y2="' + yp(0).toFixed(1) + '"></line>' +
+        '<line class="target" x1="' + PX0 + '" x2="' + PX1 + '" y1="' + yp(1).toFixed(1) + '" y2="' + yp(1).toFixed(1) + '"></line>' +
+        '<line class="tick" x1="' + xp(a.settle).toFixed(1) + '" x2="' + xp(a.settle).toFixed(1) + '" y1="' + PY0 + '" y2="' + PY1 + '"></line>' +
+        '<text class="lbl" x="' + (PX1 - 2) + '" y="' + (yp(1) - 3).toFixed(1) + '" text-anchor="end">target</text>' +
+        '<path class="curve" d="' + path + '"></path>' +
+        '<circle class="mark" r="4.5" cx="' + xp(0).toFixed(1) + '" cy="' + yp(0).toFixed(1) + '"></circle>' +
+      '</svg>' +
+      '<div>' +
+        '<div class="stats">' +
+          '<div class="stat"><b>' + a.peak.toFixed(2) + '%</b><span>peak overshoot</span></div>' +
+          '<div class="stat"><b>' + Math.round(a.settle * 100) + '%</b><span>within 1% from</span></div>' +
+          '<div class="stat"><b data-live>0.0%</b><span data-phase>at start</span></div>' +
+        '</div>' +
+        '<p class="meta">' + dur + ' ms move, ' + (HOLD_MS / 1000).toFixed(2) + ' s hold, then reset.</p>' +
+        '<button type="button">Replay</button>' +
+      '</div>' +
+    '</div>';
+
+  root.querySelector("h2").textContent = c.name;
+  root.querySelector(".bez").textContent = "cubic-bezier(" + b.join(", ") + ")";
+  root.querySelector(".desc").textContent = DESC[c.name] || "";
+  document.getElementById("cards").appendChild(root);
+
+  const s = {
+    b, dur, cycle,
+    start: null,
+    dot: root.querySelector(".dot"),
+    mark: root.querySelector(".mark"),
+    live: root.querySelector("[data-live]"),
+    phase: root.querySelector("[data-phase]")
+  };
+  root.querySelector("button").addEventListener("click", () => { s.start = performance.now(); });
+  return s;
+}
+
+function render(s, u, y) {
+  s.dot.style.setProperty("--p", y.toFixed(4));
+  s.mark.setAttribute("cx", xp(u).toFixed(1));
+  s.mark.setAttribute("cy", yp(y).toFixed(1));
+  s.live.textContent = (y * 100).toFixed(1) + "%";
+  s.phase.textContent = u >= 1 ? "holding at rest" : "moving";
+}
+
+const states = window.CURVES.map(buildCard);
+
+function frame(now) {
+  const reduced = REDUCED.matches;
+  for (const s of states) {
+    let u = 1, y = 1;
+    if (s.start === null && !reduced) s.start = now;
+    if (s.start !== null) {
+      let e = now - s.start;
+      if (!reduced) {
+        e = e % s.cycle;
+      } else if (e >= s.cycle) {
+        s.start = null;
+        e = s.cycle;
+      }
+      if (s.start !== null && e < s.dur) {
+        u = e / s.dur;
+        y = yForU(u, s.b);
+      }
+    }
+    render(s, u, y);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

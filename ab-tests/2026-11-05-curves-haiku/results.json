@@ -1,0 +1,109 @@
+{
+ "scores": {
+  "A": {
+   "sticky": 4.75,
+   "punchy": 5.0,
+   "distinct": 6.67,
+   "presentation": 3.58,
+   "craft": 4.42,
+   "overall": 4.83,
+   "mean_rank": 2.58,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 5.67,
+    "A-r2": 7.33,
+    "A-r3": 1.0,
+    "A-r4": 5.33
+   }
+  },
+  "B": {
+   "sticky": 4.83,
+   "punchy": 5.42,
+   "distinct": 3.83,
+   "presentation": 8.17,
+   "craft": 7.25,
+   "overall": 6.17,
+   "mean_rank": 2.42,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 6.0,
+    "B-r2": 6.0,
+    "B-r3": 7.0,
+    "B-r4": 5.67
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 13,
+   "losses": 9,
+   "ties": 2,
+   "win_rate": 0.58
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "3/4",
+   "curves_valid": "4/4",
+   "animating": "3/4",
+   "curves_used": "3/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 1
+  },
+  "B": {
+   "works": "4/4",
+   "curves_valid": "4/4",
+   "animating": "4/4",
+   "curves_used": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 80914,
+   "mean_seconds": 37.3,
+   "mean_tool_uses": 3
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 128273,
+   "mean_seconds": 99.0,
+   "mean_tool_uses": 10.2
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 184371,
+   "ms": 1825273,
+   "tool_uses": 32
+  }
+ },
+ "judge_agreement_mean_pearson": 0.68,
+ "notes": {
+  "b1/j1/B-r1": "Polished graph-and-readout cards with a live marker and reduced-motion Play once, but two of the three curves are near-duplicates and none of them visibly clings.",
+  "b1/j1/A-r1": "Grip Hold is a real grip and the three curves spread well, but the page shows no graph, no measured values and no hold, so the curves are hard to read.",
+  "b1/j1/B-r2": "The best presentation of the four, with a 1 percent band, settle tick, copyable values and a correct rest state under reduced motion, but its curve set duplicates W's and the sticky card barely lingers.",
+  "b1/j1/A-r2": "The three curves cover grip, overshoot and snap and each loop holds at both ends, so the feel is the most legible, though the thumbnail graphs carry no measured numbers and the 9.8 percent overshoot clips past the track.",
+  "b1/j2/B-r2": "Clean graph with live marker and stats, but its three curves are near-duplicates (same set as Z) and the sticky feel comes only from the 1.44 s hold, not the curve itself.",
+  "b1/j2/A-r2": "Its Sticky S-curve visibly lingers at both ends, Punch overshoots about 9.8 percent, and Snap-settle is a clean firm stop, but the values and graphs are small and the overshoot is clipped by the track edge.",
+  "b1/j2/A-r1": "Grip Hold gives a genuinely sticky S-curve and the three shapes differ, but there is no graph, no measured values and no hold, so the presentation is bare.",
+  "b1/j2/B-r1": "The best-presented page with tags, live readout and Play once under reduced motion, but its curves are near-identical and none of them really clings, and it leaves a dead placeholder function in the source.",
+  "b1/j3/A-r2": "The set spans a slow-start S-curve (Sticky), a real 9.8% overshoot (Punch) and a fast settle, with holds visible in the loop, though a dead placeholder function is left in the code and the measured values are not shown on the page.",
+  "b1/j3/B-r2": "The best-instrumented page, with live progress, peak overshoot and settle stats, but all three curves are near-identical fast ease-outs with about 1% overshoot, and each loop snaps back to start after the hold instead of returning.",
+  "b1/j3/B-r1": "The cards are clear and well labeled, but the three curves are almost the same ease-out with 0 to 1.2% overshoot, so sticky-settle and punchy-sticky barely differ, and the loops jump back instead of returning.",
+  "b1/j3/A-r1": "The curve set is the most distinct and punchy of the four (0%, 5.3% overshoot, and a grip S-curve), and the loops return seamlessly, but there is no graph, no measured values and no hold, so the curves are barely explained.",
+  "b2/j1/B-r3": "Three working loops with per-card pause, a live progress readout, measured overshoot and rest-by values, copyable CSS, and a Play-once reduced-motion path, though punch-and-stick and sticky-settle are close in shape while the 5% kick is clearly different.",
+  "b2/j1/A-r3": "The page throws a ReferenceError (blurbs is read inside a forEach before its const declaration), so no cards or loops render at all in the screenshots or frames, even though the harness sheet shows the curves are distinct.",
+  "b2/j1/B-r4": "The strongest presentation, with peak and rest-by readouts, Play-once per card, clean mobile layout and reduced-motion handling, but two of its three curves are the same as W's and the third is nearly identical, so the set does not read as three distinct curves.",
+  "b2/j1/A-r4": "The wind-up-pop curve gives a genuinely distinct, punchy anticipation and pop, but the sticky-punch overshoot reads as bouncy rather than sticky, the mini plots crowd their labels, there are no overshoot or rest values, and there is no reduced-motion handling.",
+  "b2/j2/B-r4": "Clean labeled cards with computed overshoot, live progress readout and rest-by stats plus working reduced-motion handling, but Punch and stick and Decisive settle are near-identical ease-outs and the footer note contradicts the 46% rest figure.",
+  "b2/j2/A-r4": "Most distinct set (overshoot, fast settle, anticipation S-curve) with a real punchy attack, but no readouts, thumbnail-sized curves, sparse copy and no reduced-motion handling at all.",
+  "b2/j2/A-r3": "The script throws a ReferenceError at load (blurbs is read before its const declaration), so no cards or loops render and only the heading shows; the declared curves cannot be judged on the page.",
+  "b2/j2/B-r3": "Full cards with graph, live marker, stat grid, fit guidance and a working reduced-motion path, though hardcoded copy contradicts itself (46% vs 0.65 rest) and punchy-sticky and sticky-settle are close.",
+  "b2/j3/A-r4": "Three clearly different curves, including an anticipation pop, shown as small loops with one global pause, no per-curve values panel, and no reduced-motion handling.",
+  "b2/j3/B-r4": "The strongest presentation with live graph markers, per-card copy, Play once and reduced-motion support, but the three curves are nearly identical so the set does not read as distinct.",
+  "b2/j3/B-r3": "Clear per-curve graphs, readouts, Play once and reduced-motion handling, with a visible 5 percent kick curve that gives the set its only real punch, though punchy-sticky and sticky-settle are close to duplicates.",
+  "b2/j3/A-r3": "The script throws a ReferenceError (blurbs is read before its const declaration), so the page renders blank at desktop, mobile and in all frames, though the declared curves would have been distinct."
+ }
+}

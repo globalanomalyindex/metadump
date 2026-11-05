@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and punchy curves</title>
+<style>
+:root{
+  --bg:#f4f3ef; --card:#ffffff; --ink:#18181b; --muted:#6b6b73; --line:#e4e2dc;
+  --lane:#eeece7; --accent:#2f5fd0; --ref:#9a9aa3; --mark:#18181b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131314; --card:#1c1c1e; --ink:#f2f2f4; --muted:#9b9ba4; --line:#2e2e32;
+    --lane:#26262a; --accent:#7ea6ff; --ref:#6d6d76; --mark:#f2f2f4;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131314; --card:#1c1c1e; --ink:#f2f2f4; --muted:#9b9ba4; --line:#2e2e32;
+  --lane:#26262a; --accent:#7ea6ff; --ref:#6d6d76; --mark:#f2f2f4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden}
+main{max-width:1080px;margin:0 auto;padding:32px 16px 48px}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:24px}
+h1{font-size:22px;line-height:1.25;margin:0 0 6px;font-weight:650;letter-spacing:-.01em}
+.intro{margin:0;color:var(--muted);max-width:62ch}
+button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.reading{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h2{margin:2px 0 0;font-size:20px;line-height:1.2;font-weight:650}
+.bez{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted);word-break:break-all;margin:0}
+.desc{margin:0;color:var(--muted)}
+svg.graph{width:100%;max-width:260px;height:auto;display:block;margin:4px auto 0}
+.axis{stroke:var(--line);stroke-width:1}
+.guide{stroke:var(--line);stroke-dasharray:3 3;stroke-width:1}
+.curve{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.gdot{fill:var(--accent)}
+.tracks{display:flex;flex-direction:column;gap:12px}
+.track{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 10px}
+.label{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.lane{position:relative;height:26px;background:var(--lane);border-radius:13px;min-width:0}
+.mark{position:absolute;right:-1px;top:4px;bottom:4px;width:2px;background:var(--mark);opacity:.45;border-radius:1px}
+.dot{position:absolute;left:0;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--accent);will-change:transform}
+.ref .dot{background:var(--ref)}
+.out{font:12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);min-width:44px;text-align:right}
+.meta{margin:0;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1>Sticky and punchy curves</h1>
+      <p class="intro">Three custom cubic bezier timing curves, each looping. The dot travels on its track and goes past the mark when a curve overshoots. Each pass plays forward, rests at the end, plays back with the same curve reversed, and rests at the start. The grey track under each curve runs ease-out, for comparison.</p>
+    </div>
+    <button id="toggle" type="button">Pause</button>
+  </header>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+(function () {
+  "use strict";
+
+  // The three curves the animations use. Values are cubic-bezier(x1, y1, x2, y2);
+  // duration_ms is one forward pass (the return pass uses the same duration).
+  window.CURVES = [
+    { name: "Catch", bezier: [0.3, 1.45, 0.45, 1], duration_ms: 320 },
+    { name: "Plant", bezier: [0.1, 0.55, 0.2, 1], duration_ms: 420 },
+    { name: "Snap",  bezier: [0.05, 0.85, 0.2, 1], duration_ms: 220 }
+  ];
+
+  // Reading each curve carries, for the captions.
+  var READINGS = {
+    Catch: { reading: "sticky and punchy",
+             desc: "A shallow kick past the target that clears and holds: one visible catch, then rest." },
+    Plant: { reading: "sticky",
+             desc: "Most of the travel lands early, then a long quiet tail. The element looks planted before the pass ends." },
+    Snap:  { reading: "punchy",
+             desc: "A fast attack and an abrupt stop: most of the travel arrives in the first fifth of the pass." }
+  };
+
+  var REF_BEZIER = [0, 0, 0.58, 1]; // CSS ease-out, reference only
+  var HOLD_MS = 500;                // rest at each end of a loop
+  var DOT = 14;                     // dot diameter in px
+  var GRAPH = { x0: 10, x1: 190, yTop: 10, yBottom: 190, yMin: -0.1, yMax: 1.2 };
+
+  // Cubic bezier with P0 = (0,0) and P3 = (1,1), as CSS defines it.
+  function bezier(x1, y1, x2, y2) {
+    function sx(t) { return 3 * (1 - t) * (1 - t) * t * x1 + 3 * (1 - t) * t * t * x2 + t * t * t; }
+    function sy(t) { return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t * t * y2 + t * t * t; }
+    function solveT(x) { // x(t) is monotonic because x1 and x2 lie in [0, 1]
+      var lo = 0, hi = 1;
+      for (var i = 0; i < 60; i++) {
+        var mid = (lo + hi) / 2;
+        if (sx(mid) < x) lo = mid; else hi = mid;
+      }
+      return (lo + hi) / 2;
+    }
+    return {
+      sx: sx,
+      sy: sy,
+      y: function (x) { return sy(solveT(Math.min(1, Math.max(0, x)))); }
+    };
+  }
+
+  function profile(b) {
+    var peak = -Infinity, peakX = 0, settle = 0, i;
+    for (i = 0; i <= 400; i++) {
+      var x = i / 400, y = b.y(x);
+      if (y > peak) { peak = y; peakX = x; }
+    }
+    for (i = 400; i >= 0; i--) {
+      if (Math.abs(b.y(i / 400) - 1) > 0.01) { settle = i / 400; break; }
+    }
+    return { peak: peak, peakX: peakX, settle: settle };
+  }
+
+  function gx(x) { return GRAPH.x0 + x * (GRAPH.x1 - GRAPH.x0); }
+  function gy(y) {
+    return GRAPH.yBottom - ((y - GRAPH.yMin) / (GRAPH.yMax - GRAPH.yMin)) * (GRAPH.yBottom - GRAPH.yTop);
+  }
+
+  function pct(v) { return Math.round(v * 100) + "%"; }
+
+  // Position along the track at a given clock time, with CSS alternate semantics:
+  // the return pass applies the same timing function to reversed time.
+  function stateAt(tr, clock) {
+    var fwd = tr.duration;
+    var cycle = fwd * 2 + HOLD_MS * 2;
+    var t = ((clock % cycle) + cycle) % cycle;
+    var u;
+    if (t < fwd) {
+      u = t / fwd;
+      return { xt: u, pos: tr.curve.y(u) };
+    }
+    t -= fwd;
+    if (t < HOLD_MS) return { xt: 1, pos: 1 };
+    t -= HOLD_MS;
+    if (t < fwd) {
+      u = t / fwd;
+      return { xt: 1 - u, pos: tr.curve.y(1 - u) };
+    }
+    return { xt: 0, pos: 0 };
+  }
+
+  var tracks = [];
+  var grid = document.getElementById("grid");
+  var ref = bezier.apply(null, REF_BEZIER);
+
+  function buildCard(c) {
+    var b = bezier.apply(null, c.bezier);
+    var pr = profile(b);
+    var info = READINGS[c.name] || { reading: "", desc: "" };
+    var ov = pr.peak > 1.0005
+      ? "kick to " + pr.peak.toFixed(3) + " at " + pct(pr.peakX) + " of the pass"
+      : "no overshoot";
+
+    var pts = [];
+    for (var i = 0; i <= 120; i++) {
+      var t = i / 120;
+      pts.push(gx(b.sx(t)).toFixed(2) + "," + gy(b.sy(t)).toFixed(2));
+    }
+
+    var card = document.createElement("section");
+    card.className = "card";
+    card.innerHTML =
+      '<div>' +
+        '<p class="reading">' + info.reading + '</p>' +
+        '<h2>' + c.name + '</h2>' +
+      '</div>' +
+      '<p class="bez">cubic-bezier(' + c.bezier.join(", ") + ') &middot; ' + c.duration_ms + ' ms</p>' +
+      '<p class="desc">' + info.desc + '</p>' +
+      '<svg class="graph" viewBox="0 0 200 200" role="img" aria-label="' + c.name + ' curve graph">' +
+        '<line class="axis" x1="' + gx(0) + '" y1="' + gy(0) + '" x2="' + gx(1) + '" y2="' + gy(0) + '"></line>' +
+        '<line class="guide" x1="' + gx(0) + '" y1="' + gy(1) + '" x2="' + gx(1) + '" y2="' + gy(1) + '"></line>' +
+        '<polyline class="curve" points="' + pts.join(" ") + '"></polyline>' +
+        '<circle class="gdot" r="4" cx="' + gx(0) + '" cy="' + gy(0) + '"></circle>' +
+      '</svg>' +
+      '<div class="tracks">' +
+        '<div class="track curve-track">' +
+          '<span class="label">' + c.name + ', the curve</span>' +
+          '<div class="lane"><span class="mark"></span><span class="dot"></span></div>' +
+          '<output class="out">0.000</output>' +
+        '</div>' +
+        '<div class="track ref">' +
+          '<span class="label">ease-out, reference</span>' +
+          '<div class="lane"><span class="mark"></span><span class="dot"></span></div>' +
+          '<output class="out">0.000</output>' +
+        '</div>' +
+      '</div>' +
+      '<p class="meta">' + ov + '; within 1% of rest after ' + pct(pr.settle) + ' of the pass</p>';
+
+    grid.appendChild(card);
+
+    var lanes = card.querySelectorAll(".lane");
+    var outs = card.querySelectorAll(".out");
+    var dots = card.querySelectorAll(".dot");
+    var gdot = card.querySelector(".gdot");
+
+    tracks.push({ curve: b, duration: c.duration_ms, lane: lanes[0], dot: dots[0], out: outs[0], gdot: gdot });
+    tracks.push({ curve: ref, duration: c.duration_ms, lane: lanes[1], dot: dots[1], out: outs[1], gdot: null });
+  }
+
+  window.CURVES.forEach(buildCard);
+
+  // Shared clock: advances only while playing, so pausing holds every loop in place.
+  var clock = 0;
+  var last = null;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var playing = !reduce;
+  var toggle = document.getElementById("toggle");
+
+  function syncButton() { toggle.textContent = playing ? "Pause" : "Play"; }
+  toggle.addEventListener("click", function () { playing = !playing; syncButton(); });
+  syncButton();
+
+  function render() {
+    for (var i = 0; i < tracks.length; i++) {
+      var tr = tracks[i];
+      var s = stateAt(tr, clock);
+      var travel = Math.max(0, tr.lane.clientWidth - DOT);
+      tr.dot.style.transform = "translate3d(" + (s.pos * travel).toFixed(2) + "px,0,0)";
+      tr.out.textContent = s.pos.toFixed(3);
+      if (tr.gdot) {
+        tr.gdot.setAttribute("cx", gx(s.xt).toFixed(2));
+        tr.gdot.setAttribute("cy", gy(s.pos).toFixed(2));
+      }
+    }
+  }
+
+  function frame(now) {
+    if (last !== null && playing) clock += now - last;
+    last = now;
+    render();
+    window.requestAnimationFrame(frame);
+  }
+
+  render();
+  window.requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

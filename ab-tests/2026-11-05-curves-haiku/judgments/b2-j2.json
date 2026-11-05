@@ -1,0 +1,43 @@
+{
+  "block": "b2",
+  "judge": "j2",
+  "scores": {
+    "W": {
+      "sticky": 6,
+      "punchy": 6,
+      "distinct": 4,
+      "presentation": 8,
+      "craft": 7,
+      "overall": 6,
+      "note": "Clean labeled cards with computed overshoot, live progress readout and rest-by stats plus working reduced-motion handling, but Punch and stick and Decisive settle are near-identical ease-outs and the footer note contradicts the 46% rest figure."
+    },
+    "X": {
+      "sticky": 5,
+      "punchy": 7,
+      "distinct": 8,
+      "presentation": 4,
+      "craft": 4,
+      "overall": 5,
+      "note": "Most distinct set (overshoot, fast settle, anticipation S-curve) with a real punchy attack, but no readouts, thumbnail-sized curves, sparse copy and no reduced-motion handling at all."
+    },
+    "Y": {
+      "sticky": 0,
+      "punchy": 0,
+      "distinct": 3,
+      "presentation": 0,
+      "craft": 1,
+      "overall": 1,
+      "note": "The script throws a ReferenceError at load (blurbs is read before its const declaration), so no cards or loops render and only the heading shows; the declared curves cannot be judged on the page."
+    },
+    "Z": {
+      "sticky": 6,
+      "punchy": 6,
+      "distinct": 5,
+      "presentation": 8,
+      "craft": 7,
+      "overall": 7,
+      "note": "Full cards with graph, live marker, stat grid, fit guidance and a working reduced-motion path, though hardcoded copy contradicts itself (46% vs 0.65 rest) and punchy-sticky and sticky-settle are close."
+    }
+  },
+  "ranking": ["Z", "W", "X", "Y"]
+}

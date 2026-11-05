@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and Punchy Curves</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --card: #ffffff;
+    --ink: #1d1b18;
+    --muted: #6b655c;
+    --accent: #e4572e;
+    --track: #e6e1d6;
+    --grid: #efeadf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141311;
+      --card: #1e1d1a;
+      --ink: #f2eee6;
+      --muted: #9b948a;
+      --accent: #ff7a4d;
+      --track: #2c2a26;
+      --grid: #252420;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141311;
+    --card: #1e1d1a;
+    --ink: #f2eee6;
+    --muted: #9b948a;
+    --accent: #ff7a4d;
+    --track: #2c2a26;
+    --grid: #252420;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+  }
+  header { max-width: 980px; margin: 0 auto 24px; }
+  h1 { font-size: 22px; margin: 0 0 6px; font-weight: 650; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .grid {
+    max-width: 980px;
+    margin: 0 auto;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 760px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.05);
+    min-width: 0;
+  }
+  .card h2 { font-size: 16px; margin: 0 0 2px; font-weight: 650; }
+  .meta { font-size: 12px; color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; margin-bottom: 12px; }
+  .stage {
+    position: relative;
+    height: 64px;
+    background: var(--track);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .dot {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    border-radius: 50%;
+    background: var(--accent);
+    will-change: transform;
+  }
+  .curve-wrap {
+    margin-top: 14px;
+    background: var(--grid);
+    border-radius: 10px;
+    padding: 8px;
+  }
+  .curve-wrap svg { display: block; width: 100%; height: auto; }
+  .curve-wrap .axis { stroke: var(--muted); stroke-width: 0.6; opacity: 0.5; }
+  .curve-wrap .path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; }
+  .curve-wrap .handle { stroke: var(--muted); stroke-width: 0.8; stroke-dasharray: 2 2; }
+  .curve-wrap .knob { fill: var(--accent); }
+  .values {
+    margin-top: 10px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  .note { max-width: 980px; margin: 20px auto 0; font-size: 12px; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) {
+    .dot { will-change: auto; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sticky and Punchy Curves</h1>
+  <p>Three cubic-bezier curves shown as loops. Each dot travels across its track using the curve's timing, holds at the end, then loops.</p>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<p class="note">Curve values are exposed as <code>window.CURVES</code>.</p>
+
+<script>
+(function () {
+  // The three curves. These exact values drive the animations below.
+  var CURVES = [
+    { name: "Punch Overshoot", bezier: [0.25, 1.6, 0.35, 1], duration_ms: 520 },
+    { name: "Sticky Anticipation", bezier: [0.7, -0.4, 0.2, 1.3], duration_ms: 900 },
+    { name: "Snap Settle", bezier: [0.9, 0, 0.1, 1.25], duration_ms: 380 }
+  ];
+  window.CURVES = CURVES;
+
+  var HOLD_MS = 700;   // pause at the end of each loop
+  var NS = "http://www.w3.org/2000/svg";
+
+  // Cubic bezier easing: solve x(t) = x for t, then return y(t).
+  function makeBezier(x1, y1, x2, y2) {
+    function sampleX(t) { return 3 * (1 - t) * (1 - t) * t * x1 + 3 * (1 - t) * t * t * x2 + t * t * t; }
+    function sampleY(t) { return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t * t * y2 + t * t * t; }
+    function sampleDX(t) {
+      return 3 * (1 - t) * (1 - t) * x1 + 6 * (1 - t) * t * (x2 - x1) + 3 * t * t * (1 - x2);
+    }
+    function solveT(x) {
+      var t = x;
+      for (var i = 0; i < 8; i++) {
+        var err = sampleX(t) - x;
+        var d = sampleDX(t);
+        if (Math.abs(err) < 1e-6) return t;
+        if (Math.abs(d) < 1e-6) break;
+        t -= err / d;
+      }
+      var lo = 0, hi = 1;
+      t = x;
+      for (var j = 0; j < 60; j++) {
+        var v = sampleX(t);
+        if (Math.abs(v - x) < 1e-7) break;
+        if (v < x) lo = t; else hi = t;
+        t = (lo + hi) / 2;
+      }
+      return t;
+    }
+    return function (x) {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      return sampleY(solveT(x));
+    };
+  }
+
+  function el(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+
+  function buildCurveSvg(b) {
+    var W = 100, H = 100, pad = 8;
+    var svg = el("svg", { viewBox: "-8 -8 116 116", role: "img", "aria-label": "Curve graph" });
+    // Map a curve coordinate (x in 0..1, y in roughly -0.5..1.7) into the viewBox.
+    function px(x) { return x * W; }
+    function py(y) { return H - y * H; }
+    el("line", { x1: 0, y1: py(0), x2: W, y2: py(0), class: "axis" }, svg);
+    el("line", { x1: 0, y1: py(1), x2: W, y2: py(1), class: "axis" }, svg);
+    el("line", { x1: 0, y1: py(0), x2: 0, y2: py(1), class: "axis" }, svg);
+    el("line", { x1: W, y1: py(0), x2: W, y2: py(1), class: "axis" }, svg);
+    var x1 = b[0], y1 = b[1], x2 = b[2], y2 = b[3];
+    el("line", { x1: px(0), y1: py(0), x2: px(x1), y2: py(y1), class: "handle" }, svg);
+    el("line", { x1: px(1), y1: py(1), x2: px(x2), y2: py(y2), class: "handle" }, svg);
+    el("path", {
+      d: "M" + px(0) + " " + py(0) + " C" + px(x1) + " " + py(y1) + " " + px(x2) + " " + py(y2) + " " + px(1) + " " + py(1),
+      class: "path"
+    }, svg);
+    el("circle", { cx: px(x1), cy: py(y1), r: 2.2, class: "knob" }, svg);
+    el("circle", { cx: px(x2), cy: py(y2), r: 2.2, class: "knob" }, svg);
+    return svg;
+  }
+
+  var grid = document.getElementById("grid");
+
+  CURVES.forEach(function (curve, index) {
+    var ease = makeBezier(curve.bezier[0], curve.bezier[1], curve.bezier[2], curve.bezier[3]);
+
+    var card = document.createElement("section");
+    card.className = "card";
+
+    var h = document.createElement("h2");
+    h.textContent = curve.name;
+    card.appendChild(h);
+
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = "duration " + curve.duration_ms + "ms";
+    card.appendChild(meta);
+
+    var stage = document.createElement("div");
+    stage.className = "stage";
+    var dot = document.createElement("div");
+    dot.className = "dot";
+    stage.appendChild(dot);
+    card.appendChild(stage);
+
+    var wrap = document.createElement("div");
+    wrap.className = "curve-wrap";
+    wrap.appendChild(buildCurveSvg(curve.bezier));
+    card.appendChild(wrap);
+
+    var values = document.createElement("div");
+    values.className = "values";
+    values.textContent = "cubic-bezier(" + curve.bezier.join(", ") + ")";
+    card.appendChild(values);
+
+    grid.appendChild(card);
+
+    // Animation loop: move across the track over duration_ms, hold, reset, repeat.
+    var start = null;
+    var cycleLength = curve.duration_ms + HOLD_MS;
+    var offset = index * 120; // stagger the starts slightly so the loops do not line up
+
+    function frame(now) {
+      if (start === null) start = now - offset;
+      var t = (now - start) % cycleLength;
+      var p = t < curve.duration_ms ? ease(t / curve.duration_ms) : 1;
+      var stageWidth = stage.clientWidth;
+      var travel = Math.max(0, stageWidth - dot.offsetWidth - 8);
+      dot.style.transform = "translateX(" + (4 + p * travel) + "px)";
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+})();
+</script>
+</body>
+</html>

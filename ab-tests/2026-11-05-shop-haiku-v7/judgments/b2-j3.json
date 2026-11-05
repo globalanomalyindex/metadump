@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"compact": 6, "minimal": 8, "modern": 6, "usability": 8, "craft": 6, "overall": 7, "note": "Clean stone palette with a labeled drawer, quantity states and free-shipping hint, but initials-on-tiles look template-like, card buttons misalign across rows, and the mobile header wraps awkwardly."},
+"X": {"compact": 8, "minimal": 9, "modern": 8, "usability": 8, "craft": 8, "overall": 8, "note": "Cohesive line-art product illustrations, a restrained layout, a sticky bag bar with checkout always reachable, and clear busy, min and max states, with only minor card-height misalignment and a slightly default blue accent."},
+"Y": {"compact": 5, "minimal": 8, "modern": 7, "usability": 6, "craft": 4, "overall": 5, "note": "Tidy minimal cards, but the Add to bag label clips at desktop width, mobile shows one large card per row with wasted space, and checkout is hidden behind the bag toggle."},
+"Z": {"compact": 5, "minimal": 5, "modern": 6, "usability": 8, "craft": 5, "overall": 6, "note": "Solid cart drawer, stock badges and sold-out handling, but emoji art reads as decorative clutter, cards go single-column with large art on mobile, and the mobile header order is broken."}
+},
+"ranking": ["X", "W", "Z", "Y"]}

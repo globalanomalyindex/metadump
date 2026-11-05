@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and Punchy Curves</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --ink: #1c1c1e;
+    --muted: #6b6b70;
+    --line: #e2e0da;
+    --accent: #e8452c;
+    --track: #ecebe6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121214;
+      --surface: #1b1b1e;
+      --ink: #f2f2f4;
+      --muted: #9a9aa2;
+      --line: #2c2c31;
+      --accent: #ff6a4d;
+      --track: #26262b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121214;
+    --surface: #1b1b1e;
+    --ink: #f2f2f4;
+    --muted: #9a9aa2;
+    --line: #2c2c31;
+    --accent: #ff6a4d;
+    --track: #26262b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 650; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; line-height: 1.5; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    margin-bottom: 14px;
+  }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .name { font-size: 16px; font-weight: 620; margin: 0; }
+  .meta { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); }
+  .blurb { color: var(--muted); font-size: 13px; margin: 6px 0 14px; line-height: 1.5; }
+  .row { display: grid; grid-template-columns: 1fr 120px; gap: 16px; align-items: center; }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+  .track {
+    position: relative;
+    height: 44px;
+    background: var(--track);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .ball {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    will-change: transform;
+  }
+  .curve { width: 120px; height: 120px; overflow: visible; }
+  @media (max-width: 560px) { .curve { width: 100%; height: 110px; } }
+  .curve .frame { fill: none; stroke: var(--line); stroke-width: 1; }
+  .curve .handle { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+  .curve .path { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; }
+  .curve .dot { fill: var(--accent); }
+  .values { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); margin-top: 10px; word-break: break-all; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 18px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sticky and punchy curves</h1>
+  <p class="sub">Three cubic-bezier easings, each looping a ball across a track. Each loop plays the curve once, rests briefly, then repeats.</p>
+  <div id="cards"></div>
+  <footer>Looping animations run from the values in <code>window.CURVES</code>. Overshoot (y outside 0 to 1) is intentional.</footer>
+</main>
+
+<style id="dyn"></style>
+
+<script>
+  // The three curves. These exact values drive the CSS animations below.
+  const CURVES = [
+    { name: "Sticky Punch",   bezier: [0.34, 1.56, 0.64, 1],         duration_ms: 500 },
+    { name: "Sticky Glide",   bezier: [0.16, 1, 0.3, 1],             duration_ms: 700 },
+    { name: "Snap Overshoot", bezier: [0.68, -0.55, 0.27, 1.55],     duration_ms: 620 }
+  ];
+  window.CURVES = CURVES;
+
+  const REST_MS = 900;      // pause between loops
+  const BALL = 28;          // ball diameter in px
+  const cards = document.getElementById("cards");
+  const dyn = document.getElementById("dyn");
+  const tracks = [];
+  let css = "";
+
+  CURVES.forEach((c, i) => {
+    const [x1, y1, x2, y2] = c.bezier;
+    const cycle = c.duration_ms + REST_MS;
+    const endPct = (c.duration_ms / cycle * 100).toFixed(3);
+
+    // Motion runs from 0% to endPct with the bezier; the rest of the cycle holds at the far end.
+    css += `@keyframes travel-${i} {` +
+      `0% { transform: translateX(0); animation-timing-function: cubic-bezier(${x1}, ${y1}, ${x2}, ${y2}); }` +
+      `${endPct}% { transform: translateX(var(--travel)); }` +
+      `100% { transform: translateX(var(--travel)); }` +
+      `}`;
+
+    // Card markup
+    const card = document.createElement("section");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="head">
+        <p class="name">${c.name}</p>
+        <span class="meta">${c.duration_ms} ms + ${REST_MS} ms rest</span>
+      </div>
+      <p class="blurb">${blurbs[i]}</p>
+      <div class="row">
+        <div class="track"><div class="ball"></div></div>
+        <svg class="curve" viewBox="-12 -72 124 244" aria-label="${c.name} curve">
+          <rect class="frame" x="0" y="0" width="100" height="100"></rect>
+          <line class="handle" id="h1-${i}" x1="0" y1="100" x2="0" y2="0"></line>
+          <line class="handle" id="h2-${i}" x1="100" y1="0" x2="100" y2="100"></line>
+          <path class="path" id="p-${i}" d=""></path>
+          <circle class="dot" cx="0" cy="100" r="2.5"></circle>
+          <circle class="dot" cx="100" cy="0" r="2.5"></circle>
+        </svg>
+      </div>
+      <div class="values">cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})</div>
+    `;
+    cards.appendChild(card);
+
+    // Draw the curve and its control handles (presentation only).
+    const P = (x, y) => [x * 100, (1 - y) * 100];
+    const [p1x, p1y] = P(x1, y1);
+    const [p2x, p2y] = P(x2, y2);
+    card.querySelector(`#p-${i}`).setAttribute("d", `M0,100 C${p1x},${p1y} ${p2x},${p2y} 100,0`);
+    card.querySelector(`#h1-${i}`).setAttribute("x2", p1x);
+    card.querySelector(`#h1-${i}`).setAttribute("y2", p1y);
+    card.querySelector(`#h2-${i}`).setAttribute("x1", p2x);
+    card.querySelector(`#h2-${i}`).setAttribute("y1", p2y);
+
+    // Looping ball
+    const ball = card.querySelector(".ball");
+    ball.style.animation = `travel-${i} ${cycle}ms linear infinite`;
+    tracks.push(card.querySelector(".track"));
+  });
+
+  const blurbs = [
+    "Pulls back past the start, springs through the end, and settles with a little life.",
+    "Leaves quickly, then decelerates for a long, clean stop that feels planted.",
+    "Dips into anticipation, snaps forward, and overshoots before it lands."
+  ];
+  // blurbs is defined after the forEach runs, so fill them in now.
+  document.querySelectorAll(".card .blurb").forEach((el, i) => { el.textContent = blurbs[i]; });
+
+  dyn.textContent = css;
+
+  // Ball travel distance depends on the track width.
+  function layout() {
+    tracks.forEach((t) => {
+      const travel = Math.max(0, t.clientWidth - BALL - 16);
+      t.style.setProperty("--travel", travel + "px");
+    });
+  }
+  // The ball's travel variable is inherited from the track, so set it on each track.
+  window.addEventListener("resize", layout);
+  layout();
+</script>
+</body>
+</html>

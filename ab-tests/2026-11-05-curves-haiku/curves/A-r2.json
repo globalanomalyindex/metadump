@@ -1,0 +1,59 @@
+[
+ {
+  "name": "Sticky",
+  "bezier": [
+   0.7,
+   0,
+   0.2,
+   1
+  ],
+  "duration_ms": 520,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 67,
+   "start_speed": 0.04,
+   "end_speed": 0.03,
+   "peak_speed": 4.02,
+   "peak_speed_at_pct": 46
+  }
+ },
+ {
+  "name": "Punch",
+  "bezier": [
+   0.34,
+   1.56,
+   0.64,
+   1
+  ],
+  "duration_ms": 460,
+  "metrics": {
+   "overshoot_pct": 9.8,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 30,
+   "start_speed": 4.31,
+   "end_speed": -0.07,
+   "peak_speed": 4.56,
+   "peak_speed_at_pct": 0
+  }
+ },
+ {
+  "name": "Snap-settle",
+  "bezier": [
+   0.15,
+   1,
+   0.3,
+   1
+  ],
+  "duration_ms": 640,
+  "metrics": {
+   "overshoot_pct": 0,
+   "undershoot_pct": 0,
+   "time_to_90_pct": 33,
+   "start_speed": 5.88,
+   "end_speed": 0,
+   "peak_speed": 6.59,
+   "peak_speed_at_pct": 0
+  }
+ }
+]

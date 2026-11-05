@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky and Punchy Curves</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --track: #e2e0da;
+    --accent: #e8553d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141414;
+      --fg: #f2f2f2;
+      --muted: #9a9a9a;
+      --track: #2a2a2a;
+      --accent: #ff7a5c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141414;
+    --fg: #f2f2f2;
+    --muted: #9a9a9a;
+    --track: #2a2a2a;
+    --accent: #ff7a5c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px;
+    overflow-x: hidden;
+  }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 28px; }
+  .row { margin: 0 0 22px; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 4px 12px;
+    align-items: baseline; margin-bottom: 10px; font-size: 14px;
+  }
+  .name { font-weight: 600; }
+  .vals { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .track {
+    position: relative; height: 44px; border-radius: 22px;
+    background: var(--track);
+  }
+  .dot {
+    position: absolute; top: 6px; left: 6px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--accent);
+    will-change: transform;
+  }
+  .hint { margin-top: 24px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sticky and Punchy</h1>
+  <p class="sub">Three custom bezier curves, each looping on its own track.</p>
+  <div id="list"></div>
+  <p class="hint">Each loop goes out and back with a short pause at both ends.</p>
+</main>
+
+<script>
+(function () {
+  // The three curves. The animations below use exactly these values.
+  var CURVES = [
+    { name: "Snap",  bezier: [0.16, 1.45, 0.3, 1],    duration_ms: 520 },
+    { name: "Stick", bezier: [0.7, 0, 0.1, 1.15],     duration_ms: 680 },
+    { name: "Thud",  bezier: [0.85, -0.25, 0.15, 1.25], duration_ms: 900 }
+  ];
+  window.CURVES = CURVES;
+
+  var list = document.getElementById("list");
+  var runs = [];
+
+  function easingOf(bezier) {
+    return "cubic-bezier(" + bezier.join(", ") + ")";
+  }
+
+  function distanceFor(track, dot) {
+    // Travel from the left inset to the right inset of the track.
+    var inset = 6;
+    return Math.max(0, track.clientWidth - dot.offsetWidth - inset * 2);
+  }
+
+  function build() {
+    list.innerHTML = "";
+    runs = [];
+    CURVES.forEach(function (c) {
+      var row = document.createElement("div");
+      row.className = "row";
+
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      var name = document.createElement("span");
+      name.className = "name";
+      name.textContent = c.name;
+      var vals = document.createElement("span");
+      vals.className = "vals";
+      vals.textContent = "cubic-bezier(" + c.bezier.join(", ") + ") · " + c.duration_ms + " ms";
+      meta.appendChild(name);
+      meta.appendChild(vals);
+
+      var track = document.createElement("div");
+      track.className = "track";
+      var dot = document.createElement("div");
+      dot.className = "dot";
+      track.appendChild(dot);
+
+      row.appendChild(meta);
+      row.appendChild(track);
+      list.appendChild(row);
+
+      var d = distanceFor(track, dot);
+      var anim = dot.animate(
+        [
+          { transform: "translateX(0px)" },
+          { transform: "translateX(" + d + "px)" }
+        ],
+        {
+          duration: c.duration_ms,
+          easing: easingOf(c.bezier),
+          iterations: Infinity,
+          direction: "alternate",
+          endDelay: 450
+        }
+      );
+      runs.push({ curve: c, track: track, dot: dot, anim: anim });
+    });
+  }
+
+  function relayout() {
+    runs.forEach(function (r) {
+      var d = distanceFor(r.track, r.dot);
+      r.anim.effect.setKeyframes([
+        { transform: "translateX(0px)" },
+        { transform: "translateX(" + d + "px)" }
+      ]);
+    });
+  }
+
+  function start() {
+    build();
+    var t = null;
+    window.addEventListener("resize", function () {
+      clearTimeout(t);
+      t = setTimeout(relayout, 120);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
+</script>
+</body>
+</html>

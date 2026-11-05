@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Goods Shop</title>
+<style>
+:root{
+  --bg:#fafaf9; --surface:#ffffff; --text:#1c1917; --muted:#78716c;
+  --line:#e7e5e4; --accent:#1c1917; --accent-text:#ffffff; --danger:#b91c1c;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c0a09; --surface:#1c1917; --text:#fafaf9; --muted:#a8a29e;
+    --line:#292524; --accent:#fafaf9; --accent-text:#0c0a09; --danger:#f87171;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;display:flex;gap:16px;align-items:center;padding:14px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.search{flex:1;max-width:420px;position:relative}
+.search input{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);outline:none}
+.search input:focus{border-color:var(--text)}
+.cart-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);white-space:nowrap}
+.badge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-text);font-size:12px;font-weight:600;display:inline-grid;place-items:center}
+
+/* main */
+main{max-width:1120px;margin:0 auto;padding:20px 16px 56px}
+.toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.sort{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.count{margin:4px 0 16px;color:var(--muted);font-size:13px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:8px}
+.tile{aspect-ratio:4/3;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,hsl(var(--h) 55% 90%),hsl(var(--h) 45% 74%));color:hsl(var(--h) 40% 25%);font-size:34px;font-weight:700;letter-spacing:-.02em;user-select:none}
+.tile.sm{width:56px;height:56px;aspect-ratio:auto;font-size:18px;border-radius:8px;flex:none}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card h3{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.desc{margin:0;color:var(--muted);font-size:13.5px;flex:1}
+.buy{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.price{font-weight:700;font-size:16px}
+.btn{padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600}
+.btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.btn.sm{padding:7px 12px;font-size:14px}
+.btn.wide{width:100%;padding:13px}
+.btn.ghost{background:transparent}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stepper button{width:34px;height:32px;border:0;background:var(--surface);font-size:16px}
+.stepper span{min-width:30px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+.link{background:none;border:0;color:var(--muted);padding:0;text-decoration:underline;font-size:13px}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted)}
+.empty .btn{margin-top:12px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:20}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:var(--surface);color:var(--text);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;z-index:21;box-shadow:-8px 0 30px rgba(0,0,0,.15)}
+.drawer.show{transform:none}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+.dhead h2{margin:0;font-size:18px}
+.icon{background:none;border:0;font-size:24px;line-height:1;padding:4px 8px;border-radius:8px}
+.dbody{flex:1;overflow:auto;padding:8px 20px}
+.line{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.li-info{flex:1;display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}
+.li-info strong{font-weight:600}
+.li-end{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px;font-weight:600;font-variant-numeric:tabular-nums}
+.dbody .empty{padding:64px 0}
+.dfoot{padding:16px 20px 20px;border-top:1px solid var(--line);display:grid;gap:12px}
+.dfoot:empty{display:none}
+.sums{margin:0;display:grid;gap:6px}
+.sums div{display:flex;justify-content:space-between}
+.sums dt,.sums dd{margin:0}
+.sums .total{font-weight:700;font-size:17px;padding-top:8px;border-top:1px solid var(--line);margin-top:4px}
+.sums dd{font-variant-numeric:tabular-nums}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--accent);color:var(--accent-text);padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:30;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){
+  .drawer,.scrim,.toast{transition:none}
+}
+@media (max-width:520px){
+  .brand{display:none}
+  .top{gap:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="brand">Common Goods</span>
+  <label class="search">
+    <span class="sr">Search products</span>
+    <input id="q" type="search" placeholder="Search products" autocomplete="off">
+  </label>
+  <button class="cart-btn" id="cartBtn" data-action="open" aria-haspopup="dialog">
+    <span>Cart</span><span class="badge" id="badge">0</span>
+  </button>
+</header>
+
+<main id="main">
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+    <select class="sort" id="sort" aria-label="Sort products">
+      <option value="featured">Featured</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="rating">Top rated</option>
+    </select>
+  </div>
+  <p class="count" id="count" aria-live="polite"></p>
+  <section class="grid" id="grid" aria-label="Products"></section>
+</main>
+
+<div class="scrim" id="scrim" data-action="close"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+  <div class="dhead">
+    <h2 id="cartTitle">Your cart</h2>
+    <button class="icon" id="closeBtn" data-action="close" aria-label="Close cart">&times;</button>
+  </div>
+  <div class="dbody" id="cartBody"></div>
+  <div class="dfoot" id="cartFoot"></div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const PRODUCTS = [
+  {id:'linen-overshirt', name:'Linen Overshirt', cat:'Apparel', price:84, rating:4.6, reviews:212, hue:200, init:'LO', desc:'Relaxed-fit garment-washed linen with a patch chest pocket.'},
+  {id:'merino-crew', name:'Merino Crew Sweater', cat:'Apparel', price:96, rating:4.8, reviews:438, hue:28, init:'MC', desc:'Extra-fine 18.5 micron merino, midweight, odor resistant.'},
+  {id:'canvas-tote', name:'Waxed Canvas Tote', cat:'Apparel', price:38, rating:4.4, reviews:97, hue:40, init:'CT', desc:'Heavy 12oz waxed canvas with leather handles and inner sleeve.'},
+  {id:'pour-over-set', name:'Ceramic Pour-Over Set', cat:'Kitchen', price:54, rating:4.7, reviews:301, hue:170, init:'PO', desc:'Dripper, carafe and filters. Matte glaze, dishwasher safe.'},
+  {id:'skillet-10', name:'Cast Iron Skillet, 10 in', cat:'Kitchen', price:48.5, rating:4.9, reviews:1204, hue:220, init:'SK', desc:'Pre-seasoned with flaxseed oil. Oven safe to 500 degrees.'},
+  {id:'stoneware-mugs', name:'Stoneware Mug Pair', cat:'Kitchen', price:29, rating:4.5, reviews:76, hue:12, init:'SM', desc:'Hand-glazed 12 oz mugs, sold as a set of two.'},
+  {id:'walnut-tray', name:'Walnut Desk Tray', cat:'Home', price:42, rating:4.3, reviews:58, hue:30, init:'WT', desc:'Solid American walnut catch-all with a felt base.'},
+  {id:'beeswax-candles', name:'Beeswax Taper Candles', cat:'Home', price:18, rating:4.6, reviews:145, hue:48, init:'BC', desc:'Six hand-dipped tapers, 10 in, slow burning, no fragrance.'},
+  {id:'wool-throw', name:'Wool Throw Blanket', cat:'Home', price:120, rating:4.8, reviews:189, hue:100, init:'WB', desc:'Woven in Oregon from undyed wool. 50 x 70 in.'},
+  {id:'steel-bottle', name:'Trail Water Bottle, 750 ml', cat:'Outdoor', price:26, rating:4.4, reviews:522, hue:190, init:'TB', desc:'Double-wall insulated steel. Keeps cold 24 hours.'},
+  {id:'rain-shell', name:'Packable Rain Shell', cat:'Outdoor', price:148, rating:4.7, reviews:167, hue:250, init:'RS', desc:'Two-layer waterproof shell that stuffs into its own pocket.'},
+  {id:'headlamp', name:'Headlamp Pro 400', cat:'Outdoor', price:64, rating:4.2, reviews:83, hue:55, init:'HL', desc:'400 lumens, rechargeable, IPX6 rated, red night mode.'}
+];
+const CATS = ['All','Apparel','Kitchen','Home','Outdoor'];
+const MAX_QTY = 10;
+const FREE_SHIP_AT = 75;
+const SHIP_FEE = 9.95;
+const TAX_RATE = 0.08;
+
+const state = { q:'', cat:'All', sort:'featured', cart:{}, open:false };
+
+const $ = s => document.querySelector(s);
+const money = n => n.toLocaleString('en-US',{style:'currency',currency:'USD'});
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId = id => PRODUCTS.find(p => p.id === id);
+
+function visibleProducts(){
+  const q = state.q.trim().toLowerCase();
+  let list = PRODUCTS.filter(p =>
+    (state.cat === 'All' || p.cat === state.cat) &&
+    (!q || (p.name + ' ' + p.cat + ' ' + p.desc).toLowerCase().includes(q))
+  );
+  const sorters = {
+    'price-asc': (a,b) => a.price - b.price,
+    'price-desc': (a,b) => b.price - a.price,
+    'rating': (a,b) => b.rating - a.rating || b.reviews - a.reviews
+  };
+  if (sorters[state.sort]) list = [...list].sort(sorters[state.sort]);
+  return list;
+}
+
+function cartLines(){
+  return Object.entries(state.cart)
+    .map(([id, qty]) => ({ p: byId(id), qty }))
+    .filter(l => l.p && l.qty > 0);
+}
+
+function totals(){
+  const cents = cartLines().reduce((s, l) => s + Math.round(l.p.price * 100) * l.qty, 0);
+  const sub = cents / 100;
+  const ship = sub === 0 || sub >= FREE_SHIP_AT ? 0 : SHIP_FEE;
+  const tax = Math.round(sub * TAX_RATE * 100) / 100;
+  return { sub, ship, tax, total: Math.round((sub + ship + tax) * 100) / 100 };
+}
+
+function changeQty(id, delta){
+  const next = (state.cart[id] || 0) + delta;
+  if (next <= 0) delete state.cart[id];
+  else state.cart[id] = Math.min(next, MAX_QTY);
+}
+
+let toastTimer;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function renderChips(){
+  $('#chips').innerHTML = CATS.map(c =>
+    `<button class="chip" data-action="cat" data-cat="${esc(c)}" aria-pressed="${state.cat === c}">${esc(c)}</button>`
+  ).join('');
+}
+
+function card(p){
+  const q = state.cart[p.id] || 0;
+  const buy = q
+    ? `<div class="stepper">
+         <button data-action="dec" data-id="${p.id}" aria-label="Decrease ${esc(p.name)}">&minus;</button>
+         <span aria-live="polite">${q}</span>
+         <button data-action="inc" data-id="${p.id}" aria-label="Increase ${esc(p.name)}" ${q >= MAX_QTY ? 'disabled' : ''}>+</button>
+       </div>`
+    : `<button class="btn primary sm" data-action="add" data-id="${p.id}">Add to cart</button>`;
+  return `<article class="card">
+    <div class="tile" style="--h:${p.hue}" aria-hidden="true">${esc(p.init)}</div>
+    <div class="meta"><span>${esc(p.cat)}</span><span aria-label="Rated ${p.rating} out of 5">&#9733; ${p.rating.toFixed(1)} <span>(${p.reviews})</span></span></div>
+    <h3>${esc(p.name)}</h3>
+    <p class="desc">${esc(p.desc)}</p>
+    <div class="buy"><span class="price">${money(p.price)}</span>${buy}</div>
+  </article>`;
+}
+
+function renderGrid(){
+  const list = visibleProducts();
+  $('#count').textContent = `${list.length} product${list.length === 1 ? '' : 's'}`;
+  $('#grid').innerHTML = list.length
+    ? list.map(card).join('')
+    : `<div class="empty"><p>No products match${state.q.trim() ? ` &ldquo;${esc(state.q.trim())}&rdquo;` : ' this filter'}.</p>
+         <button class="btn" data-action="reset">Clear filters</button></div>`;
+}
+
+function renderCart(){
+  const lines = cartLines();
+  const t = totals();
+  const count = lines.reduce((s, l) => s + l.qty, 0);
+  $('#badge').textContent = count;
+  $('#cartBtn').setAttribute('aria-label', `Open cart, ${count} item${count === 1 ? '' : 's'}`);
+
+  $('#cartBody').innerHTML = lines.length
+    ? lines.map(l => `<div class="line">
+        <div class="tile sm" style="--h:${l.p.hue}" aria-hidden="true">${esc(l.p.init)}</div>
+        <div class="li-info">
+          <strong>${esc(l.p.name)}</strong>
+          <span class="muted small">${money(l.p.price)} each</span>
+          <div class="stepper">
+            <button data-action="dec" data-id="${l.p.id}" aria-label="Decrease ${esc(l.p.name)}">&minus;</button>
+            <span aria-live="polite">${l.qty}</span>
+            <button data-action="inc" data-id="${l.p.id}" aria-label="Increase ${esc(l.p.name)}" ${l.qty >= MAX_QTY ? 'disabled' : ''}>+</button>
+          </div>
+        </div>
+        <div class="li-end">
+          <span>${money(l.p.price * l.qty)}</span>
+          <button class="link" data-action="remove" data-id="${l.p.id}">Remove</button>
+        </div>
+      </div>`).join('')
+    : `<div class="empty"><p>Your cart is empty.</p><button class="btn ghost" data-action="close">Keep shopping</button></div>`;
+
+  $('#cartFoot').innerHTML = lines.length ? `
+    <dl class="sums">
+      <div><dt>Subtotal</dt><dd>${money(t.sub)}</dd></div>
+      <div><dt>Shipping</dt><dd>${t.ship === 0 ? 'Free' : money(t.ship)}</dd></div>
+      <div><dt>Estimated tax</dt><dd>${money(t.tax)}</dd></div>
+      <div class="total"><dt>Total</dt><dd>${money(t.total)}</dd></div>
+    </dl>
+    ${t.sub < FREE_SHIP_AT ? `<p class="muted small" style="margin:0">Add ${money(FREE_SHIP_AT - t.sub)} more for free shipping.</p>` : ''}
+    <button class="btn primary wide" data-action="checkout">Checkout</button>` : '';
+}
+
+function render(){
+  renderChips();
+  renderGrid();
+  renderCart();
+  $('#sort').value = state.sort;
+  $('#scrim').classList.toggle('show', state.open);
+  $('#drawer').classList.toggle('show', state.open);
+  $('#main').inert = state.open;
+  document.body.style.overflow = state.open ? 'hidden' : '';
+}
+
+function openCart(){ state.open = true; render(); $('#closeBtn').focus(); }
+function closeCart(){ state.open = false; render(); $('#cartBtn').focus(); }
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el || el.disabled) return;
+  const { action, id, cat } = el.dataset;
+  switch (action) {
+    case 'cat':      state.cat = cat; break;
+    case 'add':      changeQty(id, 1); toast(`Added ${byId(id).name} to cart`); break;
+    case 'inc':      changeQty(id, 1); break;
+    case 'dec':      changeQty(id, -1); break;
+    case 'remove':   delete state.cart[id]; break;
+    case 'reset':    state.q = ''; state.cat = 'All'; $('#q').value = ''; break;
+    case 'open':     return openCart();
+    case 'close':    return closeCart();
+    case 'checkout':
+      state.cart = {};
+      toast('Order placed. Demo only, nothing was charged.');
+      return closeCart();
+    default: return;
+  }
+  render();
+});
+
+$('#q').addEventListener('input', e => { state.q = e.target.value; renderGrid(); });
+$('#sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.open) closeCart(); });
+
+render();
+</script>
+</body>
+</html>

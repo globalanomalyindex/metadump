@@ -44,6 +44,10 @@ Spine first because it is what every consumer reads; lookups last because nobody
 
 ```json
 {"one_sentence": "Generous food photography above vivid macro bands, organized by a pale panel and heavy black type.",
+ "summary": "Appetizing photo, saturated bands, pale panel, heavy black type; abundant yet measured.",
+ "formula": {"full": "close-up food photo + saturated macro bands + pale information panel + heavy black type",
+             "essential": "food photo over vivid bands",
+             "roles": {"photo": "appetite", "bands": "nutrition at a glance", "panel": "order", "type": "brand voice"}},
  "signature": ["c-photo-over-bands", "c-pale-panel", "c-heavy-title"],
  "tensions": [{"text": "measured indulgence", "poles": ["macro labels and counts", "sauce-coated abundance"], "prov": "inferred"}],
  "task": {"is": "a frozen-meal carton front (packaging design)",
@@ -54,7 +58,7 @@ Spine first because it is what every consumer reads; lookups last because nobody
               {"reading": "the whole flavor range as a system", "includes": ["variant rules", "shelf view"], "default": false}]}
 ```
 
-`signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten. `task` identifies the task: what it is, the disciplines it belongs to, the ladder from those disciplines down to this task's specifics, and the user's whole `job` end to end (the steps the people using the result go through). Sections follow the ladder and entries may carry a `rung`. The default reading covers the whole job. finalize warns when the ladder is missing (`no_task_ladder`) or the job is (`no_task_job`). `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
+`one_sentence` is the thesis: the one idea that explains the rest. `summary` (optional) names the key qualities in one line. `formula` (optional) compresses the task into a recipe (`full`, `essential`) and says what job each element does (`roles`), the way the hand-made dumps this skill grew out of did. `signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten. `task` identifies the task: what it is, the disciplines it belongs to, the ladder from those disciplines down to this task's specifics, and the user's whole `job` end to end (the steps the people using the result go through). Sections follow the ladder and entries may carry a `rung`. The default reading covers the whole job. finalize warns when the ladder is missing (`no_task_ladder`) or the job is (`no_task_job`). `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
 
 ### `routing`
 
@@ -82,6 +86,8 @@ See sections 6–8. `open_questions` holds what the prompt and evidence leave op
 
 Finalize gives open questions `prov: "unknown"` and `tier: 3` if absent. Use mode records answers as `user_stated` entries with `decided_in`, then deletes or keeps the question as resolved.
 
+An `open_questions` default settles a parameter the prompt left open and the work can't proceed without (currency, framework, a settle band). It never picks the deliverable ("use Set A"), a reading of a quality word, or a scope reading: those stay side by side as readings and candidate pools, and the consumer composes.
+
 ## 3. Task sections and entries
 
 Everything that is not spine or lookup is a task section, named in the domain's own language (`palette`, `composition`, `error_model`, `seams`, `verse_form`, `subject_lines`). A section is a map of entries keyed by id; it may contain one level (or more) of groups, i.e. maps whose members are all entries:
@@ -96,6 +102,31 @@ Everything that is not spine or lookup is a task section, named in the domain's 
 ```
 
 Keys starting with `_` are section notes, not entries.
+
+**Facets.** Write entries as facets: one object per area or quality, mostly lists of short phrases, like the hand-made dumps this skill grew out of. A section of 5 dense facets beats 25 one-line entries.
+
+```json
+"lf-surfaces": {"term": "surfaces and depth", "tier": 2, "prov": "researched", "src": ["s-guide"],
+  "text": "Flat near-white surfaces separated by hairlines, with depth only where something floats.",
+  "properties": ["near-white canvas", "hairline dividers", "one soft shadow"],
+  "behaviors": ["A floating panel gets the only shadow on screen"],
+  "principle": "Depth marks what can move; everything else stays flat.",
+  "signals": ["low shadow count"], "tokens": {"status": "illustrative", "hairline_px": 1}}
+```
+
+| Facet field | Holds |
+|---|---|
+| `text` | One line, 40 words at most (finalize warns past that: `wordy_entry`) |
+| `properties`, `keywords`, `descriptors` | Phrases of one to five words. Indexed, so a lookup of any phrase finds the facet |
+| `behaviors` | How it acts, cause and effect, one sentence each ("thicker transparent material looks darker") |
+| `principle` | Why, in one sentence |
+| `signals` | How to recognize it in an output or an image. Indexed |
+| `tokens` | Numbers, with `status`: `measured`, `sourced` or `illustrative` |
+| `contribution` | For influences: what each one brings |
+| `queries` | For search vocabulary: phrases people would type |
+| `readings` | For a `kind: "quality"` facet: the ways a quality word from the prompt can be read for this task, side by side, each `{"reading", "in_practice", "signals"}`. At least two (finalize warns: `quality_one_reading`), and none is the default |
+
+A facet stays small: past about 300 tokens finalize warns (`oversized_entry`; measured `timeline`, `transcript` and `media` entries are exempt). A facet carries one `tier` and one `prov`, so split it when its items have different provenance (what the references show vs what the build associates). A reference descriptor is a facet too: `{"kind": "reference", "term": "<what it shows>", "signals": [...], "method": "visual", "src": ["r1"]}`.
 
 **Options area.** `proposed` entries (the builder's choices where nothing decides it) live apart from collected facts: in a section or group named `options` or `ideas`, or under a section whose `_about` says "options, not requirements". They are never tier 1 (finalize enforces that) and exports phrase them as choices.
 
@@ -254,7 +285,7 @@ An inverted index, like a search engine's. Keys are lowercased:
             "not_meant": ["ak-acrylic-paint"]}
 ```
 
-- `hits`: entries whose `term`/`name`/`canonical`/`label`, alias, variant or keyword is exactly this phrase.
+- `hits`: entries whose `term`/`name`/`canonical`/`label`, alias, variant or keyword is exactly this phrase. A facet's `properties`, `descriptors` and `signals` are not indexed (indexing them doubled a dump); `grep -n '<phrase>' F` finds them, since every entry is on one line.
 - `words`: entries whose phrases contain this word (stopwords dropped, plurals also indexed singular). Words found in more than 25 entries are not word-indexed: too common to discriminate.
 - `not_meant`: anti-keyword ids for senses of this term to avoid, so an ambiguous lookup shows the wrong sense in the same hop.
 - Both lists are JSON Pointers ranked by tier (tier 1 first).
@@ -284,9 +315,9 @@ Each ticket writes `metadumps/.work/<slug>/shards/<NN-ticket>.json`:
 
 Rejects (exit 1, dump not written): missing manifest fields or essence, bad tier/prov values, duplicate ids, `src` naming a missing source, checks/exports/signature citing unknown ids, routes that don't resolve, anti-keywords with a bad kind or a `not_wanted` with no `instead`.
 
-Fixes (and reports): prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
+Fixes (and reports): a task section left with no entries, only notes → dropped (`empty_section_dropped`); prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
 
-Warns: a section whose 5+ entries all cite one single source (`undigested_source`: that source passed through, not digested), no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
+Warns: prose that should be lists (`wordy_entry`: a `text` over 40 words or an `instead` over 20), a facet over ~300 tokens (`oversized_entry`), a `kind: "quality"` facet with fewer than two `readings` (`quality_one_reading`), a section whose 5+ entries all cite one single source (`undigested_source`: that source passed through, not digested), no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
 
 ## 14. Media entries (pages, videos, images)
 
