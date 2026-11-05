@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Field &amp; Form Shop</title>
+<style>
+:root{
+  --bg:#f7f6f3;--surface:#ffffff;--ink:#1c1b19;--muted:#6f6b64;--line:#e5e2dc;
+  --accent:#1c1b19;--accent-ink:#ffffff;--good:#2f6b3f;--danger:#9a3b2e;--r:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121210;--surface:#1c1b19;--ink:#f3f1ec;--muted:#9c978e;--line:#2c2a26;
+    --accent:#f3f1ec;--accent-ink:#121210;--good:#7fc08f;--danger:#e08a7a;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121210;--surface:#1c1b19;--ink:#f3f1ec;--muted:#9c978e;--line:#2c2a26;
+  --accent:#f3f1ec;--accent-ink:#121210;--good:#7fc08f;--danger:#e08a7a;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:14px;height:64px}
+.brand{font-weight:650;letter-spacing:-.01em;font-size:16px;margin-right:auto}
+.search{position:relative;flex:0 1 280px}
+.search input{width:100%;height:38px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:0 14px 0 36px;outline:none}
+.search input:focus{border-color:var(--muted)}
+.search svg{position:absolute;left:12px;top:11px;width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2}
+.cart-btn{height:38px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);padding:0 16px;display:flex;align-items:center;gap:8px;font-weight:550}
+.badge{min-width:20px;height:20px;border-radius:999px;background:var(--accent-ink);color:var(--accent);font-size:12px;display:grid;place-items:center;padding:0 6px}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:24px 0 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sort{height:34px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:0 12px}
+.count{color:var(--muted);font-size:13px;padding:8px 0 16px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:20px;padding-bottom:64px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.swatch{position:relative;aspect-ratio:4/4.3;background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 62%,#000));display:grid;place-items:center}
+.swatch span{font-size:64px;font-weight:300;color:rgba(255,255,255,.55);letter-spacing:-.04em;user-select:none}
+.tag{position:absolute;top:12px;left:12px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px}
+.info{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.info h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.005em}
+.info p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.price{font-weight:600;font-variant-numeric:tabular-nums}
+.add{margin-top:auto;height:40px;border-radius:10px;border:1px solid var(--ink);background:transparent;font-weight:550}
+.add:hover{background:var(--ink);color:var(--bg)}
+.add.in{background:var(--ink);color:var(--bg)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:64px 0}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:10}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);z-index:11;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line)}
+.dhead h2{margin:0;font-size:17px;font-weight:650}
+.icon-btn{border:0;background:none;width:32px;height:32px;border-radius:8px;font-size:20px;line-height:1;color:var(--muted)}
+.icon-btn:hover{background:var(--bg);color:var(--ink)}
+.lines{list-style:none;margin:0;padding:6px 22px;overflow:auto;flex:1}
+.line{display:grid;grid-template-columns:64px 1fr auto;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.thumb{width:64px;height:72px;border-radius:10px;background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 62%,#000));display:grid;place-items:center;color:rgba(255,255,255,.7);font-size:24px;font-weight:300}
+.line h4{margin:0;font-size:14px;font-weight:600}
+.line .unit{margin:2px 0 10px;color:var(--muted);font-size:13px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;height:32px}
+.qty button{width:32px;height:100%;border:0;background:none;font-size:16px}
+.qty span{min-width:22px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.end{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between}
+.end b{font-variant-numeric:tabular-nums;font-weight:600}
+.link{border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:0}
+.link:hover{color:var(--danger)}
+.dempty{padding:56px 22px;text-align:center;color:var(--muted)}
+.dempty h3{color:var(--ink);margin:0 0 6px;font-size:16px}
+.placed{padding:56px 22px;text-align:center}
+.placed .tick{width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good);display:grid;place-items:center;margin:0 auto 14px;font-size:22px}
+.placed h3{margin:0 0 6px;font-size:17px}
+.placed p{margin:0;color:var(--muted)}
+.summary{border-top:1px solid var(--line);padding:18px 22px 22px;display:grid;gap:8px}
+.summary div{display:flex;justify-content:space-between;color:var(--muted);font-variant-numeric:tabular-nums}
+.summary .total{color:var(--ink);font-weight:650;font-size:16px;padding-top:8px;margin-top:4px;border-top:1px solid var(--line)}
+.note{font-size:12px;color:var(--muted)}
+.checkout{margin-top:10px;height:48px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+.hidden{display:none!important}
+
+@media (max-width:560px){
+  .search{flex-basis:100%;order:3}
+  .bar{flex-wrap:wrap;height:auto;padding:12px 0;gap:10px}
+  .brand{margin-right:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand">Field &amp; Form</div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search the shop" aria-label="Search products" autocomplete="off">
+    </label>
+    <button class="cart-btn" data-action="open" aria-controls="drawer" aria-expanded="false">
+      Bag <span class="badge" id="badge">0</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+    <select class="sort" id="sort" aria-label="Sort products">
+      <option value="featured">Featured</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="rating">Top rated</option>
+    </select>
+  </div>
+  <div class="count" id="count" aria-live="polite"></div>
+  <section class="grid" id="grid"></section>
+</main>
+
+<div class="scrim" id="scrim" data-action="close"></div>
+
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dtitle" aria-hidden="true">
+  <div class="dhead">
+    <h2 id="dtitle">Your bag</h2>
+    <button class="icon-btn" data-action="close" aria-label="Close bag">&times;</button>
+  </div>
+  <div id="drawerBody" style="display:contents"></div>
+</aside>
+
+<script>
+const PRODUCTS = [
+  { id:'p1', name:'Linen Overshirt',        cat:'Apparel',     price:89,  color:'#c9b796', rating:4.7, reviews:212, tag:'New' },
+  { id:'p2', name:'Merino Crew Sweater',    cat:'Apparel',     price:120, color:'#d8cfbf', rating:4.8, reviews:486 },
+  { id:'p3', name:'Waxed Chore Coat',       cat:'Apparel',     price:165, color:'#6b6a4c', rating:4.6, reviews:97 },
+  { id:'p4', name:'Ceramic Pour-Over Set',  cat:'Home',        price:54,  color:'#b86a4d', rating:4.9, reviews:331, tag:'Best seller' },
+  { id:'p5', name:'Walnut Desk Organizer',  cat:'Home',        price:68,  color:'#8a6a4f', rating:4.5, reviews:74 },
+  { id:'p6', name:'Stoneware Bud Vase',     cat:'Home',        price:36,  color:'#5f6b73', rating:4.4, reviews:58 },
+  { id:'p7', name:'Leather Card Wallet',    cat:'Accessories', price:42,  color:'#a57b52', rating:4.7, reviews:262 },
+  { id:'p8', name:'Canvas Tote, Natural',   cat:'Accessories', price:28,  color:'#d9cdb4', rating:4.3, reviews:139 },
+  { id:'p9', name:'Wool Beanie, Moss',      cat:'Accessories', price:24,  color:'#5d7255', rating:4.6, reviews:45, tag:'Low stock' }
+];
+const CATEGORIES = ['All', 'Apparel', 'Home', 'Accessories'];
+const SHIPPING_FLAT = 7.95, FREE_SHIPPING_OVER = 75, TAX_RATE = 0.08, MAX_QTY = 9;
+
+const state = {
+  query: '',
+  category: 'All',
+  sort: 'featured',
+  cart: {},        // productId -> quantity
+  drawerOpen: false,
+  placedOrder: null
+};
+let orderSeq = 4821;
+
+const money = n => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(n);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initial = p => esc(p.name.charAt(0));
+
+function visibleProducts() {
+  const q = state.query.trim().toLowerCase();
+  const list = PRODUCTS.filter(p =>
+    (state.category === 'All' || p.cat === state.category) &&
+    (!q || (p.name + ' ' + p.cat).toLowerCase().includes(q))
+  );
+  const sorters = {
+    'featured':   (a, b) => PRODUCTS.indexOf(a) - PRODUCTS.indexOf(b),
+    'price-asc':  (a, b) => a.price - b.price,
+    'price-desc': (a, b) => b.price - a.price,
+    'rating':     (a, b) => b.rating - a.rating
+  };
+  return list.sort(sorters[state.sort]);
+}
+
+function totals() {
+  const lines = PRODUCTS.filter(p => state.cart[p.id]).map(p => ({ ...p, qty: state.cart[p.id] }));
+  const count = lines.reduce((s, l) => s + l.qty, 0);
+  const subtotal = lines.reduce((s, l) => s + l.qty * l.price, 0);
+  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
+  const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
+  return { lines, count, subtotal, shipping, tax, total: subtotal + shipping + tax };
+}
+
+function renderChips() {
+  document.getElementById('chips').innerHTML = CATEGORIES.map(c =>
+    `<button class="chip" data-cat="${esc(c)}" aria-pressed="${state.category === c}">${esc(c)}</button>`
+  ).join('');
+}
+
+function renderGrid() {
+  const list = visibleProducts();
+  document.getElementById('count').textContent =
+    `${list.length} ${list.length === 1 ? 'product' : 'products'}` + (state.query ? ` for "${state.query.trim()}"` : '');
+  document.getElementById('grid').innerHTML = list.length ? list.map(p => {
+    const qty = state.cart[p.id] || 0;
+    const label = qty ? `In bag ×${qty} — add one more` : 'Add to bag';
+    return `
+    <article class="card">
+      <div class="swatch" style="--c:${p.color}">
+        ${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}
+        <span aria-hidden="true">${initial(p)}</span>
+      </div>
+      <div class="info">
+        <div class="row">
+          <div><h3>${esc(p.name)}</h3><p>${esc(p.cat)} · ★ ${p.rating} (${p.reviews})</p></div>
+          <div class="price">${money(p.price)}</div>
+        </div>
+        <button class="add ${qty ? 'in' : ''}" data-action="add" data-id="${p.id}"
+          aria-label="${esc(p.name)}: ${qty ? 'add another' : 'add to bag'}">${label}</button>
+      </div>
+    </article>`;
+  }).join('') : `<div class="empty">Nothing matches that. Try another word or clear the filter.</div>`;
+}
+
+function renderBadge() {
+  const { count } = totals();
+  const b = document.getElementById('badge');
+  b.textContent = count;
+  document.querySelector('.cart-btn').setAttribute('aria-label', `Bag, ${count} ${count === 1 ? 'item' : 'items'}`);
+}
+
+function renderDrawer() {
+  const t = totals();
+  const body = document.getElementById('drawerBody');
+  const drawer = document.getElementById('drawer');
+  const scrim = document.getElementById('scrim');
+  drawer.classList.toggle('open', state.drawerOpen);
+  scrim.classList.toggle('open', state.drawerOpen);
+  drawer.setAttribute('aria-hidden', String(!state.drawerOpen));
+  document.querySelector('.cart-btn').setAttribute('aria-expanded', String(state.drawerOpen));
+
+  if (state.placedOrder && t.count === 0) {
+    body.innerHTML = `
+      <div class="placed">
+        <div class="tick" aria-hidden="true">✓</div>
+        <h3>Order #${state.placedOrder} placed</h3>
+        <p>Thanks. A confirmation is on its way.</p>
+        <button class="checkout" data-action="close" style="margin-top:24px;width:100%">Keep shopping</button>
+      </div>`;
+    return;
+  }
+  if (t.count === 0) {
+    body.innerHTML = `
+      <div class="dempty">
+        <h3>Your bag is empty</h3>
+        <p>Add something from the shop to see it here.</p>
+      </div>`;
+    return;
+  }
+  body.innerHTML = `
+    <ul class="lines">
+      ${t.lines.map(l => `
+        <li class="line">
+          <div class="thumb" style="--c:${l.color}" aria-hidden="true">${initial(l)}</div>
+          <div>
+            <h4>${esc(l.name)}</h4>
+            <div class="unit">${money(l.price)} each</div>
+            <div class="qty">
+              <button data-action="dec" data-id="${l.id}" aria-label="Decrease ${esc(l.name)}">−</button>
+              <span aria-live="polite">${l.qty}</span>
+              <button data-action="inc" data-id="${l.id}" aria-label="Increase ${esc(l.name)}" ${l.qty >= MAX_QTY ? 'disabled' : ''}>+</button>
+            </div>
+          </div>
+          <div class="end">
+            <b>${money(l.price * l.qty)}</b>
+            <button class="link" data-action="remove" data-id="${l.id}">Remove</button>
+          </div>
+        </li>`).join('')}
+    </ul>
+    <div class="summary">
+      <div><span>Subtotal</span><span>${money(t.subtotal)}</span></div>
+      <div><span>Shipping</span><span>${t.shipping === 0 ? 'Free' : money(t.shipping)}</span></div>
+      <div><span>Estimated tax</span><span>${money(t.tax)}</span></div>
+      <div class="total"><span>Total</span><span>${money(t.total)}</span></div>
+      <div class="note">${t.subtotal < FREE_SHIPPING_OVER ? `Add ${money(FREE_SHIPPING_OVER - t.subtotal)} more for free shipping.` : 'You qualify for free shipping.'}</div>
+      <button class="checkout" data-action="checkout">Check out · ${money(t.total)}</button>
+    </div>`;
+}
+
+function render() {
+  renderChips();
+  renderGrid();
+  renderBadge();
+  renderDrawer();
+}
+
+function refocus(action, id) {
+  const sel = `[data-action="${action}"]${id ? `[data-id="${id}"]` : ''}`;
+  const el = document.querySelector(`#drawerBody ${sel}`) || document.querySelector(`#grid ${sel}`);
+  if (el && !el.disabled) el.focus();
+}
+
+document.addEventListener('click', e => {
+  const catBtn = e.target.closest('[data-cat]');
+  if (catBtn) {
+    state.category = catBtn.dataset.cat;
+    render();
+    return;
+  }
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const a = el.dataset.action, id = el.dataset.id;
+  const inDrawer = !!el.closest('#drawer');
+
+  switch (a) {
+    case 'add':
+      state.cart[id] = Math.min(MAX_QTY, (state.cart[id] || 0) + 1);
+      state.placedOrder = null;
+      break;
+    case 'inc':
+      state.cart[id] = Math.min(MAX_QTY, state.cart[id] + 1);
+      break;
+    case 'dec':
+      if (state.cart[id] <= 1) delete state.cart[id];
+      else state.cart[id]--;
+      break;
+    case 'remove':
+      delete state.cart[id];
+      break;
+    case 'checkout':
+      if (totals().count === 0) return;
+      state.placedOrder = ++orderSeq;
+      state.cart = {};
+      break;
+    case 'open':
+      state.drawerOpen = true;
+      break;
+    case 'close':
+      state.drawerOpen = false;
+      state.placedOrder = null;
+      break;
+    default:
+      return;
+  }
+  render();
+  if (a === 'open') document.querySelector('#drawer .icon-btn').focus();
+  else if (a === 'add' || a === 'inc' || a === 'dec' || a === 'remove') refocus(a, id);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.drawerOpen) {
+    state.drawerOpen = false;
+    state.placedOrder = null;
+    render();
+    document.querySelector('.cart-btn').focus();
+  }
+});
+
+document.getElementById('q').addEventListener('input', e => {
+  state.query = e.target.value;
+  renderGrid();
+});
+
+document.getElementById('sort').addEventListener('change', e => {
+  state.sort = e.target.value;
+  renderGrid();
+});
+
+render();
+</script>
+</body>
+</html>

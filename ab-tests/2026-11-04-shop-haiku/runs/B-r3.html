@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essentials Shop Component</title>
+<style>
+:root{
+  --surface:#FFFFFF;
+  --ink:#111827;
+  --ink-muted:#6B7280;
+  --hairline:#E5E7EB;
+  --accent:#2563EB;
+  --radius:8px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--surface);color:var(--ink);font:400 14px/1.4 var(--font)}
+button,input{font:inherit}
+.shop{max-width:1040px;margin:0 auto;padding:16px}
+.shop-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 0 16px;border-bottom:1px solid var(--hairline)}
+.shop-head h1{margin:0;font-size:16px;font-weight:600}
+.bag-summary{margin:0;color:var(--ink-muted)}
+.bag-summary strong{color:var(--ink);font-weight:600}
+
+.grid{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),280px));gap:16px;justify-content:start}
+
+.card{display:flex;flex-direction:column;height:100%;border:1px solid var(--hairline);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.media{position:relative;margin:0;aspect-ratio:4/3;display:grid;place-items:center;border-bottom:1px solid var(--hairline)}
+.media svg{width:100%;height:100%;display:block}
+.shape{fill:var(--hairline);stroke:var(--ink-muted);stroke-width:1.5}
+.line{fill:none;stroke:var(--ink-muted);stroke-width:1.5}
+.badge{position:absolute;top:8px;left:8px;padding:4px 8px;border:1px solid var(--hairline);border-radius:999px;background:var(--surface);font-size:12px;line-height:1}
+
+.body{display:flex;flex-direction:column;gap:8px;flex:1;padding:12px 16px 16px}
+.name{margin:0;font-size:16px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.price{display:flex;align-items:baseline;gap:8px;margin:0;font-size:16px;font-weight:600}
+.price s{font-size:14px;font-weight:400;color:var(--ink-muted)}
+.price .now.sale{color:var(--accent)}
+.label{margin:4px 0 0;font-size:12px;color:var(--ink-muted)}
+.variants{display:flex;flex-wrap:wrap;gap:8px}
+.opt{min-width:40px;height:32px;padding:0 8px;border:1px solid var(--hairline);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--ink-muted)}
+.opt[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.opt.sold{color:var(--ink-muted);text-decoration:line-through}
+
+.actions{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px}
+.add{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:9.5rem;height:40px;padding:0 16px;border:1px solid var(--accent);border-radius:var(--radius);background:var(--accent);color:#fff;font-weight:600;cursor:pointer;transition:background-color 150ms ease-out,border-color 150ms ease-out,color 150ms ease-out}
+.add:not(:disabled):hover{opacity:.92}
+.add:not(:disabled):active{filter:brightness(.9)}
+.add[data-state="adding"]{cursor:progress}
+.add[data-state="added"]{background:var(--ink);border-color:var(--ink)}
+.add:disabled{background:var(--hairline);border-color:var(--hairline);color:var(--ink-muted);cursor:not-allowed}
+.add-icon{display:inline-flex}
+.spinner{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin 800ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.save{margin-left:auto;padding:4px 0;border:0;background:none;color:var(--ink-muted);cursor:pointer;text-decoration:underline}
+.save[aria-pressed="true"]{color:var(--ink);font-weight:600}
+.reason{min-height:16px;margin:0;font-size:12px;color:var(--ink-muted)}
+.reason.error{color:var(--ink)}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.panel{margin-top:24px;padding-top:12px;border-top:1px solid var(--hairline)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.panel h2{margin:0;font-size:14px;font-weight:600}
+.link{padding:0;border:0;background:none;color:var(--ink-muted);font-size:12px;text-decoration:underline;cursor:pointer}
+.lines{list-style:none;margin:0;padding:0}
+.lines li{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:8px 0;border-bottom:1px solid var(--hairline)}
+.muted{margin:0;color:var(--ink-muted)}
+
+.demo{margin-top:16px;padding-top:12px;border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-muted)}
+.demo label{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+@media (prefers-reduced-motion: reduce){
+  .add{transition:none}
+  .spinner{animation:none;opacity:.6}
+}
+</style>
+</head>
+<body>
+<main class="shop" aria-labelledby="shop-title">
+  <header class="shop-head">
+    <h1 id="shop-title">Essentials</h1>
+    <p class="bag-summary"><span id="bag-count">Bag: 0 items</span> &middot; <strong id="bag-total">$0.00</strong></p>
+  </header>
+
+  <ul class="grid" id="grid"></ul>
+
+  <section class="panel" aria-labelledby="bag-title">
+    <div class="panel-head">
+      <h2 id="bag-title">Bag</h2>
+      <button type="button" class="link" id="clear">Clear bag</button>
+    </div>
+    <ul class="lines" id="lines" hidden></ul>
+    <p class="muted" id="empty">Your bag is empty.</p>
+  </section>
+
+  <footer class="demo">
+    <label><input type="checkbox" id="fail-adds"> Simulate failed adds</label>
+  </footer>
+</main>
+<p id="live" class="sr-only" role="status" aria-live="polite"></p>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    {
+      id: 'p-merino', name: 'Merino Crew Sweater', option: 'Size', art: 'sweater',
+      price: '74.00', compareAt: '96.00', currency: 'USD', badge: 'Sale',
+      variants: [
+        { id: 's', label: 'S', availableForSale: true },
+        { id: 'm', label: 'M', availableForSale: false },
+        { id: 'l', label: 'L', availableForSale: true }
+      ]
+    },
+    {
+      id: 'p-tote', name: 'Canvas Tote, Natural', option: 'Size', art: 'tote',
+      price: '32.50', compareAt: null, currency: 'USD', badge: null,
+      variants: [
+        { id: 'std', label: 'One size', availableForSale: undefined }
+      ]
+    },
+    {
+      id: 'p-pourover', name: 'Ceramic Pour-Over Set', option: 'Colour', art: 'pourover',
+      price: '58.95', compareAt: null, currency: 'USD', badge: 'New',
+      variants: [
+        { id: 'w', label: 'White', availableForSale: false },
+        { id: 'sand', label: 'Sand', availableForSale: true }
+      ]
+    },
+    {
+      id: 'p-wallet', name: 'Recycled Wool Blend Overshirt in Charcoal', option: 'Size', art: 'wallet',
+      price: '48.00', compareAt: null, currency: 'USD', badge: null,
+      variants: [
+        { id: 'xs', label: 'XS', availableForSale: true },
+        { id: 'sm', label: 'S', availableForSale: true },
+        { id: 'md', label: 'M', availableForSale: true }
+      ]
+    }
+  ];
+
+  const ART = {
+    sweater: '<path class="shape" d="M56 30 L70 22 Q80 30 90 22 L104 30 L128 50 L116 64 L104 56 L104 98 L56 98 L56 56 L44 64 L32 50 Z"/>',
+    tote: '<path class="line" d="M60 46 Q60 24 80 24 Q100 24 100 46"/><rect class="shape" x="44" y="46" width="72" height="56" rx="3"/>',
+    pourover: '<path class="shape" d="M58 38 H102 L90 66 H70 Z"/><rect class="shape" x="70" y="66" width="20" height="30" rx="4"/>',
+    wallet: '<rect class="shape" x="38" y="44" width="84" height="54" rx="6"/><path class="line" d="M38 58 H122"/><rect class="line" x="98" y="68" width="16" height="10" rx="2"/>'
+  };
+  const CHECK = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const SPINNER = '<span class="spinner" aria-hidden="true"></span>';
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const grid = $('#grid');
+  const live = $('#live');
+  const failToggle = $('#fail-adds');
+  const cart = new Map();
+
+  // Money stays in integer cents; Intl supplies the currency's minor-unit digits.
+  const toCents = s => Math.round(parseFloat(s) * 100);
+  const money = (cents, currency = 'USD') =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(cents / 100);
+
+  function announce(msg) {
+    live.textContent = '';
+    setTimeout(() => { live.textContent = msg; }, 50);
+  }
+
+  // Stand-in for a cart request: resolves after a short delay, or rejects when the demo toggle is on.
+  function requestAdd() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => (failToggle.checked ? reject(new Error('add failed')) : resolve()), 600);
+    });
+  }
+
+  function currentVariant(c) {
+    return c.p.variants.find(v => v.id === c.variantId);
+  }
+
+  function addLine(p, v) {
+    const key = p.id + ':' + v.id;
+    const line = cart.get(key) || { name: p.name, option: v.label, cents: toCents(p.price), qty: 0 };
+    line.qty += 1;
+    cart.set(key, line);
+  }
+
+  function updateBag() {
+    const lines = $('#lines');
+    let count = 0;
+    let total = 0;
+    lines.replaceChildren();
+    for (const l of cart.values()) {
+      count += l.qty;
+      total += l.cents * l.qty;
+      const li = document.createElement('li');
+      const name = document.createElement('span');
+      const qty = document.createElement('span');
+      const amt = document.createElement('span');
+      name.textContent = `${l.name}, ${l.option}`;
+      qty.textContent = `× ${l.qty}`;
+      amt.textContent = money(l.cents * l.qty);
+      li.append(name, qty, amt);
+      lines.append(li);
+    }
+    $('#bag-count').textContent = `Bag: ${count} ${count === 1 ? 'item' : 'items'}`;
+    $('#bag-total').textContent = money(total);
+    $('#empty').hidden = count > 0;
+    lines.hidden = count === 0;
+  }
+
+  function paint(c) {
+    const v = currentVariant(c);
+    const soldOut = v.availableForSale === false; // undefined means no stock state, so not gated
+    const add = $('.add', c.el);
+    add.disabled = soldOut;
+    add.setAttribute('aria-disabled', String(soldOut || c.phase === 'adding'));
+    add.dataset.state = soldOut ? 'disabled' : c.phase;
+    $('.add-icon', c.el).innerHTML = c.phase === 'adding' ? SPINNER : (c.phase === 'added' ? CHECK : '');
+    $('.add-label', c.el).textContent =
+      c.phase === 'adding' ? 'Adding…' : c.phase === 'added' ? 'Added' : 'Add to cart';
+    $('.sr-only', c.el).textContent = ' ' + c.p.name;
+
+    const save = $('.save', c.el);
+    save.setAttribute('aria-pressed', String(c.saved));
+    save.textContent = c.saved ? 'Saved' : 'Save';
+
+    const reason = $('.reason', c.el);
+    if (c.phase === 'error') {
+      reason.textContent = c.message;
+      reason.className = 'reason error';
+    } else if (soldOut) {
+      reason.textContent = 'Sold out';
+      reason.className = 'reason';
+    } else {
+      reason.textContent = '';
+      reason.className = 'reason';
+    }
+
+    [...$('.variants', c.el).children].forEach((b, i) => {
+      b.setAttribute('aria-pressed', String(c.p.variants[i].id === c.variantId));
+    });
+  }
+
+  function addToCart(c) {
+    const v = currentVariant(c);
+    if (v.availableForSale === false || c.phase === 'adding') return;
+    clearTimeout(c.timer);
+    c.phase = 'adding';
+    c.message = '';
+    paint(c);
+    requestAdd().then(() => {
+      addLine(c.p, v);
+      c.phase = 'added';
+      paint(c);
+      updateBag();
+      announce(`Added ${c.p.name} to cart`);
+      c.timer = setTimeout(() => {
+        if (c.phase === 'added') { c.phase = 'idle'; paint(c); }
+      }, 1500);
+    }, () => {
+      c.phase = 'error';
+      c.message = 'Could not add. Try again.';
+      paint(c);
+      announce(`Could not add ${c.p.name}. Try again.`);
+    });
+  }
+
+  function buildCard(p) {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <article class="card">
+        <figure class="media">
+          <svg viewBox="0 0 160 120" aria-hidden="true" focusable="false">${ART[p.art]}</svg>
+          <span class="badge"></span>
+        </figure>
+        <div class="body">
+          <h2 class="name"></h2>
+          <p class="price"><s class="was"></s><span class="now"></span></p>
+          <p class="label"></p>
+          <div class="variants" role="group"></div>
+          <div class="actions">
+            <button type="button" class="add" data-state="idle"><span class="add-icon"></span><span class="add-label"></span><span class="sr-only"></span></button>
+            <button type="button" class="save" aria-pressed="false">Save</button>
+          </div>
+          <p class="reason"></p>
+        </div>
+      </article>`;
+
+    const c = { p, el: li, variantId: p.variants[0].id, saved: false, phase: 'idle', message: '', timer: null };
+
+    $('.name', li).textContent = p.name;
+    $('.label', li).textContent = p.option;
+    const hasSale = p.compareAt && toCents(p.compareAt) > toCents(p.price);
+    const now = $('.now', li);
+    now.textContent = money(toCents(p.price), p.currency);
+    now.classList.toggle('sale', Boolean(hasSale));
+    if (hasSale) {
+      const was = $('.was', li);
+      was.textContent = money(toCents(p.compareAt), p.currency);
+    } else {
+      $('.was', li).hidden = true;
+    }
+    if (p.badge) {
+      $('.badge', li).textContent = p.badge;
+    } else {
+      $('.badge', li).hidden = true;
+    }
+
+    const group = $('.variants', li);
+    for (const v of p.variants) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt' + (v.availableForSale === false ? ' sold' : '');
+      b.textContent = v.label;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => {
+        c.variantId = v.id;
+        if (c.phase === 'error') c.phase = 'idle';
+        c.message = '';
+        paint(c);
+      });
+      group.append(b);
+    }
+
+    $('.add', li).addEventListener('click', () => addToCart(c));
+    $('.save', li).addEventListener('click', () => { c.saved = !c.saved; paint(c); });
+
+    paint(c);
+    return li;
+  }
+
+  PRODUCTS.forEach(p => grid.append(buildCard(p)));
+  $('#clear').addEventListener('click', () => {
+    cart.clear();
+    updateBag();
+    announce('Bag cleared');
+  });
+  updateBag();
+})();
+</script>
+</body>
+</html>

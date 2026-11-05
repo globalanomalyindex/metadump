@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop component</title>
+<style>
+:root {
+  --surface: #FFFFFF;
+  --page: #F4F4F5;
+  --ink: #111827;
+  --ink-muted: #6B7280;
+  --hairline: #E5E7EB;
+  --accent: #2563EB;
+  --on-accent: #FFFFFF;
+  --radius: 8px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page);
+  color: var(--ink);
+  font: 400 14px/1.4 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.shop { max-width: 1000px; margin: 0 auto; padding: 24px 16px 40px; }
+
+.shop-head {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  justify-content: space-between; gap: 8px 16px; margin-bottom: 16px;
+}
+.shop-head h1 { margin: 0; font-size: 20px; font-weight: 600; }
+.summary { margin: 0; color: var(--ink-muted); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 280px));
+  justify-content: center;
+  gap: 16px;
+}
+
+/* ---- Product card ---- */
+.card {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+}
+
+.media {
+  position: relative; aspect-ratio: 4 / 3;
+  display: grid; place-items: center;
+  background: #F3F4F6;
+  border-bottom: 1px solid var(--hairline);
+}
+.media svg { width: 44%; height: auto; color: var(--ink-muted); }
+
+.badge {
+  position: absolute; top: 8px; left: 8px;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--hairline);
+  font-size: 12px; font-weight: 600; line-height: 1.5;
+}
+
+.body { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+
+.name {
+  margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.price { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: 16px; font-weight: 600; }
+.price .was { font-size: 12px; font-weight: 400; color: var(--ink-muted); text-decoration: line-through; }
+.price .now.sale { color: var(--accent); }
+
+.variants { margin: 0; padding: 0; border: 0; min-width: 0; }
+.variants legend { padding: 0; margin-bottom: 8px; font-size: 12px; color: var(--ink-muted); }
+.variants .options { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.chip span {
+  display: inline-block; min-width: 40px; padding: 6px 10px;
+  text-align: center; font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--hairline); border-radius: 6px;
+}
+.chip input:checked + span { border-color: var(--ink); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip.unavailable span { color: var(--ink-muted); text-decoration: line-through; }
+
+.actions { display: flex; flex-direction: column; gap: 8px; }
+
+.add {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; height: 40px; padding: 0 12px;
+  border: 0; border-radius: var(--radius);
+  background: var(--accent); color: var(--on-accent);
+  font: 600 14px/1 var(--font);
+  cursor: pointer;
+  transition: background-color 150ms ease-out, opacity 150ms ease-out, transform 100ms ease-out;
+}
+.add:active:not(:disabled):not([aria-disabled="true"]) { transform: scale(0.98); }
+.add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.add:disabled { background: var(--hairline); color: var(--ink-muted); cursor: not-allowed; }
+.add[aria-disabled="true"] { cursor: progress; opacity: 0.85; }
+
+.add .spinner, .add .check { display: none; }
+.add.is-adding .spinner {
+  display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: spin 800ms linear infinite;
+}
+.add.is-added .check { display: inline-block; width: 16px; height: 16px; }
+
+.reason, .error { margin: 0; min-height: 16px; font-size: 12px; color: var(--ink-muted); }
+.error { color: var(--ink); font-weight: 600; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Cart summary and demo control ---- */
+.cart {
+  max-width: 520px; margin: 24px auto 0; padding: 16px;
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);
+}
+.cart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.cart-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.empty { margin: 8px 0 0; color: var(--ink-muted); }
+.lines { list-style: none; margin: 0; padding: 0; }
+.lines li {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 8px 0; border-top: 1px solid var(--hairline);
+}
+.muted { color: var(--ink-muted); }
+
+.text-btn {
+  padding: 4px 0; border: 0; background: none;
+  font: inherit; color: var(--ink-muted); text-decoration: underline; cursor: pointer;
+}
+.text-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+.demo { max-width: 520px; margin: 16px auto 0; font-size: 12px; color: var(--ink-muted); }
+.demo label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.demo input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- Reduced motion: keep every state change as a label change; no movement ---- */
+@media (prefers-reduced-motion: reduce) {
+  .add { transition-property: opacity; transition-duration: 100ms; }
+  .add:active:not(:disabled) { transform: none; }
+  .add.is-adding .spinner { animation: none; }
+}
+</style>
+</head>
+<body>
+<main class="shop">
+  <header class="shop-head">
+    <h1>Shop</h1>
+    <p class="summary" id="summary">Cart is empty</p>
+  </header>
+
+  <section class="grid" id="grid" aria-label="Products"></section>
+
+  <section class="cart" aria-labelledby="cart-title">
+    <div class="cart-head">
+      <h2 id="cart-title">Cart</h2>
+      <button type="button" class="text-btn" id="clear" hidden>Clear cart</button>
+    </div>
+    <p class="empty" id="empty">Nothing added yet.</p>
+    <ul class="lines" id="lines" hidden></ul>
+  </section>
+
+  <div class="demo">
+    <label><input type="checkbox" id="fail"> Simulate a failed add to cart (demo)</label>
+  </div>
+
+  <p class="sr-only" id="live" aria-live="polite"></p>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const ADDED_HOLD_MS = 1500;
+  const ADD_LATENCY_MS = 700;
+
+  // Sample data shaped like a Money-priced product with variants.
+  // `availableForSale: undefined` means the source has no stock state; it is not treated as false.
+  const PRODUCTS = [
+    {
+      id: 'sweater-merino', title: 'Merino Crew Sweater', image: 'sweater', optionName: 'Size',
+      price: { amount: '98.00', currencyCode: 'USD' }, compareAtPrice: null, badgeText: 'New',
+      variants: [
+        { id: 's', title: 'S', availableForSale: true },
+        { id: 'm', title: 'M', availableForSale: true },
+        { id: 'l', title: 'L', availableForSale: false },
+        { id: 'xl', title: 'XL', availableForSale: true }
+      ]
+    },
+    {
+      id: 'dripper-ceramic', title: 'Ceramic Pour-Over Dripper', image: 'dripper', optionName: '',
+      price: { amount: '36.50', currencyCode: 'USD' }, compareAtPrice: null, badgeText: null,
+      variants: [{ id: 'default', title: 'Default', availableForSale: true }]
+    },
+    {
+      id: 'tote-canvas', title: 'Canvas Field Tote', image: 'tote', optionName: 'Color',
+      price: { amount: '64.00', currencyCode: 'USD' }, compareAtPrice: { amount: '80.00', currencyCode: 'USD' }, badgeText: 'Sale',
+      variants: [
+        { id: 'natural', title: 'Natural', availableForSale: true },
+        { id: 'navy', title: 'Navy', availableForSale: false },
+        { id: 'olive', title: 'Olive', availableForSale: true }
+      ]
+    },
+    {
+      id: 'trail-runner', title: 'Trail Runner 2', image: 'shoe', optionName: 'Size',
+      price: { amount: '142.95', currencyCode: 'USD' }, compareAtPrice: null, badgeText: null,
+      variants: [
+        { id: '8', title: '8', availableForSale: true },
+        { id: '9', title: '9', availableForSale: true },
+        { id: '10', title: '10', availableForSale: false },
+        { id: '11', title: '11', availableForSale: true }
+      ]
+    },
+    {
+      id: 'throw-linen', title: 'Stonewashed Linen Throw', image: 'throw', optionName: '',
+      price: { amount: '54.00', currencyCode: 'USD' }, compareAtPrice: null, badgeText: null,
+      variants: [{ id: 'default', title: 'One size', availableForSale: undefined }]
+    },
+    {
+      id: 'beanie-wool', title: 'Recycled Wool Beanie', image: 'beanie', optionName: '',
+      price: { amount: '28.00', currencyCode: 'USD' }, compareAtPrice: null, badgeText: null,
+      variants: [{ id: 'default', title: 'One size', availableForSale: true }]
+    }
+  ];
+
+  const ICONS = {
+    sweater: '<path d="M40 18 Q60 32 80 18 L98 30 L108 50 L94 56 L92 46 L92 100 L28 100 L28 46 L26 56 L12 50 L22 30 Z"/>',
+    dripper: '<path d="M24 36 H96"/><path d="M32 36 L52 92 H68 L88 36"/><path d="M52 92 V102 H68 V92"/>',
+    tote: '<rect x="28" y="46" width="64" height="52" rx="3"/><path d="M44 46 V36 Q44 22 60 22 Q76 22 76 36 V46"/>',
+    shoe: '<path d="M14 84 V60 Q14 52 24 52 H40 Q50 54 58 62 L70 42 H82 V66 Q102 68 106 78 L106 84 Z"/><path d="M14 84 H106"/>',
+    throw: '<rect x="20" y="28" width="80" height="64" rx="2"/><path d="M20 44 H100 M20 60 H100 M20 76 H100"/>',
+    beanie: '<path d="M28 66 Q28 24 60 24 Q92 24 92 66 Z"/><path d="M28 66 H92 V80 H28 Z"/>'
+  };
+
+  // ---- Money helpers (Intl uses the currency's own minor unit) ----
+  const formatters = {};
+  function formatter(code) {
+    return formatters[code] || (formatters[code] = new Intl.NumberFormat('en-US', { style: 'currency', currency: code }));
+  }
+  function digitsFor(code) { return formatter(code).resolvedOptions().maximumFractionDigits; }
+  function money(code, amount) { return formatter(code).format(Number(amount)); }
+  function toMinor(code, amount) { return Math.round(Number(amount) * 10 ** digitsFor(code)); }
+  function fromMinor(code, minor) { return formatter(code).format(minor / 10 ** digitsFor(code)); }
+
+  // ---- State ----
+  const cart = [];                 // { key, title, variantTitle, currency, unit (minor units), qty }
+  const cards = new Map();         // productId -> card state + DOM refs
+  const dom = {
+    summary: document.getElementById('summary'),
+    lines: document.getElementById('lines'),
+    empty: document.getElementById('empty'),
+    clear: document.getElementById('clear'),
+    live: document.getElementById('live'),
+    fail: document.getElementById('fail'),
+    grid: document.getElementById('grid')
+  };
+  let simulateFailure = false;
+
+  const hasVariants = (p) => p.variants.length > 1;
+  const variantById = (p, id) => p.variants.find((v) => v.id === id);
+  const isAvailable = (v) => v.availableForSale !== false;
+
+  // Stand-in for the cart request. Resolves after a short delay, or rejects when the demo toggle is on.
+  function requestAddToCart() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => (simulateFailure ? reject(new Error('add failed')) : resolve()), ADD_LATENCY_MS);
+    });
+  }
+
+  function announce(message) {
+    dom.live.textContent = '';
+    requestAnimationFrame(() => { dom.live.textContent = message; });
+  }
+
+  // ---- Cart ----
+  function addLine(product, variant) {
+    const key = product.id + ':' + variant.id;
+    let line = cart.find((l) => l.key === key);
+    if (!line) {
+      line = {
+        key,
+        title: product.title,
+        variantTitle: hasVariants(product) ? variant.title : '',
+        currency: product.price.currencyCode,
+        unit: toMinor(product.price.currencyCode, product.price.amount),
+        qty: 0
+      };
+      cart.push(line);
+    }
+    line.qty += 1;
+  }
+
+  function renderCart() {
+    const count = cart.reduce((n, l) => n + l.qty, 0);
+    const currency = cart.length ? cart[0].currency : 'USD';
+    const total = cart.reduce((sum, l) => sum + l.unit * l.qty, 0);
+
+    dom.summary.textContent = count
+      ? count + (count === 1 ? ' item' : ' items') + ' · ' + fromMinor(currency, total)
+      : 'Cart is empty';
+
+    dom.lines.replaceChildren();
+    for (const line of cart) {
+      const li = document.createElement('li');
+      const name = document.createElement('span');
+      name.textContent = line.title + (line.variantTitle ? ' · ' + line.variantTitle : '');
+      const qty = document.createElement('span');
+      qty.className = 'muted';
+      qty.textContent = ' × ' + line.qty;
+      name.append(qty);
+      const price = document.createElement('span');
+      price.textContent = fromMinor(line.currency, line.unit * line.qty);
+      li.append(name, price);
+      dom.lines.append(li);
+    }
+
+    dom.lines.hidden = count === 0;
+    dom.empty.hidden = count !== 0;
+    dom.clear.hidden = count === 0;
+  }
+
+  // ---- Card component ----
+  function buildCard(product) {
+    const firstAvailable = product.variants.find(isAvailable) || product.variants[0];
+    const card = {
+      product,
+      variantId: firstAvailable.id,
+      status: 'idle',          // idle | adding | added
+      error: '',
+      timer: null
+    };
+
+    const el = document.createElement('article');
+    el.className = 'card';
+
+    const media = document.createElement('div');
+    media.className = 'media';
+    if (product.badgeText) {
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = product.badgeText;
+      media.append(badge);
+    }
+    media.insertAdjacentHTML('beforeend',
+      '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" focusable="false">' +
+      ICONS[product.image] + '</svg>');
+
+    const body = document.createElement('div');
+    body.className = 'body';
+
+    const name = document.createElement('h3');
+    name.className = 'name';
+    name.textContent = product.title;
+    name.id = 'name-' + product.id;
+
+    const price = document.createElement('p');
+    price.className = 'price';
+
+    body.append(name, price);
+
+    if (hasVariants(product)) {
+      const fieldset = document.createElement('fieldset');
+      fieldset.className = 'variants';
+      const legend = document.createElement('legend');
+      legend.textContent = product.optionName;
+      const options = document.createElement('div');
+      options.className = 'options';
+      for (const v of product.variants) {
+        const label = document.createElement('label');
+        label.className = 'chip' + (isAvailable(v) ? '' : ' unavailable');
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'opt-' + product.id;
+        input.value = v.id;
+        input.checked = v.id === card.variantId;
+        const chip = document.createElement('span');
+        chip.textContent = v.title;
+        label.append(input, chip);
+        options.append(label);
+      }
+      fieldset.append(legend, options);
+      fieldset.addEventListener('change', (e) => {
+        if (!e.target.matches('input[type="radio"]')) return;
+        card.variantId = e.target.value;
+        if (card.status !== 'adding') {
+          clearTimeout(card.timer);
+          card.status = 'idle';
+        }
+        card.error = '';
+        render(card);
+      });
+      body.append(fieldset);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'add';
+    button.innerHTML =
+      '<span class="spinner" aria-hidden="true"></span>' +
+      '<svg class="check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7"/></svg>' +
+      '<span class="label"></span>' +
+      '<span class="sr-only"> ' + escapeHtml(product.title) + '</span>';
+    button.addEventListener('click', () => addToCart(card));
+
+    const reason = document.createElement('p');
+    reason.className = 'reason';
+    reason.id = 'reason-' + product.id;
+    button.setAttribute('aria-describedby', reason.id);
+
+    const error = document.createElement('p');
+    error.className = 'error';
+    error.setAttribute('role', 'status');
+
+    actions.append(button, reason, error);
+    body.append(actions);
+    el.append(media, body);
+
+    card.el = el;
+    card.refs = { price, button, label: button.querySelector('.label'), reason, error };
+    return card;
+  }
+
+  function render(card) {
+    const { product, refs } = card;
+    const variant = variantById(product, card.variantId);
+    const available = isAvailable(variant);
+    const adding = card.status === 'adding';
+    const added = card.status === 'added';
+    const onSale = !!product.compareAtPrice && Number(product.compareAtPrice.amount) > Number(product.price.amount);
+
+    // Price: compare-at struck through before the current price, only when it is higher.
+    refs.price.replaceChildren();
+    if (onSale) {
+      const was = document.createElement('s');
+      was.className = 'was';
+      was.textContent = money(product.compareAtPrice.currencyCode, product.compareAtPrice.amount);
+      refs.price.append(was);
+    }
+    const now = document.createElement('span');
+    now.className = 'now' + (onSale ? ' sale' : '');
+    now.textContent = money(product.price.currencyCode, product.price.amount);
+    refs.price.append(now);
+
+    // Button: disabled only when the selected variant is not for sale; while adding it stays focusable.
+    refs.button.disabled = !available;
+    refs.button.setAttribute('aria-disabled', String(adding));
+    refs.button.setAttribute('aria-busy', String(adding));
+    refs.button.classList.toggle('is-adding', adding);
+    refs.button.classList.toggle('is-added', added && !adding);
+    refs.label.textContent = adding ? 'Adding…' : added ? 'Added' : 'Add to cart';
+
+    // Reason text sits beside the control, since a disabled button alone gives no reason.
+    refs.reason.textContent = available
+      ? ''
+      : (hasVariants(product) ? variant.title + ' is sold out' : 'Sold out');
+
+    refs.error.textContent = card.error;
+  }
+
+  function addToCart(card) {
+    const { product } = card;
+    const variant = variantById(product, card.variantId);
+    if (card.status === 'adding' || !isAvailable(variant)) return;
+
+    clearTimeout(card.timer);
+    card.status = 'adding';
+    card.error = '';
+    render(card);
+
+    requestAddToCart().then(
+      () => {
+        addLine(product, variant);
+        card.status = 'added';
+        render(card);
+        renderCart();
+        announce('Added ' + product.title + (hasVariants(product) ? ', ' + variant.title : '') + ' to cart.');
+        card.timer = setTimeout(() => {
+          card.status = 'idle';
+          render(card);
+        }, ADDED_HOLD_MS);
+      },
+      () => {
+        card.status = 'idle';
+        card.error = 'Could not add. Try again.';
+        render(card);
+      }
+    );
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // ---- Wiring ----
+  for (const product of PRODUCTS) {
+    const card = buildCard(product);
+    cards.set(product.id, card);
+    dom.grid.append(card.el);
+    render(card);
+  }
+
+  dom.fail.addEventListener('change', (e) => { simulateFailure = e.target.checked; });
+
+  dom.clear.addEventListener('click', () => {
+    cart.length = 0;
+    renderCart();
+    announce('Cart cleared.');
+  });
+
+  renderCart();
+})();
+</script>
+</body>
+</html>

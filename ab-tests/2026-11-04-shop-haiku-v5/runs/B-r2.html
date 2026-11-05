@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home goods: compact shop</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-hover: #F5F5F5;
+    --text: #1A1A1A;
+    --muted: #5C6470;
+    --hairline: #D9DCE1;
+    --edge: #8A909C;
+    --primary: #1F4FD1;
+    --primary-hover: #1A41B3;
+    --primary-press: #15358F;
+    --on-primary: #FFFFFF;
+    --accent: #1F4FD1;
+    --old: #5C6470;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F0F0D;
+      --surface: #1A1A1A;
+      --surface-hover: #242420;
+      --text: #FAFAFA;
+      --muted: #A3A59E;
+      --hairline: #2B2C28;
+      --edge: #7A7C74;
+      --primary: #FAFAFA;
+      --primary-hover: #E6E6E4;
+      --primary-press: #D2D2CF;
+      --on-primary: #0F0F0D;
+      --accent: #7AA2FF;
+      --old: #A3A59E;
+    }
+    :root:not([data-theme="light"]) .media {
+      background: color-mix(in srgb, var(--tone) 16%, var(--surface));
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F0F0D;
+    --surface: #1A1A1A;
+    --surface-hover: #242420;
+    --text: #FAFAFA;
+    --muted: #A3A59E;
+    --hairline: #2B2C28;
+    --edge: #7A7C74;
+    --primary: #FAFAFA;
+    --primary-hover: #E6E6E4;
+    --primary-press: #D2D2CF;
+    --on-primary: #0F0F0D;
+    --accent: #7AA2FF;
+    --old: #A3A59E;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shop { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+  .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; padding-top: 8px;
+  }
+  h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .bag { margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; min-height: 44px; margin-top: 8px;
+  }
+  .status { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+  .link {
+    min-height: 44px; padding: 0 4px; background: none; border: 0;
+    color: var(--accent); font: inherit; font-size: 14px;
+    text-decoration: underline; cursor: pointer; white-space: nowrap;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px; margin-top: 12px;
+  }
+
+  .tile {
+    display: flex; flex-direction: column; gap: 12px; padding: 12px;
+    border: 1px solid var(--hairline); border-radius: 8px;
+    background: var(--surface);
+    transition: background-color 90ms ease-out;
+  }
+  .tile:hover { background: var(--surface-hover); }
+
+  .media {
+    aspect-ratio: 1 / 1; border-radius: 6px;
+    background: var(--tone); display: grid; place-items: center;
+  }
+  .media svg {
+    width: 56%; height: 56%; fill: none; stroke: var(--edge);
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .info { display: flex; flex-direction: column; gap: 4px; }
+  .info h3 {
+    margin: 0; font-size: 15px; font-weight: 500; line-height: 1.35;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .meta { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+  .price-row { margin: 4px 0 0; display: flex; align-items: baseline; gap: 6px; }
+  .price { font-size: 18px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .was { font-size: 13px; color: var(--old); }
+
+  .actions { margin-top: auto; }
+  .add {
+    width: 100%; min-height: 44px; padding: 0 12px;
+    border: 1px solid var(--primary); border-radius: 6px;
+    background: var(--primary); color: var(--on-primary);
+    font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: background-color 90ms ease-out, border-color 90ms ease-out, color 90ms ease-out;
+  }
+  .add:hover:not([aria-disabled="true"]) { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .add:active:not([aria-disabled="true"]) { background: var(--primary-press); border-color: var(--primary-press); }
+  .add[aria-disabled="true"] {
+    background: transparent; color: var(--muted);
+    border-color: var(--hairline); cursor: not-allowed;
+  }
+
+  .stepper {
+    display: grid; grid-template-columns: 44px 1fr 44px; align-items: center;
+    min-height: 44px; border: 1px solid var(--edge); border-radius: 999px;
+  }
+  .stepper button {
+    min-height: 44px; padding: 0; background: none; border: 0; border-radius: 999px;
+    color: var(--text); font: inherit; font-size: 18px; line-height: 1; cursor: pointer;
+    transition: background-color 90ms ease-out;
+  }
+  .stepper button:hover:not([aria-disabled="true"]) { background: var(--surface-hover); }
+  .stepper button[aria-disabled="true"] { color: var(--muted); cursor: not-allowed; }
+  .count { text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .sr {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="shop">
+  <header class="top">
+    <h2>Home goods</h2>
+    <p class="bag" id="bag">Bag: empty</p>
+  </header>
+  <div class="bar">
+    <p class="status" id="status" role="status"></p>
+    <button type="button" class="link" id="empty" hidden>Empty bag</button>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+(() => {
+  const MAX_PER_ORDER = 9;
+  const LOW_STOCK = 3;
+  const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+  const fmt = cents => money.format(cents / 100);
+
+  const ICONS = {
+    tote: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M24 26v-6a8 8 0 0 1 16 0v6"/><rect x="14" y="26" width="36" height="26" rx="2"/></svg>',
+    cone: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 18h36l-9 20H23z"/><path d="M27 38v8h10v-8"/><path d="M22 48h20"/></svg>',
+    socks: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M22 10h18v26l10 8v8H22z"/><path d="M22 22h18"/></svg>',
+    lamp: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 50h28"/><path d="M32 50V34"/><path d="M21 34a11 11 0 0 1 22 0z"/></svg>',
+    candle: '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="26" width="14" height="24" rx="2"/><rect x="36" y="18" width="14" height="32" rx="2"/></svg>',
+    mug: '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="16" y="18" width="26" height="32" rx="3"/><path d="M42 27h4a5 5 0 0 1 0 10h-4"/></svg>'
+  };
+
+  const PRODUCTS = [
+    { id: "tote",    name: "Linen Tote",              meta: "Natural linen, 38 × 36 cm",   price: 4200, stock: 12, tone: "#EDE8DF", icon: "tote" },
+    { id: "dripper", name: "Stoneware Pour-Over",     meta: "Glazed ceramic, 2 cups",      price: 3600, was: 4000, stock: 8, tone: "#E4E8EE", icon: "cone" },
+    { id: "socks",   name: "Merino Socks, 2-pack",    meta: "Merino blend, sizes S to L",  price: 1800, stock: 3,  tone: "#E9EDE6", icon: "socks" },
+    { id: "lamp",    name: "Brass Desk Lamp",         meta: "Matte brass, 42 cm arm",      price: 9600, stock: 0,  tone: "#ECE9E4", icon: "lamp" },
+    { id: "candle",  name: "Beeswax Candles, pair",   meta: "Unscented, 40 h burn",        price: 2400, stock: 20, tone: "#E6E4EF", icon: "candle" },
+    { id: "mug",     name: "Enamel Travel Mug",       meta: "350 ml, matte finish",        price: 2850, stock: 15, tone: "#EEE8E6", icon: "mug" }
+  ];
+  const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+
+  const grid = document.getElementById("grid");
+  const bagEl = document.getElementById("bag");
+  const statusEl = document.getElementById("status");
+  const emptyBtn = document.getElementById("empty");
+
+  let qty = {};            // product id -> quantity in the bag
+  let message = "Nothing in the bag yet.";
+  let focusKey = null;     // data-key of the control to focus after the next render
+
+  const limitOf = p => Math.min(p.stock, MAX_PER_ORDER);
+
+  function totals() {
+    let items = 0, cents = 0;
+    for (const id of Object.keys(qty)) {
+      items += qty[id];
+      cents += qty[id] * byId[id].price;
+    }
+    return { items, cents };
+  }
+
+  function summary() {
+    const { items, cents } = totals();
+    if (!items) return "Bag is empty.";
+    return `Bag: ${items} ${items === 1 ? "item" : "items"}, ${fmt(cents)}.`;
+  }
+
+  function act(action, id) {
+    const p = byId[id];
+    if (!p) return;
+    const q = qty[id] || 0;
+
+    if (action === "add") {
+      if (p.stock === 0) return;
+      qty[id] = 1;
+      focusKey = `${id}:plus`;
+      message = `Added ${p.name} to the bag. ${summary()}`;
+    } else if (action === "inc") {
+      focusKey = `${id}:plus`;
+      if (q >= limitOf(p)) {
+        message = p.stock < MAX_PER_ORDER
+          ? `Only ${p.stock} left of ${p.name}.`
+          : "Nine is the most of one item per order.";
+      } else {
+        qty[id] = q + 1;
+        message = `${p.name}: ${qty[id]} in the bag. ${summary()}`;
+      }
+    } else if (action === "dec") {
+      if (q <= 1) {
+        delete qty[id];
+        focusKey = `${id}:add`;
+        message = `Removed ${p.name}. ${summary()}`;
+      } else {
+        qty[id] = q - 1;
+        focusKey = `${id}:minus`;
+        message = `${p.name}: ${qty[id]} in the bag. ${summary()}`;
+      }
+    }
+    render();
+  }
+
+  function tile(p) {
+    const q = qty[p.id] || 0;
+    const out = p.stock === 0;
+    const low = p.stock > 0 && p.stock <= LOW_STOCK;
+    const atMax = q >= limitOf(p);
+    const metaParts = [p.meta, low ? `Only ${p.stock} left` : null, q ? `In bag: ${q}` : null].filter(Boolean);
+    const was = p.was ? `<s class="was"><span class="sr">Was </span>${fmt(p.was)}</s>` : "";
+
+    let control;
+    if (q === 0) {
+      control = `<button type="button" class="add" data-action="add" data-id="${p.id}" data-key="${p.id}:add"
+        ${out ? 'aria-disabled="true"' : ""}
+        aria-label="${out ? `Sold out: ${p.name}` : `Add to bag: ${p.name}`}">${out ? "Sold out" : "Add to bag"}</button>`;
+    } else {
+      control = `<div class="stepper" role="group" aria-label="Quantity: ${p.name}">
+        <button type="button" data-action="dec" data-id="${p.id}" data-key="${p.id}:minus" aria-label="One fewer ${p.name}">&minus;</button>
+        <span class="count">${q}</span>
+        <button type="button" data-action="inc" data-id="${p.id}" data-key="${p.id}:plus"
+          ${atMax ? 'aria-disabled="true"' : ""} aria-label="One more ${p.name}">+</button>
+      </div>`;
+    }
+
+    return `<article class="tile">
+      <div class="media" style="--tone:${p.tone}" aria-hidden="true">${ICONS[p.icon]}</div>
+      <div class="info">
+        <h3>${p.name}</h3>
+        <p class="meta">${metaParts.join(" · ")}</p>
+        <p class="price-row"><span class="price">${fmt(p.price)}</span>${was}</p>
+      </div>
+      <div class="actions">${control}</div>
+    </article>`;
+  }
+
+  function render() {
+    grid.innerHTML = PRODUCTS.map(tile).join("");
+    const { items, cents } = totals();
+    bagEl.textContent = items ? `Bag: ${items} · ${fmt(cents)}` : "Bag: empty";
+    statusEl.textContent = message;
+    emptyBtn.hidden = items === 0;
+    if (focusKey) {
+      const el = document.querySelector(`[data-key="${focusKey}"]`);
+      if (el) el.focus({ preventScroll: true });
+      focusKey = null;
+    }
+  }
+
+  grid.addEventListener("click", event => {
+    const btn = event.target.closest("button[data-action]");
+    if (!btn) return;
+    act(btn.dataset.action, btn.dataset.id);
+  });
+
+  emptyBtn.addEventListener("click", () => {
+    qty = {};
+    message = "Bag emptied.";
+    focusKey = `${PRODUCTS[0].id}:add`;
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

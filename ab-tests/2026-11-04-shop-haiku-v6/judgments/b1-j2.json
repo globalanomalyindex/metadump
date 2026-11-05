@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"compact": 8, "minimal": 8, "modern": 7, "usability": 9, "craft": 8, "overall": 8, "note": "Tight three-up cards with real size options, sold-out struck-through variants, a stepper and an add label that confirms with Added, plus a bag drawer with totals; the blue accent is a bit standard and the desktop leaves a lot of empty page below."},
+"X": {"compact": 5, "minimal": 6, "modern": 7, "usability": 8, "craft": 7, "overall": 6, "note": "Solid filter, search, sort and always-visible bag with shipping and tax, but each card carries a blurb and the mobile layout shows one oversized square image per screen, which is far from compact."},
+"Y": {"compact": 6, "minimal": 5, "modern": 5, "usability": 6, "craft": 6, "overall": 5, "note": "Dense five-column desktop grid with a sticky header, but the pastel gradient tiles with initials read as placeholder template decoration, there is no size or variant choice, and add feedback is limited to a tiny badge."},
+"Z": {"compact": 6, "minimal": 9, "modern": 8, "usability": 9, "craft": 8, "overall": 7, "note": "Restrained gray glyphs, 44px radio variants with clear sold-out and Notify me states, and a clean stepper and drawer, but the mobile layout collapses to one full-width card per row, wasting most of the screen."}
+},
+"ranking": ["W", "Z", "X", "Y"]}

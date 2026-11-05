@@ -1,0 +1,199 @@
+{
+ "t1-flux-headphones/A-r1": {
+  "words": 402,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "flux_prompt_words": 292,
+  "negations_in_flux_prompt": 0
+ },
+ "t1-flux-headphones/A-r2": {
+  "words": 372,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "flux_prompt_words": 229,
+  "negations_in_flux_prompt": 0
+ },
+ "t1-flux-headphones/B-r1": {
+  "words": 323,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "flux_prompt_words": 132,
+  "negations_in_flux_prompt": 0
+ },
+ "t1-flux-headphones/B-r2": {
+  "words": 542,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "flux_prompt_words": 191,
+  "negations_in_flux_prompt": 0
+ },
+ "t1-flux-headphones/C-r1": {
+  "words": 442,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "color inside the material"
+  ],
+  "flux_prompt_words": 143,
+  "negations_in_flux_prompt": 0
+ },
+ "t1-flux-headphones/C-r2": {
+  "words": 482,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "blue-tinted whites"
+  ],
+  "flux_prompt_words": 125,
+  "negations_in_flux_prompt": 0
+ },
+ "t2-sdxl-busstop/A-r1": {
+  "words": 328,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "has_negative": true,
+  "negative_terms": 49,
+  "negations_in_positive": 0
+ },
+ "t2-sdxl-busstop/A-r2": {
+  "words": 320,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "has_negative": true,
+  "negative_terms": 49,
+  "negations_in_positive": 1
+ },
+ "t2-sdxl-busstop/B-r1": {
+  "words": 272,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "has_negative": true,
+  "negative_terms": 12,
+  "negations_in_positive": 0
+ },
+ "t2-sdxl-busstop/B-r2": {
+  "words": 281,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "color inside the material"
+  ],
+  "has_negative": true,
+  "negative_terms": 12,
+  "negations_in_positive": 0
+ },
+ "t2-sdxl-busstop/C-r1": {
+  "words": 323,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "has_negative": true,
+  "negative_terms": 50,
+  "negations_in_positive": 0
+ },
+ "t2-sdxl-busstop/C-r2": {
+  "words": 351,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "has_negative": true,
+  "negative_terms": 54,
+  "negations_in_positive": 0
+ },
+ "t3-hero-html/A-r1": {
+  "words": 29049,
+  "clause_coverage": 0.57,
+  "clauses_missing": [
+   "overexposed whites",
+   "blue-tinted whites",
+   "color inside the material"
+  ],
+  "backdrop_filter_uses": 6,
+  "reduced_motion": true,
+  "bytes": 314967
+ },
+ "t3-hero-html/A-r2": {
+  "words": 12785,
+  "clause_coverage": 0.71,
+  "clauses_missing": [
+   "blue-tinted whites",
+   "color inside the material"
+  ],
+  "backdrop_filter_uses": 8,
+  "reduced_motion": true,
+  "bytes": 249480
+ },
+ "t3-hero-html/B-r1": {
+  "words": 14737,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "frutiger aero / y2k"
+  ],
+  "backdrop_filter_uses": 8,
+  "reduced_motion": true,
+  "bytes": 145544
+ },
+ "t3-hero-html/B-r2": {
+  "words": 22154,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "frutiger aero / y2k"
+  ],
+  "backdrop_filter_uses": 6,
+  "reduced_motion": true,
+  "bytes": 199909
+ },
+ "t3-hero-html/C-r1": {
+  "words": 2755,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "blue-tinted whites"
+  ],
+  "backdrop_filter_uses": 12,
+  "reduced_motion": true,
+  "bytes": 38744
+ },
+ "t3-hero-html/C-r2": {
+  "words": 3575,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "blue-tinted whites"
+  ],
+  "backdrop_filter_uses": 10,
+  "reduced_motion": true,
+  "bytes": 43030
+ },
+ "t4-diagnose-render/A-r1": {
+  "words": 1676,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "list_items": 37
+ },
+ "t4-diagnose-render/A-r2": {
+  "words": 1888,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "list_items": 41
+ },
+ "t4-diagnose-render/B-r1": {
+  "words": 2460,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "list_items": 64
+ },
+ "t4-diagnose-render/B-r2": {
+  "words": 2629,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "list_items": 22
+ },
+ "t4-diagnose-render/C-r1": {
+  "words": 2034,
+  "clause_coverage": 0.86,
+  "clauses_missing": [
+   "blue-tinted whites"
+  ],
+  "list_items": 36
+ },
+ "t4-diagnose-render/C-r2": {
+  "words": 1716,
+  "clause_coverage": 1.0,
+  "clauses_missing": [],
+  "list_items": 44
+ }
+}

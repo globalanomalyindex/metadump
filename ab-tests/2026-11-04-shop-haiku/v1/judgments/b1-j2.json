@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {"compact": 7, "minimal": 8, "modern": 6, "usability": 7, "craft": 6, "overall": 6, "note": "Clean, restrained product cards with real variant chips, sold-out state, and adding/added/error feedback, but there is no cart view beyond a count and the mobile header clips the failed-add checkbox."},
+    "X": {"compact": 8, "minimal": 5, "modern": 7, "usability": 9, "craft": 6, "overall": 8, "note": "Most complete shopping flow (search, categories, sort, stock limits, cart drawer with steppers, totals and checkout) in a dense five-column grid, though it carries more chrome than the brief asks for and the mobile grid and chips overflow the viewport."},
+    "Y": {"compact": 7, "minimal": 7, "modern": 7, "usability": 8, "craft": 6, "overall": 7, "note": "Tidy cards with rating, price and an Add button that becomes an inline stepper, plus a working cart drawer and live status, though the mobile search, chips and grid overflow and there is no stock or sold-out handling."},
+    "Z": {"compact": 6, "minimal": 9, "modern": 5, "usability": 5, "craft": 5, "overall": 5, "note": "Very restrained, but three cards leave most of the desktop canvas empty, the cart is only a text line list with no quantity controls or checkout, the struck-through checked variant reads as disabled, and the mobile header and grid overflow."}
+  },
+  "ranking": ["X", "Y", "W", "Z"]
+}

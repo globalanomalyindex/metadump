@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop component</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #1A1A1A;
+  --muted: #595959;
+  --accent: #1F5FBF;
+  --accent-hover: #1A4FA3;
+  --border: #8A8A8A;
+  --hair: #E4E4E0;
+  --error: #B42318;
+  --surface: #FFFFFF;
+  --page: #F4F4F1;
+  --off: #E6E6E3;
+  --r-control: 8px;
+  --r-card: 12px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 400 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.skip { position: absolute; left: 8px; top: -48px; background: var(--surface); padding: 8px; z-index: 20; }
+.skip:focus { top: 8px; }
+
+/* header */
+.top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--hair);
+}
+.brand { font-weight: 600; }
+.bag-btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control); cursor: pointer;
+}
+.count {
+  display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px;
+  border-radius: 12px; background: var(--ink); color: #fff; font-size: 13px; font-variant-numeric: tabular-nums;
+}
+.count.bump { animation: bump 200ms ease-out; }
+
+/* grid and card */
+.wrap { max-width: 1040px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 20px; font-weight: 600; margin: 8px 0 16px; }
+.grid {
+  list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+.card {
+  background: var(--surface); border-radius: var(--r-card); padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.tile {
+  aspect-ratio: 1 / 1; border-radius: var(--r-control); display: grid; place-items: center;
+  font-size: 28px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink);
+}
+.name { color: var(--ink); text-decoration: none; font-weight: 500; line-height: 1.3; }
+.name:hover { text-decoration: underline; }
+.meta { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.price { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.price s { font-weight: 400; color: var(--muted); margin-left: 6px; }
+
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  min-width: 40px; height: 40px; padding: 0 10px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-control); cursor: pointer;
+}
+.opt[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.opt[aria-disabled="true"] {
+  background: var(--off); color: var(--muted); text-decoration: line-through; cursor: not-allowed;
+}
+
+.stepper {
+  display: inline-flex; align-items: center; height: 40px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-control);
+}
+.step {
+  width: 40px; height: 100%; background: none; border: 0; cursor: pointer; font-size: 18px;
+}
+.step[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+.qty { min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
+.row { display: flex; align-items: center; gap: 8px; }
+
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--r-control);
+  background: var(--accent); color: #fff; font-weight: 600; cursor: pointer;
+  transition: background-color 150ms ease-out, transform 120ms ease-out;
+}
+.btn:hover { background: var(--accent-hover); }
+.btn:active { transform: scale(0.98); }
+.btn[aria-disabled="true"] { background: var(--off); color: var(--muted); cursor: not-allowed; transform: none; }
+.btn[aria-disabled="true"]:hover { background: var(--off); }
+.btn.fade { animation: fade 150ms ease-out; }
+.spinner {
+  width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: spin 700ms linear infinite;
+}
+.hint, .err { margin: 0; font-size: 13px; }
+.hint { color: var(--muted); }
+.err { color: var(--error); }
+.hint:empty, .err:empty { display: none; }
+.soldout { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin: 0; }
+.badge {
+  font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: var(--r-control); background: var(--off);
+}
+.link {
+  background: none; border: 0; padding: 8px 0; min-height: 40px; color: var(--accent);
+  text-decoration: underline; cursor: pointer;
+}
+
+/* scrim and bag drawer */
+.scrim {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); opacity: 0; visibility: hidden;
+  transition: opacity 180ms ease-in, visibility 0s linear 180ms;
+}
+.scrim.open { opacity: 1; visibility: visible; transition: opacity 240ms ease-out, visibility 0s; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 10; width: min(380px, 100%);
+  display: flex; flex-direction: column; background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateX(100%); visibility: hidden;
+  transition: transform 180ms ease-in, visibility 0s linear 180ms;
+}
+.drawer.open { transform: none; visibility: visible; transition: transform 240ms ease-out, visibility 0s; }
+@media (max-width: 600px) {
+  .drawer {
+    top: auto; left: 0; width: 100%; max-height: 85vh;
+    border-radius: var(--r-card) var(--r-card) 0 0; transform: translateY(100%);
+  }
+}
+.dhead {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+  padding: 16px; border-bottom: 1px solid var(--hair);
+}
+.dhead h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.icon {
+  width: 40px; height: 40px; background: none; border: 0; border-radius: var(--r-control);
+  font-size: 22px; cursor: pointer;
+}
+.dbody { flex: 1; overflow: auto; padding: 0 16px; }
+.lines { list-style: none; margin: 0; padding: 0; }
+.line {
+  display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: start;
+  padding: 12px 0; border-bottom: 1px solid var(--hair);
+}
+.line .tile { width: 56px; height: 56px; aspect-ratio: auto; font-size: 14px; }
+.ln { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lname { font-weight: 500; line-height: 1.3; }
+.ln-ctrls { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.lprice { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.empty { padding: 32px 0; margin: 0; text-align: center; color: var(--muted); }
+.dfoot { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-top: 1px solid var(--hair); }
+.sub { display: flex; justify-content: space-between; font-weight: 600; font-variant-numeric: tabular-nums; }
+.note { margin: 0; font-size: 13px; color: var(--muted); }
+#checkout { justify-content: space-between; }
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important; transition-delay: 0ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#shop">Skip to products</a>
+
+<div id="app">
+  <header class="top">
+    <span class="brand">Sample Shop</span>
+    <button class="bag-btn" id="bagBtn" type="button" aria-haspopup="dialog" aria-controls="bag" aria-label="Bag, empty">
+      <span>Bag</span>
+      <span class="count" id="bagCount">0</span>
+    </button>
+  </header>
+
+  <main class="wrap" id="shop">
+    <h1>New in</h1>
+    <ul class="grid" id="grid"></ul>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<aside class="drawer" id="bag" role="dialog" aria-modal="true" aria-labelledby="bagTitle">
+  <div class="dhead">
+    <div>
+      <h2 id="bagTitle" tabindex="-1">Bag</h2>
+      <p class="meta" id="bagSummary">Empty</p>
+    </div>
+    <button class="icon" id="closeBag" type="button" aria-label="Close bag">&times;</button>
+  </div>
+  <div class="dbody">
+    <ul class="lines" id="lines"></ul>
+    <p class="empty" id="empty">
+      Your bag is empty.<br>
+      <button class="link" id="continue" type="button">Continue shopping</button>
+    </p>
+  </div>
+  <div class="dfoot" id="foot">
+    <div class="sub"><span>Subtotal</span><span id="subtotal"></span></div>
+    <p class="note">Tax and shipping are added at checkout.</p>
+    <button class="btn" id="checkout" type="button"><span>Checkout</span><span id="checkoutSum"></span></button>
+    <p class="note" id="checkoutMsg" role="status"></p>
+  </div>
+</aside>
+
+<div class="sr" id="live" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const PENDING_MS = 500;   // simulated add request
+  const HOLD_MS = 1500;     // how long "Added" stays before it returns to "Add to bag"
+  const MAX_QTY = 10;       // per line, and per variant in the bag
+
+  // Sample data. Prices in cents. Stock 0 means sold out.
+  const PRODUCTS = [
+    {
+      id: 'overshirt', name: 'Linen overshirt', meta: 'Sage', mono: 'LO', tint: '#DCE4D5',
+      price: 6800, compareAt: 8400,
+      variants: [
+        { id: 's', label: 'S', stock: 5 },
+        { id: 'm', label: 'M', stock: 3 },
+        { id: 'l', label: 'L', stock: 0 },
+        { id: 'xl', label: 'XL', stock: 2 }
+      ]
+    },
+    { id: 'tote', name: 'Canvas tote', meta: 'Natural', mono: 'CT', tint: '#EAE4D4', price: 3200, stock: 12 },
+    { id: 'beanie', name: 'Merino beanie', meta: 'Oatmeal', mono: 'MB', tint: '#E3E0EA', price: 2900, stock: 0 }
+  ];
+
+  const money = (cents) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(cents / 100);
+  const plural = (n) => `${n} item${n === 1 ? '' : 's'}`;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const $ = (sel) => document.querySelector(sel);
+
+  // Small element builder. Text is always set as text, never as markup.
+  function h(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'text') n.textContent = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) {
+      if (kid === null || kid === undefined || kid === false) continue;
+      n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+    }
+    return n;
+  }
+
+  // State: the bag is in memory for this page session only.
+  let bag = [];                 // [{ key, pid, vid, qty }]
+  const cards = new Map();      // pid -> { p, el, r, st }
+  const lineEls = new Map();    // key -> { li, stepper, price, p }
+
+  const app = $('#app');
+  const bagBtn = $('#bagBtn');
+  const bagCount = $('#bagCount');
+  const drawer = $('#bag');
+  const scrim = $('#scrim');
+  const bagTitle = $('#bagTitle');
+  const bagSummary = $('#bagSummary');
+  const lines = $('#lines');
+  const empty = $('#empty');
+  const foot = $('#foot');
+  const subEl = $('#subtotal');
+  const sumEl = $('#checkoutSum');
+  const checkoutBtn = $('#checkout');
+  const checkoutMsg = $('#checkoutMsg');
+  const live = $('#live');
+  const grid = $('#grid');
+
+  const stockOf = (p, vid) => (p.variants ? p.variants.find((v) => v.id === vid).stock : p.stock);
+  const labelOf = (p, vid) => (p.variants ? p.variants.find((v) => v.id === vid).label : '');
+  const keyOf = (pid, vid) => `${pid}:${vid || ''}`;
+  const inBag = (key) => { const l = bag.find((x) => x.key === key); return l ? l.qty : 0; };
+  const lineMax = (p, vid) => Math.min(MAX_QTY, stockOf(p, vid));
+  const avail = (p, vid) => Math.max(0, lineMax(p, vid) - inBag(keyOf(p.id, vid)));
+  const totals = () => bag.reduce((t, l) => {
+    t.n += l.qty;
+    t.c += PRODUCTS.find((p) => p.id === l.pid).price * l.qty;
+    return t;
+  }, { n: 0, c: 0 });
+
+  function announce(text) {
+    live.textContent = '';
+    setTimeout(() => { live.textContent = text; }, 50);
+  }
+
+  function makeStepper(groupLabel, onStep) {
+    const minus = h('button', { type: 'button', class: 'step', 'aria-label': 'Decrease', onclick: () => onStep(-1) }, '−');
+    const plus = h('button', { type: 'button', class: 'step', 'aria-label': 'Increase', onclick: () => onStep(1) }, '+');
+    const val = h('span', { class: 'qty' }, '1');
+    const el = h('div', { class: 'stepper', role: 'group', 'aria-label': groupLabel }, minus, val, plus);
+    return { el, minus, plus, val };
+  }
+
+  function setStepper(s, qty, min, max) {
+    s.val.textContent = String(qty);
+    s.minus.setAttribute('aria-disabled', String(qty <= min));
+    s.plus.setAttribute('aria-disabled', String(qty >= max));
+  }
+
+  // ---------- product card ----------
+
+  function buildCard(p) {
+    const st = {
+      vid: p.variants ? (p.variants.find((v) => v.stock > 0) || p.variants[0]).id : null,
+      qty: 1, status: 'idle', err: '', shown: null, timer: null, notify: false
+    };
+    const r = {};
+    r.price = h('p', { class: 'price' });
+    if (p.variants) {
+      r.opts = h('div', { class: 'opts', role: 'group', 'aria-label': 'Size' },
+        p.variants.map((v) => (r['opt-' + v.id] = h('button', {
+          type: 'button', class: 'opt',
+          'aria-label': v.stock === 0 ? `${v.label}, sold out` : null,
+          onclick: () => pick(p, v.id)
+        }, v.label))));
+    }
+    r.stepper = makeStepper('Quantity', (d) => changeQty(p, d));
+    r.qtyRow = h('div', { class: 'row' }, r.stepper.el);
+    r.add = h('button', { type: 'button', class: 'btn', onclick: () => addToBag(p) });
+    r.err = h('p', { class: 'err', role: 'alert' });
+    r.hint = h('p', { class: 'hint' });
+    r.notify = h('button', { type: 'button', class: 'link', 'aria-pressed': 'false', onclick: () => {
+      st.notify = !st.notify; renderCard(p);
+    } }, 'Notify me');
+    r.soldOut = h('div', { class: 'soldout' }, h('span', { class: 'badge', text: 'Sold out' }), r.notify);
+
+    const el = h('li', { class: 'card' },
+      h('div', { class: 'tile', role: 'img', 'aria-label': `${p.name}, ${p.meta}`, style: `background:${p.tint}` }, p.mono),
+      h('a', { class: 'name', href: '#', onclick: (e) => e.preventDefault() }, p.name),
+      h('p', { class: 'meta', text: p.meta }),
+      r.price,
+      r.opts,
+      r.qtyRow,
+      r.add,
+      r.err,
+      r.hint,
+      r.soldOut
+    );
+    cards.set(p.id, { p, el, r, st });
+    return el;
+  }
+
+  function renderCard(p) {
+    const { r, st } = cards.get(p.id);
+    const soldOut = p.variants ? p.variants.every((v) => v.stock === 0) : p.stock === 0;
+    const a = soldOut ? 0 : avail(p, st.vid);
+    if (st.qty > Math.max(1, a)) st.qty = Math.max(1, a);
+
+    if (p.variants) {
+      for (const v of p.variants) {
+        const b = r['opt-' + v.id];
+        b.setAttribute('aria-pressed', String(v.id === st.vid));
+        b.setAttribute('aria-disabled', String(v.stock === 0));
+      }
+    }
+
+    r.price.replaceChildren(
+      h('span', { text: money(p.price) }),
+      ...(p.compareAt ? [h('s', {}, h('span', { class: 'sr', text: 'Was ' }), money(p.compareAt))] : [])
+    );
+
+    setStepper(r.stepper, st.qty, 1, Math.max(1, a));
+    r.qtyRow.hidden = soldOut;
+    r.add.hidden = soldOut;
+    r.soldOut.hidden = !soldOut;
+    r.notify.setAttribute('aria-pressed', String(st.notify));
+    r.notify.textContent = st.notify ? 'On the list' : 'Notify me';
+
+    let content;
+    let busy = false;
+    if (st.status === 'pending') {
+      content = [h('span', { class: 'spinner', 'aria-hidden': 'true' }), 'Adding…'];
+      busy = true;
+    } else if (st.status === 'added') {
+      content = ['Added'];
+    } else if (st.status === 'error') {
+      content = ["Couldn't add"];
+    } else {
+      content = ['Add to bag'];
+    }
+    r.add.replaceChildren(...content);
+    r.add.setAttribute('aria-busy', String(busy));
+    r.add.setAttribute('aria-disabled', String(!soldOut && a === 0));
+
+    if (st.shown !== st.status) {
+      st.shown = st.status;
+      r.add.classList.remove('fade');
+      void r.add.offsetWidth;
+      r.add.classList.add('fade');
+    }
+
+    r.err.textContent = st.status === 'error' ? st.err : '';
+    const inStock = stockOf(p, st.vid);
+    r.hint.textContent = !soldOut && a === 0 && st.status !== 'error'
+      ? `All ${Math.min(MAX_QTY, inStock)} are in your bag.`
+      : '';
+  }
+
+  function pick(p, vid) {
+    const { st } = cards.get(p.id);
+    if (stockOf(p, vid) === 0) return;
+    st.vid = vid;
+    if (st.status === 'error') { st.status = 'idle'; st.err = ''; }
+    renderCard(p);
+  }
+
+  function changeQty(p, delta) {
+    const { st } = cards.get(p.id);
+    if (st.status === 'error') { st.status = 'idle'; st.err = ''; }
+    st.qty = clamp(st.qty + delta, 1, Math.max(1, avail(p, st.vid)));
+    renderCard(p);
+  }
+
+  function addToBag(p) {
+    const { st } = cards.get(p.id);
+    const room = avail(p, st.vid);
+    if (st.status === 'pending' || room === 0) return;
+    clearTimeout(st.timer);
+
+    if (st.qty > room) {
+      st.status = 'error';
+      st.err = `Only ${room} left.`;
+      renderCard(p);
+      return;
+    }
+
+    const vid = st.vid;
+    const qty = st.qty;
+    const label = labelOf(p, vid);
+    st.status = 'pending';
+    st.err = '';
+    renderCard(p);
+
+    setTimeout(() => {
+      const left = avail(p, vid);
+      if (qty > left) {
+        st.status = 'error';
+        st.err = left > 0 ? `Only ${left} left.` : 'Sold out.';
+        renderCard(p);
+        return;
+      }
+      const key = keyOf(p.id, vid);
+      const line = bag.find((l) => l.key === key);
+      if (line) line.qty += qty;
+      else bag.push({ key, pid: p.id, vid, qty });
+
+      st.status = 'added';
+      refresh();
+      bumpBadge();
+      announce(`Added ${p.name}${label ? ', ' + label : ''} to your bag.`);
+      st.timer = setTimeout(() => {
+        if (st.status === 'added') { st.status = 'idle'; renderCard(p); }
+      }, HOLD_MS);
+    }, PENDING_MS);
+  }
+
+  // ---------- bag ----------
+
+  function renderBagCount() {
+    const { n } = totals();
+    bagCount.textContent = String(n);
+    bagBtn.setAttribute('aria-label', `Bag, ${n === 0 ? 'empty' : plural(n)}`);
+  }
+
+  function bumpBadge() {
+    bagCount.classList.remove('bump');
+    void bagCount.offsetWidth;
+    bagCount.classList.add('bump');
+  }
+  bagCount.addEventListener('animationend', () => bagCount.classList.remove('bump'));
+
+  function lineFor(l) {
+    const existing = lineEls.get(l.key);
+    if (existing) return existing;
+    const p = PRODUCTS.find((x) => x.id === l.pid);
+    const label = labelOf(p, l.vid);
+    const stepper = makeStepper('Quantity', (d) => {
+      const cur = bag.find((x) => x.key === l.key);
+      if (!cur) return;
+      cur.qty = clamp(cur.qty + d, 1, lineMax(p, cur.vid));
+      refresh();
+    });
+    const price = h('span', { class: 'lprice' });
+    const li = h('li', { class: 'line' },
+      h('div', { class: 'tile', 'aria-hidden': 'true', style: `background:${p.tint}` }, p.mono),
+      h('div', { class: 'ln' },
+        h('span', { class: 'lname', text: p.name }),
+        h('p', { class: 'meta', text: [p.meta, label ? 'Size ' + label : null].filter(Boolean).join(' · ') }),
+        h('div', { class: 'ln-ctrls' },
+          stepper.el,
+          h('button', {
+            type: 'button', class: 'link',
+            'aria-label': `Remove ${p.name}${label ? ' ' + label : ''} from bag`,
+            onclick: () => removeLine(l.key)
+          }, 'Remove'))),
+      price);
+    const row = { li, stepper, price, p };
+    lineEls.set(l.key, row);
+    return row;
+  }
+
+  function removeLine(key) {
+    const row = lineEls.get(key);
+    const name = row ? row.p.name : 'item';
+    bag = bag.filter((l) => l.key !== key);
+    refresh();
+    bagTitle.focus();
+    announce(`Removed ${name} from bag.`);
+  }
+
+  function renderBag() {
+    for (const [key, row] of [...lineEls]) {
+      if (!bag.some((l) => l.key === key)) {
+        row.li.remove();
+        lineEls.delete(key);
+      }
+    }
+    for (const l of bag) {
+      const row = lineFor(l);
+      if (!row.li.isConnected) lines.append(row.li);
+      setStepper(row.stepper, l.qty, 1, lineMax(row.p, l.vid));
+      row.price.textContent = money(row.p.price * l.qty);
+    }
+    const { n, c } = totals();
+    empty.hidden = n > 0;
+    foot.hidden = n === 0;
+    bagSummary.textContent = n ? plural(n) : 'Empty';
+    subEl.textContent = money(c);
+    sumEl.textContent = money(c);
+    checkoutMsg.textContent = '';
+  }
+
+  function refresh() {
+    for (const c of cards.values()) renderCard(c.p);
+    renderBagCount();
+    renderBag();
+  }
+
+  checkoutBtn.addEventListener('click', () => {
+    const { n, c } = totals();
+    if (!n) return;
+    checkoutMsg.textContent = `Continuing to checkout with ${plural(n)}, ${money(c)}. Demo only: no checkout page is wired up.`;
+  });
+
+  // ---------- drawer open, close and focus ----------
+
+  function openBag() {
+    drawer.classList.add('open');
+    scrim.classList.add('open');
+    app.inert = true;
+    bagTitle.focus();
+  }
+
+  function closeBag() {
+    if (!drawer.classList.contains('open')) return;
+    drawer.classList.remove('open');
+    scrim.classList.remove('open');
+    app.inert = false;
+    bagBtn.focus();
+  }
+
+  bagBtn.addEventListener('click', openBag);
+  $('#closeBag').addEventListener('click', closeBag);
+  $('#continue').addEventListener('click', closeBag);
+  scrim.addEventListener('click', closeBag);
+
+  document.addEventListener('keydown', (e) => {
+    if (!drawer.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeBag(); return; }
+    if (e.key !== 'Tab') return;
+    const focusable = [...drawer.querySelectorAll('button, a[href]')].filter((x) => !x.closest('[hidden]'));
+    if (!focusable.length) return;
+    const i = focusable.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) {
+      e.preventDefault();
+      focusable[focusable.length - 1].focus();
+    } else if (!e.shiftKey && (i === -1 || i === focusable.length - 1)) {
+      e.preventDefault();
+      focusable[0].focus();
+    }
+  });
+
+  // ---------- start ----------
+
+  for (const p of PRODUCTS) grid.append(buildCard(p));
+  for (const p of PRODUCTS) renderCard(p);
+  renderBagCount();
+  renderBag();
+})();
+</script>
+</body>
+</html>

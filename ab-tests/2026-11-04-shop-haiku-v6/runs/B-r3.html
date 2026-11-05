@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Compact shop component</title>
+<style>
+:root{
+  --ink:#1A1A1A;
+  --muted:#595959;
+  --accent:#1F5FBF;
+  --accent-hover:#1A4FA0;
+  --control:#8A8A8A;
+  --hair:#E4E4E1;
+  --tint:#F1F1EE;
+  --page:#F4F4F1;
+  --surface:#FFFFFF;
+  --error:#B42318;
+  --r-control:8px;
+  --r-card:12px;
+  --pad:12px;
+  --gap:16px;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  background:var(--page);
+  color:var(--ink);
+  font:400 16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  min-height:100vh;
+  padding:24px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Shop frame and header */
+.shop{max-width:960px;margin:0 auto;background:var(--surface);border-radius:var(--r-card);padding:var(--gap)}
+.shop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:var(--gap)}
+.shop-head h2{margin:0;font-size:18px;font-weight:600;line-height:1.3}
+.bag-btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px solid var(--control);border-radius:var(--r-control);background:var(--surface);cursor:pointer;font-weight:500}
+.count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--ink);color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
+
+/* Product grid and card */
+.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--gap)}
+.card{height:100%;display:flex;flex-direction:column;gap:12px;padding:var(--pad);border:1px solid var(--hair);border-radius:var(--r-card);min-width:0}
+.media{margin:0;aspect-ratio:1;border-radius:var(--r-control);background:var(--tint);display:grid;place-items:center}
+.media svg,.thumb svg{width:56%;height:56%}
+.info{display:flex;flex-direction:column;gap:8px;min-width:0}
+.name{margin:0;font-size:16px;font-weight:500;line-height:1.3}
+.name a{color:inherit;text-decoration:none}
+.name a:hover{text-decoration:underline}
+.meta{margin:0;font-size:13px;line-height:1.4;color:var(--muted)}
+.price{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.price s{margin-left:6px;font-weight:400;color:var(--muted)}
+fieldset{margin:0;padding:0;border:0;min-width:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative;display:inline-flex;cursor:pointer}
+.opt input{position:absolute;opacity:0;margin:0;width:1px;height:1px;pointer-events:none}
+.opt span{display:inline-grid;place-items:center;min-width:40px;height:36px;padding:0 10px;border:1px solid var(--control);border-radius:var(--r-control);background:var(--surface);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+.opt input:checked+span{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.opt.is-out span{color:var(--muted);text-decoration:line-through;background:var(--tint);border-style:dashed}
+
+/* Quantity stepper */
+.qty{display:inline-flex;align-items:center;height:36px;width:max-content;border:1px solid var(--control);border-radius:var(--r-control)}
+.qty button{width:36px;height:100%;border:0;background:none;font-size:18px;line-height:1;cursor:pointer;border-radius:var(--r-control)}
+.qty button:disabled{color:var(--control);cursor:default}
+.qty output{min-width:28px;text-align:center;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* Add to bag */
+.add{display:flex}
+.btn-add{position:relative;flex:1;min-height:44px;border:0;border-radius:var(--r-control);background:var(--accent);color:#fff;font-weight:600;cursor:pointer;transition:background-color .15s ease-out}
+.btn-add:hover{background:var(--accent-hover)}
+.btn-add:active{transform:scale(.98)}
+.btn-add[aria-disabled="true"]{background:var(--hair);color:var(--muted);cursor:not-allowed}
+.btn-add[aria-disabled="true"]:hover{background:var(--hair)}
+.btn-add .spin{position:absolute;top:50%;left:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:none;animation:spin .8s linear infinite}
+.btn-add[aria-busy="true"] .spin{display:block}
+.btn-add[aria-busy="true"] .label{visibility:hidden}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reason{margin:0;font-size:13px;color:var(--error);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.msg{margin:0;font-size:13px;color:var(--error)}
+.msg:empty{display:none}
+.link-btn{padding:0;min-height:24px;border:0;background:none;color:var(--accent);font-size:13px;font-weight:500;text-decoration:underline;cursor:pointer}
+.icon-btn{min-height:36px;padding:0 12px;border:1px solid var(--control);border-radius:var(--r-control);background:var(--surface);cursor:pointer;font-weight:500}
+
+/* Bag drawer */
+.bag{position:fixed;top:0;right:0;bottom:0;width:min(380px,100%);display:flex;flex-direction:column;background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateX(100%);visibility:hidden;transition:transform .18s ease-in,visibility 0s linear .18s;z-index:10}
+.bag.is-open{transform:none;visibility:visible;transition:transform .24s ease-out,visibility 0s}
+.bag-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--hair)}
+.bag-head h3{margin:0;font-size:18px;font-weight:600;line-height:1.3}
+.bag-head h3:focus{outline:none}
+.bag-body{flex:1;overflow:auto;padding:0 16px}
+.lines{list-style:none;margin:0;padding:0}
+.line{display:grid;grid-template-columns:56px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--hair)}
+.thumb{width:56px;height:56px;border-radius:var(--r-control);background:var(--tint);display:grid;place-items:center}
+.line .info{gap:6px}
+.line .name{font-size:16px}
+.end{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px}
+.lp{font-weight:600;font-variant-numeric:tabular-nums}
+.empty{padding:24px 0;margin:0;color:var(--muted)}
+.bag-foot{display:flex;flex-direction:column;gap:12px;padding:16px;border-top:1px solid var(--hair)}
+.sub{display:flex;justify-content:space-between;font-weight:600;font-variant-numeric:tabular-nums}
+.note{margin:0;font-size:13px;color:var(--muted)}
+.btn-checkout{min-height:44px;border:0;border-radius:var(--r-control);background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+.btn-checkout:hover{background:var(--accent-hover)}
+
+/* Phone: the grid is one column and the bag rises as a bottom sheet */
+@media (max-width:600px){
+  .bag{top:auto;left:0;width:auto;max-height:85vh;border-radius:var(--r-card) var(--r-card) 0 0;transform:translateY(100%)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .bag,.bag.is-open{transition:none}
+  .btn-add,.btn-add:active{transition:none;transform:none}
+  .btn-add .spin{animation:none}
+}
+</style>
+</head>
+<body>
+
+<section class="shop" aria-labelledby="shop-title">
+  <div id="shop-main">
+    <header class="shop-head">
+      <h2 id="shop-title">Essentials</h2>
+      <button type="button" class="bag-btn" id="bag-btn" aria-controls="bag" aria-expanded="false" aria-haspopup="dialog">
+        <span>Bag</span><span class="count" id="count" hidden>0</span>
+      </button>
+    </header>
+    <ul class="grid" id="grid"></ul>
+  </div>
+  <p id="sr-status" class="sr" role="status" aria-live="polite"></p>
+</section>
+
+<aside id="bag" class="bag" role="dialog" aria-modal="true" aria-labelledby="bag-title">
+  <div class="bag-head">
+    <h3 id="bag-title" tabindex="-1">Bag</h3>
+    <button type="button" class="icon-btn" id="bag-close">Close</button>
+  </div>
+  <div class="bag-body">
+    <ul class="lines" id="lines"></ul>
+    <p class="empty" id="empty">Your bag is empty. <button type="button" class="link-btn" id="continue">Continue shopping</button></p>
+  </div>
+  <div class="bag-foot" id="foot">
+    <div class="sub"><span>Subtotal</span><output id="subtotal">$0.00</output></div>
+    <p class="note">Tax and shipping are added at checkout.</p>
+    <button type="button" class="btn-checkout" id="checkout">Checkout</button>
+    <p class="note" id="checkout-msg" role="status"></p>
+  </div>
+</aside>
+
+<script>
+(() => {
+  'use strict';
+
+  const MAX_QTY = 10;
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Sample catalogue. "flaky" makes the first add fail once, so the error state can be seen.
+  const PRODUCTS = [
+    { id: 'overshirt', name: 'Linen overshirt', color: 'Sage', price: 68, compareAt: 88, glyph: 'shirt', optionName: 'Size', flaky: true,
+      variants: [{ v: 'S' }, { v: 'M' }, { v: 'L', soldOut: true }, { v: 'XL' }] },
+    { id: 'sweater', name: 'Merino crew sweater', color: 'Oat', price: 94, glyph: 'knit', optionName: 'Size',
+      variants: [{ v: 'XS' }, { v: 'S' }, { v: 'M' }, { v: 'L' }, { v: 'XL' }] },
+    { id: 'tote', name: 'Canvas tote', color: 'Natural', price: 36, glyph: 'bag', variants: null },
+    { id: 'pourover', name: 'Ceramic pour-over set', color: 'Speckled white', price: 52, glyph: 'cup', soldOut: true, variants: null }
+  ];
+
+  const GLYPHS = {
+    shirt: '<path d="M22 12 10 20l5 10 5-3v25h22V27l5 3 5-10-12-8q-10 8-20 0z"/>',
+    knit: '<path d="M22 10q10 8 20 0l12 8-6 12-6-3v27H22V27l-6 3-6-12z"/>',
+    bag: '<path d="M14 22h36l3 34H11z"/><path d="M24 22v-6q0-8 8-8t8 8v6"/>',
+    cup: '<path d="M14 26h32v14q0 14-16 14T14 40z"/><path d="M46 30q10 0 10 8t-10 8"/>'
+  };
+
+  const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+  const sel = {};   // product id -> { variant, qty }
+  const ui = {};    // product id -> { status, msg, notified, failedOnce, timer }
+  let bagLines = []; // { key, id, variant, qty }
+
+  PRODUCTS.forEach(p => {
+    const first = p.variants && p.variants.find(x => !x.soldOut);
+    sel[p.id] = { variant: first ? first.v : null, qty: 1 };
+    ui[p.id] = { status: 'idle', msg: '', notified: false, failedOnce: false, timer: null };
+  });
+
+  const svg = p => `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">${GLYPHS[p.glyph]}</svg>`;
+  const variantOf = (p, v) => (p.variants && v ? p.variants.find(x => x.v === v) : null) || null;
+  const itemCount = () => bagLines.reduce((n, l) => n + l.qty, 0);
+  const subtotal = () => bagLines.reduce((t, l) => t + byId[l.id].price * l.qty, 0);
+  const lineLabel = l => (l.variant ? `${byId[l.id].name}, ${l.variant}` : byId[l.id].name);
+
+  // ---------- Product cards (built once, then patched in place so focus survives) ----------
+
+  function cardHTML(p) {
+    const id = p.id;
+    const opts = p.variants ? `
+        <fieldset>
+          <legend class="sr">${p.optionName}</legend>
+          <div class="opts">
+            ${p.variants.map(x => `
+            <label class="opt${x.soldOut ? ' is-out' : ''}">
+              <input type="radio" name="v-${id}" data-id="${id}" value="${x.v}"${x.soldOut ? ' aria-disabled="true"' : ''}>
+              <span>${x.v}${x.soldOut ? '<span class="sr">, sold out</span>' : ''}</span>
+            </label>`).join('')}
+          </div>
+        </fieldset>` : '';
+
+    return `
+    <article class="card" id="card-${id}">
+      <figure class="media" role="img" aria-label="${p.name}, ${p.color.toLowerCase()}">${svg(p)}</figure>
+      <div class="info">
+        <h3 class="name"><a href="#${id}">${p.name}</a></h3>
+        <p class="meta">${p.color}</p>
+        <p class="price"><span class="sr">Price </span>${money.format(p.price)}${p.compareAt ? ` <s><span class="sr">was </span>${money.format(p.compareAt)}</s>` : ''}</p>
+        ${opts}
+        <div class="qty" role="group" aria-label="Quantity">
+          <button type="button" data-act="dec" data-id="${id}" aria-label="Decrease quantity">&minus;</button>
+          <output>1</output>
+          <button type="button" data-act="inc" data-id="${id}" aria-label="Increase quantity">+</button>
+        </div>
+        <div class="add">
+          <button type="button" class="btn-add" data-act="add" data-id="${id}">
+            <span class="label">Add to bag</span><span class="spin" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="reason" ${p.soldOut ? '' : 'hidden'}><span class="reason-text">Sold out</span>
+          <button type="button" class="link-btn" data-act="notify" data-id="${id}">Notify me</button></p>
+        <p class="msg" role="alert"></p>
+      </div>
+    </article>`;
+  }
+
+  function setLabel(btn, text) {
+    const el = btn.querySelector('.label');
+    if (el.textContent === text) return;
+    el.textContent = text;
+    if (!reduceMotion.matches) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, easing: 'ease-out' });
+  }
+
+  function paintCard(id) {
+    const p = byId[id], s = sel[id], u = ui[id];
+    const card = document.getElementById('card-' + id);
+    card.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = r.value === s.variant; });
+    card.querySelector('output').textContent = s.qty;
+    card.querySelector('[data-act="dec"]').disabled = !!p.soldOut || s.qty <= 1;
+    card.querySelector('[data-act="inc"]').disabled = !!p.soldOut || s.qty >= MAX_QTY;
+
+    const v = variantOf(p, s.variant);
+    const btn = card.querySelector('.btn-add');
+    btn.setAttribute('aria-disabled', String(!!(p.soldOut || (v && v.soldOut))));
+    btn.setAttribute('aria-busy', String(u.status === 'pending'));
+    setLabel(btn, u.status === 'added' ? 'Added' : u.status === 'error' ? "Couldn't add" : 'Add to bag');
+
+    const reason = card.querySelector('.reason');
+    reason.hidden = !p.soldOut;
+    reason.querySelector('.reason-text').textContent = u.notified ? "Sold out. We'll email you when it's back." : 'Sold out';
+    reason.querySelector('[data-act="notify"]').hidden = u.notified;
+    card.querySelector('.msg').textContent = u.msg;
+  }
+
+  // Stands in for the store's add-to-bag request.
+  function sendToBag(p, u) {
+    return new Promise((resolve, reject) => setTimeout(() => {
+      if (p.flaky && !u.failedOnce) { u.failedOnce = true; reject(new Error('network')); }
+      else resolve();
+    }, 700));
+  }
+
+  function announce(text) {
+    document.getElementById('sr-status').textContent = text;
+  }
+
+  async function add(id) {
+    const p = byId[id], s = sel[id], u = ui[id];
+    const v = variantOf(p, s.variant);
+    if (p.soldOut || (v && v.soldOut) || u.status === 'pending') return;
+    clearTimeout(u.timer);
+    u.status = 'pending';
+    u.msg = '';
+    paintCard(id);
+    try {
+      await sendToBag(p, u);
+      addToBag(p, s.variant, s.qty);
+      u.status = 'added';
+      paintBagButton(true);
+      renderBag();
+      announce(`Added ${lineLabel({ id, variant: s.variant })}, quantity ${s.qty}, to your bag.`);
+      u.timer = setTimeout(() => { u.status = 'idle'; paintCard(id); }, 1500);
+    } catch (err) {
+      u.status = 'error';
+      u.msg = "Couldn't reach your bag. Try again.";
+    }
+    paintCard(id);
+  }
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = PRODUCTS.map(p => `<li>${cardHTML(p)}</li>`).join('');
+  PRODUCTS.forEach(p => paintCard(p.id));
+
+  grid.addEventListener('change', e => {
+    const t = e.target;
+    if (t.type !== 'radio') return;
+    const id = t.dataset.id;
+    // Sold-out sizes stay focusable, but they cannot be selected.
+    if (t.getAttribute('aria-disabled') !== 'true') sel[id].variant = t.value;
+    paintCard(id);
+  });
+
+  grid.addEventListener('click', e => {
+    if (e.target.closest('.name a')) { e.preventDefault(); return; }
+    const b = e.target.closest('button');
+    if (!b) return;
+    const id = b.dataset.id, s = sel[id];
+    switch (b.dataset.act) {
+      case 'dec': s.qty = Math.max(1, s.qty - 1); break;
+      case 'inc': s.qty = Math.min(MAX_QTY, s.qty + 1); break;
+      case 'add': add(id); return;
+      case 'notify': ui[id].notified = true; break;
+      default: return;
+    }
+    paintCard(id);
+  });
+
+  // ---------- Bag ----------
+
+  const bagEl = document.getElementById('bag');
+  const bagBtn = document.getElementById('bag-btn');
+  const bagTitle = document.getElementById('bag-title');
+  const main = document.getElementById('shop-main');
+  const linesEl = document.getElementById('lines');
+  const isOpen = () => bagEl.classList.contains('is-open');
+
+  function addToBag(p, variant, qty) {
+    const key = p.id + '|' + (variant || '');
+    const existing = bagLines.find(l => l.key === key);
+    if (existing) existing.qty = Math.min(MAX_QTY, existing.qty + qty);
+    else bagLines.push({ key, id: p.id, variant, qty: Math.min(MAX_QTY, qty) });
+  }
+
+  function lineHTML(l) {
+    const p = byId[l.id], k = l.key, label = lineLabel(l);
+    return `
+      <li class="line">
+        <div class="thumb">${svg(p)}</div>
+        <div class="info">
+          <p class="name">${p.name}</p>
+          <p class="meta">${l.variant ? `${p.optionName} ${l.variant}, ` : ''}${p.color}</p>
+          <div class="qty" role="group" aria-label="Quantity">
+            <button type="button" data-line="${k}" data-act="ldec" data-fk="${k}:ldec" aria-label="Decrease ${label} quantity"${l.qty <= 1 ? ' disabled' : ''}>&minus;</button>
+            <output>${l.qty}</output>
+            <button type="button" data-line="${k}" data-act="linc" data-fk="${k}:linc" aria-label="Increase ${label} quantity"${l.qty >= MAX_QTY ? ' disabled' : ''}>+</button>
+          </div>
+        </div>
+        <div class="end">
+          <span class="lp">${money.format(p.price * l.qty)}</span>
+          <button type="button" class="link-btn" data-line="${k}" data-act="lrm" aria-label="Remove ${label}">Remove</button>
+        </div>
+      </li>`;
+  }
+
+  function paintBagButton(bump) {
+    const n = itemCount();
+    const c = document.getElementById('count');
+    c.textContent = n;
+    c.hidden = n === 0;
+    bagBtn.setAttribute('aria-label', `Bag, ${n} ${n === 1 ? 'item' : 'items'}`);
+    if (bump && !reduceMotion.matches) {
+      c.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.15)', offset: 0.5 }, { transform: 'scale(1)' }],
+        { duration: 200, easing: 'ease-out' });
+    }
+  }
+
+  function renderBag(focusKey) {
+    linesEl.innerHTML = bagLines.map(lineHTML).join('');
+    const empty = bagLines.length === 0;
+    document.getElementById('empty').hidden = !empty;
+    document.getElementById('foot').hidden = empty;
+    document.getElementById('subtotal').textContent = money.format(subtotal());
+    paintBagButton(false);
+    if (focusKey && isOpen()) {
+      const el = linesEl.querySelector(`[data-fk="${focusKey}"]`);
+      if (el && !el.disabled) el.focus();
+      else bagTitle.focus();
+    }
+  }
+
+  function openBag() {
+    bagEl.classList.add('is-open');
+    main.inert = true;
+    bagBtn.setAttribute('aria-expanded', 'true');
+    renderBag();
+    bagTitle.focus({ preventScroll: true });
+  }
+
+  function closeBag() {
+    bagEl.classList.remove('is-open');
+    main.inert = false;
+    bagBtn.setAttribute('aria-expanded', 'false');
+    bagBtn.focus({ preventScroll: true });
+  }
+
+  bagBtn.addEventListener('click', openBag);
+  document.getElementById('bag-close').addEventListener('click', closeBag);
+  document.getElementById('continue').addEventListener('click', closeBag);
+
+  document.getElementById('checkout').addEventListener('click', () => {
+    const n = itemCount();
+    document.getElementById('checkout-msg').textContent =
+      `Demo: checkout would open with ${n} ${n === 1 ? 'item' : 'items'} at ${money.format(subtotal())}. No order is placed.`;
+  });
+
+  linesEl.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const line = bagLines.find(l => l.key === b.dataset.line);
+    if (!line) return;
+    const act = b.dataset.act;
+    if (act === 'ldec') line.qty = Math.max(1, line.qty - 1);
+    if (act === 'linc') line.qty = Math.min(MAX_QTY, line.qty + 1);
+    if (act === 'lrm') bagLines = bagLines.filter(l => l !== line);
+    renderBag(act === 'lrm' ? null : `${line.key}:${act}`);
+    if (act === 'lrm') bagTitle.focus();
+    announce(act === 'lrm' ? `Removed ${lineLabel(line)} from your bag.` : '');
+  });
+
+  // Keep focus inside the open drawer and close it with Escape.
+  document.addEventListener('keydown', e => {
+    if (!isOpen()) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeBag(); return; }
+    if (e.key !== 'Tab') return;
+    const focusables = bagEl.querySelectorAll('button:not([disabled])');
+    if (!focusables.length) return;
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === bagTitle)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+  });
+
+  renderBag();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {"compact": 6, "minimal": 9, "modern": 6, "usability": 7, "craft": 8, "overall": 7, "note": "Restrained outline-icon cards with labeled variant chips and real add, error and sold-out states, but no cart view and the mobile layout leaves one narrow column with wasted width."},
+    "X": {"compact": 7, "minimal": 5, "modern": 7, "usability": 9, "craft": 8, "overall": 7, "note": "A complete storefront with search, filters, sort, stock badges and a persistent cart drawer with totals, though it reads more like a full shop than a minimal component and uses emoji for product art."},
+    "Y": {"compact": 7, "minimal": 6, "modern": 7, "usability": 7, "craft": 6, "overall": 6, "note": "Good in-grid quantity steppers and a cart drawer, but there is no sold-out or stock state, hover lift adds decoration, and on mobile the Cart button is stranded on its own line under the search."},
+    "Z": {"compact": 6, "minimal": 9, "modern": 6, "usability": 8, "craft": 9, "overall": 8, "note": "The most disciplined build: per-variant sold-out chips with explicit reasons, aria-disabled add with spinner, added and error states, labeled fieldsets, and a clean mobile stack, though the cart is only a text summary and the three-card desktop leaves much empty space."}
+  },
+  "ranking": ["Z", "X", "W", "Y"]
+}

@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tide Player</title>
+<style>
+  :root {
+    --sky-zenith:#1F64D4; --sky-mid:#5E98E4; --sky-horizon:#9DCBF4;
+    --white-page:#F6FAFF; --white-plate:#EAF4FF; --white-lit:#DDEDFF; --white-shade:#B3CBEA; --white-specular:#FFFFFF;
+    --acrylic-thin:#B9E0FF; --acrylic-body:#2E8BF0; --acrylic-edge:#1E6BFF; --acrylic-core:#0A43B0; --acrylic-caustic:#8FC8FF;
+    --grass-tip:#A8F03A; --grass-body:#3DCB2A; --grass-base:#13702A; --grass-ink:#06380F;
+    --ink:#0A2350; --ink-muted:#34507F; --on-blue:#FFFFFF;
+    --tint-thin: rgba(46,139,240,0.08); --tint-medium: rgba(46,139,240,0.16); --tint-thick: rgba(46,139,240,0.28);
+    --edge-specular: inset 0 1px 0 rgba(255,255,255,0.90);
+    --edge-rim: inset 0 -1px 0 rgba(10,67,176,0.45);
+    --edge-outline: inset 0 0 0 1px rgba(10,67,176,0.18);
+    --glow-exit: inset 0 -14px 24px -10px rgba(143,200,255,0.55);
+    --shadow-spill-hero: 0 40px 80px -24px rgba(30,107,255,0.40);
+    --shadow-contact: 0 2px 6px rgba(10,67,176,0.18);
+    --backdrop: blur(14px) saturate(1.4);
+    --font: "Source Sans 3", "Fira Sans", "Noto Sans", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: linear-gradient(180deg, #1F64D4 0%, #2F78DC 26%, #5E98E4 46%, #9DCBF4 62%, #DDEDFF 68%, #F6FAFF 72%);
+    color: var(--ink);
+    font-family: var(--font);
+  }
+
+  .stage {
+    position: relative;
+    width: 1280px;
+    max-width: 100vw;
+    height: 800px;
+    margin: 0 auto;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+
+  /* Overexposed bloom along the horizon, behind the player */
+  .bloom {
+    position: absolute;
+    left: 50%;
+    top: 548px;
+    width: 980px;
+    height: 220px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(50% 50% at 50% 50%,
+      rgba(255,255,255,0.95) 0%, rgba(221,237,255,0.80) 35%, rgba(157,203,244,0) 100%);
+    pointer-events: none;
+  }
+
+  .ground {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 260px;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* ---------- Acrylic slab (outer card) ---------- */
+  .player {
+    position: relative;
+    width: min(388px, calc(100vw - 32px));
+  }
+
+  .slab {
+    position: relative;
+    border-radius: 28px;
+    padding: 8px;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 22%) padding-box,
+      linear-gradient(180deg, rgba(46,139,240,0.10) 0%, rgba(46,139,240,0.30) 100%) padding-box,
+      linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(143,200,255,0.55) 45%, rgba(10,67,176,0.55) 100%) border-box;
+    -webkit-backdrop-filter: var(--backdrop);
+    backdrop-filter: var(--backdrop);
+    box-shadow:
+      var(--edge-specular), var(--edge-rim), var(--edge-outline),
+      var(--glow-exit), var(--shadow-spill-hero), var(--shadow-contact);
+  }
+
+  /* ---------- Artwork ---------- */
+  .art {
+    position: relative;
+    height: 180px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 0 0 1px rgba(10,67,176,0.18);
+  }
+  .art svg { display: block; width: 100%; height: 100%; }
+  .art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, rgba(255,255,255,0) 35%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 65%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  .is-playing .art::after { animation: sweep 6s ease-in-out infinite; }
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    60%, 100% { transform: translateX(100%); }
+  }
+
+  /* ---------- Inner plate (holds all text) ---------- */
+  .plate {
+    border-radius: 20px;
+    padding: 18px 18px 16px;
+    background: linear-gradient(180deg, rgba(234,244,255,0.78) 0%, rgba(197,224,255,0.78) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -10px 18px -10px rgba(143,200,255,0.55);
+  }
+
+  .eyebrow {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--acrylic-core);
+  }
+  h1 {
+    margin: 4px 0 2px;
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .artist {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- Progress ---------- */
+  .progress {
+    --p: 0;
+    position: relative;
+    height: 22px;
+    margin-top: 12px;
+    cursor: pointer;
+    touch-action: none;
+    border-radius: 999px;
+    outline: none;
+  }
+  .progress:focus-visible { box-shadow: 0 0 0 2px var(--acrylic-edge); }
+  .progress .track {
+    position: absolute;
+    left: 0; right: 0; top: 7px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(10,67,176,0.16);
+    box-shadow: inset 0 1px 2px rgba(10,67,176,0.25);
+    overflow: hidden;
+  }
+  .progress .fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: calc(var(--p) * 100%);
+    background: linear-gradient(90deg, #B9E0FF 0%, #2E8BF0 55%, #0A43B0 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(10,67,176,0.5);
+  }
+  .progress .knob {
+    position: absolute;
+    top: 3px;
+    left: calc(var(--p) * 100%);
+    width: 16px; height: 16px;
+    margin-left: -8px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 2px solid var(--acrylic-edge);
+    box-shadow: var(--shadow-contact), inset 0 -2px 0 rgba(143,200,255,0.8);
+    transition: transform 0.15s ease;
+  }
+  .progress:hover .knob, .progress.dragging .knob { transform: scale(1.2); }
+
+  .times {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- Controls ---------- */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin: 12px 0 6px;
+  }
+  .icon-btn {
+    width: 46px; height: 46px;
+    display: grid; place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(10,67,176,0.18);
+    color: var(--acrylic-core);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 50%) padding-box,
+      linear-gradient(180deg, rgba(46,139,240,0.18) 0%, rgba(46,139,240,0.34) 100%) padding-box;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), var(--shadow-contact);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .play {
+    width: 68px; height: 68px;
+    display: grid; place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #FFFFFF;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0) 38%),
+      radial-gradient(70% 30% at 50% 100%, rgba(143,200,255,0.55), rgba(143,200,255,0) 100%),
+      linear-gradient(180deg, #1457D8 0%, #0A43B0 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 10px 22px -8px rgba(30,107,255,0.6), var(--shadow-contact);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .icon-btn:hover, .play:hover { transform: scale(1.05); }
+  .icon-btn:active, .play:active { transform: scale(0.96); }
+  button:focus-visible, .q:focus-visible, input[type="range"]:focus-visible {
+    outline: 2px solid var(--acrylic-edge);
+    outline-offset: 3px;
+  }
+  .icon-btn svg, .play svg { width: 20px; height: 20px; }
+  .play svg { width: 24px; height: 24px; }
+
+  /* ---------- Volume ---------- */
+  .volume {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+    color: var(--acrylic-core);
+  }
+  .volume svg { width: 20px; height: 20px; flex: 0 0 20px; }
+  .volume input[type="range"] {
+    --v: 70%;
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 22px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .volume input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2E8BF0 0, #2E8BF0 var(--v), rgba(10,67,176,0.16) var(--v), rgba(10,67,176,0.16) 100%);
+    box-shadow: inset 0 1px 2px rgba(10,67,176,0.25);
+  }
+  .volume input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 2px solid var(--acrylic-edge);
+    box-shadow: var(--shadow-contact);
+  }
+  .volume input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(10,67,176,0.16);
+  }
+  .volume input[type="range"]::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: #2E8BF0;
+  }
+  .volume input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 2px solid var(--acrylic-edge);
+  }
+  .vol-val {
+    width: 26px;
+    text-align: right;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- Up next ---------- */
+  .up-next {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(10,67,176,0.14);
+  }
+  .queue {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .q {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px 6px 6px;
+    border-radius: 16px;
+    border: 1px solid rgba(10,67,176,0.12);
+    background: linear-gradient(180deg, rgba(46,139,240,0.08) 0%, rgba(46,139,240,0.16) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .q:hover {
+    background: linear-gradient(180deg, rgba(46,139,240,0.16) 0%, rgba(46,139,240,0.28) 100%);
+  }
+  .thumb {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(61,203,42,0) 0%, rgba(61,203,42,0) 62%, #3DCB2A 62%, #13702A 100%),
+      radial-gradient(circle at 50% 36%, #FFFFFF 0%, #8FC8FF 16%, #2E8BF0 42%, #0A43B0 100%),
+      linear-gradient(180deg, #1F64D4 0%, #9DCBF4 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+  }
+  .q-text { display: flex; flex-direction: column; min-width: 0; }
+  .q-title {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .q-artist {
+    font-size: 13px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .q-dur {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .is-playing .art::after { animation: none; display: none; }
+    .play, .icon-btn, .q, .progress .knob { transition: none; }
+  }
+
+  @media (max-width: 480px) {
+    .stage { width: 100%; height: auto; min-height: 100vh; padding: 40px 0 300px; }
+  }
+</style>
+</head>
+<body>
+<main class="stage" id="stage">
+  <div class="bloom" aria-hidden="true"></div>
+
+  <svg class="ground" viewBox="0 0 1280 260" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="gGrass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#A8F03A"/>
+        <stop offset="0.3" stop-color="#3DCB2A"/>
+        <stop offset="1" stop-color="#13702A"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 62 C240 12 420 40 640 30 C860 20 1040 46 1280 14 V260 H0 Z" fill="url(#gGrass)"/>
+    <path d="M0 110 C300 80 520 118 760 104 C980 92 1120 110 1280 96 V260 H0 Z" fill="#3DCB2A"/>
+    <path d="M0 176 C260 158 520 184 800 170 C1000 160 1140 176 1280 166 V260 H0 Z" fill="#13702A" fill-opacity="0.9"/>
+  </svg>
+
+  <section class="player" aria-label="Tide music player">
+    <div class="slab" id="slab">
+      <div class="art" id="art"></div>
+
+      <div class="plate">
+        <p class="eyebrow">Now playing</p>
+        <h1 id="title">Title</h1>
+        <p class="artist" id="artist">Artist</p>
+
+        <div class="progress" id="progress" role="slider" tabindex="0"
+             aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0:00">
+          <div class="track"><div class="fill"></div></div>
+          <div class="knob"></div>
+        </div>
+        <div class="times">
+          <span id="elapsed">0:00</span>
+          <span id="remaining">-0:00</span>
+        </div>
+
+        <div class="controls">
+          <button class="icon-btn" id="prev" type="button" aria-label="Previous track">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M6 5h2v14H6z"/>
+              <path fill="currentColor" d="M19 6.2v11.6a.8.8 0 0 1-1.25.66L9.5 12.66a.8.8 0 0 1 0-1.32l8.25-5.1A.8.8 0 0 1 19 6.2z"/>
+            </svg>
+          </button>
+          <button class="play" id="play" type="button" aria-label="Play">
+            <svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true"></svg>
+          </button>
+          <button class="icon-btn" id="next" type="button" aria-label="Next track">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M16 5h2v14h-2z"/>
+              <path fill="currentColor" d="M5 6.2v11.6a.8.8 0 0 0 1.25.66l8.25-5.1a.8.8 0 0 0 0-1.32L6.25 5.54A.8.8 0 0 0 5 6.2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="volume">
+          <svg id="volIcon" viewBox="0 0 24 24" aria-hidden="true"></svg>
+          <input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume">
+          <span class="vol-val" id="volVal">70</span>
+        </div>
+
+        <div class="up-next">
+          <p class="eyebrow">Up next</p>
+          <ul class="queue" id="queue"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var TRACKS = [
+    { title: "Glasswater Sunday", artist: "Halo Meridian", dur: 222, art: 0 },
+    { title: "Inside the Blue",   artist: "Vela Rooms",    dur: 245, art: 1 },
+    { title: "Chlorine Kites",    artist: "Mira Tall",     dur: 178, art: 2 },
+    { title: "Acrylic Hours",     artist: "Fen & Lumen",   dur: 211, art: 3 },
+    { title: "Vinyl Horizon",     artist: "Ozone Choir",   dur: 260, art: 0 },
+    { title: "Bloom Field",       artist: "Sable Parade",  dur: 195, art: 1 }
+  ];
+  var QUEUE_LEN = 4;
+
+  var state = { idx: 0, pos: 0, playing: false, dragging: false, vol: 70 };
+
+  var el = {
+    title: document.getElementById("title"),
+    artist: document.getElementById("artist"),
+    art: document.getElementById("art"),
+    slab: document.getElementById("slab"),
+    progress: document.getElementById("progress"),
+    elapsed: document.getElementById("elapsed"),
+    remaining: document.getElementById("remaining"),
+    prev: document.getElementById("prev"),
+    next: document.getElementById("next"),
+    play: document.getElementById("play"),
+    playIcon: document.getElementById("playIcon"),
+    vol: document.getElementById("vol"),
+    volVal: document.getElementById("volVal"),
+    volIcon: document.getElementById("volIcon"),
+    queue: document.getElementById("queue")
+  };
+
+  var ICON_PLAY = '<path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/>';
+  var ICON_PAUSE = '<rect fill="currentColor" x="6.5" y="5" width="4" height="14" rx="1.2"/><rect fill="currentColor" x="13.5" y="5" width="4" height="14" rx="1.2"/>';
+
+  function mod(n, m) { return ((n % m) + m) % m; }
+
+  function fmt(sec) {
+    var s = Math.max(0, Math.floor(sec));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+
+  /* Artwork: one acrylic object over electric grass under a saturated sky.
+     Four compositions share the same material and light. */
+  function artSVG(v, label) {
+    var sunX = [96, 262, 70, 284][v % 4];
+    var obj;
+    if (v % 4 === 0) {
+      obj =
+        '<circle cx="186" cy="96" r="44" fill="url(#aAcr)" fill-opacity="0.92"/>' +
+        '<circle cx="186" cy="96" r="30" fill="url(#aCaus)" fill-opacity="0.35"/>' +
+        '<circle cx="186" cy="96" r="44" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.2"/>' +
+        '<ellipse cx="172" cy="74" rx="16" ry="7" fill="#FFFFFF" fill-opacity="0.85" filter="url(#aSoft)"/>';
+    } else if (v % 4 === 1) {
+      obj =
+        '<g transform="rotate(-12 186 96)">' +
+        '<rect x="128" y="70" width="116" height="56" rx="22" fill="url(#aAcr)" fill-opacity="0.88"/>' +
+        '<rect x="142" y="92" width="120" height="50" rx="22" fill="#0A43B0" fill-opacity="0.35"/>' +
+        '<rect x="128" y="70" width="116" height="56" rx="22" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.2"/>' +
+        '<rect x="138" y="76" width="60" height="6" rx="3" fill="#FFFFFF" fill-opacity="0.8" filter="url(#aSoft)"/>' +
+        '</g>';
+    } else if (v % 4 === 2) {
+      obj =
+        '<path d="M122 124 Q186 34 252 112" fill="none" stroke="url(#aAcr)" stroke-width="30" stroke-linecap="round" stroke-opacity="0.9"/>' +
+        '<path d="M122 124 Q186 34 252 112" fill="none" stroke="#8FC8FF" stroke-width="8" stroke-linecap="round" stroke-opacity="0.5" filter="url(#aSoft)"/>' +
+        '<path d="M120 116 Q182 40 240 104" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-opacity="0.8"/>';
+    } else {
+      obj =
+        '<circle cx="164" cy="104" r="24" fill="url(#aAcr)" fill-opacity="0.85"/>' +
+        '<circle cx="206" cy="82" r="17" fill="url(#aAcr)" fill-opacity="0.8"/>' +
+        '<circle cx="216" cy="120" r="12" fill="url(#aAcr)" fill-opacity="0.75"/>' +
+        '<circle cx="164" cy="104" r="24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.1"/>' +
+        '<circle cx="206" cy="82" r="17" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.1"/>' +
+        '<circle cx="216" cy="120" r="12" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.1"/>' +
+        '<ellipse cx="156" cy="94" rx="8" ry="4" fill="#FFFFFF" fill-opacity="0.85" filter="url(#aSoft)"/>';
+    }
+
+    return '<svg viewBox="0 0 372 180" role="img" aria-label="Artwork for ' + label + '">' +
+      '<defs>' +
+        '<linearGradient id="aSky" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#1F64D4"/><stop offset="0.45" stop-color="#5E98E4"/>' +
+          '<stop offset="0.62" stop-color="#9DCBF4"/><stop offset="0.66" stop-color="#DDEDFF"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="aGrass" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#A8F03A"/><stop offset="0.35" stop-color="#3DCB2A"/><stop offset="1" stop-color="#13702A"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="aAcr" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#B9E0FF"/><stop offset="0.45" stop-color="#2E8BF0"/>' +
+          '<stop offset="0.7" stop-color="#1E6BFF"/><stop offset="1" stop-color="#0A43B0"/>' +
+        '</linearGradient>' +
+        '<radialGradient id="aBloom">' +
+          '<stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>' +
+          '<stop offset="0.5" stop-color="#DDEDFF" stop-opacity="0.6"/>' +
+          '<stop offset="1" stop-color="#DDEDFF" stop-opacity="0"/>' +
+        '</radialGradient>' +
+        '<radialGradient id="aCaus">' +
+          '<stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/>' +
+          '<stop offset="0.35" stop-color="#8FC8FF" stop-opacity="0.6"/>' +
+          '<stop offset="1" stop-color="#2E8BF0" stop-opacity="0"/>' +
+        '</radialGradient>' +
+        '<filter id="aBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>' +
+        '<filter id="aSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>' +
+        '<clipPath id="aClip"><rect width="372" height="180" rx="20"/></clipPath>' +
+      '</defs>' +
+      '<g clip-path="url(#aClip)">' +
+        '<rect width="372" height="180" fill="url(#aSky)"/>' +
+        '<circle cx="' + sunX + '" cy="44" r="58" fill="url(#aBloom)"/>' +
+        '<g filter="url(#aBlur)" fill="#FFFFFF" fill-opacity="0.6">' +
+          '<ellipse cx="60" cy="46" rx="40" ry="10"/><ellipse cx="300" cy="70" rx="50" ry="12"/>' +
+        '</g>' +
+        '<path d="M0 118 C90 92 150 104 210 110 C270 116 320 92 372 100 V180 H0 Z" fill="url(#aGrass)"/>' +
+        '<path d="M0 140 C80 124 170 134 250 138 C300 140 340 128 372 130 V180 H0 Z" fill="#3DCB2A" fill-opacity="0.9"/>' +
+        '<ellipse cx="186" cy="152" rx="70" ry="9" fill="url(#aCaus)"/>' +
+        obj +
+      '</g>' +
+    '</svg>';
+  }
+
+  function volIconSVG(v) {
+    var spk = '<path fill="currentColor" d="M4 9.5h3.2L12 5.8v12.4L7.2 14.5H4z"/>';
+    var stroke = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"';
+    if (v === 0) return spk + '<path ' + stroke + ' d="M15 9.5l5 5M20 9.5l-5 5"/>';
+    var w1 = '<path ' + stroke + ' d="M15 9a4 4 0 0 1 0 6"/>';
+    var w2 = '<path ' + stroke + ' d="M18 6.5a8 8 0 0 1 0 11"/>';
+    return spk + (v >= 1 ? w1 : "") + (v >= 50 ? w2 : "");
+  }
+
+  function renderTrack() {
+    var t = TRACKS[state.idx];
+    el.title.textContent = t.title;
+    el.artist.textContent = t.artist;
+    el.art.innerHTML = artSVG(t.art, t.title + " by " + t.artist);
+  }
+
+  function renderQueue() {
+    el.queue.innerHTML = "";
+    for (var k = 1; k <= QUEUE_LEN; k++) {
+      var i = mod(state.idx + k, TRACKS.length);
+      var t = TRACKS[i];
+
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "q";
+      btn.setAttribute("aria-label", "Play " + t.title + " by " + t.artist);
+      btn.dataset.i = String(i);
+
+      var thumb = document.createElement("span");
+      thumb.className = "thumb";
+      thumb.setAttribute("aria-hidden", "true");
+
+      var text = document.createElement("span");
+      text.className = "q-text";
+      var tt = document.createElement("span");
+      tt.className = "q-title";
+      tt.textContent = t.title;
+      var ta = document.createElement("span");
+      ta.className = "q-artist";
+      ta.textContent = t.artist;
+      text.appendChild(tt);
+      text.appendChild(ta);
+
+      var dur = document.createElement("span");
+      dur.className = "q-dur";
+      dur.textContent = fmt(t.dur);
+
+      btn.appendChild(thumb);
+      btn.appendChild(text);
+      btn.appendChild(dur);
+      li.appendChild(btn);
+      el.queue.appendChild(li);
+    }
+  }
+
+  var lastElapsedText = "";
+  var lastRemainingText = "";
+  var lastFill = -1;
+
+  function renderTime(force) {
+    var dur = TRACKS[state.idx].dur;
+    var p = Math.min(1, Math.max(0, state.pos / dur));
+    var eText = fmt(state.pos);
+    var rText = "-" + fmt(dur - state.pos);
+
+    if (force || Math.abs(p - lastFill) > 0.0005) {
+      el.progress.style.setProperty("--p", p.toFixed(5));
+      lastFill = p;
+    }
+    if (force || eText !== lastElapsedText) {
+      el.elapsed.textContent = eText;
+      el.progress.setAttribute("aria-valuenow", String(Math.round(p * 100)));
+      el.progress.setAttribute("aria-valuetext", eText + " of " + fmt(dur));
+      lastElapsedText = eText;
+    }
+    if (force || rText !== lastRemainingText) {
+      el.remaining.textContent = rText;
+      lastRemainingText = rText;
+    }
+  }
+
+  function renderPlay() {
+    el.playIcon.innerHTML = state.playing ? ICON_PAUSE : ICON_PLAY;
+    el.play.setAttribute("aria-label", state.playing ? "Pause" : "Play");
+    el.slab.classList.toggle("is-playing", state.playing);
+  }
+
+  function setTrack(i) {
+    state.idx = mod(i, TRACKS.length);
+    state.pos = 0;
+    renderTrack();
+    renderQueue();
+    renderTime(true);
+  }
+
+  function togglePlay() {
+    state.playing = !state.playing;
+    renderPlay();
+  }
+
+  function seekFromClientX(clientX) {
+    var rect = el.progress.getBoundingClientRect();
+    var r = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    state.pos = r * TRACKS[state.idx].dur;
+    renderTime(true);
+  }
+
+  /* ---------- Events ---------- */
+  el.play.addEventListener("click", togglePlay);
+
+  el.next.addEventListener("click", function () {
+    setTrack(state.idx + 1);
+  });
+
+  el.prev.addEventListener("click", function () {
+    if (state.pos > 3) {
+      state.pos = 0;
+      renderTime(true);
+    } else {
+      setTrack(state.idx - 1);
+    }
+  });
+
+  el.queue.addEventListener("click", function (e) {
+    var btn = e.target.closest(".q");
+    if (!btn) return;
+    setTrack(parseInt(btn.dataset.i, 10));
+  });
+
+  el.progress.addEventListener("pointerdown", function (e) {
+    state.dragging = true;
+    el.progress.classList.add("dragging");
+    el.progress.setPointerCapture(e.pointerId);
+    seekFromClientX(e.clientX);
+  });
+  el.progress.addEventListener("pointermove", function (e) {
+    if (state.dragging) seekFromClientX(e.clientX);
+  });
+  function endDrag() {
+    state.dragging = false;
+    el.progress.classList.remove("dragging");
+  }
+  el.progress.addEventListener("pointerup", endDrag);
+  el.progress.addEventListener("pointercancel", endDrag);
+
+  el.progress.addEventListener("keydown", function (e) {
+    var dur = TRACKS[state.idx].dur;
+    var handled = true;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") state.pos = Math.min(dur - 0.5, state.pos + 5);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") state.pos = Math.max(0, state.pos - 5);
+    else if (e.key === "Home") state.pos = 0;
+    else if (e.key === "End") state.pos = dur - 0.5;
+    else handled = false;
+    if (handled) { e.preventDefault(); renderTime(true); }
+  });
+
+  function setVolume(v) {
+    state.vol = v;
+    el.vol.value = String(v);
+    el.vol.style.setProperty("--v", v + "%");
+    el.volVal.textContent = String(v);
+    el.volIcon.innerHTML = volIconSVG(v);
+  }
+  el.vol.addEventListener("input", function () {
+    setVolume(parseInt(el.vol.value, 10));
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.code === "Space" && e.target === document.body) {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  /* ---------- Clock: advances only while playing ---------- */
+  var last = 0;
+  function frame(ts) {
+    if (!last) last = ts;
+    var dt = Math.min((ts - last) / 1000, 0.25);
+    last = ts;
+    if (state.playing && !state.dragging) {
+      state.pos += dt;
+      if (state.pos >= TRACKS[state.idx].dur) {
+        setTrack(state.idx + 1);
+      }
+    }
+    renderTime(false);
+    window.requestAnimationFrame(frame);
+  }
+
+  /* ---------- Init ---------- */
+  setVolume(state.vol);
+  setTrack(0);
+  renderPlay();
+  window.requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

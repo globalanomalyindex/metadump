@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {
+      "compact": 8,
+      "minimal": 8,
+      "modern": 6,
+      "usability": 7,
+      "craft": 6,
+      "overall": 7,
+      "note": "Tight four-column card grid with a clear add-to-bag and stepper, but the desktop stepper label wraps to two lines and several product names are truncated."
+    },
+    "X": {
+      "compact": 4,
+      "minimal": 6,
+      "modern": 6,
+      "usability": 8,
+      "craft": 5,
+      "overall": 6,
+      "note": "The most complete shop (search, filters, sort, cart drawer with shipping progress and checkout), but it is large for a compact component, uses generic placeholder glyphs, and on mobile the header has no side gutter and the Cart button is clipped at the right edge."
+    },
+    "Y": {
+      "compact": 9,
+      "minimal": 9,
+      "modern": 6,
+      "usability": 7,
+      "craft": 8,
+      "overall": 8,
+      "note": "The densest and most restrained option, with clear price, add and stepper states, a sold-out state, and a live status line, though it has no cart drawer and some names truncate."
+    },
+    "Z": {
+      "compact": 3,
+      "minimal": 4,
+      "modern": 7,
+      "usability": 6,
+      "craft": 3,
+      "overall": 4,
+      "note": "Gradient swatches and a full cart drawer look current, but the badge text inherits a 64px swatch rule so it renders as a large white blob over each product, and the mobile header also loses its gutter."
+    }
+  },
+  "ranking": ["Y", "W", "X", "Z"]
+}

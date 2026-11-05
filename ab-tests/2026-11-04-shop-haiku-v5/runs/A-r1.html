@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Northfield Goods</title>
+<style>
+:root{
+  --bg:#fafaf9; --surface:#ffffff; --text:#1c1917; --muted:#78716c; --line:#e7e5e4;
+  --accent:#1c1917; --accent-text:#ffffff; --accent-soft:#e7e5e4; --good:#15803d;
+  --radius:14px; --shadow:0 12px 40px rgba(0,0,0,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c0a09; --surface:#1c1917; --text:#fafaf9; --muted:#a8a29e; --line:#292524;
+    --accent:#fafaf9; --accent-text:#0c0a09; --accent-soft:#292524; --good:#4ade80;
+    --shadow:0 12px 40px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c0a09; --surface:#1c1917; --text:#fafaf9; --muted:#a8a29e; --line:#292524;
+  --accent:#fafaf9; --accent-text:#0c0a09; --accent-soft:#292524; --good:#4ade80;
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:16px;height:64px}
+.brand{font-weight:650;letter-spacing:-.01em;margin-right:auto}
+.search{position:relative;flex:0 1 320px}
+.search input{width:100%;height:40px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:0 14px 0 38px;font:inherit}
+.search svg{position:absolute;left:13px;top:12px;width:16px;height:16px;color:var(--muted)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.cartbtn{position:relative;display:flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
+.badge{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-text);font-size:12px;font-weight:600;display:grid;place-items:center}
+.bump{animation:bump .35s ease}
+@keyframes bump{50%{transform:scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.bump{animation:none}}
+.toolbar{display:flex;align-items:center;gap:12px;padding:20px 0 8px;flex-wrap:wrap}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1 1 0;min-width:0;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+select{flex:none;height:34px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;padding:0 12px}
+.count{color:var(--muted);font-size:14px;margin:8px 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px 20px;padding-bottom:64px}
+.card{display:flex;flex-direction:column;gap:12px}
+.art,.thumb{background:var(--tone);display:grid;place-items:center;color:rgba(28,25,23,.45)}
+.art{aspect-ratio:1;border-radius:var(--radius)}
+.art svg{width:44%;height:44%;fill:currentColor}
+.row-meta{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.card h3{font-size:15px;font-weight:600;margin:0;line-height:1.3}
+.card p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.price{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.add{height:38px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.add:hover{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.empty{color:var(--muted);text-align:center;padding:48px 16px;margin:0;list-style:none}
+.grid .empty{grid-column:1/-1}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);color:var(--text);display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility .3s;box-shadow:var(--shadow)}
+.drawer.on{transform:none;visibility:visible}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.dhead h2{margin:0;font-size:17px;font-weight:650}
+.iconbtn{width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:var(--text);cursor:pointer;font-size:22px;line-height:1}
+.items{list-style:none;margin:0;padding:0 20px;overflow:auto;flex:1}
+.line{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.thumb{width:72px;height:72px;flex:none;border-radius:10px}
+.thumb svg{width:44%;height:44%;fill:currentColor}
+.info{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.info .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.info strong{font-size:14px;font-weight:600}
+.info span{font-variant-numeric:tabular-nums;font-size:14px}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;height:32px}
+.stepper button{width:32px;height:32px;border:0;background:none;color:var(--text);font:inherit;font-size:16px;cursor:pointer}
+.stepper button:disabled{opacity:.35;cursor:default}
+.stepper output{min-width:24px;text-align:center;font-size:14px;font-variant-numeric:tabular-nums}
+.link{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px}
+.summary{padding:20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:16px}
+.ship small{color:var(--muted);font-size:13px}
+.track{height:6px;border-radius:999px;background:var(--accent-soft);overflow:hidden;margin-bottom:8px}
+.track i{display:block;height:100%;width:0;background:var(--good);border-radius:999px;transition:width .3s}
+dl{display:grid;grid-template-columns:1fr auto;gap:8px 12px;margin:0;font-size:14px}
+dl dt{color:var(--muted)}
+dl dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.total{font-weight:650;font-size:16px;color:var(--text)!important}
+.checkout{height:48px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-text);font:inherit;font-weight:600;cursor:pointer}
+.checkout:disabled{opacity:.4;cursor:default}
+.center{align-self:center}
+.done{text-align:center;padding:24px 8px}
+.done h3{margin:0 0 6px;font-size:18px}
+.done p{color:var(--muted);margin:0 0 20px}
+@media (max-width:600px){
+  .bar{flex-wrap:wrap;height:auto;padding:12px 0;gap:10px}
+  .search{order:3;flex:1 1 100%}
+  .grid{grid-template-columns:1fr 1fr;gap:20px 14px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="brand">Northfield Goods</div>
+    <div class="search">
+      <label class="sr" for="search">Search products</label>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Search products" autocomplete="off">
+    </div>
+    <button class="cartbtn" id="cartBtn" aria-haspopup="dialog" aria-label="Cart, 0 items">
+      Cart
+      <span class="badge" id="badge" hidden>0</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+    <select id="sort" aria-label="Sort products">
+      <option value="featured">Featured</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="name">Name</option>
+    </select>
+  </div>
+  <p class="count" id="count" aria-live="polite"></p>
+  <section class="grid" id="grid"></section>
+</main>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Shopping cart" aria-hidden="true">
+  <div class="dhead">
+    <h2>Cart</h2>
+    <button class="iconbtn" id="closeBtn" aria-label="Close cart">&times;</button>
+  </div>
+  <ul class="items" id="items"></ul>
+  <div class="summary" id="summary"></div>
+</aside>
+
+<script>
+const PRODUCTS = [
+  { id:'p1',  name:'Linen Overshirt',          cat:'Apparel',     tag:'Relaxed fit',       price:8900,  tone:'#e7dcc8', rank:2 },
+  { id:'p2',  name:'Merino Crew Sweater',      cat:'Apparel',     tag:'Responsibly sourced', price:12800, tone:'#d6dfe4', rank:4 },
+  { id:'p3',  name:'Waxed Canvas Jacket',      cat:'Apparel',     tag:'Water resistant',   price:24500, tone:'#cfd4c2', rank:7 },
+  { id:'p4',  name:'Trail Runner 2',           cat:'Footwear',    tag:'Lightweight',       price:13500, tone:'#f1d7c8', rank:1 },
+  { id:'p5',  name:'Everyday Chukka',          cat:'Footwear',    tag:'Suede upper',       price:17500, tone:'#e2cfb8', rank:5 },
+  { id:'p6',  name:'Canvas Tote, Natural',     cat:'Bags',        tag:'12 oz canvas',      price:4200,  tone:'#ece6d6', rank:3 },
+  { id:'p7',  name:'Leather Card Wallet',      cat:'Accessories', tag:'Full-grain',        price:5800,  tone:'#d9c7b5', rank:6 },
+  { id:'p8',  name:'Wool Beanie',              cat:'Accessories', tag:'Ribbed knit',       price:2800,  tone:'#cbd5cf', rank:9 },
+  { id:'p9',  name:'Insulated Steel Bottle',   cat:'Accessories', tag:'750 ml',            price:3400,  tone:'#d0d7e0', rank:8 },
+  { id:'p10', name:'Pour-Over Dripper',        cat:'Home',        tag:'Ceramic',           price:3600,  tone:'#e8d9d0', rank:10 },
+  { id:'p11', name:'Stoneware Mugs, Set of 2', cat:'Home',        tag:'Dishwasher safe',   price:4800,  tone:'#dfe2d4', rank:11 },
+  { id:'p12', name:'Brass Desk Lamp',          cat:'Home',        tag:'Dimmable',          price:16500, tone:'#e9e0c4', rank:12 }
+];
+
+const ART = {
+  Apparel:     '<svg viewBox="0 0 120 120"><path d="M42 26 20 42l9 22 9-5v55h54V59l9 5 9-22-22-16q-18 12-36 0z"/></svg>',
+  Footwear:    '<svg viewBox="0 0 120 120"><path d="M16 84V56q0-8 8-8h18l8 16 46 6q8 2 8 10v4z"/></svg>',
+  Bags:        '<svg viewBox="0 0 120 120"><path d="M30 46h60l6 52H24z"/><path d="M46 46q0-22 14-22t14 22" fill="none" stroke="currentColor" stroke-width="6"/></svg>',
+  Accessories: '<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="30"/></svg>',
+  Home:        '<svg viewBox="0 0 120 120"><rect x="34" y="36" width="52" height="60" rx="10"/></svg>'
+};
+
+const MAX_QTY = 10;
+const FREE_SHIPPING = 10000;   // cents
+const SHIPPING_FEE = 900;      // cents
+const TAX_RATE = 0.08;
+
+const money = c => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(c / 100);
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+const state = { q:'', cat:'All', sort:'featured', cart:{}, open:false, order:null };
+
+const els = {
+  search:  document.getElementById('search'),
+  sort:    document.getElementById('sort'),
+  chips:   document.getElementById('chips'),
+  count:   document.getElementById('count'),
+  grid:    document.getElementById('grid'),
+  cartBtn: document.getElementById('cartBtn'),
+  badge:   document.getElementById('badge'),
+  overlay: document.getElementById('overlay'),
+  drawer:  document.getElementById('drawer'),
+  closeBtn:document.getElementById('closeBtn'),
+  items:   document.getElementById('items'),
+  summary: document.getElementById('summary')
+};
+
+function visibleProducts() {
+  const q = state.q.trim().toLowerCase();
+  const sorters = {
+    'featured':   (a, b) => a.rank - b.rank,
+    'price-asc':  (a, b) => a.price - b.price,
+    'price-desc': (a, b) => b.price - a.price,
+    'name':       (a, b) => a.name.localeCompare(b.name)
+  };
+  return PRODUCTS
+    .filter(p => state.cat === 'All' || p.cat === state.cat)
+    .filter(p => !q || (p.name + ' ' + p.cat + ' ' + p.tag).toLowerCase().includes(q))
+    .sort(sorters[state.sort]);
+}
+
+function cartLines() {
+  return Object.entries(state.cart)
+    .map(([id, qty]) => ({ p: PRODUCTS.find(x => x.id === id), qty }))
+    .filter(l => l.p && l.qty > 0);
+}
+
+function totals() {
+  const lines = cartLines();
+  const sub = lines.reduce((s, l) => s + l.p.price * l.qty, 0);
+  const count = lines.reduce((s, l) => s + l.qty, 0);
+  const ship = sub === 0 || sub >= FREE_SHIPPING ? 0 : SHIPPING_FEE;
+  const tax = Math.round(sub * TAX_RATE);
+  return { lines, sub, count, ship, tax, total: sub + ship + tax };
+}
+
+function renderChips() {
+  const cats = ['All', ...new Set(PRODUCTS.map(p => p.cat))];
+  els.chips.innerHTML = cats.map(c =>
+    `<button class="chip" data-cat="${esc(c)}" aria-pressed="${c === state.cat}">${esc(c)}</button>`
+  ).join('');
+}
+
+function renderGrid() {
+  const list = visibleProducts();
+  els.count.textContent = `${list.length} ${list.length === 1 ? 'product' : 'products'}`;
+  if (!list.length) {
+    els.grid.innerHTML = `<p class="empty">No products match "${esc(state.q)}".</p>`;
+    return;
+  }
+  els.grid.innerHTML = list.map(p => {
+    const inCart = state.cart[p.id] || 0;
+    const label = inCart ? `Add another (${inCart} in cart)` : 'Add to cart';
+    return `
+      <article class="card">
+        <div class="art" style="--tone:${p.tone}">${ART[p.cat]}</div>
+        <div class="row-meta">
+          <div><h3>${esc(p.name)}</h3><p>${esc(p.cat)} &middot; ${esc(p.tag)}</p></div>
+          <span class="price">${money(p.price)}</span>
+        </div>
+        <button class="add" data-add="${p.id}" aria-label="${esc(label)}: ${esc(p.name)}">${inCart ? 'In cart · ' + inCart : 'Add to cart'}</button>
+      </article>`;
+  }).join('');
+}
+
+function renderCart() {
+  const t = totals();
+  els.badge.textContent = t.count;
+  els.badge.hidden = t.count === 0;
+  els.cartBtn.setAttribute('aria-label', `Cart, ${t.count} ${t.count === 1 ? 'item' : 'items'}`);
+
+  if (state.order) {
+    els.items.innerHTML = '';
+    els.summary.innerHTML = `
+      <div class="done">
+        <h3>Thanks for your order</h3>
+        <p>Order ${esc(state.order)} is confirmed.</p>
+        <button class="checkout" id="again">Continue shopping</button>
+      </div>`;
+    return;
+  }
+
+  els.items.innerHTML = t.lines.length
+    ? t.lines.map(l => `
+        <li class="line">
+          <div class="thumb" style="--tone:${l.p.tone}">${ART[l.p.cat]}</div>
+          <div class="info">
+            <div class="row"><strong>${esc(l.p.name)}</strong><span>${money(l.p.price * l.qty)}</span></div>
+            <div class="row">
+              <div class="stepper">
+                <button data-dec="${l.p.id}" aria-label="Decrease ${esc(l.p.name)}">&minus;</button>
+                <output aria-label="Quantity">${l.qty}</output>
+                <button data-inc="${l.p.id}" aria-label="Increase ${esc(l.p.name)}" ${l.qty >= MAX_QTY ? 'disabled' : ''}>+</button>
+              </div>
+              <button class="link" data-remove="${l.p.id}">Remove</button>
+            </div>
+          </div>
+        </li>`).join('')
+    : `<li class="empty">Your cart is empty.</li>`;
+
+  const remaining = FREE_SHIPPING - t.sub;
+  const note = t.sub === 0
+    ? 'Free shipping on orders over $100'
+    : remaining > 0 ? `${money(remaining)} away from free shipping` : 'You qualify for free shipping';
+  const pct = Math.min(100, (t.sub / FREE_SHIPPING) * 100);
+  const shipText = t.sub === 0 ? '&mdash;' : t.ship ? money(t.ship) : 'Free';
+
+  els.summary.innerHTML = `
+    <div>
+      <div class="track"><i style="width:${pct}%"></i></div>
+      <small>${note}</small>
+    </div>
+    <dl>
+      <dt>Subtotal</dt><dd>${money(t.sub)}</dd>
+      <dt>Shipping</dt><dd>${shipText}</dd>
+      <dt>Estimated tax</dt><dd>${money(t.tax)}</dd>
+      <dt class="total">Total</dt><dd class="total">${money(t.total)}</dd>
+    </dl>
+    <button class="checkout" id="checkout" ${t.sub ? '' : 'disabled'}>Checkout · ${money(t.total)}</button>
+    ${t.sub ? '<button class="link center" id="clear">Clear cart</button>' : ''}`;
+}
+
+function bump() {
+  els.cartBtn.classList.remove('bump');
+  void els.cartBtn.offsetWidth;
+  els.cartBtn.classList.add('bump');
+}
+
+function changeQty(id, delta) {
+  const next = Math.max(0, Math.min(MAX_QTY, (state.cart[id] || 0) + delta));
+  if (next === 0) delete state.cart[id];
+  else state.cart[id] = next;
+  renderGrid();
+  renderCart();
+}
+
+function setDrawer(open) {
+  state.open = open;
+  els.drawer.classList.toggle('on', open);
+  els.overlay.classList.toggle('on', open);
+  els.drawer.setAttribute('aria-hidden', String(!open));
+  if (open) els.closeBtn.focus();
+  else els.cartBtn.focus();
+}
+
+els.search.addEventListener('input', e => {
+  state.q = e.target.value;
+  renderGrid();
+});
+
+els.sort.addEventListener('change', e => {
+  state.sort = e.target.value;
+  renderGrid();
+});
+
+els.chips.addEventListener('click', e => {
+  const btn = e.target.closest('[data-cat]');
+  if (!btn) return;
+  state.cat = btn.dataset.cat;
+  renderChips();
+  renderGrid();
+});
+
+els.grid.addEventListener('click', e => {
+  const btn = e.target.closest('[data-add]');
+  if (!btn) return;
+  const id = btn.dataset.add;
+  if ((state.cart[id] || 0) >= MAX_QTY) return;
+  state.order = null;
+  state.cart[id] = (state.cart[id] || 0) + 1;
+  renderGrid();
+  renderCart();
+  bump();
+});
+
+els.drawer.addEventListener('click', e => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  if (t === els.closeBtn) return setDrawer(false);
+  if (t.dataset.inc) return changeQty(t.dataset.inc, 1);
+  if (t.dataset.dec) return changeQty(t.dataset.dec, -1);
+  if (t.dataset.remove) {
+    delete state.cart[t.dataset.remove];
+    renderGrid();
+    renderCart();
+    return;
+  }
+  if (t.id === 'clear') {
+    state.cart = {};
+    renderGrid();
+    renderCart();
+    return;
+  }
+  if (t.id === 'checkout') {
+    state.order = 'NF-' + (10000 + Math.floor(Math.random() * 90000));
+    state.cart = {};
+    renderGrid();
+    renderCart();
+    return;
+  }
+  if (t.id === 'again') {
+    state.order = null;
+    renderCart();
+  }
+});
+
+els.cartBtn.addEventListener('click', () => setDrawer(true));
+els.overlay.addEventListener('click', () => setDrawer(false));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.open) setDrawer(false);
+});
+
+renderChips();
+renderGrid();
+renderCart();
+</script>
+</body>
+</html>

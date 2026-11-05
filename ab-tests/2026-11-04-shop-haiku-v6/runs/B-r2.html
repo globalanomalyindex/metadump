@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essentials shop component</title>
+<style>
+  :root {
+    --ink: #1A1A1A;
+    --muted: #595959;
+    --accent: #1F5FBF;
+    --accent-hover: #1A4FA0;
+    --border: #8A8A8A;
+    --hair: #E6E6E2;
+    --error: #B42318;
+    --ground: #FFFFFF;
+    --page: #F4F4F1;
+    --radius: 8px;
+    --card-radius: 12px;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  /* Header */
+  .shop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .bag-btn {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--ground);
+    color: var(--ink); font: inherit; cursor: pointer;
+  }
+  .bag-btn:hover { background: #F2F2EF; }
+  .count {
+    display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 11px; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .count.bump { animation: bump 200ms ease-out; }
+  @keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+  /* Product grid */
+  .grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;
+  }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
+  .card {
+    background: var(--ground); border: 1px solid var(--hair); border-radius: var(--card-radius);
+    padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0;
+  }
+  .thumb {
+    aspect-ratio: 1 / 1; background: var(--tone); border-radius: var(--radius);
+    display: grid; place-items: center;
+  }
+  .thumb svg { width: 56%; height: auto; display: block; }
+  .thumb.sm { width: 56px; height: 56px; aspect-ratio: auto; border-radius: 6px; flex: none; }
+  .thumb.sm svg { width: 70%; }
+  .info { display: grid; gap: 2px; }
+  .name { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.3; }
+  .name a { color: inherit; text-decoration: none; }
+  .name a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .meta { margin: 0; color: var(--muted); font-size: 14px; }
+  .price { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .was { color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .opt {
+    min-width: 40px; min-height: 36px; padding: 0 10px; border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--ground); color: var(--ink);
+    font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .opt:hover { background: #F2F2EF; }
+  .opt[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .opt.sold { color: var(--muted); text-decoration: line-through; border-style: dashed; }
+
+  /* Steppers */
+  .stepper {
+    display: inline-flex; align-items: center; align-self: flex-start;
+    border: 1px solid var(--border); border-radius: var(--radius); height: 40px;
+  }
+  .stepper button {
+    width: 40px; height: 40px; border: 0; background: none; border-radius: var(--radius);
+    font: inherit; font-size: 18px; color: var(--ink); cursor: pointer;
+  }
+  .stepper button:hover { background: #F2F2EF; }
+  .stepper button[aria-disabled="true"] { color: var(--muted); cursor: not-allowed; opacity: 0.6; background: none; }
+  .stepper.sm { height: 32px; }
+  .stepper.sm button { width: 32px; height: 32px; font-size: 16px; }
+  .qty { min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  /* Add to bag */
+  .add {
+    position: relative; width: 100%; min-height: 44px; border: 0; border-radius: var(--radius);
+    background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; overflow: hidden;
+  }
+  .add:hover { background: var(--accent-hover); }
+  .add:active { transform: scale(0.98); }
+  .add[aria-disabled="true"] { background: #E6E6E2; color: var(--muted); cursor: not-allowed; }
+  .add[aria-disabled="true"]:active { transform: none; }
+  .lbl { display: inline-block; transition: opacity 150ms ease-out; }
+  .add.is-busy .lbl { visibility: hidden; }
+  .spin {
+    position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
+    border: 2px solid rgba(255, 255, 255, 0.45); border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .reason { margin: 0; color: var(--muted); font-size: 14px; }
+  .msg { margin: 0; color: var(--error); font-size: 14px; }
+
+  /* Bag drawer */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(26, 26, 26, 0.32); z-index: 10;
+    opacity: 0; visibility: hidden; transition: opacity 180ms ease-in, visibility 0s linear 180ms;
+  }
+  .scrim[data-open] { opacity: 1; visibility: visible; transition: opacity 240ms ease-out, visibility 0s; }
+  .bag {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 20;
+    width: min(400px, 100%); background: var(--ground); color: var(--ink);
+    display: flex; flex-direction: column; border-left: 1px solid var(--hair);
+    transform: translateX(100%); visibility: hidden;
+    transition: transform 180ms ease-in, visibility 0s linear 180ms;
+  }
+  .bag[data-open] { transform: none; visibility: visible; transition: transform 240ms ease-out, visibility 0s; }
+  @media (max-width: 480px) {
+    .bag {
+      top: auto; left: 0; width: 100%; max-height: 85vh; border-left: 0;
+      border-top: 1px solid var(--hair); border-radius: 12px 12px 0 0; transform: translateY(100%);
+    }
+    .bag[data-open] { transform: none; }
+  }
+  .bag-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px; border-bottom: 1px solid var(--hair);
+  }
+  .bag-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .bag-head h2:focus { outline: none; }
+  .bag-sub { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 6px; }
+  .icon-btn {
+    width: 40px; height: 40px; border: 0; background: none; border-radius: var(--radius);
+    color: var(--ink); cursor: pointer; display: grid; place-items: center;
+  }
+  .icon-btn:hover { background: #F2F2EF; }
+  .bag-body { flex: 1; overflow: auto; padding: 0 16px; }
+  .lines { list-style: none; margin: 0; padding: 0; }
+  .line {
+    display: grid; grid-template-columns: 56px 1fr auto; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--hair);
+  }
+  .line-info { display: grid; gap: 4px; align-content: start; min-width: 0; }
+  .line-ctl { display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+  .remove {
+    border: 0; background: none; padding: 4px 0; min-height: 24px; color: var(--muted);
+    font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+  }
+  .line-price { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+  .empty { padding: 32px 0; text-align: center; color: var(--muted); }
+  .empty a { color: var(--accent); font-weight: 500; }
+  .bag-foot { padding: 16px; border-top: 1px solid var(--hair); display: grid; gap: 8px; }
+  .sub { display: flex; justify-content: space-between; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .note { margin: 0; color: var(--muted); font-size: 14px; }
+  .checkout {
+    width: 100%; min-height: 48px; border: 0; border-radius: var(--radius);
+    background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .checkout:hover { background: var(--accent-hover); }
+  .status { margin: 0; min-height: 20px; font-size: 14px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bag, .scrim { transition: none !important; }
+    .count.bump { animation: none; }
+    .lbl { transition: none; }
+    .spin { animation-duration: 2s; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section class="shop" id="shop" aria-labelledby="shop-title">
+    <header class="shop-head">
+      <h1 id="shop-title">Essentials</h1>
+      <button type="button" class="bag-btn" id="bag-btn" aria-haspopup="dialog" aria-controls="bag" aria-expanded="false" aria-label="Bag, 0 items">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <span>Bag</span>
+        <span class="count" id="count" aria-hidden="true">0</span>
+      </button>
+    </header>
+    <ul class="grid" id="grid"></ul>
+  </section>
+</main>
+
+<p class="sr-only" id="live" aria-live="polite"></p>
+<div class="scrim" id="scrim"></div>
+
+<aside class="bag" id="bag" role="dialog" aria-modal="true" aria-labelledby="bag-title">
+  <div class="bag-head">
+    <h2 id="bag-title" tabindex="-1">Bag<span class="bag-sub" id="bag-sub"></span></h2>
+    <button type="button" class="icon-btn" id="bag-close" aria-label="Close bag">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="bag-body">
+    <ul class="lines" id="lines"></ul>
+    <div class="empty" id="empty" hidden>Your bag is empty. <a href="#shop" id="continue">Continue shopping</a></div>
+  </div>
+  <div class="bag-foot" id="foot">
+    <div class="sub"><span>Subtotal</span><span id="subtotal"></span></div>
+    <p class="note">Tax and shipping are added at checkout.</p>
+    <button type="button" class="checkout" id="checkout">Checkout</button>
+    <p class="status" id="bag-status" role="status"></p>
+  </div>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+
+  var PRODUCTS = [
+    {
+      id: 'overshirt', name: 'Linen overshirt', color: 'Sage', price: 8600, tone: '#DCE3D3',
+      art: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M22 10 L10 16 L4 30 L12 33 L16 27 L16 56 L48 56 L48 27 L52 33 L60 30 L54 16 L42 10 Q32 18 22 10Z" fill="#6E7F5E"/></svg>',
+      options: { name: 'Size', selected: 'M', values: [
+        { v: 'S', stock: 5 }, { v: 'M', stock: 2 }, { v: 'L', stock: 3 }, { v: 'XL', stock: 0 }
+      ] }
+    },
+    {
+      id: 'knit', name: 'Merino crew knit', color: 'Oat', price: 6400, was: 8000, tone: '#EFE8DA',
+      art: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M24 10 Q32 16 40 10 L56 16 L60 30 L52 33 L48 27 L48 56 L16 56 L16 27 L12 33 L4 30 L8 16Z" fill="#B9A88A"/><path d="M26 10 Q32 15 38 10" stroke="#8C7C5E" stroke-width="2" fill="none"/></svg>',
+      options: { name: 'Size', selected: 'S', values: [
+        { v: 'XS', stock: 0 }, { v: 'S', stock: 6 }, { v: 'M', stock: 4 }, { v: 'L', stock: 1 }
+      ] }
+    },
+    {
+      id: 'tote', name: 'Canvas tote', color: 'Natural', price: 3800, tone: '#ECE8DE', stock: 9,
+      art: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M22 24 Q22 10 32 10 Q42 10 42 24" stroke="#7A6E58" stroke-width="3" fill="none"/><rect x="12" y="24" width="40" height="32" rx="3" fill="#B8AC93"/></svg>'
+    }
+  ];
+
+  var MAX_QTY = 10;
+  var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  var byId = {};
+  PRODUCTS.forEach(function (p) { byId[p.id] = p; });
+
+  // State: selected variant and quantity per card, busy and error per card, bag lines.
+  var S = { sel: {}, qty: {}, busy: {}, err: {}, hold: {}, bag: [] };
+  var cards = {};
+
+  function $(s) { return document.querySelector(s); }
+  function fmt(cents) { return money.format(cents / 100); }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
+  function itemsWord(n) { return n === 1 ? 'item' : 'items'; }
+  function vSuffix(v) { return v ? ' in ' + v : ''; }
+
+  function stockOf(p, v) {
+    if (!p.options) return p.stock;
+    for (var i = 0; i < p.options.values.length; i++) {
+      if (p.options.values[i].v === v) return p.options.values[i].stock;
+    }
+    return 0;
+  }
+  function varOf(p) { return p.options ? S.sel[p.id] : null; }
+  function inBag(pid, v) {
+    return S.bag.reduce(function (n, l) { return n + (l.pid === pid && l.v === v ? l.qty : 0); }, 0);
+  }
+  function avail(p, v) { return stockOf(p, v) - inBag(p.id, v); }
+  function nameOf(pid, v) { var p = byId[pid]; return v ? p.name + ', ' + v : p.name; }
+  function totalQty() { return S.bag.reduce(function (n, l) { return n + l.qty; }, 0); }
+
+  function build() {
+    var grid = $('#grid');
+    PRODUCTS.forEach(function (p) {
+      S.sel[p.id] = p.options ? p.options.selected : null;
+      S.qty[p.id] = 1;
+
+      var opts = '';
+      if (p.options) {
+        opts = '<div class="opts" role="group" aria-label="' + p.options.name + '">' +
+          p.options.values.map(function (o) {
+            return '<button type="button" class="opt" data-opt="' + o.v + '" aria-pressed="false">' + o.v + '</button>';
+          }).join('') + '</div>';
+      }
+
+      var li = document.createElement('li');
+      li.className = 'card';
+      li.dataset.pid = p.id;
+      li.innerHTML =
+        '<div class="thumb" role="img" aria-label="' + p.name + ', ' + p.color + '" style="--tone:' + p.tone + '">' + p.art + '</div>' +
+        '<div class="info">' +
+          '<h2 class="name"><a href="#' + p.id + '" data-link>' + p.name + '</a></h2>' +
+          '<p class="meta">' + p.color + '</p>' +
+          '<p class="price">' + fmt(p.price) +
+            (p.was ? ' <s class="was"><span class="sr-only">Was </span>' + fmt(p.was) + '</s>' : '') + '</p>' +
+        '</div>' +
+        opts +
+        '<div class="stepper" role="group" aria-label="Quantity">' +
+          '<button type="button" data-step="-1" aria-label="Decrease quantity">&minus;</button>' +
+          '<span class="qty" data-qty>1</span>' +
+          '<button type="button" data-step="1" aria-label="Increase quantity">+</button>' +
+        '</div>' +
+        '<button type="button" class="add" data-add aria-describedby="r-' + p.id + '">' +
+          '<span class="lbl" data-lbl>Add to bag</span><span class="spin" aria-hidden="true" hidden></span>' +
+        '</button>' +
+        '<p class="reason" id="r-' + p.id + '" data-reason></p>' +
+        '<p class="msg" data-msg role="alert"></p>';
+      grid.appendChild(li);
+
+      cards[p.id] = {
+        opts: li.querySelectorAll('[data-opt]'),
+        qty: li.querySelector('[data-qty]'),
+        minus: li.querySelector('[data-step="-1"]'),
+        plus: li.querySelector('[data-step="1"]'),
+        add: li.querySelector('[data-add]'),
+        lbl: li.querySelector('[data-lbl]'),
+        spin: li.querySelector('.spin'),
+        reason: li.querySelector('[data-reason]'),
+        msg: li.querySelector('[data-msg]')
+      };
+    });
+  }
+
+  function updateCard(p) {
+    var c = cards[p.id];
+    var v = varOf(p);
+    var st = stockOf(p, v);
+    var a = avail(p, v);
+    var busy = !!S.busy[p.id];
+
+    if (p.options) {
+      Array.prototype.forEach.call(c.opts, function (b) {
+        var val = b.dataset.opt;
+        var out = stockOf(p, val) === 0;
+        b.setAttribute('aria-pressed', String(val === v));
+        b.classList.toggle('sold', out);
+        b.setAttribute('aria-label', out ? val + ', sold out' : val);
+      });
+    }
+
+    var q = S.qty[p.id];
+    c.qty.textContent = q;
+    c.minus.setAttribute('aria-disabled', String(q <= 1));
+    c.plus.setAttribute('aria-disabled', String(q >= MAX_QTY));
+
+    var reason = '';
+    if (p.options && st === 0) reason = v + ' is sold out';
+    else if (a <= 0) reason = 'No more left' + vSuffix(v) + '; all are in your bag';
+
+    c.reason.textContent = reason;
+    c.add.setAttribute('aria-disabled', String(!!reason));
+    c.add.setAttribute('aria-busy', String(busy));
+    c.add.classList.toggle('is-busy', busy);
+    c.spin.hidden = !busy;
+    c.msg.textContent = S.err[p.id] || '';
+  }
+
+  function refreshAll() { PRODUCTS.forEach(updateCard); }
+
+  // Swap the add label with a short cross-fade; the transition itself is CSS.
+  function swapLabel(p, text) {
+    var el = cards[p.id].lbl;
+    if (el.textContent === text && !el._t) return;
+    clearTimeout(el._t);
+    el.style.opacity = '0';
+    el._t = setTimeout(function () {
+      el.textContent = text;
+      el.style.opacity = '1';
+      el._t = null;
+    }, reduce.matches ? 0 : 150);
+  }
+
+  function fail(p, v) {
+    var a = avail(p, v);
+    S.err[p.id] = a > 0 ? 'Only ' + a + ' left' + vSuffix(v) + '.' : 'No more left' + vSuffix(v) + '.';
+    swapLabel(p, "Couldn't add");
+    updateCard(p);
+  }
+
+  async function addToBag(p) {
+    clearTimeout(S.hold[p.id]);
+    if (S.busy[p.id]) return;
+    var v = varOf(p);
+    if (stockOf(p, v) === 0 || avail(p, v) <= 0) return;
+    var want = S.qty[p.id];
+    if (want > avail(p, v)) { fail(p, v); return; }
+
+    S.err[p.id] = null;
+    S.busy[p.id] = true;
+    swapLabel(p, 'Add to bag');
+    updateCard(p);
+
+    await wait(600);
+
+    S.busy[p.id] = false;
+    if (want > avail(p, v)) { fail(p, v); return; }
+
+    var line = null;
+    S.bag.forEach(function (l) { if (l.pid === p.id && l.v === v) line = l; });
+    if (line) line.qty += want;
+    else S.bag.push({ key: p.id + '|' + (v || ''), pid: p.id, v: v, qty: want });
+
+    S.qty[p.id] = 1;
+    swapLabel(p, 'Added');
+    S.hold[p.id] = setTimeout(function () { swapLabel(p, 'Add to bag'); }, 1500);
+    refreshAll();
+    renderBag(true);
+    announce('Added ' + nameOf(p.id, v) + ' to bag. Bag has ' + totalQty() + ' ' + itemsWord(totalQty()) + '.');
+  }
+
+  function announce(text) {
+    var el = $('#live');
+    el.textContent = '';
+    setTimeout(function () { el.textContent = text; }, 30);
+  }
+
+  function renderBag(bump) {
+    var total = totalQty();
+    var count = $('#count');
+    count.textContent = total;
+    if (bump && total > 0) {
+      count.classList.remove('bump');
+      void count.offsetWidth;
+      count.classList.add('bump');
+    }
+    $('#bag-btn').setAttribute('aria-label', 'Bag, ' + total + ' ' + itemsWord(total));
+    $('#bag-sub').textContent = total ? total + ' ' + itemsWord(total) : '';
+
+    // Keep keyboard focus on the same control after the list is rebuilt.
+    var bagEl = $('#bag');
+    var act = document.activeElement;
+    var fk = (act && bagEl.contains(act) && act.dataset.fk) || null;
+
+    var list = $('#lines');
+    list.innerHTML = S.bag.map(function (l) {
+      var p = byId[l.pid];
+      var max = stockOf(p, l.v);
+      var name = nameOf(l.pid, l.v);
+      var atMax = l.qty >= max;
+      var meta = p.color + (l.v ? ' · ' + l.v : '');
+      return '<li class="line">' +
+        '<div class="thumb sm" style="--tone:' + p.tone + '" aria-hidden="true">' + p.art + '</div>' +
+        '<div class="line-info">' +
+          '<p class="name">' + p.name + '</p>' +
+          '<p class="meta">' + meta + '</p>' +
+          '<div class="line-ctl">' +
+            '<div class="stepper sm" role="group" aria-label="Quantity, ' + name + '">' +
+              '<button type="button" data-bstep="-1" data-key="' + l.key + '" data-fk="' + l.key + ':dec" aria-disabled="' + (l.qty <= 1) + '" aria-label="Decrease quantity, ' + name + '">&minus;</button>' +
+              '<span class="qty">' + l.qty + '</span>' +
+              '<button type="button" data-bstep="1" data-key="' + l.key + '" data-fk="' + l.key + ':inc" aria-disabled="' + atMax + '" aria-label="Increase quantity, ' + name + '">+</button>' +
+            '</div>' +
+            '<button type="button" class="remove" data-remove data-key="' + l.key + '" data-fk="' + l.key + ':rm" aria-label="Remove ' + name + '">Remove</button>' +
+          '</div>' +
+          (atMax ? '<p class="meta">Only ' + max + ' available</p>' : '') +
+        '</div>' +
+        '<p class="line-price">' + fmt(p.price * l.qty) + '</p>' +
+      '</li>';
+    }).join('');
+
+    var empty = S.bag.length === 0;
+    $('#empty').hidden = !empty;
+    list.hidden = empty;
+    $('#foot').hidden = empty;
+    var sum = S.bag.reduce(function (n, l) { return n + byId[l.pid].price * l.qty; }, 0);
+    $('#subtotal').textContent = fmt(sum);
+
+    if (fk) {
+      var target = Array.prototype.find.call(list.querySelectorAll('[data-fk]'), function (el) {
+        return el.dataset.fk === fk;
+      });
+      (target || $('#bag-title')).focus();
+    }
+  }
+
+  // Bag drawer: open, close, focus trap, Escape, restore focus.
+  var bagEl = $('#bag');
+  var scrim = $('#scrim');
+  var shop = $('#shop');
+  var bagBtn = $('#bag-btn');
+  var lastFocus = null;
+
+  function isOpen() { return bagEl.hasAttribute('data-open'); }
+
+  function openBag() {
+    if (isOpen()) return;
+    lastFocus = document.activeElement;
+    bagEl.setAttribute('data-open', '');
+    scrim.setAttribute('data-open', '');
+    shop.inert = true;
+    bagBtn.setAttribute('aria-expanded', 'true');
+    $('#bag-title').focus();
+  }
+
+  function closeBag() {
+    if (!isOpen()) return;
+    bagEl.removeAttribute('data-open');
+    scrim.removeAttribute('data-open');
+    bagBtn.setAttribute('aria-expanded', 'false');
+    shop.inert = false;
+    var back = lastFocus && lastFocus !== document.body && document.contains(lastFocus) ? lastFocus : bagBtn;
+    back.focus();
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (!isOpen()) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeBag(); return; }
+    if (e.key === 'Tab') {
+      var f = Array.prototype.filter.call(bagEl.querySelectorAll('button, a[href]'), function (el) {
+        return el.offsetParent !== null;
+      });
+      if (!f.length) return;
+      var first = f[0];
+      var last = f[f.length - 1];
+      var cur = document.activeElement;
+      if (e.shiftKey && (cur === first || !bagEl.contains(cur))) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && (cur === last || !bagEl.contains(cur))) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  bagBtn.addEventListener('click', openBag);
+  $('#bag-close').addEventListener('click', closeBag);
+  scrim.addEventListener('click', closeBag);
+  $('#continue').addEventListener('click', function (e) { e.preventDefault(); closeBag(); });
+  $('#checkout').addEventListener('click', function () {
+    $('#bag-status').textContent = 'Checkout is not connected in this demo.';
+  });
+
+  // Grid: variant choice, quantity, add to bag.
+  $('#grid').addEventListener('click', function (e) {
+    var t = e.target;
+    var li = t.closest('.card');
+    if (!li) return;
+    var p = byId[li.dataset.pid];
+
+    if (t.closest('a[data-link]')) { e.preventDefault(); return; }
+
+    var opt = t.closest('[data-opt]');
+    if (opt) {
+      if (opt.getAttribute('aria-pressed') === 'true') return;
+      S.sel[p.id] = opt.dataset.opt;
+      S.err[p.id] = null;
+      updateCard(p);
+      return;
+    }
+
+    var step = t.closest('[data-step]');
+    if (step) {
+      if (step.getAttribute('aria-disabled') === 'true') return;
+      S.qty[p.id] = clamp(S.qty[p.id] + Number(step.dataset.step), 1, MAX_QTY);
+      S.err[p.id] = null;
+      updateCard(p);
+      return;
+    }
+
+    if (t.closest('[data-add]')) addToBag(p);
+  });
+
+  // Bag lines: quantity, remove.
+  $('#lines').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    var line = null;
+    S.bag.forEach(function (l) { if (l.key === b.dataset.key) line = l; });
+    if (!line) return;
+
+    if (b.hasAttribute('data-remove')) {
+      S.bag = S.bag.filter(function (l) { return l !== line; });
+      announce('Removed ' + nameOf(line.pid, line.v) + ' from bag.');
+    } else if (b.dataset.bstep && b.getAttribute('aria-disabled') !== 'true') {
+      line.qty = clamp(line.qty + Number(b.dataset.bstep), 1, stockOf(byId[line.pid], line.v));
+    } else {
+      return;
+    }
+    refreshAll();
+    renderBag(false);
+  });
+
+  // Start with one tote in the bag so the bag shows its states.
+  build();
+  S.bag = [{ key: 'tote|', pid: 'tote', v: null, qty: 1 }];
+  refreshAll();
+  renderBag(false);
+})();
+</script>
+</body>
+</html>

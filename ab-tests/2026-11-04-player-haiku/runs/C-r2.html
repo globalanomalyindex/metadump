@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide Player</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:#1d7dff;
+  color:#fff;
+  font-family:ui-rounded,"SF Pro Rounded","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Scene: overexposed blue sky, electric grass ---------- */
+.scene{
+  position:relative;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:24px 16px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#0a4fff 0%,#1a74ff 34%,#3fb6ff 56%,#bfeeff 66%,#f2fcff 70%);
+}
+.sky-bloom{
+  position:absolute;left:50%;top:44%;
+  width:980px;height:560px;transform:translate(-50%,-50%);
+  background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,255,255,.42) 48%,rgba(255,255,255,0));
+  pointer-events:none;z-index:0;
+}
+.blob{position:absolute;border-radius:50%;filter:blur(64px);opacity:.7;pointer-events:none;z-index:0}
+.blob.a{width:460px;height:460px;left:-120px;top:60px;background:#00e5ff}
+.blob.b{width:400px;height:400px;right:-100px;top:150px;background:#2f7bff}
+.ground{position:absolute;left:0;bottom:0;width:100%;height:42%;display:block;z-index:0;pointer-events:none}
+
+/* ---------- Transparent blue acrylic card ---------- */
+.player{
+  position:relative;
+  z-index:2;
+  width:380px;
+  max-width:calc(100vw - 32px);
+  padding:16px 18px 18px;
+  border-radius:32px;
+  background:
+    linear-gradient(165deg,rgba(196,246,255,.60) 0%,rgba(70,166,255,.40) 46%,rgba(0,98,255,.54) 100%);
+  -webkit-backdrop-filter:blur(22px) saturate(190%);
+  backdrop-filter:blur(22px) saturate(190%);
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.95),
+    inset 0 -18px 36px rgba(0,70,230,.45),
+    inset 14px 0 24px -14px rgba(170,240,255,.75),
+    0 36px 70px -18px rgba(0,50,190,.6),
+    0 0 90px rgba(140,230,255,.45);
+  overflow:hidden;
+  isolation:isolate;
+}
+/* glossy top sheen, like light sitting on the surface of the acrylic */
+.player::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:46%;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));
+  border-radius:32px 32px 50% 50% / 32px 32px 18% 18%;
+  pointer-events:none;z-index:0;
+}
+/* subsurface cyan glow leaking up from the bottom edge */
+.player::after{
+  content:"";position:absolute;left:-10%;right:-10%;bottom:-38%;height:70%;
+  background:radial-gradient(closest-side,rgba(60,220,255,.75),rgba(60,220,255,0));
+  filter:blur(10px);pointer-events:none;z-index:0;
+}
+.player > *{position:relative;z-index:1}
+
+/* ---------- Artwork ---------- */
+.art-wrap{position:relative;border-radius:24px}
+.art{
+  position:relative;
+  aspect-ratio:13/10;
+  border-radius:24px;
+  overflow:hidden;
+  background:#1266ff;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.8),
+    inset 0 -24px 40px rgba(0,60,220,.35),
+    0 18px 34px -12px rgba(0,30,160,.7);
+}
+.art::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 38%),
+    radial-gradient(circle at 50% 115%,rgba(120,235,255,.55),rgba(120,235,255,0) 55%);
+  mix-blend-mode:screen;
+}
+.art svg{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  animation:artIn .55s cubic-bezier(.2,.8,.2,1) both;
+}
+.art .spin{transform-box:view-box;transform-origin:150px 150px;animation:spin 16s linear infinite;animation-play-state:paused}
+.art.playing .spin{animation-play-state:running}
+.art-top{
+  position:absolute;top:12px;left:12px;right:12px;z-index:2;
+  display:flex;justify-content:space-between;align-items:center;
+  pointer-events:none;
+}
+.brand{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  text-shadow:0 1px 0 rgba(0,60,200,.45),0 0 12px rgba(0,120,255,.5);
+}
+.status{
+  font-size:11px;font-weight:700;letter-spacing:.06em;
+  padding:5px 11px;border-radius:999px;
+  color:#0a56d6;
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(210,245,255,.5));
+  box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,80,255,.35);
+}
+
+/* ---------- Meta ---------- */
+.meta{padding:14px 6px 0}
+.title{
+  margin:0;font-size:22px;font-weight:700;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 0 18px rgba(0,120,255,.55),0 1px 0 rgba(0,70,220,.35);
+}
+.artist{margin:2px 0 0;font-size:15px;color:rgba(240,252,255,.85)}
+
+/* ---------- Progress (click or drag to seek) ---------- */
+.progress{
+  position:relative;height:26px;margin:10px 4px 0;
+  cursor:pointer;touch-action:none;outline:none;user-select:none;
+}
+.progress:focus-visible{box-shadow:0 0 0 3px rgba(255,255,255,.55);border-radius:99px}
+.bar{
+  position:absolute;left:0;right:0;top:50%;height:9px;margin-top:-4.5px;
+  border-radius:99px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(0,70,200,.45),rgba(160,235,255,.35));
+  box-shadow:inset 0 1.5px 3px rgba(0,50,180,.5),0 1px 0 rgba(255,255,255,.6);
+  pointer-events:none;
+}
+.fill{
+  position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,#8ff3ff,#ffffff);
+  box-shadow:0 0 14px rgba(120,240,255,.9),inset 0 1px 0 #fff;
+}
+.thumb{
+  position:absolute;top:50%;left:0;width:18px;height:18px;margin:-9px 0 0 -9px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff 0 35%,#d8f8ff 70%,#8fe6ff);
+  box-shadow:0 0 0 1px rgba(0,80,220,.25),0 2px 8px rgba(0,60,200,.5),0 0 16px rgba(160,240,255,.9);
+  transition:transform .15s ease;pointer-events:none;
+}
+.progress.dragging .thumb{transform:scale(1.25)}
+.times{
+  display:flex;justify-content:space-between;margin:6px 6px 0;
+  font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;
+  color:rgba(240,252,255,.85);
+}
+
+/* ---------- Transport ---------- */
+.controls{display:flex;justify-content:center;align-items:center;gap:22px;margin:10px 0 0}
+.ctl{
+  width:50px;height:50px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.75);
+  color:#fff;display:grid;place-items:center;padding:0;cursor:pointer;
+  background:radial-gradient(circle at 40% 25%,rgba(255,255,255,.85),rgba(170,235,255,.35) 45%,rgba(0,110,255,.25) 100%);
+  box-shadow:inset 0 1.5px 0 #fff,inset 0 -8px 14px rgba(0,70,230,.35),0 8px 18px -6px rgba(0,50,200,.6);
+  transition:transform .15s ease,filter .2s ease;
+}
+.ctl svg{width:22px;height:22px;filter:drop-shadow(0 1px 2px rgba(0,60,200,.5))}
+.ctl:hover{filter:brightness(1.08)}
+.ctl:active{transform:scale(.93)}
+.ctl:focus-visible,.play:focus-visible,.vol-btn:focus-visible,.q-item:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.play{
+  width:68px;height:68px;
+  background:radial-gradient(circle at 36% 28%,#ffffff 0 14%,#d9f8ff 34%,#42c4ff 70%,#0a6bff 100%);
+  box-shadow:inset 0 2px 0 #fff,inset 0 -10px 18px rgba(0,50,200,.5),0 12px 28px -6px rgba(0,80,255,.75),0 0 40px rgba(130,235,255,.6);
+}
+.play svg{width:28px;height:28px;color:#0a5bff;filter:none}
+.play.is-play svg{transform:translateX(2px)}
+
+/* ---------- Volume ---------- */
+.volume{display:flex;align-items:center;gap:12px;margin:14px 6px 0}
+.vol-btn{
+  width:30px;height:30px;padding:3px;border:0;border-radius:50%;cursor:pointer;
+  background:none;color:#fff;display:grid;place-items:center;flex:none;
+}
+.vol-btn svg{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(0,60,200,.5))}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;height:8px;margin:0;border-radius:99px;
+  background:linear-gradient(90deg,#c9f7ff 0,#ffffff var(--v,70%),rgba(0,70,200,.35) var(--v,70%),rgba(0,70,200,.35) 100%);
+  box-shadow:inset 0 1.5px 3px rgba(0,50,180,.5),0 1px 0 rgba(255,255,255,.6);
+  outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:18px;height:18px;border:0;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff 0 35%,#d8f8ff 70%,#8fe6ff);
+  box-shadow:0 2px 8px rgba(0,60,200,.5),0 0 0 1px rgba(0,80,220,.25);
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border:0;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff 0 35%,#d8f8ff 70%,#8fe6ff);
+  box-shadow:0 2px 8px rgba(0,60,200,.5),0 0 0 1px rgba(0,80,220,.25);
+}
+input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(255,255,255,.8)}
+
+/* ---------- Up next ---------- */
+.queue-head{
+  display:flex;justify-content:space-between;margin:16px 6px 8px;
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(240,252,255,.85);
+}
+.queue{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.q-item{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:6px 12px 6px 6px;border-radius:18px;
+  border:1px solid rgba(255,255,255,.55);
+  background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(170,235,255,.16));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 14px -8px rgba(0,50,200,.6);
+  color:#fff;text-align:left;cursor:pointer;font:inherit;
+  transition:background .2s ease,transform .15s ease;
+}
+.q-item:hover{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(190,240,255,.28));transform:translateX(2px)}
+.q-art{
+  width:34px;height:34px;border-radius:11px;overflow:hidden;flex:none;position:relative;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
+}
+.q-art svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.q-text{flex:1;min-width:0;display:flex;flex-direction:column}
+.q-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 10px rgba(0,110,255,.5)}
+.q-artist{font-size:12px;color:rgba(240,252,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q-dur{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:rgba(240,252,255,.85)}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes artIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
+
+@media (max-width:420px){
+  .player{padding:14px 14px 16px}
+  .title{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .art .spin,.art svg{animation:none}
+}
+</style>
+</head>
+<body>
+<main class="scene">
+  <div class="sky-bloom"></div>
+  <div class="blob a"></div>
+  <div class="blob b"></div>
+
+  <section class="player" id="player" aria-label="Tide music player">
+    <div class="art-wrap">
+      <div class="art" id="art" role="img" aria-label="Album artwork"></div>
+      <div class="art-top">
+        <span class="brand">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M2 14c3-4 5-4 8 0s5 4 8 0 3-3 4-2" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+          Tide
+        </span>
+        <span class="status" id="status">Paused</span>
+      </div>
+    </div>
+
+    <div class="meta">
+      <h1 class="title" id="title">Track</h1>
+      <p class="artist" id="artist">Artist</p>
+    </div>
+
+    <div class="progress" id="progress" role="slider" tabindex="0"
+         aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0:00">
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="thumb" id="thumb"></div>
+    </div>
+    <div class="times">
+      <span id="elapsed">0:00</span>
+      <span id="remaining">-0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="prev" type="button" aria-label="Previous track"></button>
+      <button class="ctl play" id="play" type="button" aria-label="Play"></button>
+      <button class="ctl" id="next" type="button" aria-label="Next track"></button>
+    </div>
+
+    <div class="volume">
+      <button class="vol-btn" id="mute" type="button" aria-label="Mute"></button>
+      <input id="volume" type="range" min="0" max="100" value="70" aria-label="Volume">
+    </div>
+
+    <div class="queue-head"><span>Up next</span><span>4 tracks</span></div>
+    <ol class="queue" id="queue"></ol>
+  </section>
+
+  <svg class="ground" viewBox="0 0 1280 300" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="gFar" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1fd13a"/><stop offset="1" stop-color="#079c24"/>
+      </linearGradient>
+      <linearGradient id="gNear" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8bff4a"/><stop offset="1" stop-color="#17c42b"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 120 C200 40 380 90 560 70 S900 20 1080 60 S1220 80 1280 50 V300 H0Z" fill="url(#gFar)"/>
+    <path d="M0 170 C240 110 430 150 640 130 S1000 100 1280 140 V300 H0Z" fill="url(#gNear)"/>
+    <path d="M0 232 C300 200 520 240 760 222 S1100 210 1280 232 V300 H0Z" fill="#c8ff9a" opacity=".45"/>
+  </svg>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- Data ---------- */
+  var TRACKS = [
+    {id:'glass-shore',      title:'Glass Shoreline',    artist:'Mira Halden',   dur:200, shape:'vinyl', sky:['#0a5bff','#6fe3ff'], grass:['#9dff52','#12c92c'], sun:[205,70]},
+    {id:'electric-meadow',  title:'Electric Meadow',    artist:'Solenne',       dur:245, shape:'orb',   sky:['#0047e6','#4fd1ff'], grass:['#7dff3a','#0bbf1f'], sun:[80,80]},
+    {id:'cyan-static',      title:'Cyan Static',        artist:'Tide Parade',   dur:168, shape:'vinyl', sky:['#1266ff','#a4f0ff'], grass:['#61ff45','#08b82a'], sun:[170,60]},
+    {id:'overexposed-noon', title:'Overexposed Noon',   artist:'Lumen Vale',    dur:217, shape:'sun',   sky:['#2a86ff','#dff8ff'], grass:['#8cff5c','#18d52f'], sun:[150,58]},
+    {id:'water-clear',      title:'Water-Clear Resin',  artist:'Ondine Park',   dur:192, shape:'vinyl', sky:['#0030c4','#37d8ff'], grass:['#6bff3f','#0aaa26'], sun:[235,95]},
+    {id:'sunlit-packaging', title:'Sunlit Packaging',   artist:'Hale & Cobalt', dur:176, shape:'orb',   sky:['#0a6cff','#8ee9ff'], grass:['#94ff4a','#14c62e'], sun:[60,60]}
+  ];
+
+  var ICON = {
+    play:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.52.85l10.2-6.4a1 1 0 0 0 0-1.7L9.52 4.75A1 1 0 0 0 8 5.6z" fill="currentColor"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1.4" fill="currentColor"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.4" fill="currentColor"/></svg>',
+    prev:  '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="6" width="2.5" height="12" rx="1.2" fill="currentColor"/><path d="M19 6.5v11a1 1 0 0 1-1.55.84l-8.2-5.5a1 1 0 0 1 0-1.68l8.2-5.5A1 1 0 0 1 19 6.5z" fill="currentColor"/></svg>',
+    next:  '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="16.5" y="6" width="2.5" height="12" rx="1.2" fill="currentColor"/><path d="M5 6.5v11a1 1 0 0 0 1.55.84l8.2-5.5a1 1 0 0 0 0-1.68l-8.2-5.5A1 1 0 0 0 5 6.5z" fill="currentColor"/></svg>'
+  };
+
+  function volIcon(v){
+    var waves = '';
+    if (v === 0) {
+      waves = '<path d="M16 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>';
+    } else {
+      waves = '<g stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none">' +
+              '<path d="M15.2 9.2a4 4 0 0 1 0 5.6"/>' +
+              (v > 50 ? '<path d="M17.9 6.5a7.8 7.8 0 0 1 0 11"/>' : '') +
+              '</g>';
+    }
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.3L12 5.5v13L7.3 14.5H4z" fill="currentColor"/>' + waves + '</svg>';
+  }
+
+  /* Artwork: sky, sun bloom, grass and a translucent acrylic disc. key keeps gradient ids unique. */
+  function artSVG(t, key){
+    var id = t.id + '-' + key;
+    var s1 = t.sky[0], s2 = t.sky[1], g1 = t.grass[0], g2 = t.grass[1];
+    var sx = t.sun[0], sy = t.sun[1];
+    var shape;
+    if (t.shape === 'vinyl') {
+      shape =
+        '<g class="spin">' +
+          '<circle cx="150" cy="150" r="96" fill="url(#' + id + '-glass)" stroke="rgba(255,255,255,.85)" stroke-width="2"/>' +
+          '<circle cx="150" cy="150" r="78" fill="none" stroke="rgba(255,255,255,.28)"/>' +
+          '<circle cx="150" cy="150" r="60" fill="none" stroke="rgba(255,255,255,.22)"/>' +
+          '<circle cx="150" cy="150" r="42" fill="none" stroke="rgba(255,255,255,.2)"/>' +
+          '<circle cx="150" cy="150" r="18" fill="#ffffff" opacity=".95"/>' +
+          '<path d="M78 118 A84 84 0 0 1 130 68" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/>' +
+        '</g>';
+    } else if (t.shape === 'orb') {
+      shape =
+        '<g class="spin">' +
+          '<circle cx="150" cy="150" r="92" fill="url(#' + id + '-glass)"/>' +
+          '<circle cx="150" cy="150" r="92" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2"/>' +
+          '<path d="M92 150 A58 58 0 0 1 150 92" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75"/>' +
+          '<circle cx="150" cy="150" r="30" fill="url(#' + id + '-core)"/>' +
+        '</g>';
+    } else {
+      shape = '<circle cx="' + sx + '" cy="' + sy + '" r="46" fill="url(#' + id + '-core)"/>';
+    }
+    return '<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="' + id + '-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + s1 + '"/><stop offset="1" stop-color="' + s2 + '"/></linearGradient>' +
+        '<radialGradient id="' + id + '-bloom" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#eafcff" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="' + id + '-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + g1 + '"/><stop offset="1" stop-color="' + g2 + '"/></linearGradient>' +
+        '<linearGradient id="' + id + '-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4faff" stop-opacity=".95"/><stop offset=".45" stop-color="#2aa8ff" stop-opacity=".6"/><stop offset="1" stop-color="#0030c8" stop-opacity=".9"/></linearGradient>' +
+        '<radialGradient id="' + id + '-core" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#d8fbff"/><stop offset="1" stop-color="#7fe4ff"/></radialGradient>' +
+      '</defs>' +
+      '<rect width="300" height="300" fill="url(#' + id + '-sky)"/>' +
+      '<circle cx="' + sx + '" cy="' + sy + '" r="120" fill="url(#' + id + '-bloom)"/>' +
+      '<path d="M0 196 C60 150 120 182 172 170 S262 142 300 160 V300 H0Z" fill="url(#' + id + '-grass)"/>' +
+      '<path d="M0 236 C80 206 150 246 220 228 S300 214 300 222 V300 H0Z" fill="' + g2 + '" opacity=".7"/>' +
+      shape +
+      '</svg>';
+  }
+
+  /* ---------- Elements ---------- */
+  function $(s){ return document.querySelector(s); }
+  var el = {
+    card: $('#player'), art: $('#art'), status: $('#status'),
+    title: $('#title'), artist: $('#artist'),
+    progress: $('#progress'), fill: $('#fill'), thumb: $('#thumb'),
+    elapsed: $('#elapsed'), remaining: $('#remaining'),
+    prev: $('#prev'), play: $('#play'), next: $('#next'),
+    volume: $('#volume'), mute: $('#mute'), queue: $('#queue')
+  };
+
+  /* ---------- State ---------- */
+  var state = { i: 0, pos: 42, playing: false, vol: 70, lastVol: 70, dragging: false };
+  var lastSec = -1;
+
+  function clamp(v, a, b){ return Math.min(b, Math.max(a, v)); }
+  function fmt(s){
+    s = Math.max(0, Math.floor(s));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+  function cur(){ return TRACKS[state.i]; }
+
+  /* ---------- Rendering ---------- */
+  function paint(force){
+    var t = cur();
+    var p = clamp(state.pos / t.dur, 0, 1);
+    el.fill.style.transform = 'scaleX(' + p + ')';
+    el.thumb.style.left = (p * 100) + '%';
+    el.progress.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+    el.progress.setAttribute('aria-valuetext', fmt(state.pos) + ' of ' + fmt(t.dur));
+    var sec = Math.floor(state.pos);
+    if (force || sec !== lastSec) {
+      lastSec = sec;
+      el.elapsed.textContent = fmt(state.pos);
+      el.remaining.textContent = '-' + fmt(t.dur - state.pos);
+    }
+  }
+
+  function renderQueue(){
+    el.queue.textContent = '';
+    var n = TRACKS.length;
+    for (var k = 1; k <= 4; k++) {
+      (function(idx){
+        var t = TRACKS[idx];
+        var li = document.createElement('li');
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'q-item';
+        b.setAttribute('aria-label', 'Play ' + t.title + ' by ' + t.artist);
+        b.innerHTML =
+          '<span class="q-art">' + artSVG(t, 'q') + '</span>' +
+          '<span class="q-text"><span class="q-title"></span><span class="q-artist"></span></span>' +
+          '<span class="q-dur"></span>';
+        b.querySelector('.q-title').textContent = t.title;
+        b.querySelector('.q-artist').textContent = t.artist;
+        b.querySelector('.q-dur').textContent = fmt(t.dur);
+        b.addEventListener('click', function(){ go(idx, true); });
+        li.appendChild(b);
+        el.queue.appendChild(li);
+      })((state.i + k) % n);
+    }
+  }
+
+  function renderTrack(){
+    var t = cur();
+    el.art.innerHTML = artSVG(t, 'm');
+    el.art.setAttribute('aria-label', t.title + ' by ' + t.artist);
+    el.title.textContent = t.title;
+    el.artist.textContent = t.artist;
+    renderQueue();
+    paint(true);
+  }
+
+  function updatePlay(){
+    var p = state.playing;
+    el.play.innerHTML = p ? ICON.pause : ICON.play;
+    el.play.classList.toggle('is-play', !p);
+    el.play.setAttribute('aria-label', p ? 'Pause' : 'Play');
+    el.status.textContent = p ? 'Now playing' : 'Paused';
+    el.card.classList.toggle('is-playing', p);
+    el.art.classList.toggle('playing', p);
+  }
+
+  function setVol(v){
+    state.vol = clamp(Math.round(v), 0, 100);
+    el.volume.value = state.vol;
+    el.volume.style.setProperty('--v', state.vol + '%');
+    el.volume.setAttribute('aria-valuetext', state.vol + '%');
+    el.mute.innerHTML = volIcon(state.vol);
+    el.mute.setAttribute('aria-label', state.vol === 0 ? 'Unmute' : 'Mute');
+  }
+
+  /* ---------- Transport ---------- */
+  // Change track. play === undefined keeps the current play state.
+  function go(idx, play){
+    state.i = idx;
+    state.pos = 0;
+    if (play !== undefined) state.playing = play;
+    renderTrack();
+    updatePlay();
+  }
+  function togglePlay(){
+    state.playing = !state.playing;
+    updatePlay();
+  }
+  function next(){ go((state.i + 1) % TRACKS.length); }
+  function prev(){
+    if (state.pos > 3) { state.pos = 0; paint(true); }
+    else go((state.i - 1 + TRACKS.length) % TRACKS.length);
+  }
+
+  el.play.addEventListener('click', togglePlay);
+  el.prev.addEventListener('click', prev);
+  el.next.addEventListener('click', next);
+
+  /* ---------- Seek: click or drag ---------- */
+  function seekTo(clientX){
+    var r = el.progress.getBoundingClientRect();
+    var p = clamp((clientX - r.left) / r.width, 0, 1);
+    state.pos = Math.min(p * cur().dur, cur().dur - 0.5);
+    paint(true);
+  }
+  function endDrag(){
+    state.dragging = false;
+    el.progress.classList.remove('dragging');
+  }
+  el.progress.addEventListener('pointerdown', function(e){
+    if (e.button !== 0) return;
+    e.preventDefault();
+    state.dragging = true;
+    el.progress.classList.add('dragging');
+    el.progress.setPointerCapture(e.pointerId);
+    seekTo(e.clientX);
+  });
+  el.progress.addEventListener('pointermove', function(e){
+    if (state.dragging) seekTo(e.clientX);
+  });
+  el.progress.addEventListener('pointerup', endDrag);
+  el.progress.addEventListener('pointercancel', endDrag);
+  el.progress.addEventListener('lostpointercapture', endDrag);
+  el.progress.addEventListener('keydown', function(e){
+    var dur = cur().dur, step = e.shiftKey ? 15 : 5;
+    if (e.key === 'ArrowRight') state.pos = clamp(state.pos + step, 0, dur - 0.5);
+    else if (e.key === 'ArrowLeft') state.pos = clamp(state.pos - step, 0, dur - 0.5);
+    else if (e.key === 'Home') state.pos = 0;
+    else if (e.key === 'End') state.pos = dur - 0.5;
+    else return;
+    e.preventDefault();
+    paint(true);
+  });
+
+  /* ---------- Volume ---------- */
+  el.volume.addEventListener('input', function(){
+    setVol(+el.volume.value);
+    if (state.vol > 0) state.lastVol = state.vol;
+  });
+  el.mute.addEventListener('click', function(){
+    if (state.vol > 0) { state.lastVol = state.vol; setVol(0); }
+    else setVol(state.lastVol || 70);
+  });
+
+  /* ---------- Shortcut: space toggles play when nothing else has focus ---------- */
+  document.addEventListener('keydown', function(e){
+    if (e.code === 'Space' && e.target === document.body) {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  /* ---------- Clock: advances progress while playing ---------- */
+  var last = 0;
+  function frame(ts){
+    var dt = last ? Math.min((ts - last) / 1000, 0.25) : 0;
+    last = ts;
+    if (state.playing && !state.dragging) {
+      state.pos += dt;
+      if (state.pos >= cur().dur) go((state.i + 1) % TRACKS.length); // auto-advance, keeps playing
+    }
+    paint(false);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Init ---------- */
+  setVol(state.vol);
+  renderTrack();
+  updatePlay();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

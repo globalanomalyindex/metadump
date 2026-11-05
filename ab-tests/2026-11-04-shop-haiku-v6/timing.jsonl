@@ -1,0 +1,9 @@
+{"run": "A-r4", "tokens": 84867, "ms": 51524, "tool_uses": 4}
+{"run": "A-r3", "tokens": 86913, "ms": 59130, "tool_uses": 4}
+{"run": "A-r2", "tokens": 91249, "ms": 80725, "tool_uses": 4}
+{"run": "A-r1", "tokens": 90987, "ms": 82547, "tool_uses": 3}
+{"run": "dump", "tokens": 183874, "ms": 1934320, "tool_uses": 39}
+{"run": "B-r1", "tokens": 151943, "ms": 200474, "tool_uses": 14}
+{"run": "B-r4", "tokens": 160816, "ms": 207843, "tool_uses": 11}
+{"run": "B-r3", "tokens": 162942, "ms": 222808, "tool_uses": 12}
+{"run": "B-r2", "tokens": 166130, "ms": 321601, "tool_uses": 26}

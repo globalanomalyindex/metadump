@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j2",
+  "scores": {
+    "W": {"compact": 8, "minimal": 8, "modern": 6, "usability": 8, "craft": 7, "overall": 8, "note": "Tight 4-column grid with single-line add and stepper controls and clear status feedback, though long product names truncate on desktop and the blue accent reads a little generic."},
+    "X": {"compact": 5, "minimal": 5, "modern": 6, "usability": 8, "craft": 7, "overall": 6, "note": "Most complete shopping flow with search, filters, sort, a cart drawer with totals and checkout, but initials placeholder tiles, ratings and tags add clutter and the cards are tall."},
+    "Y": {"compact": 5, "minimal": 7, "modern": 4, "usability": 7, "craft": 5, "overall": 5, "note": "Restrained outlined buttons and clear cart drawer, but emoji product art looks dated and inconsistent, cards are roomy, and the mobile filter chips wrap into an awkward stack."},
+    "Z": {"compact": 8, "minimal": 8, "modern": 6, "usability": 6, "craft": 6, "overall": 7, "note": "Dense and restrained with consistent hand-drawn product art and a clean mobile layout, but desktop button labels and stepper counts wrap awkwardly and there is no cart review or checkout."}
+  },
+  "ranking": ["W", "Z", "X", "Y"]
+}

@@ -1,0 +1,122 @@
+{
+ "A-r1": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "A-r2": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "A-r3": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "A-r4": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "B-r1": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "B-r2": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "B-r3": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "B-r4": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "C-r1": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "C-r2": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "C-r3": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ },
+ "C-r4": {
+  "js_errors": 0,
+  "play_button_found": true,
+  "state_changes_on_play": true,
+  "advances_while_playing": true,
+  "next_button_found": true,
+  "next_changes_track": true,
+  "stops_when_paused": true,
+  "works": true
+ }
+}

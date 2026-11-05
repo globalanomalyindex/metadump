@@ -1,0 +1,10 @@
+{"run": "A-r4", "issues": 2, "codes": ["marquee", "radial-halo"], "source": "impeccable stop hook, attribution unknown"}
+{"run": "A-r1", "issues": 10, "codes": ["low-contrast (several)", "glow shadows (several)"], "source": "reported by the A-r1 builder itself from the impeccable hook; not fixed"}
+{"run": "A-r2", "issues": 2, "codes": ["undersized-ui-text", "radial-halo"], "source": "impeccable stop hook, attribution unknown"}
+{"run": "B-r2", "issues": 1, "codes": ["marquee"], "source": "impeccable stop hook, attribution unknown"}
+{"run": "C-r2", "issues": 1, "codes": ["radial-halo"], "source": "impeccable stop hook, attribution unknown"}
+{"run": "C-r1", "issues": 3, "codes": ["dark-glow", "dark-glow", "dark-glow"], "source": "reported by the C-r1 builder from the impeccable hook; kept as intended bloom"}
+{"run": "C-r1", "issues": 2, "codes": ["undersized-ui-text", "marquee"], "source": "impeccable stop hook (main session), attribution unknown"}
+{"run": "A-r3", "issues": 1, "codes": ["marquee"], "source": "impeccable stop hook, attribution unknown"}
+{"run": "B-r3", "issues": 1, "codes": ["low-contrast"], "source": "reported by the B-r3 builder from the impeccable hook after one fix attempt"}
+{"run": "B-r3", "issues": 1, "codes": ["marquee"], "source": "impeccable stop hook (main session), attribution unknown"}

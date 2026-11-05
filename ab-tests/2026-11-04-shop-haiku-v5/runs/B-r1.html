@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Everyday goods: compact shop</title>
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-hover: #F5F5F5;
+    --text: #1A1A1A;
+    --muted: #5C6470;
+    --hair: #E6E6E2;
+    --edge: #5C6470;
+    --accent: #1F4FD1;
+    --fill: #1F4FD1;
+    --fill-ink: #FFFFFF;
+    --fill-hover: #1A41B0;
+    --glyph: #FFFFFF;
+    --ink: #1A1A1A;
+    --t0: #F1EFE9;
+    --t1: #ECEEF2;
+    --t2: #F3EDE6;
+    --t3: #EEF0EA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F0F0D;
+      --surface: #1A1A1A;
+      --surface-hover: #22231F;
+      --text: #FAFAFA;
+      --muted: #A3A59E;
+      --hair: #2B2C28;
+      --edge: #7A7C74;
+      --accent: #7AA2FF;
+      --fill: #FAFAFA;
+      --fill-ink: #0F0F0D;
+      --fill-hover: #E4E4E0;
+      --glyph: #1A1A1A;
+      --ink: #FAFAFA;
+      --t0: #22231F;
+      --t1: #1F2228;
+      --t2: #2A2521;
+      --t3: #202420;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F0F0D;
+    --surface: #1A1A1A;
+    --surface-hover: #22231F;
+    --text: #FAFAFA;
+    --muted: #A3A59E;
+    --hair: #2B2C28;
+    --edge: #7A7C74;
+    --accent: #7AA2FF;
+    --fill: #FAFAFA;
+    --fill-ink: #0F0F0D;
+    --fill-hover: #E4E4E0;
+    --glyph: #1A1A1A;
+    --ink: #FAFAFA;
+    --t0: #22231F;
+    --t1: #1F2228;
+    --t2: #2A2521;
+    --t3: #202420;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 16px;
+    min-height: 100vh;
+  }
+
+  .shop { max-width: 640px; margin: 0 auto; }
+
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .bar h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .bag { margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .status { margin: 0 0 12px; min-height: 20px; font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (min-width: 560px) {
+    .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    border-radius: 8px;
+    min-width: 0;
+    transition: background-color 90ms ease-out;
+  }
+  .card:hover { background: var(--surface-hover); }
+
+  .pic {
+    margin: 0;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    background: var(--tone);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .pic svg { width: 68%; height: 68%; }
+  .pic svg * { fill: var(--glyph); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+  .pic svg .o { fill: none; }
+
+  .info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .meta {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .price {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    padding-top: 4px;
+  }
+  .price del { color: var(--muted); font-size: 13px; font-weight: 400; margin-right: 4px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .buy { display: flex; flex-direction: column; gap: 8px; }
+
+  .add {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--fill);
+    border-radius: 6px;
+    background: var(--fill);
+    color: var(--fill-ink);
+    cursor: pointer;
+    transition: background-color 90ms ease-out, transform 90ms ease-out;
+  }
+  .add:hover { background: var(--fill-hover); border-color: var(--fill-hover); }
+  .add:active { transform: scale(0.98); }
+  .add:disabled {
+    background: transparent;
+    color: var(--muted);
+    border: 1px dashed var(--edge);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  .step-btn {
+    font: inherit;
+    font-size: 18px;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background-color 90ms ease-out;
+  }
+  .step-btn:hover { background: var(--surface-hover); }
+  .step-btn:disabled { color: var(--muted); cursor: not-allowed; background: transparent; }
+  .count { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .note { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .add:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main class="shop" aria-labelledby="shop-title">
+  <header class="bar">
+    <h2 id="shop-title">Everyday goods</h2>
+    <p class="bag" id="bag" aria-hidden="true"></p>
+  </header>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <ul class="grid" id="grid"></ul>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var LIMIT = 9;
+  var money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+  // Prices in cents. "was" is a former price shown struck through.
+  var PRODUCTS = [
+    { id: "oat",    name: "Hazel Oat Milk",        meta: "1 L, oat drink, unsweetened",  price: 380,   tone: 0, glyph: "carton" },
+    { id: "tote",   name: "Natural Linen Tote",    meta: "Cotton canvas, 38 × 42 cm",    price: 2400,  tone: 1, glyph: "tote" },
+    { id: "drip",   name: "Stoneware Pour-Over",   meta: "Glazed stoneware, size 2",     price: 3200,  tone: 2, glyph: "drip" },
+    { id: "lamp",   name: "Brass Desk Lamp",       meta: "Brass, 42 cm arm, dimmable",   price: 11800, tone: 3, glyph: "lamp" },
+    { id: "throw",  name: "Oatmeal Wool Throw",    meta: "Merino blend, 130 × 170 cm",   price: 8900,  tone: 0, glyph: "throw" },
+    { id: "mug",    name: "Stoneware Mug, 350 ml", meta: "Dishwasher safe",              price: 1850,  was: 2200, tone: 1, glyph: "mug" },
+    { id: "board",  name: "Pine Board, Small",     meta: "Solid pine, 30 × 20 cm",       price: 4200,  tone: 2, glyph: "board", soldOut: true },
+    { id: "candle", name: "Beeswax Tapers, Pair",  meta: "Two 20 cm tapers, unscented",  price: 1600,  tone: 3, glyph: "candle" }
+  ];
+
+  var GLYPHS = {
+    carton: '<path d="M34 24h32l6 12v42H28V36z"/><path class="o" d="M34 36h32M50 24v12"/>',
+    tote:   '<path class="o" d="M38 40v-8a12 12 0 0 1 24 0v8"/><rect x="26" y="40" width="48" height="42" rx="2"/>',
+    drip:   '<path d="M28 30h44L60 66H40z"/><rect x="40" y="66" width="20" height="6"/>',
+    lamp:   '<path class="o" d="M26 84h48M38 84V52l20-22"/><path d="M54 22l20 14-8 12-20-14z"/>',
+    throw:  '<rect x="24" y="26" width="52" height="50" rx="2"/><path class="o" d="M24 40h52M24 52h52M24 64h52"/>',
+    mug:    '<path d="M28 32h38v36a8 8 0 0 1-8 8H36a8 8 0 0 1-8-8z"/><path class="o" d="M66 40h4a8 8 0 0 1 0 16h-4"/>',
+    board:  '<rect x="16" y="40" width="68" height="22" rx="2"/><path class="o" d="M26 46h48M30 52h40"/>',
+    candle: '<rect x="36" y="38" width="8" height="46"/><rect x="56" y="38" width="8" height="46"/><path class="o" d="M40 34v-4M60 34v-4"/>'
+  };
+
+  // Bag state: product id -> quantity in bag. Starts with two oat milks so the stepper shows.
+  var qty = { oat: 2 };
+  var focusKey = null;
+
+  var grid = document.getElementById("grid");
+  var bagEl = document.getElementById("bag");
+  var statusEl = document.getElementById("status");
+
+  function say(msg) { statusEl.textContent = msg; }
+
+  function totals() {
+    var n = 0, sum = 0;
+    PRODUCTS.forEach(function (p) {
+      var q = qty[p.id] || 0;
+      n += q;
+      sum += q * p.price;
+    });
+    return { n: n, sum: sum };
+  }
+
+  function control(p, q) {
+    var k = p.id;
+    if (p.soldOut) {
+      return '<button class="add" type="button" disabled>Sold out</button>' +
+             '<p class="note">Out of stock</p>';
+    }
+    if (q === 0) {
+      return '<button class="add" type="button" data-act="add" data-id="' + k + '" data-key="' + k + ':add"' +
+             ' aria-label="Add to bag: ' + p.name + '">Add to bag</button>';
+    }
+    var atCap = q >= LIMIT;
+    return '<div class="step" role="group" aria-label="' + p.name + ', quantity">' +
+             '<button class="step-btn" type="button" data-act="dec" data-id="' + k + '" data-key="' + k + ':dec"' +
+               ' aria-label="One fewer ' + p.name + '">&minus;</button>' +
+             '<span class="count">' + q + ' in bag</span>' +
+             '<button class="step-btn" type="button" data-act="inc" data-id="' + k + '" data-key="' + k + ':inc"' +
+               ' aria-label="One more ' + p.name + '"' + (atCap ? ' disabled' : '') + '>+</button>' +
+           '</div>' +
+           (atCap ? '<p class="note">Limit of ' + LIMIT + ' per order</p>' : '');
+  }
+
+  function cardHTML(p) {
+    var q = qty[p.id] || 0;
+    var was = p.was ? '<del><span class="sr">Was </span>' + money.format(p.was / 100) + '</del>' : '';
+    return '<li class="card">' +
+             '<figure class="pic" style="--tone: var(--t' + p.tone + ')" role="img" aria-label="' + p.name + ', product picture">' +
+               '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' + GLYPHS[p.glyph] + '</svg>' +
+             '</figure>' +
+             '<div class="info">' +
+               '<h3 class="name">' + p.name + '</h3>' +
+               '<p class="meta">' + p.meta + '</p>' +
+               '<p class="price">' + was + money.format(p.price / 100) + '</p>' +
+             '</div>' +
+             '<div class="buy">' + control(p, q) + '</div>' +
+           '</li>';
+  }
+
+  function render() {
+    grid.innerHTML = PRODUCTS.map(cardHTML).join("");
+
+    var t = totals();
+    bagEl.textContent = t.n
+      ? "Bag · " + t.n + " item" + (t.n === 1 ? "" : "s") + " · " + money.format(t.sum / 100)
+      : "Bag is empty";
+
+    if (focusKey) {
+      var el = grid.querySelector('[data-key="' + focusKey + '"]');
+      if (el) el.focus();
+      focusKey = null;
+    }
+  }
+
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-act]");
+    if (!btn || btn.disabled) return;
+
+    var id = btn.getAttribute("data-id");
+    var act = btn.getAttribute("data-act");
+    var p = PRODUCTS.filter(function (x) { return x.id === id; })[0];
+    var q = qty[id] || 0;
+
+    if (act === "add") {
+      q = 1;
+      focusKey = id + ":inc";
+      say("Added " + p.name + " to bag. 1 in bag.");
+    } else if (act === "inc") {
+      q = Math.min(LIMIT, q + 1);
+      focusKey = id + (q >= LIMIT ? ":dec" : ":inc");
+      say(p.name + ": " + q + " in bag" + (q >= LIMIT ? ". Limit of " + LIMIT + " reached." : "."));
+    } else if (act === "dec") {
+      q = Math.max(0, q - 1);
+      if (q === 0) {
+        focusKey = id + ":add";
+        say("Removed " + p.name + " from bag.");
+      } else {
+        focusKey = id + ":dec";
+        say(p.name + ": " + q + " in bag.");
+      }
+    }
+
+    qty[id] = q;
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

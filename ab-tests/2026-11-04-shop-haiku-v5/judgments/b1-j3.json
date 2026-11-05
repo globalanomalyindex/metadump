@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"compact": 5, "minimal": 4, "modern": 4, "usability": 7, "craft": 2, "overall": 3, "note": "The .swatch span rule also matches the tag pill, so the tags render as giant white blobs covering the product art, the header is flush against the mobile edge, and the oversized gradient letter tiles are neither compact nor minimal, though the drawer, quantity controls and checkout flow are complete."},
+"X": {"compact": 9, "minimal": 9, "modern": 8, "usability": 6, "craft": 7, "overall": 8, "note": "A tight four-column grid of line-icon cards with clear price, labelled add/stepper controls, a proper disabled sold-out state and a live status line, with minor flaws such as the '2 in bag' stepper label wrapping and names truncating, and no bag view or checkout."},
+"Y": {"compact": 8, "minimal": 8, "modern": 7, "usability": 6, "craft": 6, "overall": 6, "note": "Compact and restrained with a helpful header total, live status feedback and a dashed sold-out treatment, but the stepper label wraps on desktop, names and meta lines truncate heavily, and there is no bag view or checkout."},
+"Z": {"compact": 6, "minimal": 8, "modern": 8, "usability": 8, "craft": 5, "overall": 7, "note": "Restrained outlined buttons, a full cart drawer with free-shipping progress, quantity steppers, clear and checkout, but the mobile header and select sit flush to the edges, card buttons are misaligned across the row, and the generic silhouettes are weak for the products."}
+},
+"ranking": ["X", "Z", "Y", "W"]}

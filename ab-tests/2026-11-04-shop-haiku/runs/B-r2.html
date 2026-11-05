@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop component</title>
+<style>
+  :root {
+    --surface: #FFFFFF;
+    --ink: #111827;
+    --ink-muted: #6B7280;
+    --hairline: #E5E7EB;
+    --accent: #2563EB;
+    --radius: 8px;
+    --s1: 4px;
+    --s2: 8px;
+    --s3: 12px;
+    --s4: 16px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: var(--s4); }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--s3);
+    margin: 0 0 var(--s4);
+  }
+
+  h1 { margin: 0; font-size: 18px; font-weight: 600; }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    color: var(--ink-muted);
+    font-size: 12px;
+  }
+
+  .tools label { display: inline-flex; align-items: center; gap: var(--s1); cursor: pointer; }
+  .tools input[type="checkbox"] { accent-color: var(--accent); margin: 0; }
+
+  .count {
+    display: inline-block;
+    min-width: 20px;
+    margin-left: var(--s1);
+    padding: 0 var(--s1);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    color: var(--ink);
+    text-align: center;
+    line-height: 18px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 280px));
+    justify-content: start;
+    gap: var(--s4);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    min-width: 0;
+    padding: var(--s3);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .media {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+  }
+
+  .media svg {
+    width: 56%;
+    height: auto;
+    fill: none;
+    stroke: var(--ink-muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .badge {
+    position: absolute;
+    top: var(--s2);
+    left: var(--s2);
+    padding: 0 var(--s2);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 20px;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    padding: 0 var(--s1) var(--s1);
+  }
+
+  .name {
+    margin: var(--s1) 0 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s2);
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .price s { color: var(--ink-muted); font-size: 12px; font-weight: 400; }
+  .price .now.sale { color: var(--accent); }
+
+  .variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s1);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .chip { position: relative; cursor: pointer; }
+
+  .chip input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .chip span {
+    display: inline-block;
+    padding: 0 var(--s2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 28px;
+  }
+
+  .chip input:checked + span { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .chip:has(input:focus-visible) span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    margin-top: var(--s1);
+  }
+
+  .add {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s1);
+    height: 40px;
+    margin: 0;
+    padding: 0 var(--s3);
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: #FFFFFF;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 100ms ease-out, background-color 150ms ease-out;
+  }
+
+  .add:active:not(:disabled) { transform: scale(0.98); }
+  .add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .add:disabled { background: var(--hairline); color: var(--ink-muted); cursor: not-allowed; }
+
+  .add svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .spin {
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .reason { color: var(--ink-muted); font-size: 12px; white-space: nowrap; }
+
+  .error { margin: 0; color: var(--ink); font-size: 12px; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .add { transition: none; }
+    .add:active:not(:disabled) { transform: none; }
+    .spin { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Everyday goods</h1>
+  <div class="tools">
+    <label><input type="checkbox" id="fail"> Simulate a failed add</label>
+    <span>Cart <span class="count" id="cart-count">0</span></span>
+  </div>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    {
+      id: "mug", name: "Pour-over ceramic mug", option: "size", badge: null, compareAt: null,
+      art: '<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M36 14h48l-12 10H48z"/><path d="M42 24h36v46a6 6 0 0 1-6 6H48a6 6 0 0 1-6-6z"/><path d="M78 36h6a10 10 0 0 1 0 20h-6"/><path d="M34 76h52"/></svg>',
+      variants: [
+        { id: "mug-12", label: "12 oz", amount: "28.00", currencyCode: "USD", availableForSale: true },
+        { id: "mug-16", label: "16 oz", amount: "32.00", currencyCode: "USD", availableForSale: true }
+      ]
+    },
+    {
+      id: "tote", name: "Canvas tote bag", option: "colour", badge: "Sale",
+      compareAt: null,
+      art: '<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M30 34h60l-4 46H34z"/><path d="M44 34c0-14 32-14 32 0"/></svg>',
+      variants: [
+        { id: "tote-nat", label: "Natural", amount: "42.00", currencyCode: "USD", compareAt: { amount: "58.00", currencyCode: "USD" }, availableForSale: true },
+        { id: "tote-navy", label: "Navy", amount: "42.00", currencyCode: "USD", compareAt: { amount: "58.00", currencyCode: "USD" }, availableForSale: false }
+      ]
+    },
+    {
+      id: "notebook", name: "Dot-grid field notebook", option: "pack", badge: "New", compareAt: null,
+      art: '<svg viewBox="0 0 120 90" aria-hidden="true"><rect x="38" y="16" width="44" height="58" rx="3"/><path d="M48 16v58"/><path d="M56 30h20M56 40h20M56 50h20M56 60h14"/></svg>',
+      variants: [
+        { id: "nb-1", label: "Single", amount: "12.00", currencyCode: "USD", availableForSale: undefined },
+        { id: "nb-3", label: "3-pack", amount: "18.50", currencyCode: "USD", availableForSale: true }
+      ]
+    },
+    {
+      id: "bottle", name: "Insulated steel bottle", option: "size", badge: null, compareAt: null,
+      art: '<svg viewBox="0 0 120 90" aria-hidden="true"><rect x="48" y="14" width="24" height="10" rx="2"/><path d="M50 24h20v8c8 4 10 10 10 18v30a6 6 0 0 1-6 6H46a6 6 0 0 1-6-6V50c0-8 4-14 10-18z"/></svg>',
+      variants: [
+        { id: "bt-500", label: "500 ml", amount: "34.95", currencyCode: "USD", availableForSale: false },
+        { id: "bt-750", label: "750 ml", amount: "38.95", currencyCode: "USD", availableForSale: false }
+      ]
+    },
+    {
+      id: "throw", name: "Linen throw", option: "colour", badge: null, compareAt: null,
+      art: '<svg viewBox="0 0 120 90" aria-hidden="true"><rect x="28" y="22" width="64" height="48" rx="2"/><path d="M28 34q8-6 16 0t16 0 16 0 16 0"/><path d="M28 48q8-6 16 0t16 0 16 0 16 0"/><path d="M28 62q8-6 16 0t16 0 16 0 16 0"/></svg>',
+      variants: [
+        { id: "th-oat", label: "Oat", amount: "129.00", currencyCode: "EUR", availableForSale: true },
+        { id: "th-slate", label: "Slate", amount: "129.00", currencyCode: "EUR", availableForSale: true }
+      ]
+    }
+  ];
+
+  const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+
+  const grid = document.getElementById("grid");
+  const live = document.getElementById("live");
+  const cartCount = document.getElementById("cart-count");
+  const failToggle = document.getElementById("fail");
+
+  const state = { cart: 0, selected: {}, status: {}, timers: {} };
+  const cards = {};
+
+  const money = (amount, currencyCode) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: currencyCode }).format(Number(amount));
+
+  const variantOf = (p) => p.variants.find((v) => v.id === state.selected[p.id]);
+
+  const announce = (message) => {
+    live.textContent = "";
+    setTimeout(() => { live.textContent = message; }, 50);
+  };
+
+  const fakeRequest = (ok) => new Promise((resolve) => setTimeout(() => resolve(ok), 800));
+
+  function renderPrice(p, v, refs) {
+    const compare = v.compareAt || p.compareAt;
+    const onSale = Boolean(compare) && Number(compare.amount) > Number(v.amount);
+    refs.was.hidden = !onSale;
+    refs.was.textContent = onSale ? money(compare.amount, compare.currencyCode) : "";
+    refs.now.textContent = money(v.amount, v.currencyCode);
+    refs.now.classList.toggle("sale", onSale);
+  }
+
+  function renderCard(p) {
+    const refs = cards[p.id];
+    const v = variantOf(p);
+    const soldOut = v.availableForSale === false;
+    const st = state.status[p.id] || "idle";
+
+    refs.card.dataset.status = st;
+    renderPrice(p, v, refs);
+
+    refs.btn.disabled = soldOut || st === "adding";
+    refs.btn.setAttribute("aria-busy", String(st === "adding"));
+    refs.label.innerHTML =
+      st === "adding" ? '<span class="spin" aria-hidden="true"></span>Adding…' :
+      st === "added"  ? CHECK + "Added" :
+      "Add to cart";
+
+    refs.reason.textContent = soldOut ? "Sold out" : "";
+    refs.reason.hidden = !soldOut;
+    refs.error.hidden = st !== "error";
+    refs.error.textContent = st === "error" ? "Could not add. Try again." : "";
+  }
+
+  async function addToCart(p) {
+    const v = variantOf(p);
+    if (v.availableForSale === false) return;
+
+    clearTimeout(state.timers[p.id]);
+    state.status[p.id] = "adding";
+    renderCard(p);
+
+    const ok = await fakeRequest(!failToggle.checked);
+
+    if (ok) {
+      state.cart += 1;
+      cartCount.textContent = String(state.cart);
+      state.status[p.id] = "added";
+      announce(`Added ${p.name} (${v.label}) to cart`);
+      state.timers[p.id] = setTimeout(() => {
+        state.status[p.id] = "idle";
+        renderCard(p);
+      }, 1500);
+    } else {
+      state.status[p.id] = "error";
+      announce("Could not add. Try again.");
+    }
+    renderCard(p);
+  }
+
+  function buildCard(p) {
+    const el = document.createElement("article");
+    el.className = "card";
+    el.setAttribute("aria-labelledby", `name-${p.id}`);
+    el.innerHTML = `
+      <div class="media">
+        ${p.art}
+        ${p.badge ? `<span class="badge">${p.badge}</span>` : ""}
+      </div>
+      <div class="body">
+        <h2 class="name" id="name-${p.id}">${p.name}</h2>
+        <p class="price"><s hidden></s><span class="now"></span></p>
+        <fieldset class="variants">
+          <legend class="sr-only">Choose ${p.option}</legend>
+          ${p.variants.map((v, i) => `
+            <label class="chip">
+              <input type="radio" name="variant-${p.id}" value="${v.id}" ${i === 0 ? "checked" : ""}>
+              <span>${v.label}</span>
+            </label>`).join("")}
+        </fieldset>
+        <div class="actions">
+          <button type="button" class="add" aria-describedby="reason-${p.id}">
+            <span class="label">Add to cart</span><span class="sr-only"> ${p.name}</span>
+          </button>
+          <span class="reason" id="reason-${p.id}" hidden></span>
+        </div>
+        <p class="error" hidden></p>
+      </div>`;
+
+    cards[p.id] = {
+      card: el,
+      was: el.querySelector(".price s"),
+      now: el.querySelector(".price .now"),
+      btn: el.querySelector(".add"),
+      label: el.querySelector(".add .label"),
+      reason: el.querySelector(".reason"),
+      error: el.querySelector(".error")
+    };
+
+    el.querySelectorAll('input[type="radio"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        state.selected[p.id] = input.value;
+        clearTimeout(state.timers[p.id]);
+        state.status[p.id] = "idle";
+        renderCard(p);
+      });
+    });
+
+    cards[p.id].btn.addEventListener("click", () => addToCart(p));
+    return el;
+  }
+
+  PRODUCTS.forEach((p) => {
+    state.selected[p.id] = p.variants[0].id;
+    grid.appendChild(buildCard(p));
+    renderCard(p);
+  });
+})();
+</script>
+</body>
+</html>

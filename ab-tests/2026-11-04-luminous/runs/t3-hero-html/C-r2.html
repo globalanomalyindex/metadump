@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide — Music with the light let in</title>
+<meta name="description" content="Tide streams 100 million songs in crystal-clear lossless.">
+<style>
+  :root{
+    --cobalt-950:#021f8c;
+    --cobalt-800:#0431ad;
+    --cobalt-700:#0a4bd6;
+    --azure-600:#1466e8;
+    --azure-500:#1f7cf2;
+    --cyan-400:#22b6ff;
+    --cyan-300:#7fe2ff;
+    --ice-100:#e3f7ff;
+    --optical-white:#f6fcff;
+    --lime-300:#c6ff5a;
+    --grass-500:#3cc824;
+    --grass-700:#138b12;
+    --ink:#06266f;
+    --font:"Frutiger","Frutiger LT Std","Segoe UI","Myriad Pro",-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--font);
+    background:var(--cobalt-800);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  svg text{font-family:var(--font)}
+
+  /* ---------- hero shell ---------- */
+  .hero{
+    position:relative;
+    height:100vh;
+    min-height:900px;
+    overflow:hidden;
+    isolation:isolate;            /* one compositing group: every translucent layer below blends with the sky */
+    background:var(--cobalt-800);
+  }
+  .stage{
+    position:absolute;
+    bottom:0;
+    left:max(0px, calc(50% - 720px));
+    width:1440px;
+    height:900px;
+  }
+  .stage > *{position:absolute}
+
+  /* ---------- sky, sun, light ---------- */
+  .sky{
+    top:-600px; bottom:0; left:-1200px; right:-1200px;
+    background:
+      radial-gradient(1150px 860px at 1200px 1010px, rgba(3,26,140,.44), rgba(3,26,140,0) 70%),
+      linear-gradient(180deg,
+        #021c86 0px,
+        #0431ad 600px,
+        #0a4bd6 860px,
+        #1466e8 1060px,
+        #1f7cf2 1220px,
+        #3a98fa 1300px,
+        #7cc6ff 1350px,
+        #c4eaff 1390px,
+        #eefaff 1440px);
+  }
+  .sun{
+    inset:0;
+    background:
+      radial-gradient(circle at 1210px 230px,
+        #ffffff 0 40px,
+        rgba(255,255,255,.97) 58px,
+        rgba(234,250,255,.88) 100px,
+        rgba(190,236,255,.62) 180px,
+        rgba(132,206,255,.33) 300px,
+        rgba(96,176,255,.13) 440px,
+        rgba(96,176,255,0) 640px);
+  }
+  .rays{
+    inset:0;
+    mix-blend-mode:screen;
+    opacity:.16;
+    background:conic-gradient(from 0deg at 1210px 230px,
+      transparent 0 6deg, rgba(255,255,255,.7) 8deg, transparent 11deg 27deg,
+      rgba(255,255,255,.45) 30deg, transparent 34deg 51deg,
+      rgba(255,255,255,.6) 53deg, transparent 56deg 79deg,
+      rgba(255,255,255,.4) 83deg, transparent 87deg 112deg,
+      rgba(255,255,255,.55) 115deg, transparent 118deg 146deg,
+      rgba(255,255,255,.35) 150deg, transparent 154deg 188deg,
+      rgba(255,255,255,.5) 191deg, transparent 194deg 222deg,
+      rgba(255,255,255,.65) 225deg, transparent 229deg 254deg,
+      rgba(255,255,255,.45) 257deg, transparent 260deg 289deg,
+      rgba(255,255,255,.6) 292deg, transparent 296deg 318deg,
+      rgba(255,255,255,.4) 322deg, transparent 326deg 342deg,
+      rgba(255,255,255,.55) 345deg, transparent 348deg 360deg);
+    -webkit-mask:radial-gradient(circle at 1210px 230px, #000 0, rgba(0,0,0,.55) 230px, transparent 700px);
+            mask:radial-gradient(circle at 1210px 230px, #000 0, rgba(0,0,0,.55) 230px, transparent 700px);
+  }
+  .world, .fore{top:0; left:-600px; width:2640px; height:900px; pointer-events:none}
+
+  /* ---------- the record: a disc made of blue, not painted blue ---------- */
+  .v{
+    left:926px; top:130px; width:440px; height:440px;
+    animation:bob 9s ease-in-out infinite;
+    pointer-events:none;
+  }
+  .v-tint {mix-blend-mode:multiply}   /* transmission: the disc filters whatever is behind it */
+  .v-glow {mix-blend-mode:screen}     /* scattered light, grooves, edge glow */
+  .v-sheen{
+    border-radius:50%;
+    mix-blend-mode:screen;
+    background:conic-gradient(from 0deg at 50% 50%,
+      rgba(255,255,255,0) 0deg 12deg,
+      rgba(255,150,225,.14) 17deg,
+      rgba(255,244,170,.18) 21deg,
+      rgba(236,253,255,.74) 28deg,
+      rgba(150,255,232,.2) 35deg,
+      rgba(130,170,255,.12) 40deg,
+      rgba(255,255,255,0) 46deg 192deg,
+      rgba(255,150,225,.1) 197deg,
+      rgba(255,244,170,.13) 201deg,
+      rgba(236,253,255,.52) 208deg,
+      rgba(150,255,232,.15) 215deg,
+      rgba(130,170,255,.08) 220deg,
+      rgba(255,255,255,0) 226deg 360deg);
+    -webkit-mask:radial-gradient(closest-side, transparent 0 40.5%, rgba(0,0,0,.5) 42%, #000 70%, rgba(0,0,0,.8) 93%, transparent 94.8%);
+            mask:radial-gradient(closest-side, transparent 0 40.5%, rgba(0,0,0,.5) 42%, #000 70%, rgba(0,0,0,.8) 93%, transparent 94.8%);
+  }
+  @keyframes bob{
+    0%,100%{transform:translate(0,0)}
+    50%{transform:translate(.5px,-9px)}
+  }
+
+  /* ---------- the sleeve: tinted PVC, the record half inside ---------- */
+  .sl{
+    left:905px; top:340px; width:460px; height:460px;
+    transform:rotate(3deg);
+    clip-path:path('M0 8 Q0 0 8 0 L192 0 A38 38 0 0 0 268 0 L452 0 Q460 0 460 8 L460 452 Q460 460 452 460 L8 460 Q0 460 0 452 Z');
+    pointer-events:none;
+  }
+  .sl-frost{
+    -webkit-backdrop-filter:blur(2.2px) saturate(1.15);
+            backdrop-filter:blur(2.2px) saturate(1.15);
+  }
+  .sl-tint{
+    mix-blend-mode:multiply;
+    background:linear-gradient(176deg, #6fc4ff 0%, #3e9cff 45%, #2c88f6 100%);
+    box-shadow:
+      inset 8px 0 0 rgba(18,104,228,.30),
+      inset -8px 0 0 rgba(18,104,228,.30),
+      inset 0 -9px 0 rgba(18,104,228,.30);
+  }
+  .sl-milk{
+    mix-blend-mode:screen;
+    background:
+      radial-gradient(120% 80% at 76% 0%, rgba(232,250,255,.30), rgba(200,236,255,.07) 62%, rgba(186,228,255,.13));
+  }
+  .sl-gloss{mix-blend-mode:screen}
+
+  .bloom{
+    inset:0;
+    pointer-events:none;
+    mix-blend-mode:screen;
+    background:radial-gradient(circle at 1210px 230px,
+      rgba(255,255,255,.9) 0 16px,
+      rgba(240,252,255,.6) 54px,
+      rgba(200,240,255,.3) 128px,
+      rgba(160,222,255,.11) 240px,
+      transparent 380px);
+  }
+
+  /* ---------- colored shadow + caustic on the grass ---------- */
+  .caustic-shade{
+    left:850px; top:782px; width:540px; height:118px;
+    border-radius:50%;
+    mix-blend-mode:multiply;
+    filter:blur(10px);
+    background:radial-gradient(closest-side, rgba(10,130,240,.5), rgba(30,150,245,.26) 60%, transparent);
+  }
+  .caustic-light{
+    left:900px; top:792px; width:440px; height:96px;
+    border-radius:50%;
+    mix-blend-mode:screen;
+    filter:blur(9px);
+    background:
+      radial-gradient(closest-side at 54% 42%, rgba(200,255,255,.75), rgba(110,236,255,.48) 42%, rgba(80,214,255,.16) 72%, transparent);
+  }
+  .caustic-line{
+    left:960px; top:784px; width:360px; height:26px;
+    border-radius:50%;
+    mix-blend-mode:screen;
+    filter:blur(5px);
+    background:radial-gradient(closest-side, rgba(225,255,255,.6), rgba(130,240,255,.22) 60%, transparent);
+  }
+
+  /* ---------- bubbles ---------- */
+  .bubble{
+    border-radius:50%;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 9%, rgba(255,255,255,0) 24%),
+      radial-gradient(circle at 68% 78%, rgba(170,244,255,.55) 0, rgba(170,244,255,0) 42%),
+      radial-gradient(circle, rgba(120,210,255,.06) 0 56%, rgba(170,236,255,.5) 72%, rgba(255,255,255,.9) 76.5%, rgba(255,255,255,0) 79%);
+    animation:drift 11s ease-in-out infinite;
+  }
+  .b1{left:836px; top:176px; width:30px; height:30px}
+  .b2{left:872px; top:142px; width:13px; height:13px; animation-delay:-3s}
+  .b3{left:812px; top:232px; width:8px;  height:8px;  animation-delay:-6s}
+  .b4{left:1392px; top:404px; width:19px; height:19px; animation-delay:-2s}
+  @keyframes drift{
+    0%,100%{transform:translate(0,0)}
+    50%{transform:translate(4px,-12px)}
+  }
+
+  /* ---------- glossy interface pieces ---------- */
+  .gel{
+    position:relative;
+    isolation:isolate;
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    height:58px; padding:0 32px;
+    border-radius:999px;
+    font-size:17px; font-weight:600; letter-spacing:.005em;
+    color:#fff;
+    text-shadow:0 -1px 0 rgba(0,40,140,.45);
+    background:
+      radial-gradient(120% 75% at 50% 112%, rgba(150,255,255,.95) 0%, rgba(60,214,255,.62) 34%, rgba(20,140,255,0) 72%),
+      linear-gradient(180deg, #1b80f3 0%, #0b5fe0 48%, #0962e6 52%, #18a0ff 100%);
+    border:1px solid rgba(4,48,160,.6);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.45),
+      0 16px 30px -8px rgba(0,112,255,.7),
+      0 4px 10px rgba(2,40,140,.26),
+      inset 0 -3px 8px rgba(170,255,255,.6),
+      inset 0 0 0 1px rgba(255,255,255,.16);
+    transition:transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  }
+  .gel::before{
+    content:""; position:absolute; z-index:-1;
+    left:7px; right:7px; top:2px; height:50%;
+    border-radius:999px 999px 46% 46% / 999px 999px 70% 70%;
+    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.14));
+  }
+  .gel:hover{filter:brightness(1.07) saturate(1.1); transform:translateY(-1px)}
+  .gel:active{transform:translateY(1px)}
+  .gel-sm{height:42px; padding:0 22px; font-size:15px}
+  .gel-sm::before{left:5px; right:5px}
+
+  .acrylic{
+    position:relative;
+    display:inline-flex; align-items:center; gap:12px;
+    height:58px; padding:0 26px 0 9px;
+    border-radius:999px;
+    font-size:17px; font-weight:600;
+    color:#fff;
+    text-shadow:0 1px 2px rgba(0,30,120,.35);
+    background:linear-gradient(180deg, rgba(255,255,255,.34) 0%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.05) 52%, rgba(170,230,255,.18) 100%);
+    border:1px solid rgba(255,255,255,.62);
+    -webkit-backdrop-filter:blur(10px) saturate(150%);
+            backdrop-filter:blur(10px) saturate(150%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.85),
+      inset 0 -10px 18px -6px rgba(120,220,255,.28),
+      0 12px 26px -8px rgba(2,40,150,.35);
+    transition:background .18s ease, transform .18s ease;
+  }
+  .acrylic:hover{background:linear-gradient(180deg, rgba(255,255,255,.44) 0%, rgba(255,255,255,.16) 50%, rgba(255,255,255,.1) 52%, rgba(170,230,255,.26) 100%); transform:translateY(-1px)}
+  .orb{
+    position:relative;
+    width:40px; height:40px; border-radius:50%;
+    display:grid; place-items:center;
+    background:radial-gradient(circle at 50% 112%, #a8fbff 0, #2cc0ff 40%, #0b5fe0 78%, #073a9f 100%);
+    border:1px solid rgba(3,48,150,.5);
+    box-shadow:inset 0 -3px 6px rgba(170,255,255,.6), 0 4px 10px rgba(0,90,230,.4);
+  }
+  .orb::before{
+    content:""; position:absolute; left:5px; right:5px; top:2px; height:48%;
+    border-radius:50% 50% 45% 45%;
+    background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.1));
+  }
+  .orb svg{position:relative; width:14px; height:14px; margin-left:2px}
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:absolute; z-index:5;
+    top:26px;
+    left:max(24px, calc(50% - 672px));
+    right:max(24px, calc(50% - 672px));
+    height:62px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 10px 0 14px;
+    border-radius:999px;
+    color:var(--ink);
+    background:linear-gradient(180deg, rgba(255,255,255,.66) 0%, rgba(238,249,255,.44) 50%, rgba(212,239,255,.36) 51%, rgba(228,246,255,.5) 100%);
+    -webkit-backdrop-filter:blur(18px) saturate(170%);
+            backdrop-filter:blur(18px) saturate(170%);
+    border:1px solid rgba(255,255,255,.85);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 -1px 0 rgba(120,200,255,.6),
+      0 14px 34px -10px rgba(3,40,140,.38);
+  }
+  .brand{display:flex; align-items:center; gap:10px}
+  .logo-orb{
+    position:relative;
+    width:36px; height:36px; border-radius:50%;
+    display:grid; place-items:center;
+    background:radial-gradient(circle at 50% 118%, #9ff8ff 0, #23b4ff 40%, #0a52d8 76%, #062f9e 100%);
+    border:1px solid rgba(3,44,140,.45);
+    box-shadow:inset 0 -3px 6px rgba(160,255,255,.7), 0 4px 10px rgba(0,80,220,.35);
+  }
+  .logo-orb::before{
+    content:""; position:absolute; left:5px; right:5px; top:2px; height:46%;
+    border-radius:50% 50% 45% 45%;
+    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.08));
+  }
+  .logo-orb svg{position:relative; width:22px; height:22px; margin-top:3px}
+  .wordmark{font-size:25px; font-weight:600; letter-spacing:-.035em; color:#052a86}
+  .links{display:flex; gap:36px; font-size:15px; font-weight:600}
+  .links a{color:#08307f; opacity:.82; transition:opacity .15s}
+  .links a:hover{opacity:1}
+  .nav-right{display:flex; align-items:center; gap:22px; font-size:15px; font-weight:600}
+  .login{color:#08307f}
+
+  /* ---------- copy ---------- */
+  .copy{left:96px; top:196px; width:680px; z-index:3}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:11px;
+    height:38px; padding:0 16px 0 6px;
+    border-radius:999px;
+    font-size:14.5px; font-weight:500; color:#eef8ff;
+    background:linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
+    border:1px solid rgba(255,255,255,.42);
+    -webkit-backdrop-filter:blur(8px);
+            backdrop-filter:blur(8px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+  }
+  .tag{
+    position:relative;
+    height:26px; padding:0 11px;
+    display:inline-flex; align-items:center;
+    border-radius:999px;
+    font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#0b4a06;
+    background:linear-gradient(180deg, #d2ff7e 0%, #7fec3a 48%, #46d11e 52%, #8ef544 100%);
+    border:1px solid rgba(20,110,10,.4);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.85), inset 0 -2px 4px rgba(220,255,160,.75), 0 0 16px rgba(130,255,80,.55);
+  }
+  .eyebrow .arr{opacity:.8; transition:transform .18s}
+  .eyebrow:hover .arr{transform:translateX(3px)}
+
+  h1{
+    margin-top:26px;
+    font-size:86px; line-height:.99; font-weight:600; letter-spacing:-.045em;
+  }
+  h1 .l1{
+    display:block;
+    color:#fff;
+    text-shadow:0 0 30px rgba(150,222,255,.5), 0 2px 18px rgba(0,30,140,.28);
+  }
+  h1 .l2{
+    display:block;
+    padding-bottom:6px;
+    color:transparent;
+    background:linear-gradient(180deg, #ffffff 10%, #e2f9ff 40%, #6fdcff 57%, #b6f1ff 74%, #f4fdff 94%);
+    -webkit-background-clip:text;
+            background-clip:text;
+    filter:drop-shadow(0 0 22px rgba(120,220,255,.55)) drop-shadow(0 2px 6px rgba(0,30,140,.22));
+  }
+  .sub{
+    margin-top:22px; max-width:530px; text-wrap:pretty;
+    font-size:19px; line-height:1.55; font-weight:400;
+    color:rgba(240,249,255,.95);
+    text-shadow:0 1px 2px rgba(0,30,120,.38);
+  }
+  .actions{margin-top:34px; display:flex; gap:14px}
+  .fine{
+    margin-top:24px;
+    display:flex; gap:22px;
+    list-style:none;
+    font-size:14px; font-weight:600;
+    color:#fff;
+    text-shadow:0 1px 3px rgba(0,30,120,.5);
+  }
+  .fine li{display:flex; align-items:center; gap:8px}
+  .fine li::before{
+    content:""; width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff 0 16%, #c8ff7a 30%, #52dc22 70%, #2aa513 100%);
+    box-shadow:0 0 8px rgba(150,255,90,.75);
+  }
+
+  /* ---------- now playing ---------- */
+  .player{
+    left:716px; top:612px; width:348px; z-index:2;
+    display:flex; align-items:center; gap:14px;
+    padding:14px;
+    border-radius:24px;
+    color:var(--ink);
+    background:linear-gradient(180deg, rgba(255,255,255,.86) 0%, rgba(244,251,255,.74) 48%, rgba(228,245,255,.68) 52%, rgba(238,250,255,.78) 100%);
+    -webkit-backdrop-filter:blur(16px) saturate(170%);
+            backdrop-filter:blur(16px) saturate(170%);
+    border:1px solid rgba(255,255,255,.88);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 -16px 26px -12px rgba(110,215,255,.5),
+      0 24px 44px -14px rgba(0,70,200,.5),
+      0 4px 12px rgba(0,50,150,.14);
+    animation:float 10s ease-in-out infinite;
+  }
+  @keyframes float{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-5px)}
+  }
+  .art{
+    position:relative; flex:none;
+    width:68px; height:68px; border-radius:15px; overflow:hidden;
+    background:
+      radial-gradient(circle at 72% 30%, #fff 0 5px, rgba(255,255,255,.7) 9px, rgba(255,255,255,0) 22px),
+      radial-gradient(150% 70% at 28% 118%, #8af23e 0 44%, #34b81f 58%, transparent 59%),
+      linear-gradient(180deg, #0a4fd8 0%, #3a9bff 58%, #c4ebff 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.6), 0 6px 14px rgba(0,70,190,.3);
+  }
+  .art::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(155deg, rgba(255,255,255,.55) 0 32%, rgba(255,255,255,0) 33%);
+  }
+  .meta{flex:1; min-width:0}
+  .np{
+    display:flex; align-items:center; gap:7px;
+    font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    color:#0b4fc2;
+  }
+  .eq{display:inline-flex; align-items:flex-end; gap:2px; height:10px}
+  .eq i{
+    display:block; width:3px; height:10px; border-radius:2px;
+    background:linear-gradient(180deg, #7fe2ff, #1d8cff);
+    transform-origin:bottom;
+    animation:eq 1.1s ease-in-out infinite;
+  }
+  .eq i:nth-child(2){animation-delay:-.35s}
+  .eq i:nth-child(3){animation-delay:-.7s}
+  @keyframes eq{0%,100%{transform:scaleY(.35)} 50%{transform:scaleY(1)}}
+  .track{margin-top:4px; font-size:16px; font-weight:600; letter-spacing:-.01em; color:#052a86}
+  .artist{margin-top:1px; font-size:12.5px; color:#1f4a9c}
+  .prog{margin-top:8px; display:flex; align-items:center; gap:8px; font-size:10.5px; font-weight:600; color:#244f9f; font-variant-numeric:tabular-nums}
+  .tube{
+    position:relative; flex:1; height:8px; border-radius:99px;
+    background:linear-gradient(180deg, rgba(10,60,160,.18), rgba(255,255,255,.7));
+    box-shadow:inset 0 1px 2px rgba(0,40,120,.3), 0 1px 0 rgba(255,255,255,.85);
+  }
+  .fill{
+    position:absolute; left:0; top:0; bottom:0; width:43%;
+    border-radius:99px;
+    background:linear-gradient(180deg, #c8f8ff 0%, #2cc3ff 44%, #0a86f0 56%, #52d8ff 100%);
+    box-shadow:0 0 10px rgba(40,200,255,.85);
+  }
+  .fill::after{
+    content:""; position:absolute; right:-3px; top:50%; width:12px; height:12px; margin-top:-6px;
+    border-radius:50%;
+    background:radial-gradient(circle at 40% 35%, #fff 0 25%, #bdf5ff 45%, #2cc3ff 100%);
+    box-shadow:0 0 10px rgba(80,220,255,.95), 0 1px 3px rgba(0,60,170,.35);
+  }
+  .orb-btn{
+    position:relative; flex:none;
+    width:46px; height:46px; border-radius:50%;
+    display:grid; place-items:center;
+    cursor:pointer;
+    background:radial-gradient(circle at 50% 112%, #a8fbff 0, #27b6ff 42%, #0a5ce0 78%, #07399e 100%);
+    border:1px solid rgba(3,50,150,.5);
+    box-shadow:0 8px 16px -4px rgba(0,100,240,.55), inset 0 -3px 6px rgba(170,255,255,.6);
+  }
+  .orb-btn::before{
+    content:""; position:absolute; left:6px; right:6px; top:2px; height:48%;
+    border-radius:50% 50% 45% 45%;
+    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.1));
+  }
+  .orb-btn svg{position:relative; width:16px; height:16px}
+
+  .grain{inset:0; width:100%; height:100%; opacity:.05; mix-blend-mode:soft-light; pointer-events:none}
+
+  @media (prefers-reduced-motion: reduce){
+    .v, .bubble, .player, .eq i{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<section class="hero" aria-label="Tide">
+
+  <div class="stage" aria-hidden="false">
+
+    <!-- sky + sun -->
+    <div class="sky" aria-hidden="true"></div>
+    <div class="sun" aria-hidden="true"></div>
+    <div class="rays" aria-hidden="true"></div>
+
+    <!-- clouds + hills -->
+    <svg class="world" viewBox="-600 0 2640 900" aria-hidden="true">
+      <defs>
+        <linearGradient id="w-cloudA" gradientUnits="userSpaceOnUse" x1="0" y1="652" x2="0" y2="764">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset=".45" stop-color="#f4fbff"/>
+          <stop offset="1" stop-color="#a6cfff"/>
+        </linearGradient>
+        <linearGradient id="w-cloudB" gradientUnits="userSpaceOnUse" x1="0" y1="124" x2="0" y2="174">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="1" stop-color="#cbe6ff"/>
+        </linearGradient>
+        <linearGradient id="w-cloudC" gradientUnits="userSpaceOnUse" x1="0" y1="80" x2="0" y2="150">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="1" stop-color="#e2f3ff"/>
+        </linearGradient>
+        <filter id="w-fluffBig" x="-30%" y="-80%" width="160%" height="260%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.017" numOctaves="4" seed="11" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="48" xChannelSelector="R" yChannelSelector="G" result="d"/>
+          <feGaussianBlur in="d" stdDeviation="4.5"/>
+        </filter>
+        <filter id="w-fluffSmall" x="-30%" y="-120%" width="160%" height="340%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="4" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="24" xChannelSelector="R" yChannelSelector="G" result="d"/>
+          <feGaussianBlur in="d" stdDeviation="3.2"/>
+        </filter>
+
+        <linearGradient id="w-far" gradientUnits="userSpaceOnUse" x1="0" y1="676" x2="0" y2="800">
+          <stop offset="0" stop-color="#8ee9a2"/>
+          <stop offset=".3" stop-color="#55d070"/>
+          <stop offset="1" stop-color="#2fb24e"/>
+        </linearGradient>
+        <linearGradient id="w-hill" gradientUnits="userSpaceOnUse" x1="0" y1="696" x2="0" y2="900">
+          <stop offset="0" stop-color="#9cf548"/>
+          <stop offset=".1" stop-color="#6fe236"/>
+          <stop offset=".36" stop-color="#3cc824"/>
+          <stop offset=".7" stop-color="#22a91a"/>
+          <stop offset="1" stop-color="#138b12"/>
+        </linearGradient>
+        <radialGradient id="w-hillSun" gradientUnits="userSpaceOnUse" cx="1250" cy="716" r="560"
+                        gradientTransform="translate(1250 716) scale(1 .3) translate(-1250 -716)">
+          <stop offset="0" stop-color="#eaffa0" stop-opacity=".62"/>
+          <stop offset=".45" stop-color="#d0ff7a" stop-opacity=".22"/>
+          <stop offset="1" stop-color="#d0ff7a" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="w-hillShade" gradientUnits="userSpaceOnUse" cx="-100" cy="920" r="900">
+          <stop offset="0" stop-color="#00501c" stop-opacity=".38"/>
+          <stop offset="1" stop-color="#00501c" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="w-skySpill" gradientUnits="userSpaceOnUse" x1="0" y1="700" x2="0" y2="790">
+          <stop offset="0" stop-color="#bfeaff" stop-opacity=".32"/>
+          <stop offset="1" stop-color="#bfeaff" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="w-grain" filterUnits="userSpaceOnUse" x="-600" y="660" width="2640" height="240" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.55 0.045" numOctaves="2" seed="5"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0.02  0 0 0 0 0.32  0 0 0 0 0.04  1.9 0 0 0 -0.8"/>
+        </filter>
+        <filter id="w-grainLight" filterUnits="userSpaceOnUse" x="-600" y="660" width="2640" height="240" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.5 0.05" numOctaves="2" seed="19"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 1  0 0 0 0 0.45  1.9 0 0 0 -0.85"/>
+        </filter>
+        <clipPath id="w-hillClip">
+          <path d="M-600 850 C -300 820, 0 790, 260 772 C 560 750, 900 712, 1160 704 C 1420 696, 1700 722, 2040 748 L2040 900 L-600 900 Z"/>
+        </clipPath>
+        <filter id="w-soft" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="1.3"/></filter>
+        <filter id="w-halo" x="-5%" y="-300%" width="110%" height="700%"><feGaussianBlur stdDeviation="8"/></filter>
+      </defs>
+
+      <!-- high wisp, top left of the object -->
+      <g filter="url(#w-fluffSmall)" fill="url(#w-cloudB)" opacity=".92">
+        <ellipse cx="600" cy="156" rx="46" ry="14"/>
+        <ellipse cx="652" cy="146" rx="52" ry="22"/>
+        <ellipse cx="714" cy="150" rx="56" ry="20"/>
+        <ellipse cx="772" cy="158" rx="40" ry="12"/>
+        <ellipse cx="690" cy="163" rx="120" ry="10"/>
+      </g>
+      <!-- cloud near the sun, behind the record -->
+      <g filter="url(#w-fluffSmall)" fill="url(#w-cloudC)">
+        <ellipse cx="1250" cy="122" rx="54" ry="20"/>
+        <ellipse cx="1316" cy="110" rx="66" ry="30"/>
+        <ellipse cx="1388" cy="120" rx="58" ry="24"/>
+        <ellipse cx="1446" cy="130" rx="42" ry="14"/>
+        <ellipse cx="1340" cy="134" rx="150" ry="14"/>
+      </g>
+      <!-- low cumulus bank on the horizon, sitting behind the far hills -->
+      <g filter="url(#w-fluffBig)" fill="url(#w-cloudA)">
+        <ellipse cx="-30" cy="742" rx="80" ry="34"/>
+        <ellipse cx="60"  cy="726" rx="78" ry="44"/>
+        <ellipse cx="150" cy="722" rx="70" ry="40"/>
+        <ellipse cx="236" cy="732" rx="74" ry="36"/>
+        <ellipse cx="330" cy="748" rx="70" ry="28"/>
+        <ellipse cx="130" cy="756" rx="270" ry="24"/>
+      </g>
+      <g filter="url(#w-fluffBig)" fill="url(#w-cloudA)" opacity=".9">
+        <ellipse cx="610" cy="736" rx="56" ry="24"/>
+        <ellipse cx="672" cy="724" rx="58" ry="32"/>
+        <ellipse cx="740" cy="730" rx="54" ry="26"/>
+        <ellipse cx="680" cy="744" rx="150" ry="18"/>
+      </g>
+
+      <!-- far hills, hazed by blue air -->
+      <path d="M-600 772 C -380 744, -160 716, 120 718 C 300 720, 400 752, 560 752 C 760 752, 880 706, 1100 694 C 1320 682, 1560 672, 1760 690 C 1880 700, 1960 712, 2040 716 L2040 900 L-600 900 Z" fill="url(#w-far)"/>
+      <path d="M-600 772 C -380 744, -160 716, 120 718 C 300 720, 400 752, 560 752 C 760 752, 880 706, 1100 694 C 1320 682, 1560 672, 1760 690 C 1880 700, 1960 712, 2040 716 L2040 900 L-600 900 Z" fill="url(#w-skySpill)"/>
+
+      <!-- the main hill -->
+      <path d="M-600 850 C -300 820, 0 790, 260 772 C 560 750, 900 712, 1160 704 C 1420 696, 1700 722, 2040 748 L2040 900 L-600 900 Z" fill="url(#w-hill)"/>
+      <g clip-path="url(#w-hillClip)">
+        <rect x="-600" y="660" width="2640" height="240" fill="url(#w-hillSun)"/>
+        <rect x="-600" y="660" width="2640" height="240" fill="url(#w-hillShade)"/>
+        <rect x="-600" y="660" width="2640" height="240" filter="url(#w-grain)" opacity=".26"/>
+        <rect x="-600" y="660" width="2640" height="240" filter="url(#w-grainLight)" opacity=".2"/>
+      </g>
+      <!-- backlit crest: sky light bleeding over the edge of the grass -->
+      <path d="M-600 850 C -300 820, 0 790, 260 772 C 560 750, 900 712, 1160 704 C 1420 696, 1700 722, 2040 748" fill="none" stroke="#d8f3ff" stroke-width="18" opacity=".24" filter="url(#w-halo)"/>
+      <path d="M-600 850 C -300 820, 0 790, 260 772 C 560 750, 900 712, 1160 704 C 1420 696, 1700 722, 2040 748" fill="none" stroke="#efffd8" stroke-width="2.6" opacity=".8" filter="url(#w-soft)"/>
+    </svg>
+
+    <!-- ===== RECORD: transmission layer (multiply) ===== -->
+    <svg class="v v-tint" viewBox="0 0 440 440" aria-hidden="true">
+      <defs>
+        <radialGradient id="vt-body" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="220">
+          <stop offset="0"    stop-color="#79dcff"/>
+          <stop offset=".33"  stop-color="#6fd8ff"/>
+          <stop offset=".332" stop-color="#139cf4"/>
+          <stop offset=".35"  stop-color="#1aa4f6"/>
+          <stop offset=".356" stop-color="#46ccff"/>
+          <stop offset=".405" stop-color="#40c8ff"/>
+          <stop offset=".41"  stop-color="#18a6ff"/>
+          <stop offset=".94"  stop-color="#139fff"/>
+          <stop offset=".946" stop-color="#3ec6ff"/>
+          <stop offset=".965" stop-color="#34bfff"/>
+          <stop offset=".972" stop-color="#0b80ea"/>
+          <stop offset=".988" stop-color="#1192f0"/>
+          <stop offset="1"    stop-color="#8be6ff"/>
+        </radialGradient>
+        <filter id="vt-marble" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feTurbulence type="turbulence" baseFrequency="0.0065 0.013" numOctaves="2" seed="8"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0.02  0 0 0 0 0.30  0 0 0 0 0.84  -3.2 0 0 0 1.05"/>
+        </filter>
+        <mask id="vt-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="440">
+          <circle cx="220" cy="220" r="220" fill="#fff"/>
+          <circle cx="220" cy="220" r="4.6" fill="#000"/>
+        </mask>
+      </defs>
+      <g mask="url(#vt-mask)">
+        <circle cx="220" cy="220" r="220" fill="url(#vt-body)"/>
+        <rect width="440" height="440" filter="url(#vt-marble)" opacity=".4"/>
+      </g>
+    </svg>
+
+    <!-- ===== RECORD: scattered light (screen) ===== -->
+    <svg class="v v-glow" viewBox="0 0 440 440" aria-hidden="true">
+      <defs>
+        <radialGradient id="vg-sss" cx=".7" cy=".24" r=".82">
+          <stop offset="0"   stop-color="#e6fdff" stop-opacity=".8"/>
+          <stop offset=".2" stop-color="#8eeaff" stop-opacity=".45"/>
+          <stop offset=".52"  stop-color="#2fb0ff" stop-opacity=".12"/>
+          <stop offset="1"   stop-color="#0a5ad8" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="vg-groove" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="2.4" spreadMethod="repeat">
+          <stop offset="0"  stop-color="#ffffff" stop-opacity="0"/>
+          <stop offset=".5" stop-color="#d4f7ff" stop-opacity=".24"/>
+          <stop offset="1"  stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="vg-glum" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#ffffff"/>
+          <stop offset=".45" stop-color="#4a4a4a"/>
+          <stop offset=".8"  stop-color="#6a6a6a"/>
+          <stop offset="1"   stop-color="#b0b0b0"/>
+        </linearGradient>
+        <mask id="vg-gmask" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="440">
+          <circle cx="220" cy="220" r="208" fill="url(#vg-glum)"/>
+          <circle cx="220" cy="220" r="90" fill="#000"/>
+        </mask>
+        <linearGradient id="vg-rim" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#f2ffff" stop-opacity="1"/>
+          <stop offset=".3"  stop-color="#9cecff" stop-opacity=".35"/>
+          <stop offset=".65" stop-color="#9cecff" stop-opacity=".3"/>
+          <stop offset="1"   stop-color="#d9fdff" stop-opacity=".95"/>
+        </linearGradient>
+        <filter id="vg-milk" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.016" numOctaves="3" seed="27"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0.9  0 0 0 0 0.98  0 0 0 0 1  3.4 0 0 0 -1.75"/>
+        </filter>
+        <mask id="vg-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="440">
+          <circle cx="220" cy="220" r="220" fill="#fff"/>
+          <circle cx="220" cy="220" r="4.6" fill="#000"/>
+        </mask>
+      </defs>
+      <g mask="url(#vg-mask)">
+        <circle cx="220" cy="220" r="220" fill="url(#vg-sss)"/>
+        <rect width="440" height="440" filter="url(#vg-milk)" opacity=".22"/>
+      </g>
+      <!-- grooves: tightly packed rings that only catch light on the lit side -->
+      <circle cx="220" cy="220" r="208" fill="url(#vg-groove)" mask="url(#vg-gmask)"/>
+      <!-- track gaps (smooth land between songs) -->
+      <g fill="none" stroke="#d2f8ff" stroke-opacity=".24" stroke-width="1.4">
+        <circle cx="220" cy="220" r="116"/>
+        <circle cx="220" cy="220" r="138"/>
+        <circle cx="220" cy="220" r="161"/>
+        <circle cx="220" cy="220" r="182"/>
+        <circle cx="220" cy="220" r="197"/>
+      </g>
+      <circle cx="220" cy="220" r="90" fill="none" stroke="#c8f6ff" stroke-opacity=".32" stroke-width="1"/>
+      <!-- edge: thin acrylic rim pipes light all the way round -->
+      <circle cx="220" cy="220" r="213.4" fill="none" stroke="#bff4ff" stroke-opacity=".3" stroke-width="1"/>
+      <circle cx="220" cy="220" r="219" fill="none" stroke="url(#vg-rim)" stroke-width="2.1"/>
+      <!-- faint chromatic fringe -->
+      <circle cx="218.9" cy="220" r="219.3" fill="none" stroke="#ff8fd8" stroke-opacity=".26" stroke-width=".9"/>
+      <circle cx="221.1" cy="220" r="219.3" fill="none" stroke="#8fffe9" stroke-opacity=".26" stroke-width=".9"/>
+    </svg>
+
+    <!-- ===== RECORD: anisotropic groove sheen ===== -->
+    <div class="v v-sheen" aria-hidden="true"></div>
+
+    <!-- ===== RECORD: centre label ===== -->
+    <svg class="v v-label" viewBox="0 0 440 440" aria-hidden="true">
+      <defs>
+        <linearGradient id="vl-sky" gradientUnits="userSpaceOnUse" x1="0" y1="148" x2="0" y2="250">
+          <stop offset="0" stop-color="#0a4fd6"/>
+          <stop offset=".55" stop-color="#3b9cff"/>
+          <stop offset="1" stop-color="#cdefff"/>
+        </linearGradient>
+        <linearGradient id="vl-hill" gradientUnits="userSpaceOnUse" x1="0" y1="226" x2="0" y2="292">
+          <stop offset="0" stop-color="#a6f84e"/>
+          <stop offset=".4" stop-color="#46d126"/>
+          <stop offset="1" stop-color="#1c9c16"/>
+        </linearGradient>
+        <radialGradient id="vl-sun" gradientUnits="userSpaceOnUse" cx="252" cy="178" r="24">
+          <stop offset="0" stop-color="#fff"/>
+          <stop offset=".32" stop-color="#fff"/>
+          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+        <mask id="vl-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="440">
+          <circle cx="220" cy="220" r="72" fill="#fff"/>
+          <circle cx="220" cy="220" r="4.6" fill="#000"/>
+        </mask>
+        <path id="vl-arc" d="M162 220 A58 58 0 0 0 278 220"/>
+      </defs>
+      <g transform="rotate(3 220 220)" mask="url(#vl-mask)">
+        <rect x="146" y="146" width="148" height="148" fill="url(#vl-sky)"/>
+        <circle cx="252" cy="178" r="24" fill="url(#vl-sun)"/>
+        <path d="M146 246 C 178 226, 228 218, 294 236 L294 294 L146 294 Z" fill="url(#vl-hill)"/>
+        <path d="M146 146 H294 V194 C 252 212, 190 212, 146 198 Z" fill="#fff" opacity=".13"/>
+        <text x="220" y="207" text-anchor="middle" font-size="21" font-weight="600" letter-spacing="-.6" fill="#fff">tide</text>
+        <text font-size="5.6" font-weight="600" letter-spacing="1.5" fill="#fff" fill-opacity=".95">
+          <textPath href="#vl-arc" startOffset="50%" text-anchor="middle">SHALLOW WATER · LUMEN BAY · SIDE A</textPath>
+        </text>
+        <circle cx="220" cy="220" r="10" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width=".8"/>
+        <circle cx="220" cy="220" r="71.3" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="1.3"/>
+      </g>
+    </svg>
+
+    <!-- ===== SLEEVE: frosted, tinted PVC over the lower half of the record ===== -->
+    <div class="sl sl-frost" aria-hidden="true"></div>
+    <div class="sl sl-tint" aria-hidden="true"></div>
+    <div class="sl sl-milk" aria-hidden="true"></div>
+    <div class="sl sl-gloss" aria-hidden="true">
+      <svg viewBox="0 0 460 460" width="460" height="460">
+        <defs>
+          <linearGradient id="sg-glare" gradientUnits="userSpaceOnUse" x1="230" y1="164" x2="255.5" y2="209.8">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+            <stop offset=".35" stop-color="#fff" stop-opacity=".55"/>
+            <stop offset=".6" stop-color="#fff" stop-opacity=".16"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="sg-seamL" x1="0" x2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+            <stop offset=".35" stop-color="#fff" stop-opacity="0"/>
+            <stop offset=".8" stop-color="#fff" stop-opacity="0"/>
+            <stop offset="1" stop-color="#fff" stop-opacity=".35"/>
+          </linearGradient>
+          <linearGradient id="sg-seamR" x1="1" x2="0">
+            <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
+            <stop offset=".35" stop-color="#fff" stop-opacity="0"/>
+            <stop offset=".8" stop-color="#fff" stop-opacity="0"/>
+            <stop offset="1" stop-color="#fff" stop-opacity=".35"/>
+          </linearGradient>
+          <radialGradient id="sg-glint" cx="452" cy="6" r="26" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- glare bands across the face -->
+        <path d="M0 292 L0 352 L460 96 L460 36 Z" fill="url(#sg-glare)" opacity=".7"/>
+        <path d="M0 386 L0 397 L460 141 L460 130 Z" fill="#fff" opacity=".14"/>
+        <!-- welded seams -->
+        <rect x="0" y="0" width="9" height="460" fill="url(#sg-seamL)"/>
+        <rect x="451" y="0" width="9" height="460" fill="url(#sg-seamR)"/>
+        <rect x="0" y="450" width="460" height="10" fill="#fff" opacity=".18"/>
+        <!-- open mouth: front edge + back edge catching light, and the thumb cut -->
+        <path d="M8 1.2 H192 M268 1.2 H452" stroke="#fff" stroke-width="1.7" opacity=".95"/>
+        <path d="M12 5.2 H188 M272 5.2 H448" stroke="#fff" stroke-width="1" opacity=".38"/>
+        <path d="M192 1.2 A36.8 36.8 0 0 0 268 1.2" fill="none" stroke="#fff" stroke-width="1.5" opacity=".9"/>
+        <circle cx="452" cy="6" r="26" fill="url(#sg-glint)"/>
+        <!-- white ink print -->
+        <g fill="#fff">
+          <text x="426" y="324" text-anchor="end" font-size="40" font-weight="600" letter-spacing="-1.6" fill-opacity=".94">tide</text>
+          <text x="426" y="345" text-anchor="end" font-size="10.5" font-weight="600" letter-spacing="2.6" fill-opacity=".9">SHALLOW WATER</text>
+          <text x="426" y="361" text-anchor="end" font-size="8.5" font-weight="500" letter-spacing="2" fill-opacity=".75">LOSSLESS SERIES · 01</text>
+        </g>
+        <path d="M330 300 c4 0 5-4 9-4 s5 4 9 4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+      </svg>
+    </div>
+
+    <!-- lens bloom: the overexposed sun washes over the top of the record -->
+    <div class="bloom" aria-hidden="true"></div>
+
+    <!-- foreground grass, in front of the sleeve's base -->
+    <svg class="fore" viewBox="-600 0 2640 900" aria-hidden="true">
+      <defs>
+        <linearGradient id="f-grass" gradientUnits="userSpaceOnUse" x1="0" y1="752" x2="0" y2="900">
+          <stop offset="0" stop-color="#d8ff70"/>
+          <stop offset=".1" stop-color="#9cf044"/>
+          <stop offset=".28" stop-color="#52d828"/>
+          <stop offset=".6" stop-color="#25ae18"/>
+          <stop offset="1" stop-color="#10870e"/>
+        </linearGradient>
+        <filter id="f-blades" filterUnits="userSpaceOnUse" x="-600" y="700" width="2640" height="220" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.3 0.014" numOctaves="2" seed="21" result="n"/>
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.5  1 0 0 0 0  0 0 0 0 0  0 0 0 0 1" result="m"/>
+          <feDisplacementMap in="SourceGraphic" in2="m" scale="24" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+      <path d="M520 900 C 640 836, 790 784, 960 776 C 1130 768, 1380 766, 1600 780 C 1800 793, 1960 804, 2040 806 L2040 900 Z"
+            fill="url(#f-grass)" filter="url(#f-blades)"/>
+    </svg>
+
+    <!-- blue light passing through the sleeve and pooling on the grass -->
+    <div class="caustic-shade" aria-hidden="true"></div>
+    <div class="caustic-light" aria-hidden="true"></div>
+    <div class="caustic-line" aria-hidden="true"></div>
+
+    <span class="bubble b1" aria-hidden="true"></span>
+    <span class="bubble b2" aria-hidden="true"></span>
+    <span class="bubble b3" aria-hidden="true"></span>
+    <span class="bubble b4" aria-hidden="true"></span>
+
+    <!-- now playing -->
+    <div class="player" role="group" aria-label="Now playing: Shallow Water by Lumen Bay">
+      <div class="art" aria-hidden="true"></div>
+      <div class="meta">
+        <div class="np"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>Now playing</div>
+        <div class="track">Shallow Water</div>
+        <div class="artist">Lumen Bay · Lossless 24-bit</div>
+        <div class="prog"><span>1:42</span><div class="tube"><div class="fill"></div></div><span>3:58</span></div>
+      </div>
+      <button class="orb-btn" type="button" aria-label="Pause">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="1.4" fill="#fff"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="1.4" fill="#fff"/></svg>
+      </button>
+    </div>
+
+    <!-- copy -->
+    <div class="copy">
+      <a class="eyebrow" href="#"><span class="tag">New</span>Lossless is now on every Tide plan<span class="arr" aria-hidden="true">→</span></a>
+      <h1><span class="l1">Music with the</span><span class="l2">light let in.</span></h1>
+      <p class="sub">Tide streams 100 million songs in crystal-clear lossless, with mixes that drift with your day&nbsp;— from first light to high tide.</p>
+      <div class="actions">
+        <a class="gel" href="#">Start listening free</a>
+        <a class="acrylic" href="#">
+          <span class="orb" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M3.5 2.2 L11.6 7 L3.5 11.8 Z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
+          Hear the difference
+        </a>
+      </div>
+      <ul class="fine">
+        <li>30 days free</li>
+        <li>No ads, ever</li>
+        <li>Cancel anytime</li>
+      </ul>
+    </div>
+
+    <!-- dither so the big gradients stay smooth -->
+    <svg class="grain" aria-hidden="true">
+      <filter id="g-n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+      <rect width="100%" height="100%" filter="url(#g-n)"/>
+    </svg>
+  </div>
+
+  <!-- nav -->
+  <header class="nav">
+    <a class="brand" href="#" aria-label="Tide home">
+      <span class="logo-orb" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 12.5c2.2 0 2.8-2.6 5-2.6s2.8 2.6 5 2.6 2.8-2.6 5-2.6 2.6 2.4 3 2.6" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/><path d="M5 16.6c1.8 0 2.3-2 4.2-2s2.4 2 4.2 2 2.3-2 4.2-2" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </span>
+      <span class="wordmark">tide</span>
+    </a>
+    <nav class="links" aria-label="Primary">
+      <a href="#">Discover</a>
+      <a href="#">Lossless</a>
+      <a href="#">Radio</a>
+      <a href="#">Pricing</a>
+      <a href="#">Download</a>
+    </nav>
+    <div class="nav-right">
+      <a class="login" href="#">Log in</a>
+      <a class="gel gel-sm" href="#">Get Tide</a>
+    </div>
+  </header>
+
+</section>
+
+</body>
+</html>

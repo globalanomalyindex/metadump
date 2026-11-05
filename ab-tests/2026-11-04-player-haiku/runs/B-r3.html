@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tide Player</title>
+<style>
+  :root {
+    --sky-zenith: #1F64D4;
+    --sky-mid: #5E98E4;
+    --sky-horizon: #9DCBF4;
+    --white-page: #F6FAFF;
+    --white-plate: #EAF4FF;
+    --white-lit: #DDEDFF;
+    --white-shade: #B3CBEA;
+    --acr-thin: #B9E0FF;
+    --acr-body: #2E8BF0;
+    --acr-edge: #1E6BFF;
+    --acr-core: #0A43B0;
+    --acr-caustic: #8FC8FF;
+    --grass-tip: #A8F03A;
+    --grass-body: #3DCB2A;
+    --grass-base: #13702A;
+    --ink: #0A2350;
+    --ink-2: #0F2D5E;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    min-height: 100vh;
+    font-family: "Avenir Next", "Gill Sans", "Gill Sans MT", "Seravek", system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(180deg, #1F64D4 0%, #2F78DC 34%, #5E98E4 60%, #9DCBF4 78%, #DDEDFF 90%, #F6FAFF 100%);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scene: saturated sky, blooming horizon, electric grass */
+  .scene { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .bloom {
+    position: absolute; left: 50%; bottom: 12vh;
+    width: min(1100px, 140vw); height: 360px; transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(255,255,255,.9), rgba(221,237,255,.45) 50%, rgba(221,237,255,0) 100%);
+  }
+  .cloud {
+    position: absolute; width: 360px; height: 120px; border-radius: 999px;
+    background: radial-gradient(closest-side, rgba(255,255,255,.7), rgba(255,255,255,0));
+    filter: blur(4px);
+  }
+  .c1 { left: 6%; top: 14%; }
+  .c2 { right: 6%; top: 26%; width: 420px; }
+  .grass { position: absolute; left: 0; bottom: 0; width: 100%; height: 24vh; min-height: 140px; display: block; }
+
+  .stage {
+    position: relative; z-index: 1; min-height: 100vh;
+    display: grid; place-items: center; padding: 24px 16px;
+  }
+
+  /* The card: tinted acrylic slab. Colour lives in the layers, not in opacity. */
+  .player {
+    position: relative;
+    width: min(400px, 100%);
+    padding: 16px;
+    border-radius: 32px;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 32%) padding-box,
+      linear-gradient(180deg, rgba(46,139,240,.10) 0%, rgba(10,67,176,.34) 100%) padding-box,
+      linear-gradient(180deg, rgba(234,244,255,.72) 0%, rgba(234,244,255,.72) 100%) padding-box,
+      linear-gradient(180deg, #FFFFFF 0%, #8FC8FF 30%, #1E6BFF 100%) border-box;
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.9),
+      inset 0 -22px 30px -20px rgba(143,200,255,.85),
+      0 34px 60px -24px rgba(10,67,176,.65),
+      0 10px 20px -12px rgba(30,107,255,.55);
+  }
+  /* Blue light spilling out beneath the slab, not a grey shadow */
+  .player::after {
+    content: ""; position: absolute; left: 8%; right: 8%; bottom: -30px; height: 48px;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(143,200,255,.75), rgba(143,200,255,0));
+    filter: blur(8px);
+  }
+
+  .top { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 12px; }
+  .brand { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 15px; letter-spacing: .02em; color: var(--ink); }
+  .brand svg { display: block; }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--ink-2); }
+
+  /* Artwork: a physical object lit from one side, with sheen while playing */
+  .art {
+    position: relative; aspect-ratio: 4 / 3; border-radius: 24px; overflow: hidden;
+    background: var(--sky-zenith);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.85),
+      0 0 0 1px rgba(185,224,255,.75),
+      0 18px 28px -16px rgba(10,67,176,.8);
+  }
+  .art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .art.swap svg { animation: swapIn .45s cubic-bezier(.2,.7,.2,1); }
+  @keyframes swapIn { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+  .sheen {
+    position: absolute; inset: -10%; pointer-events: none;
+    background: linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 62%);
+    transform: translateX(-100%);
+    animation: sweep 6s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+  .is-playing .sheen { animation-play-state: running; }
+  @keyframes sweep { 0% { transform: translateX(-100%); } 55%, 100% { transform: translateX(100%); } }
+
+  .meta { padding: 14px 4px 0; }
+  .meta h1 { margin: 0; font-size: 21px; line-height: 1.2; font-weight: 700; letter-spacing: -.005em; color: var(--ink); }
+  .artist { margin: 4px 0 0; font-size: 14.5px; color: var(--ink-2); }
+
+  /* Seek bar: a tinted rail with a lit knob */
+  .seek { margin-top: 14px; }
+  .progress {
+    position: relative; height: 26px; margin: 0 8px;
+    display: flex; align-items: center;
+    cursor: pointer; touch-action: none; user-select: none; outline: none; border-radius: 999px;
+  }
+  .progress:focus-visible { box-shadow: 0 0 0 3px rgba(30,107,255,.45); }
+  .rail {
+    position: relative; width: 100%; height: 8px; border-radius: 999px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(10,67,176,.42), rgba(143,200,255,.45));
+    box-shadow: inset 0 1px 2px rgba(10,35,80,.35), 0 1px 0 rgba(255,255,255,.9);
+  }
+  .fill {
+    position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(0);
+    background: linear-gradient(90deg, #B9E0FF 0%, #2E8BF0 55%, #1E6BFF 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .knob {
+    position: absolute; top: 50%; left: 0; width: 18px; height: 18px;
+    margin: -9px 0 0 -9px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, #FFFFFF 0 35%, #DDEDFF 70%, #8FC8FF 100%);
+    box-shadow: 0 0 0 2px #1E6BFF, 0 4px 10px -2px rgba(10,67,176,.7);
+    transition: transform .15s;
+  }
+  .progress:hover .knob, .progress.dragging .knob { transform: scale(1.15); }
+  .times {
+    display: flex; justify-content: space-between; margin: 2px 8px 0;
+    font-size: 12.5px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+
+  /* Transport */
+  .controls { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: 12px; }
+  .btn {
+    position: relative; display: grid; place-items: center; padding: 0; margin: 0;
+    border: 1px solid transparent; cursor: pointer; font: inherit; color: var(--ink);
+    transition: transform .18s cubic-bezier(.2,.7,.2,1), filter .2s, box-shadow .2s;
+  }
+  .btn svg { display: block; fill: currentColor; position: relative; z-index: 1; }
+  .btn:active { transform: scale(.96); }
+  .btn:focus-visible { outline: 3px solid var(--acr-edge); outline-offset: 3px; }
+
+  .btn.side {
+    width: 52px; height: 52px; border-radius: 50%;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 46%) padding-box,
+      linear-gradient(180deg, rgba(185,224,255,.7) 0%, rgba(46,139,240,.42) 100%) padding-box,
+      linear-gradient(180deg, #FFFFFF 0%, #8FC8FF 40%, #1E6BFF 100%) border-box;
+    box-shadow: 0 10px 18px -10px rgba(10,67,176,.8), inset 0 -8px 12px -8px rgba(143,200,255,.9);
+  }
+  .btn.side svg { width: 40%; height: 40%; color: var(--ink); }
+  .btn.side:hover { transform: translateY(-1px); }
+
+  .btn.play {
+    width: 72px; height: 72px; border-radius: 50%; color: #fff; overflow: hidden;
+    background: linear-gradient(180deg, #1457D8 0%, #0A43B0 100%);
+    border-color: rgba(185,224,255,.9);
+    box-shadow:
+      0 16px 26px -10px rgba(10,67,176,.9),
+      0 0 0 1px rgba(10,67,176,.6),
+      inset 0 1px 0 rgba(255,255,255,.55),
+      inset 0 -10px 18px -6px rgba(143,200,255,.75);
+  }
+  .btn.play::before {
+    content: ""; position: absolute; left: 10%; right: 10%; top: 6%; height: 40%;
+    border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.12) 70%, rgba(255,255,255,0));
+  }
+  .btn.play::after {
+    content: ""; position: absolute; left: 20%; right: 20%; bottom: 2%; height: 30%;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(143,200,255,.55), rgba(143,200,255,0));
+  }
+  .btn.play svg { width: 34%; height: 34%; fill: #fff; }
+  .btn.play:hover { filter: brightness(1.06); }
+
+  /* Volume */
+  .volume { display: flex; align-items: center; gap: 10px; margin: 16px 6px 0; color: var(--ink); }
+  .volume > svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .volume .spk { fill: currentColor; stroke: none; }
+  .volume[data-level="0"] .w1, .volume[data-level="0"] .w2 { display: none; }
+  .volume[data-level="1"] .w2 { display: none; }
+  .volume[data-level="2"] .mx { display: none; }
+  .volume input[type="range"] {
+    -webkit-appearance: none; appearance: none; flex: 1; height: 22px; margin: 0; cursor: pointer;
+    background: transparent; --v: 70%;
+  }
+  .volume input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 999px;
+    background: linear-gradient(90deg, #2E8BF0 var(--v), rgba(10,67,176,.22) var(--v));
+    box-shadow: inset 0 1px 1px rgba(10,35,80,.3), 0 1px 0 rgba(255,255,255,.9);
+  }
+  .volume input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; margin-top: -6px; border: 0;
+    background: radial-gradient(circle at 35% 30%, #fff 0 40%, #DDEDFF 75%, #8FC8FF);
+    box-shadow: 0 0 0 2px #1E6BFF, 0 3px 8px -2px rgba(10,67,176,.7);
+  }
+  .volume input[type="range"]::-moz-range-track { height: 6px; border-radius: 999px; background: rgba(10,67,176,.22); }
+  .volume input[type="range"]::-moz-range-progress { height: 6px; border-radius: 999px; background: #2E8BF0; }
+  .volume input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; border: 0; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff 0 40%, #DDEDFF 75%, #8FC8FF);
+    box-shadow: 0 0 0 2px #1E6BFF, 0 3px 8px -2px rgba(10,67,176,.7);
+  }
+  .volume input[type="range"]:focus-visible { outline: 3px solid var(--acr-edge); outline-offset: 3px; border-radius: 999px; }
+  .volval { width: 28px; text-align: right; font-size: 13px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* Queue */
+  .queue { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.85); }
+  .queue h2 { margin: 0 4px 8px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--ink-2); }
+  .queue ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .qitem {
+    width: 100%; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px;
+    padding: 5px 12px 5px 5px; border-radius: 18px; border: 1px solid transparent;
+    font: inherit; color: var(--ink); text-align: left; cursor: pointer;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 60%) padding-box,
+      linear-gradient(180deg, rgba(234,244,255,.8) 0%, rgba(185,224,255,.58) 100%) padding-box,
+      linear-gradient(180deg, #FFFFFF 0%, #8FC8FF 100%) border-box;
+    transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .2s;
+  }
+  .qitem:hover { transform: translateY(-1px); box-shadow: 0 8px 16px -10px rgba(10,67,176,.7); }
+  .qitem:focus-visible { outline: 3px solid var(--acr-edge); outline-offset: 2px; }
+  .thumb {
+    position: relative; width: 40px; height: 40px; border-radius: 12px; overflow: hidden;
+    background:
+      radial-gradient(circle at 34% 30%, #FFFFFF 0 8%, rgba(255,255,255,0) 26%),
+      linear-gradient(180deg, var(--a), var(--b));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), inset 0 -6px 10px -4px rgba(10,67,176,.7);
+  }
+  .thumb::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30%;
+    background: linear-gradient(180deg, #3DCB2A, #13702A);
+  }
+  .qtext { display: grid; min-width: 0; }
+  .qtitle { font-size: 14.5px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qartist { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qdur { font-size: 12.5px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 420px) {
+    .player { padding: 14px; border-radius: 28px; }
+    .btn.play { width: 64px; height: 64px; }
+    .controls { gap: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sheen { display: none; }
+    .art.swap svg { animation: none; }
+    *, *::before, *::after { transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="bloom"></div>
+  <svg class="grass" id="grass" viewBox="0 0 1280 200" preserveAspectRatio="none"></svg>
+</div>
+
+<main class="stage">
+  <section class="player" id="player" aria-label="Tide music player">
+    <header class="top">
+      <span class="brand">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <defs>
+            <linearGradient id="brandG" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#B9E0FF"/><stop offset=".5" stop-color="#2E8BF0"/><stop offset="1" stop-color="#0A43B0"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 2.5C15.5 7 19 10.6 19 14.6a7 7 0 0 1-14 0C5 10.6 8.5 7 12 2.5z" fill="url(#brandG)"/>
+        </svg>
+        Tide
+      </span>
+      <span class="eyebrow">Now playing</span>
+    </header>
+
+    <div class="art" id="art"></div>
+
+    <div class="meta" aria-live="polite">
+      <h1 id="title"></h1>
+      <p class="artist" id="artist"></p>
+    </div>
+
+    <div class="seek">
+      <div class="progress" id="progress" role="slider" tabindex="0" aria-label="Seek"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0:00">
+        <div class="rail"><div class="fill" id="fill"></div></div>
+        <div class="knob" id="knob"></div>
+      </div>
+      <div class="times"><span id="elapsed">0:00</span><span id="remaining">-0:00</span></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn side" id="prev" type="button" aria-label="Previous track"></button>
+      <button class="btn play" id="play" type="button" aria-label="Play"></button>
+      <button class="btn side" id="next" type="button" aria-label="Next track"></button>
+    </div>
+
+    <div class="volume" id="volume" data-level="2">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="spk" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/>
+        <path class="w1" d="M15.2 9.2a4 4 0 0 1 0 5.6"/>
+        <path class="w2" d="M17.8 6.6a7.6 7.6 0 0 1 0 10.8"/>
+        <path class="mx" d="M15.5 9.5l5 5M20.5 9.5l-5 5"/>
+      </svg>
+      <input type="range" id="vol" min="0" max="100" step="1" value="70" aria-label="Volume">
+      <span class="volval" id="volVal">70</span>
+    </div>
+
+    <section class="queue" aria-labelledby="qh">
+      <h2 id="qh">Up next</h2>
+      <ol id="queue"></ol>
+    </section>
+  </section>
+</main>
+
+<script>
+(function () {
+  const TRACKS = [
+    { title: 'Low Tide Glass',     artist: 'Marlow & Tern', dur: 222, shape: 'lens',    sky: ['#1F64D4', '#5E98E4', '#9DCBF4'] },
+    { title: 'Sunlit Vinyl',       artist: 'Ada Kiln',      dur: 245, shape: 'sheets',  sky: ['#1A5CCB', '#4F8DE0', '#8FC0F0'] },
+    { title: 'Caustic Pool',       artist: 'Harbor Lune',   dur: 198, shape: 'bubbles', sky: ['#2A70DA', '#6CA6EA', '#A9D4F6'] },
+    { title: 'Hyperreal Green',    artist: 'Field Notes',   dur: 177, shape: 'ring',    sky: ['#1F64D4', '#5E98E4', '#9DCBF4'] },
+    { title: 'Blue Acrylic Hours', artist: 'Tide Choir',    dur: 271, shape: 'lens',    sky: ['#1B5FCF', '#5494E2', '#A3CEF5'] }
+  ];
+  const N = TRACKS.length;
+
+  const ICON_PLAY  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1.4"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.4"/></svg>';
+  const ICON_PREV  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M18.5 6.2v11.6a.8.8 0 0 1-1.25.66L9 12.66a.8.8 0 0 1 0-1.32l8.25-5.8a.8.8 0 0 1 1.25.66z"/></svg>';
+  const ICON_NEXT  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5.5v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M5.5 6.2v11.6a.8.8 0 0 0 1.25.66L15 12.66a.8.8 0 0 0 0-1.32L6.75 5.54A.8.8 0 0 0 5.5 6.2z"/></svg>';
+
+  const el = {
+    player: document.getElementById('player'),
+    art: document.getElementById('art'),
+    title: document.getElementById('title'),
+    artist: document.getElementById('artist'),
+    progress: document.getElementById('progress'),
+    fill: document.getElementById('fill'),
+    knob: document.getElementById('knob'),
+    elapsed: document.getElementById('elapsed'),
+    remaining: document.getElementById('remaining'),
+    prev: document.getElementById('prev'),
+    play: document.getElementById('play'),
+    next: document.getElementById('next'),
+    vol: document.getElementById('vol'),
+    volVal: document.getElementById('volVal'),
+    volume: document.getElementById('volume'),
+    queue: document.getElementById('queue'),
+    grass: document.getElementById('grass')
+  };
+
+  let idx = 0;
+  let playing = false;
+  let elapsed = 0;
+  let volume = 70;
+  let dragging = false;
+  let last = null;
+  let lastSec = -1;
+
+  // Deterministic pseudo-random for blade placement
+  function fr(n) { const v = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); }
+
+  function blades(w, base, step, minH, maxH, seed) {
+    const g = { a: '', b: '', c: '' };
+    for (let x = -6; x <= w + 6; x += step) {
+      const r = fr(x * 0.731 + seed);
+      const h = minH + r * (maxH - minH);
+      const lean = (fr(x * 1.37 + seed + 5) - 0.5) * h * 0.7;
+      const hw = 2 + fr(x * 0.19 + seed + 9) * 2.6;
+      const tipX = x + lean, tipY = base - h;
+      const d = 'M' + (x - hw).toFixed(1) + ' ' + base +
+        ' Q' + (x + lean * 0.15 - hw * 0.2).toFixed(1) + ' ' + (base - h * 0.55).toFixed(1) +
+        ' ' + tipX.toFixed(1) + ' ' + tipY.toFixed(1) +
+        ' Q' + (x + lean * 0.2 + hw * 0.8).toFixed(1) + ' ' + (base - h * 0.5).toFixed(1) +
+        ' ' + (x + hw).toFixed(1) + ' ' + base + 'Z';
+      const k = r < 0.33 ? 'a' : (r < 0.66 ? 'b' : 'c');
+      g[k] += d;
+    }
+    return g;
+  }
+  function bladeMarkup(g) {
+    return '<path d="' + g.c + '" fill="#13702A"/>' +
+           '<path d="' + g.a + '" fill="#3DCB2A"/>' +
+           '<path d="' + g.b + '" fill="#A8F03A"/>';
+  }
+
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function bub(x, y, r) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="url(#aAcr)" fill-opacity=".62" stroke="#B9E0FF" stroke-width="2.5" stroke-opacity=".9"/>' +
+           '<circle cx="' + (x - r * 0.36).toFixed(1) + '" cy="' + (y - r * 0.38).toFixed(1) + '" r="' + (r * 0.16).toFixed(1) + '" fill="#FFFFFF" opacity=".9"/>';
+  }
+
+  function artSVG(t) {
+    const a = t.sky[0], b = t.sky[1], c = t.sky[2];
+    const back = bladeMarkup(blades(400, 300, 9, 26, 70, 11));
+    const front = bladeMarkup(blades(400, 300, 17, 12, 30, 47));
+    let obj = '';
+    if (t.shape === 'lens') {
+      obj = '<g transform="translate(50 0) scale(.75)">' +
+        '<path d="M118 190 C112 120 170 92 226 98 C290 106 306 164 290 232 C276 296 212 304 168 288 C128 274 122 236 118 190Z" fill="url(#aAcr)" fill-opacity=".94"/>' +
+        '<ellipse cx="206" cy="226" rx="66" ry="40" fill="#0A43B0" opacity=".45" filter="url(#aSoft)"/>' +
+        '<path d="M118 190 C112 120 170 92 226 98" fill="none" stroke="#B9E0FF" stroke-width="2.5" stroke-opacity=".85"/>' +
+        '<path d="M146 132 Q178 108 220 112" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>' +
+        '<ellipse cx="240" cy="178" rx="14" ry="7" fill="#FFFFFF" opacity=".6" filter="url(#aSoft)"/>' +
+        '</g>';
+    } else if (t.shape === 'sheets') {
+      obj = '<g transform="translate(50 0) scale(.75)" fill="#2E8BF0" stroke="#B9E0FF" stroke-width="2.5" stroke-opacity=".9">' +
+        '<rect x="98" y="120" width="170" height="150" rx="26" fill-opacity=".36" transform="rotate(-12 183 195)"/>' +
+        '<rect x="132" y="112" width="170" height="150" rx="26" fill-opacity=".5" transform="rotate(4 217 187)"/>' +
+        '<rect x="110" y="150" width="180" height="140" rx="26" fill-opacity=".42" transform="rotate(-4 200 220)"/>' +
+        '</g>';
+    } else if (t.shape === 'bubbles') {
+      obj = '<g transform="translate(50 0) scale(.75)">' +
+        bub(150, 190, 62) + bub(252, 160, 44) + bub(246, 262, 70) + bub(120, 286, 30) +
+        '</g>';
+    } else {
+      obj = '<g transform="translate(50 0) scale(.75)">' +
+        '<circle cx="200" cy="200" r="110" fill="none" stroke="url(#aAcr)" stroke-width="54" stroke-opacity=".92"/>' +
+        '<circle cx="200" cy="200" r="134" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity=".6"/>' +
+        '<circle cx="200" cy="200" r="84" fill="none" stroke="#0A43B0" stroke-width="2" stroke-opacity=".5"/>' +
+        '<path d="M105 145 A110 110 0 0 1 181 92" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" opacity=".9"/>' +
+        '</g>';
+    }
+    return '<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="aSky" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="' + a + '"/><stop offset=".6" stop-color="' + b + '"/>' +
+          '<stop offset=".86" stop-color="' + c + '"/><stop offset="1" stop-color="#F6FAFF"/></linearGradient>' +
+        '<linearGradient id="aGrass" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#A8F03A"/><stop offset=".5" stop-color="#3DCB2A"/><stop offset="1" stop-color="#13702A"/></linearGradient>' +
+        '<linearGradient id="aAcr" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0" stop-color="#B9E0FF"/><stop offset=".45" stop-color="#2E8BF0"/><stop offset="1" stop-color="#0A43B0"/></linearGradient>' +
+        '<radialGradient id="aBloom">' +
+          '<stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>' +
+        '<radialGradient id="aCaus">' +
+          '<stop offset="0" stop-color="#FFFFFF"/><stop offset=".4" stop-color="#8FC8FF"/>' +
+          '<stop offset="1" stop-color="#8FC8FF" stop-opacity="0"/></radialGradient>' +
+        '<filter id="aSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>' +
+      '</defs>' +
+      '<rect width="400" height="300" fill="url(#aSky)"/>' +
+      '<circle cx="300" cy="70" r="120" fill="url(#aBloom)"/>' +
+      '<path d="M0 214 Q200 190 400 218 L400 300 L0 300Z" fill="url(#aGrass)"/>' +
+      back +
+      '<ellipse cx="210" cy="264" rx="104" ry="13" fill="url(#aCaus)"/>' +
+      obj +
+      front +
+      '</svg>';
+  }
+
+  function drawGrass() {
+    const g = blades(1280, 200, 12, 46, 120, 3);
+    el.grass.innerHTML =
+      '<defs><linearGradient id="gField" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#3DCB2A"/><stop offset="1" stop-color="#13702A"/></linearGradient></defs>' +
+      '<path d="M0 70 Q320 40 640 62 T1280 56 V200 H0Z" fill="url(#gField)"/>' +
+      bladeMarkup(g);
+  }
+
+  function setPlayIcon() {
+    el.play.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+    el.play.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    el.player.classList.toggle('is-playing', playing);
+  }
+
+  function updateProgress(force) {
+    const t = TRACKS[idx];
+    const e = Math.min(Math.max(elapsed, 0), t.dur);
+    const p = e / t.dur;
+    el.fill.style.transform = 'scaleX(' + p + ')';
+    el.knob.style.left = (p * 100) + '%';
+    const sec = Math.floor(e);
+    if (force || sec !== lastSec) {
+      lastSec = sec;
+      el.elapsed.textContent = fmt(e);
+      el.remaining.textContent = '-' + fmt(t.dur - e);
+      el.progress.setAttribute('aria-valuenow', String(sec));
+      el.progress.setAttribute('aria-valuetext', fmt(e) + ' of ' + fmt(t.dur));
+    }
+  }
+
+  function renderQueue() {
+    const items = [];
+    const count = Math.min(4, N - 1);
+    for (let k = 1; k <= count; k++) {
+      const i = (idx + k) % N;
+      const t = TRACKS[i];
+      items.push(
+        '<li><button class="qitem" type="button" data-i="' + i + '" aria-label="Play ' + t.title + ' by ' + t.artist + '">' +
+        '<span class="thumb" style="--a:' + t.sky[0] + ';--b:' + t.sky[2] + '"></span>' +
+        '<span class="qtext"><span class="qtitle">' + t.title + '</span><span class="qartist">' + t.artist + '</span></span>' +
+        '<span class="qdur">' + fmt(t.dur) + '</span>' +
+        '</button></li>'
+      );
+    }
+    el.queue.innerHTML = items.join('');
+  }
+
+  function renderTrack() {
+    const t = TRACKS[idx];
+    el.title.textContent = t.title;
+    el.artist.textContent = t.artist;
+    el.art.innerHTML = artSVG(t) + '<div class="sheen"></div>';
+    el.art.classList.remove('swap');
+    void el.art.offsetWidth;
+    el.art.classList.add('swap');
+    el.progress.setAttribute('aria-valuemax', String(t.dur));
+    el.progress.setAttribute('aria-label', 'Seek within ' + t.title);
+    lastSec = -1;
+    renderQueue();
+    updateProgress(true);
+  }
+
+  function step(dir) {
+    idx = (idx + dir + N) % N;
+    elapsed = 0;
+    renderTrack();
+  }
+
+  function togglePlay() {
+    playing = !playing;
+    if (playing && elapsed >= TRACKS[idx].dur) elapsed = 0;
+    setPlayIcon();
+  }
+
+  function playIndex(i) {
+    idx = i;
+    elapsed = 0;
+    playing = true;
+    renderTrack();
+    setPlayIcon();
+  }
+
+  function prev() {
+    if (elapsed > 3) {
+      elapsed = 0;
+      updateProgress(true);
+    } else {
+      step(-1);
+    }
+  }
+
+  function applyVolume() {
+    el.vol.style.setProperty('--v', volume + '%');
+    el.vol.value = volume;
+    el.volVal.textContent = String(volume);
+    el.vol.setAttribute('aria-valuetext', volume + '%');
+    el.volume.dataset.level = volume === 0 ? '0' : (volume < 40 ? '1' : '2');
+  }
+
+  // Seeking: pointer drag and keyboard
+  function seekTo(e) {
+    const r = el.progress.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    elapsed = x * TRACKS[idx].dur;
+    updateProgress(true);
+  }
+
+  el.progress.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0) return;
+    dragging = true;
+    el.progress.setPointerCapture(e.pointerId);
+    el.progress.classList.add('dragging');
+    seekTo(e);
+  });
+  el.progress.addEventListener('pointermove', function (e) {
+    if (dragging) seekTo(e);
+  });
+  function endDrag() {
+    dragging = false;
+    el.progress.classList.remove('dragging');
+  }
+  el.progress.addEventListener('pointerup', endDrag);
+  el.progress.addEventListener('pointercancel', endDrag);
+
+  el.progress.addEventListener('keydown', function (e) {
+    const dur = TRACKS[idx].dur;
+    let handled = true;
+    switch (e.key) {
+      case 'ArrowLeft': case 'ArrowDown': elapsed -= 5; break;
+      case 'ArrowRight': case 'ArrowUp': elapsed += 5; break;
+      case 'PageDown': elapsed -= 15; break;
+      case 'PageUp': elapsed += 15; break;
+      case 'Home': elapsed = 0; break;
+      case 'End': elapsed = dur; break;
+      default: handled = false;
+    }
+    if (handled) {
+      e.preventDefault();
+      elapsed = Math.min(dur - 0.5, Math.max(0, elapsed));
+      updateProgress(true);
+    }
+  });
+
+  // Transport
+  el.play.addEventListener('click', function () { togglePlay(); });
+  el.prev.addEventListener('click', prev);
+  el.next.addEventListener('click', function () { step(1); });
+  el.queue.addEventListener('click', function (e) {
+    const b = e.target.closest('.qitem');
+    if (b) playIndex(Number(b.dataset.i));
+  });
+
+  el.vol.addEventListener('input', function () {
+    volume = Number(el.vol.value);
+    applyVolume();
+  });
+
+  // Space toggles play when nothing interactive has focus
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' && (e.target === document.body || e.target === document.documentElement)) {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  // Clock: progress advances only while playing
+  function frame(now) {
+    if (last === null) last = now;
+    const dt = Math.min((now - last) / 1000, 0.25);
+    last = now;
+    if (playing && !dragging) {
+      elapsed += dt;
+      if (elapsed >= TRACKS[idx].dur) {
+        step(1);
+      } else {
+        updateProgress(false);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  drawGrass();
+  renderTrack();
+  setPlayIcon();
+  applyVolume();
+  el.prev.innerHTML = ICON_PREV;
+  el.next.innerHTML = ICON_NEXT;
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

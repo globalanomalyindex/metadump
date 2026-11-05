@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop</title>
+<style>
+:root{
+  --bg:#f6f5f2;--surface:#ffffff;--ink:#1c1b19;--muted:#6d6a63;--line:#e5e2dc;
+  --accent:#1c1b19;--accent-ink:#ffffff;--good:#2f6b4f;--radius:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131312;--surface:#1c1c1a;--ink:#f1efe9;--muted:#9b978f;--line:#2b2a27;
+    --accent:#f1efe9;--accent-ink:#131312;--good:#7fc4a0;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131312;--surface:#1c1c1a;--ink:#f1efe9;--muted:#9b978f;--line:#2b2a27;
+  --accent:#f1efe9;--accent-ink:#131312;--good:#7fc4a0;color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.01em;margin:0}
+.bag-btn{
+  display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid var(--line);
+  color:var(--ink);border-radius:999px;padding:8px 14px;
+}
+.badge{
+  min-width:22px;height:22px;border-radius:999px;background:var(--accent);color:var(--accent-ink);
+  display:inline-grid;place-items:center;font-size:12px;font-weight:600;padding:0 6px;
+  font-variant-numeric:tabular-nums;
+}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:24px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;
+}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input[type=search],select{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;
+}
+input[type=search]{width:220px}
+.count{color:var(--muted);font-size:13px;margin-top:16px}
+.layout{display:grid;grid-template-columns:1fr;gap:24px;margin-top:12px;align-items:start}
+@media (min-width:900px){
+  .layout{grid-template-columns:1fr 340px}
+  .bag{position:sticky;top:16px}
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;display:flex;flex-direction:column;
+}
+.art{aspect-ratio:1/1;display:grid;place-items:center}
+.art svg,.thumb svg{fill:none;stroke:#1c1b19;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
+.art svg{width:52%;height:52%}
+.meta{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.cat{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+h3{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.blurb{margin:0;color:var(--muted);font-size:13px;flex:1}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.price{font-weight:600;font-variant-numeric:tabular-nums}
+.inbag{font-size:12px;color:var(--good)}
+.buy{margin-top:8px}
+select{padding:7px 10px;border-radius:999px;font-size:14px}
+.btn{
+  background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;
+  padding:9px 14px;font-weight:600;font-size:14px;
+}
+.btn:hover{opacity:.88}
+.btn.wide,.ghost.wide{display:block;width:100%;text-align:center}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px}
+.ghost:hover{border-color:var(--muted)}
+.bag{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;
+}
+.bag h2{margin:0 0 4px;font-size:17px;font-weight:600}
+.lines{list-style:none;margin:12px 0 0;padding:0}
+.line{display:grid;grid-template-columns:56px 1fr auto;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.thumb{width:56px;height:56px;border-radius:10px;display:grid;place-items:center}
+.thumb svg{width:60%;height:60%}
+.name{font-weight:600;font-size:14px}
+.hint{font-size:12px;color:var(--muted)}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;margin-top:8px;overflow:hidden}
+.stepper button{background:none;border:0;padding:4px 10px;color:var(--ink);font-size:15px}
+.stepper span{min-width:26px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.lineend{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.lineend .price{font-size:14px}
+.totals{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.totals div{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.totals .grand{color:var(--ink);font-weight:700;font-size:16px;margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}
+.bag .hint{margin:10px 0 12px}
+.bag .btn.wide{margin-bottom:8px}
+.empty,.empty-bag{color:var(--muted);text-align:center;padding:40px 8px}
+.empty-bag{padding:28px 8px}
+.empty-bag p{margin:0 0 4px}
+.empty{grid-column:1/-1}
+.status{min-height:22px;font-size:13px;color:var(--good);margin-top:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">Field &amp; Form</h1>
+    <button class="bag-btn" id="bagBtn" data-act="go-bag" type="button">
+      Bag <span class="badge" id="badge">0</span>
+    </button>
+  </header>
+
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+    <div class="tools">
+      <label class="sr" for="search">Search products</label>
+      <input type="search" id="search" placeholder="Search products" autocomplete="off">
+      <label class="sr" for="sort">Sort products</label>
+      <select id="sort">
+        <option value="featured">Featured</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="name">Name A to Z</option>
+      </select>
+    </div>
+  </div>
+  <div class="count" id="count" aria-live="polite"></div>
+
+  <div class="layout">
+    <section>
+      <div class="grid" id="grid"></div>
+    </section>
+    <aside class="bag" id="bag" aria-label="Shopping bag"></aside>
+  </div>
+
+  <div class="status" id="status" role="status"></div>
+</div>
+
+<script>
+(() => {
+  const KEY = 'field-form-bag-v1';
+  const FREE_SHIP = 7500;   // cents
+  const SHIP_FEE = 695;     // cents
+  const TAX = 0.08;
+  const MAX_QTY = 10;
+
+  const PRODUCTS = [
+    { id:'p1', name:'Merino Crew Sweater',  cat:'Apparel',     price:8900, sizes:['XS','S','M','L','XL'], color:'#e8dcc4', art:'sweater', blurb:'Extra-fine merino, relaxed fit, machine washable.' },
+    { id:'p2', name:'Waxed Canvas Tote',    cat:'Accessories', price:4200, color:'#c9d6c4', art:'tote',    blurb:'12 oz waxed canvas, leather handles, inside pocket.' },
+    { id:'p3', name:'Stoneware Pour-Over',  cat:'Home',        price:5850, color:'#f0d6c6', art:'pot',     blurb:'Glazed stoneware dripper, carafe and two filters.' },
+    { id:'p4', name:'Trail Runner 2',       cat:'Footwear',    price:12400, sizes:['7','8','9','10','11','12'], color:'#cdd9e6', art:'shoe', blurb:'Recycled mesh upper, 4 mm lugs, 240 g.' },
+    { id:'p5', name:'Linen Overshirt',      cat:'Apparel',     price:9600, sizes:['S','M','L','XL'], color:'#eee3c6', art:'shirt',  blurb:'Garment-dyed European linen, two chest pockets.' },
+    { id:'p6', name:'Insulated Bottle',     cat:'Accessories', price:3400, color:'#d2dccd', art:'bottle',  blurb:'750 ml double-wall steel. Keeps cold for 24 hours.' },
+    { id:'p7', name:'Brass Desk Lamp',      cat:'Home',        price:13900, color:'#f2e2bf', art:'lamp',   blurb:'Adjustable arm, warm 2700K LED, dimmable.' },
+    { id:'p8', name:'Ribbed Wool Beanie',   cat:'Apparel',     price:2800, sizes:['One size'], color:'#e9d3cf', art:'hat', blurb:'Lambswool blend with a folded cuff.' }
+  ];
+
+  const ART = {
+    sweater:'M40 36 L20 50 L30 66 L38 60 L38 98 L82 98 L82 60 L90 66 L100 50 L80 36 Q60 46 40 36 Z',
+    tote:'M36 48 Q36 22 60 22 Q84 22 84 48 M28 48 H92 L88 102 H32 Z',
+    pot:'M36 50 H84 L78 98 H42 Z M28 44 H92 M60 30 V44',
+    shoe:'M20 76 Q24 56 46 58 L60 66 Q72 70 92 66 Q102 68 102 80 L102 86 H20 Z',
+    shirt:'M44 30 L60 40 L76 30 L100 46 L90 62 L82 56 L82 98 H38 V56 L30 62 L20 46 Z',
+    bottle:'M50 22 H70 V32 Q80 36 80 50 V98 H40 V50 Q40 36 50 32 Z M50 22 H70',
+    lamp:'M28 98 H72 M50 98 V74 M50 74 L80 40 M74 30 L96 46 L84 58 Z',
+    hat:'M24 72 Q24 34 60 34 Q96 34 96 72 Z M24 72 H96 V86 H24 Z'
+  };
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money = cents => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents / 100);
+  const byId = id => PRODUCTS.find(p => p.id === id);
+  const art = key => `<svg viewBox="0 0 120 120" aria-hidden="true"><path d="${ART[key]}"/></svg>`;
+
+  function load(){
+    try {
+      const v = JSON.parse(localStorage.getItem(KEY));
+      return Array.isArray(v) ? v.filter(l => byId(l.id) && l.qty >= 1 && l.qty <= MAX_QTY) : [];
+    } catch (e) { return []; }
+  }
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(state.bag)); } catch (e) { /* storage unavailable: keep going */ }
+  }
+
+  const state = { cat:'All', q:'', sort:'featured', sel:{}, bag:load(), msg:'' };
+
+  function visible(){
+    const q = state.q.trim().toLowerCase();
+    const sorters = {
+      'featured':   () => 0,
+      'price-asc':  (a, b) => a.price - b.price,
+      'price-desc': (a, b) => b.price - a.price,
+      'name':       (a, b) => a.name.localeCompare(b.name)
+    };
+    return PRODUCTS
+      .filter(p => state.cat === 'All' || p.cat === state.cat)
+      .filter(p => !q || (p.name + ' ' + p.cat + ' ' + p.blurb).toLowerCase().includes(q))
+      .sort(sorters[state.sort]);
+  }
+
+  function totals(){
+    const sub = state.bag.reduce((s, l) => s + byId(l.id).price * l.qty, 0);
+    const count = state.bag.reduce((s, l) => s + l.qty, 0);
+    const ship = sub === 0 ? 0 : (sub >= FREE_SHIP ? 0 : SHIP_FEE);
+    const tax = Math.round(sub * TAX);
+    return { sub, count, ship, tax, total: sub + ship + tax };
+  }
+
+  function selectedSize(p){
+    return p.sizes ? (state.sel[p.id] || p.sizes[0]) : null;
+  }
+
+  function renderChips(){
+    const cats = ['All', ...new Set(PRODUCTS.map(p => p.cat))];
+    $('#chips').innerHTML = cats.map(c =>
+      `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${c === state.cat}">${esc(c)}</button>`
+    ).join('');
+  }
+
+  function card(p){
+    const inBag = state.bag.filter(l => l.id === p.id).reduce((s, l) => s + l.qty, 0);
+    const size = selectedSize(p);
+    const sizeSel = p.sizes && p.sizes.length > 1
+      ? `<label class="sr" for="size-${p.id}">Size for ${esc(p.name)}</label>
+         <select id="size-${p.id}" data-size="${p.id}">${p.sizes.map(s =>
+           `<option${s === size ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>`
+      : (p.sizes ? `<span class="hint">${esc(p.sizes[0])}</span>` : '');
+    return `
+      <article class="card">
+        <div class="art" style="background:${p.color}">${art(p.art)}</div>
+        <div class="meta">
+          <div class="cat">${esc(p.cat)}</div>
+          <h3>${esc(p.name)}</h3>
+          <p class="blurb">${esc(p.blurb)}</p>
+          <div class="row"><span class="price">${money(p.price)}</span>${inBag ? `<span class="inbag">${inBag} in bag</span>` : ''}</div>
+          <div class="row buy">
+            ${sizeSel}
+            <button class="btn" type="button" data-add="${p.id}">Add to bag</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderGrid(){
+    const list = visible();
+    $('#grid').innerHTML = list.length
+      ? list.map(card).join('')
+      : `<div class="empty">No products match${state.q ? ` “${esc(state.q)}”` : ' these filters'}.
+           <p><button class="ghost" type="button" data-act="clear-filters">Clear filters</button></p></div>`;
+    $('#count').textContent = `${list.length} product${list.length === 1 ? '' : 's'}`;
+  }
+
+  function renderBag(){
+    const t = totals();
+    const lines = state.bag.map((l, i) => {
+      const p = byId(l.id);
+      return `
+        <li class="line">
+          <div class="thumb" style="background:${p.color}">${art(p.art)}</div>
+          <div>
+            <div class="name">${esc(p.name)}</div>
+            ${l.size ? `<div class="hint">Size ${esc(l.size)}</div>` : ''}
+            <div class="stepper" role="group" aria-label="Quantity for ${esc(p.name)}">
+              <button type="button" data-qty="${i}" data-d="-1" aria-label="Decrease quantity">−</button>
+              <span aria-live="polite">${l.qty}</span>
+              <button type="button" data-qty="${i}" data-d="1" aria-label="Increase quantity"${l.qty >= MAX_QTY ? ' disabled' : ''}>+</button>
+            </div>
+          </div>
+          <div class="lineend">
+            <div class="price">${money(p.price * l.qty)}</div>
+            <button class="ghost" type="button" data-remove="${i}">Remove</button>
+          </div>
+        </li>`;
+    }).join('');
+
+    const need = FREE_SHIP - t.sub;
+    $('#bag').innerHTML = `
+      <h2>Your bag <span class="hint">(${t.count})</span></h2>
+      ${state.bag.length ? `
+        <ul class="lines">${lines}</ul>
+        <div class="totals">
+          <div><span>Subtotal</span><span>${money(t.sub)}</span></div>
+          <div><span>Shipping</span><span>${t.ship ? money(t.ship) : 'Free'}</span></div>
+          <div><span>Estimated tax (8%)</span><span>${money(t.tax)}</span></div>
+          <div class="grand"><span>Total</span><span>${money(t.total)}</span></div>
+        </div>
+        <p class="hint">${need > 0 ? `Add ${money(need)} more for free shipping.` : 'You qualify for free shipping.'}</p>
+        <button class="btn wide" type="button" data-act="checkout">Checkout</button>
+        <button class="ghost wide" type="button" data-act="empty">Empty bag</button>
+      ` : `
+        <div class="empty-bag">
+          <p>Your bag is empty.</p>
+          <p class="hint">Items you add will appear here.</p>
+        </div>`}`;
+
+    $('#badge').textContent = t.count;
+    $('#status').textContent = state.msg;
+  }
+
+  function render(){
+    renderChips();
+    renderGrid();
+    renderBag();
+  }
+
+  function commit(){ save(); render(); }
+
+  function add(id){
+    const p = byId(id);
+    const size = selectedSize(p);
+    const line = state.bag.find(l => l.id === id && l.size === size);
+    if (line) {
+      if (line.qty >= MAX_QTY) { state.msg = `You already have the maximum of ${MAX_QTY} for ${p.name}.`; render(); return; }
+      line.qty += 1;
+    } else {
+      state.bag.push({ id, size, qty:1 });
+    }
+    state.msg = `Added ${p.name}${size ? ` (${size})` : ''} to your bag.`;
+    commit();
+  }
+
+  function changeQty(i, d){
+    const line = state.bag[i];
+    if (!line) return;
+    line.qty += d;
+    if (line.qty < 1) state.bag.splice(i, 1);
+    if (line.qty > MAX_QTY) line.qty = MAX_QTY;
+    state.msg = '';
+    commit();
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.cat !== undefined) {
+      state.cat = b.dataset.cat; state.msg = ''; render();
+    } else if (b.dataset.add !== undefined) {
+      add(b.dataset.add);
+    } else if (b.dataset.qty !== undefined) {
+      changeQty(Number(b.dataset.qty), Number(b.dataset.d));
+    } else if (b.dataset.remove !== undefined) {
+      const line = state.bag[Number(b.dataset.remove)];
+      if (line) { state.msg = `Removed ${byId(line.id).name}.`; state.bag.splice(Number(b.dataset.remove), 1); commit(); }
+    } else if (b.dataset.act === 'clear-filters') {
+      state.cat = 'All'; state.q = ''; $('#search').value = ''; render();
+    } else if (b.dataset.act === 'checkout') {
+      state.msg = 'Demo store: checkout is not connected.'; render();
+    } else if (b.dataset.act === 'empty') {
+      state.bag = []; state.msg = 'Bag emptied.'; commit();
+    } else if (b.dataset.act === 'go-bag') {
+      $('#bag').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  });
+
+  $('#search').addEventListener('input', e => { state.q = e.target.value; renderGrid(); });
+  $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+  document.addEventListener('change', e => {
+    if (e.target.dataset.size !== undefined) state.sel[e.target.dataset.size] = e.target.value;
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"compact": 7, "minimal": 6, "modern": 6, "usability": 9, "craft": 8, "overall": 7, "note": "Most complete shop (search, filters, stock limits, drawer with steppers, totals, checkout, persisted cart) with solid states, but emoji art, badges and shadows add more chrome than a minimal brief wants."},
+"X": {"compact": 5, "minimal": 8, "modern": 7, "usability": 6, "craft": 7, "overall": 6.5, "note": "Restrained line-art cards with labeled variant radios and live feedback, but oversized media boxes, no cart review or quantity control, and a visible dev toggle leave it sparse, and mobile is a long single column."},
+"Y": {"compact": 4, "minimal": 8, "modern": 7, "usability": 5, "craft": 6, "overall": 5.5, "note": "Clean sale pricing and variant chips, but only three products on a mostly empty desktop, a text-only cart with no checkout path, and one card per screen on mobile wastes space."},
+"Z": {"compact": 8, "minimal": 7, "modern": 7, "usability": 8, "craft": 7, "overall": 7.5, "note": "The densest desktop grid with clear hierarchy, inline ratings and a working drawer with steppers and checkout, though the mobile header wraps awkwardly and the Cart button drops onto its own line."}
+},
+"ranking": ["Z", "W", "X", "Y"]}

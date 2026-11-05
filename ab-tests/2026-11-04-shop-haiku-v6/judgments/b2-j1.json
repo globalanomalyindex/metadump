@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"compact": 7, "minimal": 8, "modern": 8, "usability": 8, "craft": 7, "overall": 7, "note": "Full shopping job with size radios, quantity, add-to-bag feedback, sold-out state with notify, and a focus-trapped bag drawer, though desktop cards have uneven heights and buttons misalign when sizes wrap."},
+"X": {"compact": 5, "minimal": 7, "modern": 7, "usability": 9, "craft": 8, "overall": 7, "note": "The most complete store (search, sort, category state, sidebar cart with totals and shipping hint) and well labeled, but the large cards with decorative shapes and descriptions are the least compact of the four."},
+"Y": {"compact": 6, "minimal": 8, "modern": 6, "usability": 8, "craft": 7, "overall": 6, "note": "Clear variant, quantity, sold-out and drawer flow with good ARIA, but three stranded cards leave most of the desktop width empty and the letter-mark tiles feel generic."},
+"Z": {"compact": 9, "minimal": 9, "modern": 8, "usability": 7, "craft": 6, "overall": 8, "note": "A dense five-column grid with clear price, rating, and stateful add buttons and a labeled cart drawer, but the mobile layout has no side gutter (the wordmark and search sit at the screen edge and the Cart button is clipped) and there is no size or quantity control on the grid."}
+},
+"ranking": ["Z", "W", "X", "Y"]}

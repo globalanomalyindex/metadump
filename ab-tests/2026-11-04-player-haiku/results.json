@@ -1,0 +1,154 @@
+{
+ "scores": {
+  "A": {
+   "fidelity": 7.42,
+   "specificity": 6.67,
+   "target_fit": 6.42,
+   "pitfalls": 6.08,
+   "overall": 6.42,
+   "mean_rank": 2.67,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 6.0,
+    "A-r2": 7.67,
+    "A-r3": 7.0,
+    "A-r4": 5.0
+   }
+  },
+  "C": {
+   "fidelity": 6.5,
+   "specificity": 6.08,
+   "target_fit": 5.33,
+   "pitfalls": 5.0,
+   "overall": 5.33,
+   "mean_rank": 4,
+   "n_scores": 12,
+   "per_run_overall": {
+    "C-r1": 6.67,
+    "C-r2": 4.33,
+    "C-r3": 7.33,
+    "C-r4": 3.0
+   }
+  },
+  "B": {
+   "fidelity": 6.58,
+   "specificity": 6.0,
+   "target_fit": 6.0,
+   "pitfalls": 5.5,
+   "overall": 5.58,
+   "mean_rank": 3.83,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 4.67,
+    "B-r2": 6.67,
+    "B-r3": 5.67,
+    "B-r4": 5.33
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 5,
+   "losses": 15,
+   "ties": 4,
+   "win_rate": 0.29
+  },
+  "B_vs_C": {
+   "wins": 13,
+   "losses": 11,
+   "ties": 0,
+   "win_rate": 0.54
+  },
+  "C_vs_A": {
+   "wins": 7,
+   "losses": 15,
+   "ties": 2,
+   "win_rate": 0.33
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "play_button_found": "4/4",
+   "advances_while_playing": "4/4",
+   "next_changes_track": "4/4",
+   "stops_when_paused": "4/4",
+   "js_errors_total": 0
+  },
+  "C": {
+   "works": "4/4",
+   "play_button_found": "4/4",
+   "advances_while_playing": "4/4",
+   "next_changes_track": "4/4",
+   "stops_when_paused": "4/4",
+   "js_errors_total": 0
+  },
+  "B": {
+   "works": "4/4",
+   "play_button_found": "4/4",
+   "advances_while_playing": "4/4",
+   "next_changes_track": "4/4",
+   "stops_when_paused": "4/4",
+   "js_errors_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 108363,
+   "mean_seconds": 143.6,
+   "mean_tool_uses": 4.8
+  },
+  "C": {
+   "runs": 4,
+   "mean_tokens": 113419,
+   "mean_seconds": 149.6,
+   "mean_tool_uses": 5
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 144520,
+   "mean_seconds": 181.9,
+   "mean_tool_uses": 12.5
+  }
+ },
+ "judge_agreement_mean_pearson": 0.63,
+ "notes": {
+  "b1/j1/B-r2": "Clean, legible, and the glossy blue sphere artwork is good, but the pale plate reads as frosted glass more than blue acrylic and the grass is flat banded with a heavy dark-green foreground strip.",
+  "b1/j1/A-r1": "Strongest Frutiger Aero translucency with saturated sky and textured electric grass, but white text on the cyan lower queue has weak contrast and the floating bubbles feel generic.",
+  "b1/j1/C-r2": "The prev and next buttons render as blank discs with no glyphs, and the blurred cloud blobs plus muddy teal vinyl art read as generic glassmorphism.",
+  "b1/j1/B-r1": "Overexposed blue-tinted whites are well handled, but the prev and next buttons render blank and the card lacks the depth of coloured acrylic.",
+  "b1/j1/C-r1": "The translucent blue acrylic card and sky bloom read convincingly, but white text on pale teal in the queue lowers contrast and the hills are flat.",
+  "b1/j1/A-r2": "Best balance of overexposed blue-white luminance, electric grass and horizon bloom, with a crafted glass-blue artwork and clearly legible text and controls.",
+  "b1/j2/C-r1": "Clearly blue and legible with a bloomed sky, but the grass is cartoonish hills and the card reads as a generic blue frosted panel.",
+  "b1/j2/B-r1": "Strong overexposed blue-white plate and electric grass, but the previous and next buttons render as blank circles with no icons, so required transport parts are missing.",
+  "b1/j2/A-r2": "Electric green grass tufts, saturated sky with bloom, and floating glass bubbles give the most convincing Frutiger Aero read, though the mint-tinted queue and navy-on-blue title soften the material illusion.",
+  "b1/j2/C-r2": "The translucent card is effective, but the top brand text and equalizer bars wash out into the white header and are nearly invisible.",
+  "b1/j2/A-r1": "The translucent vinyl artwork and complete controls are solid, but the blue frosted card and flat hills feel more like a familiar glass template than material-lit color.",
+  "b1/j2/B-r2": "Blue-tinted overexposed whites, a lit acrylic rim, and crisp navy-on-pale text make the color feel inside the material, with every control present and readable.",
+  "b1/j3/A-r2": "Vivid saturated blue sky over electric green hills with a clearly legible card, though the glossy card reads more as a bright glossy panel than deep acrylic.",
+  "b1/j3/C-r2": "The up-next queue runs off the bottom of the 1280x800 page, the artwork is a muddy teal, and the prev/next buttons are blank.",
+  "b1/j3/B-r2": "Clean and readable with pale overexposed whites, but the card reads as an opaque pale plate rather than translucent acrylic and the grass is flat bands.",
+  "b1/j3/A-r1": "Strongest Frutiger Aero atmosphere with blade-detailed grass and bubbles, but the header text is low contrast and the prev/next buttons look unfinished.",
+  "b1/j3/B-r1": "Generic blurred clouds and an opaque pale-blue card with blank prev/next buttons make the material feel painted rather than luminous.",
+  "b1/j3/C-r1": "Convincing translucent blue slab with a sky bloom, glowing green-edged hills and a fully visible queue, slightly softer on the grass electricity.",
+  "b2/j1/B-r4": "Glossy blue lens artwork is a strong acrylic object, but the card reads as pale frosted white and the queue runs off the bottom of the 800px page, cutting the third row and hiding the fourth.",
+  "b2/j1/A-r3": "The strongest Frutiger Aero read, with saturated blue sky, glossy green play orb and electric green hills, and the whole card fits the viewport, though the drifting bubbles are a familiar cliche and white queue text is weak on the pale rows.",
+  "b2/j1/C-r4": "The blade-textured electric green grass is convincing, but the artwork is a blurry blue blob that turns muddy against the blue sky and the card overflows the bottom of the page.",
+  "b2/j1/B-r3": "The whole card fits cleanly with four legible queue rows, a blue-tinted acrylic body with internal light and a hyperreal green grass field, though the blue-on-blue artwork is a little low in contrast and a faint ghost layer sits above the artwork.",
+  "b2/j1/C-r3": "The card is blue acrylic that fits the viewport and the artwork is well crafted, but the central play button visibly shows the play triangle and pause bars stacked at once, a clear rendering bug.",
+  "b2/j1/A-r4": "The blue acrylic card and glossy scene art are cohesive, but the card runs off the bottom of the page so only one up-next row is visible.",
+  "b2/j2/C-r3": "Full card fits the 800px frame with a saturated blue sky, electric green hills and a blue-tinted acrylic slab, though the bubbles and glossy orbs lean toward generic Aero decoration.",
+  "b2/j2/B-r3": "The card reads as a nearly opaque pale plate rather than transparent acrylic, and the Up Next list is cut off so the fourth track is not visible.",
+  "b2/j2/A-r4": "Translucent blue card and glassy art are on brief, but the card runs past the bottom of the viewport and clips the last Up Next row.",
+  "b2/j2/C-r4": "The card overflows both top and bottom so the Tide header and top of the artwork are cropped, which breaks the layout at 1280x800.",
+  "b2/j2/A-r3": "The whole player fits cleanly with glossy blue acrylic and a hilltop green horizon, but white text on the pale Up Next rows has weak contrast.",
+  "b2/j2/B-r4": "The glass-drop artwork and pale blue-white horizon are crafted, but the card is clipped at the bottom so the fourth track is cut off and the card feels more solid than translucent.",
+  "b2/j3/A-r4": "Strong saturated sky and glossy blue acrylic card, but the up-next queue is clipped by the 800px viewport so only one track is visible.",
+  "b2/j3/C-r4": "The card overflows the page top and bottom, hiding the header and most of the queue, so the layout is broken at 1280x800.",
+  "b2/j3/B-r4": "Glass orbs and a saturated sky add Y2K character, but the card reads as an opaque pale plate and the last queue item is cropped at the bottom edge.",
+  "b2/j3/A-r3": "The whole card fits with all four queue items legible, and the blue-tinted glass sits convincingly against the electric green horizon.",
+  "b2/j3/B-r3": "The grass blades are convincingly hyperreal, but the artwork blob is muddy against the blue and the queue runs off the page.",
+  "b2/j3/C-r3": "The blue acrylic card carries its tint from inside and the whole layout fits, though a stray ghost layer shows along the card's top edge."
+ }
+}

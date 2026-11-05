@@ -1,0 +1,113 @@
+{
+ "scores": {
+  "A": {
+   "compact": 5.75,
+   "minimal": 6.5,
+   "modern": 6.5,
+   "usability": 7.0,
+   "craft": 6.83,
+   "overall": 6.42,
+   "mean_rank": 3,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 5.67,
+    "A-r2": 6.33,
+    "A-r3": 6.0,
+    "A-r4": 7.67
+   }
+  },
+  "B": {
+   "compact": 7.42,
+   "minimal": 8.08,
+   "modern": 7.0,
+   "usability": 8.25,
+   "craft": 7.25,
+   "overall": 7.5,
+   "mean_rank": 2,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 7.67,
+    "B-r2": 8.0,
+    "B-r3": 7.67,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 17,
+   "losses": 5,
+   "ties": 2,
+   "win_rate": 0.75
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 4
+  },
+  "B": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 7
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 88504,
+   "mean_seconds": 68.5,
+   "mean_tool_uses": 3.8
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 160458,
+   "mean_seconds": 238.2,
+   "mean_tool_uses": 15.8
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 183874,
+   "ms": 1934320,
+   "tool_uses": 39
+  }
+ },
+ "judge_agreement_mean_pearson": 0.6,
+ "notes": {
+  "b1/j1/B-r1": "Strongest shopping logic (variant sold-out states, stepper with stock caps, busy/Added/error feedback, focus-trapped drawer that becomes a bottom sheet on mobile), though the blue CTA and gray placeholder glyphs feel template-like and mobile shows only one card per screen.",
+  "b1/j1/A-r1": "Dense five-column grid with search, chips and sort is tidy, but the pastel gradient tiles with initials read as generic placeholders and Add gives only a small 'in cart' note with no variant or quantity control.",
+  "b1/j1/B-r2": "The most compact design with real product illustrations, clear size chips, sold-out states, steppers, and a bag drawer that restores focus, though the mobile two-column grid leaves an orphaned third card and the size chips wrap awkwardly.",
+  "b1/j1/A-r2": "Refined editorial cards and an always-visible sticky bag on desktop, but the large square art makes mobile a single tall column and the bag sits below the whole grid on phones, so the cart is hard to reach.",
+  "b1/j2/B-r2": "Tight three-up cards with real size options, sold-out struck-through variants, a stepper and an add label that confirms with Added, plus a bag drawer with totals; the blue accent is a bit standard and the desktop leaves a lot of empty page below.",
+  "b1/j2/A-r2": "Solid filter, search, sort and always-visible bag with shipping and tax, but each card carries a blurb and the mobile layout shows one oversized square image per screen, which is far from compact.",
+  "b1/j2/A-r1": "Dense five-column desktop grid with a sticky header, but the pastel gradient tiles with initials read as placeholder template decoration, there is no size or variant choice, and add feedback is limited to a tiny badge.",
+  "b1/j2/B-r1": "Restrained gray glyphs, 44px radio variants with clear sold-out and Notify me states, and a clean stepper and drawer, but the mobile layout collapses to one full-width card per row, wasting most of the screen.",
+  "b1/j3/A-r2": "Desktop has a sticky bag panel with totals and free-shipping hint, but tall square art tiles make the grid sprawl, and on mobile the bag sits below every product so checkout is buried.",
+  "b1/j3/B-r2": "Strongest state coverage (sold-out variants, stock limits, busy and error labels, live announcements, focus-trapped drawer that becomes a bottom sheet on mobile), though the blue accent is a little default and the mobile grid leaves an orphaned card.",
+  "b1/j3/B-r1": "Monochrome placeholder art, hairline rules and a dense four-column desktop grid read as the most restrained, but on mobile each card fills a screen so the footprint balloons and the Notify me link is a stub.",
+  "b1/j3/A-r1": "Gradient initial tiles, badges and star ratings read as a generic e-commerce template, the five-column tiles are large, and cards offer no variant choice or quantity before adding.",
+  "b2/j1/B-r3": "Full shopping job with size radios, quantity, add-to-bag feedback, sold-out state with notify, and a focus-trapped bag drawer, though desktop cards have uneven heights and buttons misalign when sizes wrap.",
+  "b2/j1/A-r3": "The most complete store (search, sort, category state, sidebar cart with totals and shipping hint) and well labeled, but the large cards with decorative shapes and descriptions are the least compact of the four.",
+  "b2/j1/B-r4": "Clear variant, quantity, sold-out and drawer flow with good ARIA, but three stranded cards leave most of the desktop width empty and the letter-mark tiles feel generic.",
+  "b2/j1/A-r4": "A dense five-column grid with clear price, rating, and stateful add buttons and a labeled cart drawer, but the mobile layout has no side gutter (the wordmark and search sit at the screen edge and the Cart button is clipped) and there is no size or quantity control on the grid.",
+  "b2/j2/B-r4": "A real component with size chips, a labeled quantity stepper, pending/added/error states, sold-out with Notify me and an accessible bag drawer, though the cards' buttons do not align across the row and the blue underlined link and monogram tiles feel a little dated.",
+  "b2/j2/A-r4": "Clean black-and-white storefront with a polished card style, but it is a full catalogue page rather than a component, the add button has no size or quantity, and on mobile the header and search run flush to the screen edge with no gutter.",
+  "b2/j2/A-r3": "Careful SVG art, persisted cart and clear totals, but the permanent sidebar and tall descriptive cards make it the least compact, and on mobile the cart sits below all twelve products so checkout is far from the action.",
+  "b2/j2/B-r3": "The tightest, most restrained component: hairline cards, outline product glyphs, size radios with a struck-through sold-out option, and clear loading, error and sold-out states, with a bottom-sheet bag on phones; the XL size wraps alone onto a second row and button baselines drift across cards.",
+  "b2/j3/A-r4": "Clean zinc-neutral catalog with aligned Add to cart rows, working search, chips, sort, drawer with steppers and a status toast, though the initials tiles are generic and the mobile tiles are very tall.",
+  "b2/j3/B-r4": "Strong variant, stock, pending and error handling with a labeled bag drawer, but the desktop leaves most of the canvas empty and the Add to bag buttons sit at different heights across the three cards.",
+  "b2/j3/B-r3": "The densest and most restrained option, with product-specific line-art glyphs, size chips and a sold-out state, but the sweater's size row wraps and throws its button out of line and the red Sold out text reads as an error.",
+  "b2/j3/A-r3": "The most complete feature set (persistent cart, free-shipping hint, clear cart, sticky summary) with tidy alignment, but it is a conventional sidebar template with large cards that wastes space and pushes the cart below the fold on phones."
+ }
+}

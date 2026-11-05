@@ -1,0 +1,11 @@
+# FLUX.2 prompt: wireless over-ear headphones, luminous chromatic translucency
+
+## Prompt
+
+Product photograph of a pair of wireless over-ear headphones made entirely of transparent blue acrylic and glossy clear vinyl, standing upright on a low mound of hyperreal electric green grass (#39FF3A) under a deeply saturated blue sky (#0A5CFF overhead, fading to #7FD4FF at the horizon). The ear cups are thick, smoothly rounded shells of translucent cerulean acrylic (#2E9BFF), dyed through their full thickness. Sunlight passes through them, so the blue glows from inside the material: deep and dense where the plastic is thickest, pale and nearly clear at the thin beveled edges. Inside each cup you can just see a silver driver, a ribbon cable and a small circuit board, softened and tinted by the plastic around them. The ear cushions are pillowy clear vinyl bladders with a faint aqua tint, holding bright wet-looking specular highlights. The headband is one seamless arc of clear blue vinyl tubing with light running along its length. The headphones cast refracted blue caustics and luminous blue shadows onto the grass blades below. Bright midday sun from behind and above, with highlights overexposed into blue-tinted white (#EAF6FF), soft bloom and halation along every rim, and a gentle lens flare. Medium-format camera, 80mm lens, low angle at grass level, f/5.6. The headphones are tack sharp; the sky and distant grass are slightly soft. Clean, glossy Frutiger Aero / Y2K commercial look, optimistic and airy, ultra-detailed.
+
+## Notes
+
+1. FLUX.2 has no negative prompt, so I wrote "colors inside the material, not painted on" as things light does. The blue gets denser where the plastic is thicker, the parts inside show through a tint, and the light that passes through casts caustics. A phrase like "not painted" might not register at all.
+2. Each hex code is tied to one named element (grass, sky, acrylic, highlights), which is how FLUX.2 follows color best. To change the palette, change those values and leave the material description alone.
+3. If the visible internals start to look like a teardown photo, cut the driver/circuit sentence. If the whites come out gray instead of glowing, strengthen the overexposure and bloom wording. A 4:5 or 3:2 aspect ratio suits the low-angle hero framing.

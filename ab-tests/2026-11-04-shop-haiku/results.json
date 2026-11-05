@@ -1,0 +1,113 @@
+{
+ "scores": {
+  "A": {
+   "compact": 7.33,
+   "minimal": 6.17,
+   "modern": 6.58,
+   "usability": 8.58,
+   "craft": 6.92,
+   "overall": 7.04,
+   "mean_rank": 2,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 6.5,
+    "A-r2": 7.33,
+    "A-r3": 7.67,
+    "A-r4": 6.67
+   }
+  },
+  "B": {
+   "compact": 5.67,
+   "minimal": 8.42,
+   "modern": 6.42,
+   "usability": 6.75,
+   "craft": 7.25,
+   "overall": 6.33,
+   "mean_rank": 3,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 6.83,
+    "B-r2": 6.17,
+    "B-r3": 6.33,
+    "B-r4": 6.0
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 6,
+   "losses": 16,
+   "ties": 2,
+   "win_rate": 0.29
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 2
+  },
+  "B": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "0/4",
+   "qty_changes_number": "0/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 85153,
+   "mean_seconds": 50.8,
+   "mean_tool_uses": 3.2
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 123018,
+   "mean_seconds": 169.7,
+   "mean_tool_uses": 13.8
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 144911,
+   "ms": 556380,
+   "tool_uses": 30
+  }
+ },
+ "judge_agreement_mean_pearson": -0.09,
+ "notes": {
+  "b1/j1/B-r1": "Restrained line-icon cards with real variant chips, sold-out and loading/added/error states, and proper labeling, but the desktop layout is sparse with only three products and a text-only cart summary.",
+  "b1/j1/A-r1": "Full shop flow with search, filters, sort, quantity steppers and a totals drawer, but emoji art, tinted tiles and hover lift add clutter and the mobile header strands the Cart button on its own row.",
+  "b1/j1/B-r2": "Clean line-icon cards with clear sold-out and sale states, but the cart is only a count with no review, quantity or checkout, and the mobile layout collapses to one wasteful column.",
+  "b1/j1/A-r2": "Dense two-column mobile and five-column desktop grid with stock warnings, max-in-cart limits and a complete cart drawer with totals, though the per-card Add buttons lack product names and the emoji art softens the look.",
+  "b1/j2/B-r2": "Restrained outline-icon cards with labeled variant chips and real add, error and sold-out states, but no cart view and the mobile layout leaves one narrow column with wasted width.",
+  "b1/j2/A-r2": "A complete storefront with search, filters, sort, stock badges and a persistent cart drawer with totals, though it reads more like a full shop than a minimal component and uses emoji for product art.",
+  "b1/j2/A-r1": "Good in-grid quantity steppers and a cart drawer, but there is no sold-out or stock state, hover lift adds decoration, and on mobile the Cart button is stranded on its own line under the search.",
+  "b1/j2/B-r1": "The most disciplined build: per-variant sold-out chips with explicit reasons, aria-disabled add with spinner, added and error states, labeled fieldsets, and a clean mobile stack, though the cart is only a text summary and the three-card desktop leaves much empty space.",
+  "b1/j3/A-r2": "Most complete shop (search, filters, stock limits, drawer with steppers, totals, checkout, persisted cart) with solid states, but emoji art, badges and shadows add more chrome than a minimal brief wants.",
+  "b1/j3/B-r2": "Restrained line-art cards with labeled variant radios and live feedback, but oversized media boxes, no cart review or quantity control, and a visible dev toggle leave it sparse, and mobile is a long single column.",
+  "b1/j3/B-r1": "Clean sale pricing and variant chips, but only three products on a mostly empty desktop, a text-only cart with no checkout path, and one card per screen on mobile wastes space.",
+  "b1/j3/A-r1": "The densest desktop grid with clear hierarchy, inline ratings and a working drawer with steppers and checkout, though the mobile header wraps awkwardly and the Cart button drops onto its own line.",
+  "b2/j1/B-r3": "Restrained hairline cards with line-art products, clear size swatches, Save toggle and sold-out states, but the three-column desktop grid leaves a wide empty band on the right and the bag list sits far below the fold with no quantity controls or checkout.",
+  "b2/j1/A-r3": "The most complete shopping job (search, category chips, sort, stock warnings, quantity steppers, free-shipping bar, checkout), but gradient initial tiles, shadows, hover lift and blurbs add clutter, the mobile tiles are oversized, and the button labels and title wrapping are uneven across cards.",
+  "b2/j1/B-r4": "Clean and well-labelled with add feedback and sold-out reasons, but the cart is a bare list below the grid with no quantity or remove controls or checkout, and cards carry noticeable dead space at the bottom.",
+  "b2/j1/A-r4": "A tight card grid with a sticky cart beside it, quantity steppers, free-shipping progress, totals and a disabled-when-empty checkout that fits the compact brief well, though the gradient initial tiles look generic and there is no out-of-stock state.",
+  "b2/j2/B-r4": "Restrained line-art cards with real labeled variant radios, add/added/error states and a demo failure toggle, but cards are tall with dead space under the button and the cart sits far below the grid.",
+  "b2/j2/A-r4": "The most complete cart (quantity steppers, free-shipping bar, totals, disabled-until-filled checkout, search, sort, filters) but gradient initial tiles look dated and decorative, long names wrap awkwardly, and a card appears clipped at the bottom of the desktop grid.",
+  "b2/j2/A-r3": "The densest layout that still reads well, with a clear search pill, cart badge, stock warnings, quantity steppers and a sticky summary, though product names wrap to three lines in the narrow desktop columns.",
+  "b2/j2/B-r3": "Very restrained, with clean line art, squared variant chips and a clear sold-out state, but the desktop grid leaves the right side empty, one name truncates, and there is no real cart summary or checkout.",
+  "b2/j3/A-r4": "Clean teal-accented two-column layout with the cart beside the grid, real quantity and remove controls and an Added state, though the gradient initial tiles and generic chrome feel template-like.",
+  "b2/j3/B-r4": "Restrained line-art products with real variant radios, sold-out and error handling, but equal-height cards leave large empty bottoms and the cart sits far below the grid on desktop.",
+  "b2/j3/B-r3": "Tidy grey line-art cards with size chips and Save links, but the three-column grid leaves the right side empty and the bag sits far below the products, so the purchase loop is weaker.",
+  "b2/j3/A-r3": "The most complete shopping job: header cart badge, sticky cart with steppers, free-shipping bar and totals, stock-aware Only N left and Sold out states, though the 4-up cards cramp titles and the copy adds some clutter."
+ }
+}

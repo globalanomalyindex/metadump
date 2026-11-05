@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide Player</title>
+<style>
+  :root {
+    --ink: #06307a;
+    --ink-2: #1f5ec2;
+    --ink-3: #0d4aa6;
+    --glow: #3dff5c;
+    --sky: #0a5cff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #06307a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #06307a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: #0a5cff;
+    color: var(--ink);
+    font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, p, ol, ul, li { margin: 0; padding: 0; }
+  ol, ul { list-style: none; }
+  button { font: inherit; color: inherit; }
+
+  /* ---------- World: saturated blue sky, overexposed sun, electric green grass ---------- */
+  .world {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(46% 34% at 80% 8%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 70%),
+      radial-gradient(60% 40% at 12% 18%, rgba(190, 240, 255, 0.55) 0%, rgba(190, 240, 255, 0) 70%),
+      linear-gradient(180deg, #0030d8 0%, #0560ff 34%, #1a9dff 60%, #7fd3ff 82%, #d8f2ff 100%);
+    pointer-events: none;
+  }
+  .world .hills {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 46%;
+    display: block;
+  }
+
+  /* ---------- Player card: acrylic/vinyl translucency ---------- */
+  .player {
+    position: relative;
+    z-index: 1;
+    width: min(380px, 100%);
+    padding: 16px 16px 18px;
+    border-radius: 30px;
+    overflow: hidden;
+    color: var(--ink);
+    background:
+      linear-gradient(168deg,
+        rgba(240, 250, 255, 0.72) 0%,
+        rgba(178, 224, 255, 0.44) 38%,
+        rgba(96, 176, 255, 0.40) 74%,
+        rgba(60, 150, 255, 0.52) 100%);
+    -webkit-backdrop-filter: blur(22px) saturate(190%);
+    backdrop-filter: blur(22px) saturate(190%);
+    border: 1.5px solid rgba(255, 255, 255, 0.82);
+    box-shadow:
+      0 30px 60px -10px rgba(0, 25, 110, 0.48),
+      0 0 0 1px rgba(0, 60, 190, 0.22),
+      inset 0 2px 1px rgba(255, 255, 255, 0.95),
+      inset 0 -18px 34px rgba(0, 120, 255, 0.42),
+      inset 0 0 26px rgba(255, 255, 255, 0.28);
+  }
+  /* glossy top sheen, sits inside the material */
+  .player::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.12) 32%, rgba(255, 255, 255, 0) 58%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* colored light caustics seen through the material */
+  .caustic {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(26px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .c1 {
+    width: 230px; height: 230px; left: -90px; top: 150px;
+    background: radial-gradient(circle, rgba(120, 255, 140, 0.8) 0%, rgba(120, 255, 140, 0) 70%);
+  }
+  .c2 {
+    width: 260px; height: 260px; right: -110px; bottom: -70px;
+    background: radial-gradient(circle, rgba(40, 140, 255, 0.85) 0%, rgba(40, 140, 255, 0) 70%);
+  }
+  .player > :not(.caustic) { position: relative; z-index: 1; }
+
+  /* ---------- Header ---------- */
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 4px 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #053a8c;
+  }
+  .brand svg { width: 22px; height: 22px; display: block; filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.9)); }
+  .pill {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 99px;
+    color: #0a4aa8;
+    background: linear-gradient(180deg, #ffffff 0%, #cfeeff 100%);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 3px rgba(0, 60, 170, 0.25), inset 0 -2px 3px rgba(0, 120, 255, 0.2);
+  }
+
+  /* ---------- Artwork ---------- */
+  .art {
+    position: relative;
+    margin-top: 12px;
+    aspect-ratio: 16 / 9;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #2a7bff;
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.85),
+      inset 0 -22px 34px rgba(0, 70, 220, 0.4),
+      0 12px 26px -6px rgba(0, 30, 120, 0.5);
+  }
+  .art svg { display: block; width: 100%; height: 100%; }
+  .art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.08) 42%, rgba(255, 255, 255, 0) 50%);
+    pointer-events: none;
+  }
+
+  /* ---------- Meta ---------- */
+  .meta {
+    margin-top: 14px;
+    text-align: center;
+    min-width: 0;
+  }
+  .title {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 14px rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .artist {
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Progress ---------- */
+  .progress { margin-top: 14px; }
+  .bar {
+    position: relative;
+    height: 14px;
+    margin: 6px 0;
+    border-radius: 99px;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    background: linear-gradient(180deg, #8fcaff 0%, #e9f8ff 100%);
+    box-shadow:
+      inset 0 2px 4px rgba(0, 50, 160, 0.42),
+      0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+  .bar::before {
+    content: "";
+    position: absolute;
+    inset: -9px 0;
+  }
+  .bar:focus { outline: none; }
+  .bar:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 3px; }
+  .fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: 99px;
+    background: linear-gradient(180deg, #e9ffd9 0%, #7dff62 30%, #22f04a 62%, #00b434 100%);
+    box-shadow:
+      inset 0 2px 2px rgba(255, 255, 255, 0.85),
+      inset 0 -2px 3px rgba(0, 100, 30, 0.35),
+      0 0 14px rgba(70, 255, 100, 0.7);
+  }
+  .knob {
+    position: absolute;
+    right: -9px;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 25%, #ffffff 0%, #d6f6ff 45%, #58c4ff 100%);
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 50, 170, 0.45);
+  }
+  .times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Transport controls ---------- */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin: 10px 0 12px;
+  }
+  .orb {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    cursor: pointer;
+    color: #06307a;
+    background: radial-gradient(circle at 50% 22%, #ffffff 0%, #cdeeff 28%, #4fb4ff 70%, #0a5ae6 100%);
+    box-shadow:
+      inset 0 -5px 8px rgba(0, 40, 170, 0.45),
+      inset 0 2px 3px rgba(255, 255, 255, 0.9),
+      0 8px 16px rgba(0, 50, 170, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .orb::after {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: 6%;
+    height: 46%;
+    border-radius: 50%;
+    background: linear-gradient(#ffffff, rgba(255, 255, 255, 0));
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .orb svg { width: 20px; height: 20px; fill: currentColor; position: relative; z-index: 1; display: block; }
+  .orb.big { width: 62px; height: 62px; }
+  .orb.big svg { width: 24px; height: 24px; }
+  .orb.go {
+    color: #053a12;
+    background: radial-gradient(circle at 50% 22%, #f4ffe6 0%, #9dff7a 26%, #2dff4c 62%, #00b336 100%);
+    box-shadow:
+      inset 0 -6px 10px rgba(0, 110, 30, 0.5),
+      inset 0 2px 3px rgba(255, 255, 255, 0.9),
+      0 10px 22px rgba(0, 140, 40, 0.4),
+      0 0 0 4px rgba(120, 255, 150, 0.25);
+  }
+  .orb:hover { filter: brightness(1.05); }
+  .orb:active { transform: scale(0.94); }
+  .orb:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 3px; }
+
+  /* ---------- Volume ---------- */
+  .volume {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px;
+    color: #0a4aa8;
+  }
+  .volume svg { width: 20px; height: 20px; flex: none; display: block; fill: currentColor; }
+  .volume .wave { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; transition: opacity 0.2s ease; }
+  .volume[data-level="mute"] .wave { opacity: 0; }
+  .volume[data-level="low"] .wave.w2 { opacity: 0; }
+  .volume input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 8px;
+    margin: 0;
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+    background:
+      linear-gradient(90deg, #35d9ff 0%, #33f25a 100%) 0 0 / var(--v, 70%) 100% no-repeat,
+      linear-gradient(180deg, #b8e4ff 0%, #e6f8ff 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 60, 170, 0.4), 0 1px 0 #ffffff;
+  }
+  .volume input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    background: radial-gradient(circle at 50% 25%, #ffffff 0%, #cfeeff 40%, #3ea6ff 100%);
+    box-shadow: 0 2px 6px rgba(0, 50, 170, 0.4);
+  }
+  .volume input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    background: radial-gradient(circle at 50% 25%, #ffffff 0%, #cfeeff 40%, #3ea6ff 100%);
+    box-shadow: 0 2px 6px rgba(0, 50, 170, 0.4);
+  }
+  .volume input[type="range"]:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 4px; }
+  .volume .vol-val {
+    width: 26px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+
+  /* ---------- Queue ---------- */
+  .queue { margin-top: 14px; }
+  .queue h2 {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #0a4aa8;
+    margin: 0 4px 8px;
+  }
+  .queue ol { display: grid; gap: 8px; }
+  .qitem {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 100%);
+    box-shadow: inset 0 1px 0 #ffffff, 0 4px 10px rgba(0, 50, 160, 0.15);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .qitem:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.32) 100%);
+  }
+  .qitem:active { transform: scale(0.985); }
+  .qitem:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 2px; }
+  .qart {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    overflow: hidden;
+    display: block;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85), 0 2px 5px rgba(0, 40, 140, 0.25);
+  }
+  .qart svg { display: block; width: 100%; height: 100%; }
+  .qtxt { min-width: 0; display: flex; flex-direction: column; }
+  .qtxt b {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .qtxt small {
+    font-size: 12px;
+    color: var(--ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .qdur {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 420px) {
+    .player { padding: 14px 14px 16px; border-radius: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="world" aria-hidden="true">
+  <svg class="hills" viewBox="0 0 1440 400" preserveAspectRatio="none" focusable="false">
+    <defs>
+      <linearGradient id="wBack" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1fe35a"/>
+        <stop offset="1" stop-color="#00a33a"/>
+      </linearGradient>
+      <linearGradient id="wFront" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8dff5c"/>
+        <stop offset="0.35" stop-color="#34ff3f"/>
+        <stop offset="1" stop-color="#00b92e"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 150 C260 60 520 120 760 84 C1000 50 1200 118 1440 70 L1440 400 L0 400 Z" fill="url(#wBack)"/>
+    <path d="M0 236 C280 168 560 226 820 192 C1080 160 1280 226 1440 196 L1440 400 L0 400 Z" fill="url(#wFront)"/>
+    <path d="M0 236 C280 168 560 226 820 192 C1080 160 1280 226 1440 196" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+  </svg>
+</div>
+
+<main class="player" id="player" aria-label="Tide music player">
+  <span class="caustic c1" aria-hidden="true"></span>
+  <span class="caustic c2" aria-hidden="true"></span>
+
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="logoG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#9cff7a"/>
+            <stop offset="1" stop-color="#00b336"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 2.5C9 7 5.5 10.5 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 10.5 15 7 12 2.5z" fill="url(#logoG)"/>
+        <ellipse cx="9.5" cy="13" rx="1.6" ry="2.6" fill="#ffffff" opacity="0.8"/>
+      </svg>
+      <span>Tide</span>
+    </div>
+    <span class="pill">Now playing</span>
+  </header>
+
+  <div class="art" id="art"></div>
+
+  <div class="meta">
+    <h1 class="title" id="title"></h1>
+    <p class="artist" id="artist"></p>
+  </div>
+
+  <div class="progress">
+    <div class="bar" id="bar" role="slider" tabindex="0"
+         aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0:00">
+      <div class="fill" id="fill"><span class="knob"></span></div>
+    </div>
+    <div class="times">
+      <span id="elapsed">0:00</span>
+      <span id="remaining">-0:00</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="orb" id="prev" type="button" aria-label="Previous track">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6v12l-8.5-6zM6 6h2v12H6z"/></svg>
+    </button>
+    <button class="orb big go" id="play" type="button" aria-label="Play">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z"/></svg>
+    </button>
+    <button class="orb" id="next" type="button" aria-label="Next track">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6v12l8.5-6zM16 6h2v12h-2z"/></svg>
+    </button>
+  </div>
+
+  <div class="volume" id="volume" data-level="high">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 9h4l5-4v14l-5-4H3z"/>
+      <path class="wave w1" d="M16 8.5a5 5 0 0 1 0 7"/>
+      <path class="wave w2" d="M18.5 6a8.5 8.5 0 0 1 0 12"/>
+    </svg>
+    <input type="range" id="vol" min="0" max="100" step="1" value="70" aria-label="Volume">
+    <span class="vol-val" id="volVal">70</span>
+  </div>
+
+  <section class="queue" aria-labelledby="queueTitle">
+    <h2 id="queueTitle">Up next</h2>
+    <ol id="queue"></ol>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Data ---------- */
+  var TRACKS = [
+    {
+      title: "Glass Meridian", artist: "Halcyon Drift", dur: 214,
+      pal: { top: "#0043ff", mid: "#1c9cff", low: "#9be6ff", sun: "#fffbe0", sx: 150, sy: 52,
+             grass: "#43ff4a", grassDeep: "#00a83a", back: "#17c94a" },
+      bub: [[44, 72, 14], [64, 40, 7], [172, 82, 11], [122, 30, 5]]
+    },
+    {
+      title: "Chlorine Summer", artist: "Vela Sunday", dur: 187,
+      pal: { top: "#0a2fd6", mid: "#2a86ff", low: "#c4f0ff", sun: "#ffffff", sx: 48, sy: 46,
+             grass: "#6dff3a", grassDeep: "#00b52a", back: "#12b83a" },
+      bub: [[160, 60, 16], [120, 96, 6], [28, 30, 9]]
+    },
+    {
+      title: "Kite Lantern", artist: "Mira Solde", dur: 243,
+      pal: { top: "#1450ff", mid: "#00b4ff", low: "#baf6ff", sun: "#fff3b0", sx: 110, sy: 60,
+             grass: "#2effa0", grassDeep: "#00a15a", back: "#00b86a" },
+      bub: [[36, 64, 12], [178, 36, 8], [96, 24, 4], [150, 92, 6]]
+    },
+    {
+      title: "Overexposed", artist: "Pale Harbor", dur: 201,
+      pal: { top: "#2a6bff", mid: "#7fc8ff", low: "#f2fbff", sun: "#ffffff", sx: 160, sy: 40,
+             grass: "#5cff6a", grassDeep: "#15c443", back: "#1fd058" },
+      bub: [[90, 70, 18], [30, 96, 6], [176, 90, 9]]
+    },
+    {
+      title: "Aqua Cathedral", artist: "Lumen Fields", dur: 226,
+      pal: { top: "#0019b8", mid: "#0a7dff", low: "#5fd4ff", sun: "#e9ffff", sx: 70, sy: 56,
+             grass: "#3cff2e", grassDeep: "#00b020", back: "#0cc233" },
+      bub: [[150, 50, 13], [60, 90, 8], [184, 26, 5]]
+    },
+    {
+      title: "Sprinkler Season", artist: "Neon Orchard", dur: 198,
+      pal: { top: "#0a4cf0", mid: "#29b2ff", low: "#aef0ff", sun: "#fffde8", sx: 132, sy: 48,
+             grass: "#9bff3d", grassDeep: "#26c21c", back: "#2cd33a" },
+      bub: [[24, 58, 15], [112, 86, 7], [170, 30, 10]]
+    }
+  ];
+
+  /* ---------- Helpers ---------- */
+  var uid = 0;
+  var $ = function (sel) { return document.querySelector(sel); };
+  var clamp = function (v, lo, hi) { return Math.min(hi, Math.max(lo, v)); };
+  var fmt = function (n) {
+    n = Math.max(0, Math.floor(n));
+    var s = n % 60;
+    return Math.floor(n / 60) + ":" + (s < 10 ? "0" : "") + s;
+  };
+
+  function artSVG(p, bub) {
+    var id = "t" + (++uid);
+    var bubbles = bub.map(function (b) {
+      var x = b[0], y = b[1], r = b[2];
+      return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="url(#' + id + 'b)" stroke="rgba(255,255,255,0.9)" stroke-width="1"/>' +
+             '<ellipse cx="' + (x - r * 0.35) + '" cy="' + (y - r * 0.42) + '" rx="' + (r * 0.36) + '" ry="' + (r * 0.18) +
+             '" fill="#ffffff" opacity="0.9" transform="rotate(-28 ' + x + ' ' + y + ')"/>';
+    }).join("");
+    return (
+      '<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
+        '<defs>' +
+          '<linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0" stop-color="' + p.top + '"/><stop offset="0.6" stop-color="' + p.mid + '"/><stop offset="1" stop-color="' + p.low + '"/>' +
+          '</linearGradient>' +
+          '<radialGradient id="' + id + 'u" cx="0.5" cy="0.5" r="0.5">' +
+            '<stop offset="0" stop-color="#ffffff"/><stop offset="0.3" stop-color="' + p.sun + '"/><stop offset="1" stop-color="' + p.sun + '" stop-opacity="0"/>' +
+          '</radialGradient>' +
+          '<linearGradient id="' + id + 'h" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0" stop-color="' + p.back + '"/><stop offset="1" stop-color="' + p.grassDeep + '"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="' + id + 'g" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0" stop-color="' + p.grass + '"/><stop offset="1" stop-color="' + p.grassDeep + '"/>' +
+          '</linearGradient>' +
+          '<radialGradient id="' + id + 'b" cx="0.35" cy="0.3" r="0.75">' +
+            '<stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/><stop offset="0.55" stop-color="#ffffff" stop-opacity="0.15"/><stop offset="1" stop-color="#8fdcff" stop-opacity="0.5"/>' +
+          '</radialGradient>' +
+        '</defs>' +
+        '<rect width="200" height="200" fill="url(#' + id + 's)"/>' +
+        '<circle cx="' + p.sx + '" cy="' + p.sy + '" r="50" fill="url(#' + id + 'u)"/>' +
+        '<circle cx="' + p.sx + '" cy="' + p.sy + '" r="14" fill="#ffffff"/>' +
+        '<path d="M-10 128C40 92 90 118 130 104S185 96 215 100V215H-10Z" fill="url(#' + id + 'h)"/>' +
+        '<path d="M-10 152C50 118 110 152 160 138S200 128 215 132V215H-10Z" fill="url(#' + id + 'g)"/>' +
+        bubbles +
+      '</svg>'
+    );
+  }
+
+  /* ---------- Elements ---------- */
+  var el = {
+    art: $("#art"), title: $("#title"), artist: $("#artist"),
+    bar: $("#bar"), fill: $("#fill"), elapsed: $("#elapsed"), remaining: $("#remaining"),
+    play: $("#play"), prev: $("#prev"), next: $("#next"),
+    vol: $("#vol"), volVal: $("#volVal"), volume: $("#volume"), queue: $("#queue")
+  };
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+
+  /* ---------- State ---------- */
+  var S = { i: 0, playing: false, pos: 0, last: 0, raf: 0, dragging: false };
+
+  function current() { return TRACKS[S.i]; }
+
+  function paintProgress() {
+    var t = current();
+    var f = clamp(S.pos / t.dur, 0, 1);
+    el.fill.style.width = (f * 100).toFixed(3) + "%";
+    el.bar.setAttribute("aria-valuenow", String(Math.round(f * 100)));
+    el.bar.setAttribute("aria-valuetext", fmt(S.pos) + " of " + fmt(t.dur));
+    el.elapsed.textContent = fmt(S.pos);
+    el.remaining.textContent = "-" + fmt(Math.ceil(Math.max(0, t.dur - S.pos)));
+  }
+
+  function renderQueue() {
+    var html = "";
+    var n = TRACKS.length;
+    for (var k = 1; k <= 4; k++) {
+      var idx = (S.i + k) % n;
+      var t = TRACKS[idx];
+      html +=
+        '<li><button class="qitem" type="button" data-idx="' + idx + '" aria-label="Play ' + t.title + ' by ' + t.artist + '">' +
+          '<span class="qart">' + artSVG(t.pal, t.bub) + '</span>' +
+          '<span class="qtxt"><b>' + t.title + '</b><small>' + t.artist + '</small></span>' +
+          '<span class="qdur">' + fmt(t.dur) + '</span>' +
+        '</button></li>';
+    }
+    el.queue.innerHTML = html;
+  }
+
+  function renderTrack() {
+    var t = current();
+    el.art.innerHTML = artSVG(t.pal, t.bub);
+    el.title.textContent = t.title;
+    el.artist.textContent = t.artist;
+    document.title = t.title + " - Tide";
+    renderQueue();
+    paintProgress();
+  }
+
+  function setPlayUI() {
+    el.play.innerHTML = S.playing ? ICON_PAUSE : ICON_PLAY;
+    el.play.setAttribute("aria-label", S.playing ? "Pause" : "Play");
+    el.play.setAttribute("aria-pressed", S.playing ? "true" : "false");
+  }
+
+  function select(idx) {
+    S.i = (idx + TRACKS.length) % TRACKS.length;
+    S.pos = 0;
+    renderTrack();
+  }
+
+  function next() { select(S.i + 1); }
+
+  function prev() {
+    if (S.pos > 3) {
+      S.pos = 0;
+      paintProgress();
+    } else {
+      select(S.i - 1);
+    }
+  }
+
+  function tick(ts) {
+    if (!S.playing) return;
+    if (S.last) S.pos += Math.min(0.25, (ts - S.last) / 1000);
+    S.last = ts;
+    if (S.pos >= current().dur) {
+      S.pos = 0;
+      next();
+    } else if (!S.dragging) {
+      paintProgress();
+    }
+    S.raf = requestAnimationFrame(tick);
+  }
+
+  function setPlaying(on) {
+    if (on === S.playing) return;
+    S.playing = on;
+    S.last = 0;
+    if (on) {
+      S.raf = requestAnimationFrame(tick);
+    } else {
+      cancelAnimationFrame(S.raf);
+      S.raf = 0;
+    }
+    setPlayUI();
+  }
+
+  function togglePlay() { setPlaying(!S.playing); }
+
+  /* ---------- Seeking ---------- */
+  function seekFromPointer(e) {
+    var r = el.bar.getBoundingClientRect();
+    var f = clamp((e.clientX - r.left) / r.width, 0, 1);
+    S.pos = f * current().dur;
+    paintProgress();
+  }
+
+  el.bar.addEventListener("pointerdown", function (e) {
+    S.dragging = true;
+    el.bar.setPointerCapture(e.pointerId);
+    el.bar.focus({ preventScroll: true });
+    seekFromPointer(e);
+  });
+  el.bar.addEventListener("pointermove", function (e) {
+    if (S.dragging) seekFromPointer(e);
+  });
+  var endDrag = function (e) {
+    if (!S.dragging) return;
+    S.dragging = false;
+    if (el.bar.hasPointerCapture && el.bar.hasPointerCapture(e.pointerId)) {
+      el.bar.releasePointerCapture(e.pointerId);
+    }
+  };
+  el.bar.addEventListener("pointerup", endDrag);
+  el.bar.addEventListener("pointercancel", endDrag);
+
+  el.bar.addEventListener("keydown", function (e) {
+    var d = current().dur;
+    var handled = true;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") S.pos += 5;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") S.pos -= 5;
+    else if (e.key === "Home") S.pos = 0;
+    else if (e.key === "End") S.pos = d;
+    else handled = false;
+    if (handled) {
+      e.preventDefault();
+      S.pos = clamp(S.pos, 0, d);
+      paintProgress();
+    }
+  });
+
+  /* ---------- Transport ---------- */
+  el.play.addEventListener("click", togglePlay);
+  el.prev.addEventListener("click", prev);
+  el.next.addEventListener("click", next);
+
+  el.queue.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".qitem") : null;
+    if (!btn || !el.queue.contains(btn)) return;
+    select(parseInt(btn.getAttribute("data-idx"), 10));
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.code === "Space" && (e.target === document.body || e.target === document.documentElement)) {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  /* ---------- Volume ---------- */
+  function setVolume(v) {
+    v = clamp(Math.round(v), 0, 100);
+    el.vol.value = String(v);
+    el.volVal.textContent = String(v);
+    el.vol.style.setProperty("--v", v + "%");
+    el.volume.setAttribute("data-level", v === 0 ? "mute" : (v < 45 ? "low" : "high"));
+  }
+  el.vol.addEventListener("input", function () { setVolume(parseFloat(el.vol.value)); });
+
+  /* ---------- Init ---------- */
+  setVolume(70);
+  renderTrack();
+  setPlayUI();
+})();
+</script>
+</body>
+</html>

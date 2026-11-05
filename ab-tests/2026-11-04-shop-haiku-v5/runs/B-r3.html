@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Essentials shop</title>
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --text: #1A1A1A;
+    --muted: #5C6470;
+    --surface-hover: #F5F5F5;
+    --hairline: #D9DCE1;
+    --edge: #8A909C;
+    --art: #F3F2EE;
+    --accent: #1F4FD1;
+    --accent-hover: #1A43B5;
+    --accent-press: #153A9E;
+    --on-accent: #FFFFFF;
+    --focus: #1F4FD1;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F0F0D;
+      --text: #FAFAFA;
+      --muted: #A3A59E;
+      --surface-hover: #1A1A1A;
+      --hairline: #2B2C28;
+      --edge: #7A7C74;
+      --art: #1A1A1A;
+      --accent: #7AA2FF;
+      --accent-hover: #93B2FF;
+      --accent-press: #5F8CF0;
+      --on-accent: #0F0F0D;
+      --focus: #7AA2FF;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F0F0D;
+    --text: #FAFAFA;
+    --muted: #A3A59E;
+    --surface-hover: #1A1A1A;
+    --hairline: #2B2C28;
+    --edge: #7A7C74;
+    --art: #1A1A1A;
+    --accent: #7AA2FF;
+    --accent-hover: #93B2FF;
+    --accent-press: #5F8CF0;
+    --on-accent: #0F0F0D;
+    --focus: #7AA2FF;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 400 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .shop { max-width: 640px; margin: 0 auto; padding: 24px 16px 32px; }
+
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 8px;
+  }
+  h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .bag {
+    font-size: 13px; font-weight: 500; padding: 4px 10px;
+    border: 1px solid var(--hairline); border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status { margin: 0 0 16px; min-height: 20px; font-size: 14px; color: var(--muted); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 520px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .card {
+    display: flex; flex-direction: column; gap: 12px; min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--hairline); border-radius: 8px;
+    background: var(--bg);
+    transition: background-color 90ms var(--ease);
+  }
+  @media (hover: hover) { .card:hover { background: var(--surface-hover); } }
+
+  .art {
+    aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden;
+    background: var(--art); display: grid; place-items: center;
+  }
+  .art svg { width: 72%; height: 72%; display: block; }
+
+  .info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .name {
+    margin: 0; font-size: 15px; font-weight: 500; line-height: 1.35;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .meta {
+    margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .price {
+    margin: 4px 0 0; font-size: 18px; font-weight: 600; line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .action { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+
+  .btn {
+    font: inherit; font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; min-height: 40px; padding: 0 10px;
+    border: 1px solid transparent; border-radius: 6px; cursor: pointer;
+    transition: background-color 90ms var(--ease), color 90ms var(--ease);
+  }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:active { background: var(--accent-press); }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border-color: var(--edge); cursor: not-allowed;
+  }
+  .ico { flex: none; }
+
+  .stepper {
+    width: 100%; height: 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid var(--edge); border-radius: 999px;
+    animation: in 140ms var(--ease);
+  }
+  .step {
+    flex: 0 0 40px; height: 40px; padding: 0;
+    border: 0; border-radius: 999px; background: transparent;
+    color: var(--text); font: inherit; font-size: 18px; line-height: 1;
+    display: grid; place-items: center; cursor: pointer;
+    transition: background-color 90ms var(--ease);
+  }
+  .step:hover { background: var(--surface-hover); }
+  .step[aria-disabled="true"] { color: var(--muted); cursor: not-allowed; }
+  .step[aria-disabled="true"]:hover { background: transparent; }
+  .count { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .note { margin: 0; font-size: 12px; color: var(--muted); text-align: center; }
+
+  .summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 24px; padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+    font-size: 14px; color: var(--muted);
+  }
+  .summary strong { color: var(--text); font-weight: 600; }
+  .text-btn {
+    font: inherit; font-size: 14px; color: var(--text);
+    background: none; border: 0; padding: 0 0; min-height: 40px;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+  }
+
+  @media (pointer: coarse) {
+    .btn, .stepper { min-height: 48px; height: 48px; }
+    .step { flex-basis: 48px; height: 48px; }
+    .text-btn { min-height: 48px; }
+  }
+
+  @keyframes in {
+    from { opacity: 0; transform: scale(.96); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="shop">
+  <header class="top">
+    <h1>Essentials</h1>
+    <span class="bag">Bag <span id="bagCount">0</span></span>
+  </header>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <section class="grid" id="grid" aria-label="Products"></section>
+  <footer class="summary" id="summary"></footer>
+</main>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    { id: 'tote',    name: 'Natural linen tote',  meta: 'Linen · 38 × 42 cm',     price: 3800, stock: 12, art: 'tote' },
+    { id: 'mug',     name: 'Stoneware mug',       meta: 'Stoneware · 350 ml',     price: 2400, stock: 8,  art: 'mug' },
+    { id: 'pourover',name: 'Pour-over set',       meta: 'Ceramic · 2 cups',       price: 5600, stock: 0,  art: 'pourover' },
+    { id: 'candle',  name: 'Beeswax candle',      meta: 'Beeswax · 40 h burn',    price: 1800, stock: 20, art: 'candle' },
+    { id: 'board',   name: 'Walnut board',        meta: 'Walnut · 30 × 20 cm',    price: 6400, stock: 3,  art: 'board' },
+    { id: 'clip',    name: 'Brass desk clip',     meta: 'Solid brass · 5 cm',     price: 1200, stock: 15, art: 'clip' },
+    { id: 'socks',   name: 'Merino crew socks',   meta: 'Merino blend · pair',    price: 1600, stock: 9,  art: 'socks' },
+    { id: 'bottle',  name: 'Steel bottle',        meta: 'Brushed steel · 500 ml', price: 2800, stock: 6,  art: 'bottle' }
+  ];
+
+  const SHAPES = {
+    tote: '<path d="M44 50V40a16 16 0 0 1 32 0v10" fill="none" stroke="#8C7B62" stroke-width="4"/><rect x="30" y="46" width="60" height="50" rx="3" fill="#D8CBB4"/>',
+    mug: '<path d="M74 52h6a10 10 0 0 1 0 20h-6" fill="none" stroke="#CFC8BC" stroke-width="6"/><rect x="34" y="40" width="44" height="50" rx="5" fill="#E4DFD5"/>',
+    pourover: '<path d="M44 34h32L62 60h-4z" fill="#B9B1A3"/><path d="M28 64h64q-4 28-32 28t-32-28z" fill="#CFC8BC"/>',
+    candle: '<rect x="48" y="44" width="24" height="48" rx="3" fill="#EADBB8"/><line x1="60" y1="36" x2="60" y2="44" stroke="#4A4035" stroke-width="2"/><path d="M60 22q-6 8 0 14q6-6 0-14z" fill="#B9A27A"/>',
+    board: '<rect x="22" y="44" width="76" height="36" rx="8" fill="#B07E56"/><circle cx="84" cy="62" r="4" fill="#8F6442"/>',
+    clip: '<path d="M52 30v50a8 8 0 0 0 16 0V40a4 4 0 0 0-8 0v34" fill="none" stroke="#B08D4F" stroke-width="5" stroke-linecap="round"/>',
+    socks: '<path d="M46 26h26v36q0 6 14 12q8 4 4 14q-4 6-20 4q-16-2-24-12z" fill="#6E7A6A"/>',
+    bottle: '<rect x="52" y="24" width="16" height="12" rx="2" fill="#9AA3AD"/><rect x="44" y="34" width="32" height="60" rx="10" fill="#C9CFD6"/>'
+  };
+
+  const PLUS = '<svg class="ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+  const grid = document.getElementById('grid');
+  const summary = document.getElementById('summary');
+  const statusEl = document.getElementById('status');
+  const bagCount = document.getElementById('bagCount');
+
+  const state = { qty: { tote: 1, candle: 2 }, pending: null };
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const byId = id => PRODUCTS.find(p => p.id === id);
+  const qtyOf = id => state.qty[id] || 0;
+  const totalItems = () => Object.values(state.qty).reduce((a, b) => a + b, 0);
+  const subtotalCents = () => PRODUCTS.reduce((s, p) => s + p.price * qtyOf(p.id), 0);
+  const say = msg => { statusEl.textContent = msg; };
+  const setQty = (id, n) => { if (n <= 0) delete state.qty[id]; else state.qty[id] = n; };
+
+  function act(id, action) {
+    const p = byId(id);
+    const q = qtyOf(id);
+    if (action === 'add') {
+      if (p.stock === 0) { say(`${p.name} is sold out.`); return; }
+      setQty(id, 1);
+      say(`Added ${p.name}. 1 in bag.`);
+      state.pending = `inc:${id}`;
+    } else if (action === 'inc') {
+      if (q >= p.stock) { say(`No more ${p.name} in stock.`); return; }
+      setQty(id, q + 1);
+      say(`Added another ${p.name}. ${q + 1} in bag.`);
+      state.pending = `inc:${id}`;
+    } else if (action === 'dec') {
+      setQty(id, q - 1);
+      if (q - 1 === 0) {
+        say(`Removed ${p.name} from the bag.`);
+        state.pending = `add:${id}`;
+      } else {
+        say(`${p.name}: ${q - 1} in bag.`);
+        state.pending = `dec:${id}`;
+      }
+    } else {
+      return;
+    }
+    render();
+  }
+
+  function art(key, name) {
+    return `<svg viewBox="0 0 120 120" role="img" aria-label="${esc(name)}" focusable="false">${SHAPES[key]}</svg>`;
+  }
+
+  function cardHTML(p) {
+    const q = qtyOf(p.id);
+    const name = esc(p.name);
+    let action;
+    if (p.stock === 0) {
+      action = `<button type="button" class="btn btn-ghost" data-act="add" data-id="${p.id}" data-key="add:${p.id}" aria-disabled="true" aria-label="Sold out: ${name}">Sold out</button>`;
+    } else if (q === 0) {
+      action = `<button type="button" class="btn btn-primary" data-act="add" data-id="${p.id}" data-key="add:${p.id}" aria-label="Add to bag, ${name}">${PLUS}Add to bag</button>`;
+    } else {
+      const atMax = q >= p.stock;
+      action = `<div class="stepper" role="group" aria-label="Quantity, ${name}">` +
+        `<button type="button" class="step" data-act="dec" data-id="${p.id}" data-key="dec:${p.id}" aria-label="Remove one, ${name}">&minus;</button>` +
+        `<span class="count">${q} in bag</span>` +
+        `<button type="button" class="step" data-act="inc" data-id="${p.id}" data-key="inc:${p.id}" aria-disabled="${atMax}" aria-label="Add one more, ${name}">+</button>` +
+        `</div>` + (atMax ? '<p class="note">No more in stock</p>' : '');
+    }
+    return `<article class="card">` +
+      `<div class="art">${art(p.art, p.name)}</div>` +
+      `<div class="info"><h3 class="name" title="${name}">${name}</h3>` +
+      `<p class="meta">${esc(p.meta)}</p>` +
+      `<p class="price">${money.format(p.price / 100)}</p></div>` +
+      `<div class="action">${action}</div>` +
+      `</article>`;
+  }
+
+  function render() {
+    const n = totalItems();
+    bagCount.textContent = n;
+    grid.innerHTML = PRODUCTS.map(cardHTML).join('');
+    summary.innerHTML = n
+      ? `<span><strong>${n} ${n === 1 ? 'item' : 'items'}</strong> · ${money.format(subtotalCents() / 100)} subtotal</span>` +
+        `<button type="button" class="text-btn" data-act="clear" data-key="clear">Clear bag</button>`
+      : `<span>Your bag is empty.</span>`;
+    if (state.pending) {
+      const el = document.querySelector(`[data-key="${state.pending}"]`);
+      if (el) el.focus();
+      state.pending = null;
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    if (b.dataset.act === 'clear') {
+      state.qty = {};
+      say('Bag cleared.');
+      state.pending = `add:${PRODUCTS[0].id}`;
+      render();
+      return;
+    }
+    act(b.dataset.id, b.dataset.act);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

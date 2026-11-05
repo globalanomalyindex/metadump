@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j3",
+  "scores": {
+    "W": {
+      "compact": 6,
+      "minimal": 7,
+      "modern": 7,
+      "usability": 7,
+      "craft": 7,
+      "overall": 7,
+      "note": "Desktop has a sticky bag panel with totals and free-shipping hint, but tall square art tiles make the grid sprawl, and on mobile the bag sits below every product so checkout is buried."
+    },
+    "X": {
+      "compact": 8,
+      "minimal": 7,
+      "modern": 7,
+      "usability": 9,
+      "craft": 9,
+      "overall": 8,
+      "note": "Strongest state coverage (sold-out variants, stock limits, busy and error labels, live announcements, focus-trapped drawer that becomes a bottom sheet on mobile), though the blue accent is a little default and the mobile grid leaves an orphaned card."
+    },
+    "Y": {
+      "compact": 7,
+      "minimal": 9,
+      "modern": 8,
+      "usability": 8,
+      "craft": 8,
+      "overall": 8,
+      "note": "Monochrome placeholder art, hairline rules and a dense four-column desktop grid read as the most restrained, but on mobile each card fills a screen so the footprint balloons and the Notify me link is a stub."
+    },
+    "Z": {
+      "compact": 6,
+      "minimal": 5,
+      "modern": 5,
+      "usability": 6,
+      "craft": 6,
+      "overall": 6,
+      "note": "Gradient initial tiles, badges and star ratings read as a generic e-commerce template, the five-column tiles are large, and cards offer no variant choice or quantity before adding."
+    }
+  },
+  "ranking": ["X", "Y", "W", "Z"]
+}

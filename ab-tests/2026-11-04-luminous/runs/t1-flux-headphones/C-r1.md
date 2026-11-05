@@ -1,0 +1,13 @@
+## FLUX.2 Prompt
+
+Product photograph of a pair of wireless over-ear headphones made entirely of transparent cobalt-blue acrylic, resting on a low mound of electric green grass beneath a saturated blue sky. The blue lives inside the plastic itself, like shallow tropical water in sunlight. The ear cups are thick molded shells of tinted polycarbonate: deep translucent cobalt (#1846E8) where the material is thickest, thinning to bright electric cyan (#3FD4FF) at the rims, where the edges catch the sun and glow. The drivers, a small circuit board and coiled wiring are faintly visible through the shell, and where two walls overlap the blue turns darker and denser. The headband is a curved strip of clear blue-tinted vinyl whose curvature concentrates one long specular highlight. The ear cushions are milky frosted-white silicone that has soaked up the blue light passing through the cups, glowing pale ice blue.
+
+Late-morning sun backlights the headphones from behind and above, so light travels through the acrylic and throws cyan caustics and blue color spill onto the grass blades and cushions beneath. The grass is short, dense and hyperreal, chlorophyll green with a lime glow (#4BE01A), rolling into a smooth idealized hill in the soft-focus background like a Windows XP Bliss desktop wallpaper. The sky is deep cerulean (#1C7CF2) fading to blue-tinted white at the horizon, with a few bright cumulus clouds.
+
+High-key exposure at the edge of overexposure: whites bloom and halate into the surrounding blue, specular highlights softly clipped. Simple composition with the headphones centered low in frame, large uninterrupted fields of sky and grass, generous negative space. Tangible micro-detail: faint surface scuffs and a thin mold seam on the acrylic, slight chromatic aberration at the brightest edges. Full-frame camera, 85mm lens, f/4, low angle near grass level. Frutiger Aero, Y2K translucent tech, early-2000s digital optimism, peaceful and slightly unreal.
+
+## Notes
+
+1. FLUX.2 has no negative prompt, so the prompt keeps color from looking painted on by describing how the material behaves: dark where thick, bright at thin edges, deeper blue where layers overlap, blue spilling onto the whites. If the cups come out as opaque blue plastic, make the backlight and the thick-to-thin sentence stronger. Adding "not opaque" won't help.
+2. Each hex code is tied to one named element (cups, rims, grass, sky), which is how FLUX.2 follows them most reliably. If the palette looks flat or posterized, drop the hex codes and keep the color words.
+3. The style depends on a simple composition around complex material. If the frame gets busy, cut the sentence about visible internals first. A 3:2 landscape or 4:5 aspect ratio keeps the open sky and grass.

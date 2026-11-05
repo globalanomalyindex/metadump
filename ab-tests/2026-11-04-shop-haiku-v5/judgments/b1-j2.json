@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"compact": 8, "minimal": 8, "modern": 7, "usability": 7, "craft": 7, "overall": 7, "note": "Tight four-column grid with consistent line icons, a clear blue add action and a live status line, but several product names are truncated and prices sit at uneven heights in the desktop row."},
+"X": {"compact": 3, "minimal": 5, "modern": 6, "usability": 6, "craft": 3, "overall": 4, "note": "The full cart drawer with shipping progress and checkout is the most complete flow, but the Best seller and New tags render as giant white blobs over the product art, the mobile header is clipped at the left edge, and the oversized cards are not compact."},
+"Y": {"compact": 7, "minimal": 7, "modern": 6, "usability": 8, "craft": 5, "overall": 6, "note": "Dense five-column grid and a well-labelled cart drawer with a free-shipping meter and quantity controls, but the Add to cart buttons sit at uneven heights across each row, the mobile layout has no side gutter, and the product art is generic."},
+"Z": {"compact": 9, "minimal": 9, "modern": 8, "usability": 7, "craft": 8, "overall": 8, "note": "Restrained cards with aligned action rows, a clean stepper that doubles as the in-bag state, a clear sold-out treatment and a proper mobile gutter, though the stepper label wraps on desktop and there is no cart review or checkout."}
+},
+"ranking": ["Z", "W", "Y", "X"]}

@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {"compact": 6, "minimal": 8, "modern": 6, "usability": 6, "craft": 5, "overall": 6, "note": "Clean add-to-cart states, variant chips with sold-out and sale handling, and a simulated failure, but the desktop cards are large and sparse, the cart is only a text summary line, and on mobile the second column and the Empty cart button are clipped at the right edge."},
+    "X": {"compact": 8, "minimal": 7, "modern": 7, "usability": 9, "craft": 6, "overall": 8, "note": "A dense five-column grid with a full cart drawer (steppers, remove, subtotal, shipping, tax, checkout) and live status makes the whole shopping job complete, though the emoji art reads more playful than refined and the mobile category chips and header overflow."},
+    "Y": {"compact": 6, "minimal": 8, "modern": 6, "usability": 5, "craft": 6, "overall": 5, "note": "Very restrained styling with per-variant pricing and a sold-out state, but the header only shows a count with no cart view, quantity control or totals, the oversized placeholder art wastes space, Linen throw is priced in EUR while everything else is USD, and the mobile header is clipped."},
+    "Z": {"compact": 8, "minimal": 7, "modern": 8, "usability": 9, "craft": 7, "overall": 9, "note": "The most complete and refined design: dense cards with stock-aware Add, Only N left and Max in cart states, a labeled cart drawer with steppers and a dl totals block, Escape and focus handling, and persistence, with the main flaw being the mobile search and chip row clipping at the right edge."}
+  },
+  "ranking": ["Z", "X", "W", "Y"]
+}

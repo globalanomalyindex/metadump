@@ -1,0 +1,113 @@
+{
+ "scores": {
+  "A": {
+   "compact": 7.42,
+   "minimal": 6.0,
+   "modern": 6.92,
+   "usability": 8.33,
+   "craft": 6.0,
+   "overall": 7.17,
+   "mean_rank": 1.67,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 7.33,
+    "A-r2": 8.33,
+    "A-r3": 7.0,
+    "A-r4": 6.0
+   }
+  },
+  "B": {
+   "compact": 5.83,
+   "minimal": 7.92,
+   "modern": 5.75,
+   "usability": 5.67,
+   "craft": 5.33,
+   "overall": 5.58,
+   "mean_rank": 3.33,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 5.33,
+    "B-r2": 5.33,
+    "B-r3": 6.0,
+    "B-r4": 5.67
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 2,
+   "losses": 20,
+   "ties": 2,
+   "win_rate": 0.12
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 2
+  },
+  "B": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "0/4",
+   "qty_changes_number": "0/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 85153,
+   "mean_seconds": 50.8,
+   "mean_tool_uses": 3.2
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 123018,
+   "mean_seconds": 169.7,
+   "mean_tool_uses": 13.8
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 144911,
+   "ms": 556380,
+   "tool_uses": 30
+  }
+ },
+ "judge_agreement_mean_pearson": 0.52,
+ "notes": {
+  "b1/j1/B-r1": "Clean add-to-cart states, variant chips with sold-out and sale handling, and a simulated failure, but the desktop cards are large and sparse, the cart is only a text summary line, and on mobile the second column and the Empty cart button are clipped at the right edge.",
+  "b1/j1/A-r1": "A dense five-column grid with a full cart drawer (steppers, remove, subtotal, shipping, tax, checkout) and live status makes the whole shopping job complete, though the emoji art reads more playful than refined and the mobile category chips and header overflow.",
+  "b1/j1/B-r2": "Very restrained styling with per-variant pricing and a sold-out state, but the header only shows a count with no cart view, quantity control or totals, the oversized placeholder art wastes space, Linen throw is priced in EUR while everything else is USD, and the mobile header is clipped.",
+  "b1/j1/A-r2": "The most complete and refined design: dense cards with stock-aware Add, Only N left and Max in cart states, a labeled cart drawer with steppers and a dl totals block, Escape and focus handling, and persistence, with the main flaw being the mobile search and chip row clipping at the right edge.",
+  "b1/j2/B-r2": "Clean, restrained product cards with real variant chips, sold-out state, and adding/added/error feedback, but there is no cart view beyond a count and the mobile header clips the failed-add checkbox.",
+  "b1/j2/A-r2": "Most complete shopping flow (search, categories, sort, stock limits, cart drawer with steppers, totals and checkout) in a dense five-column grid, though it carries more chrome than the brief asks for and the mobile grid and chips overflow the viewport.",
+  "b1/j2/A-r1": "Tidy cards with rating, price and an Add button that becomes an inline stepper, plus a working cart drawer and live status, though the mobile search, chips and grid overflow and there is no stock or sold-out handling.",
+  "b1/j2/B-r1": "Very restrained, but three cards leave most of the desktop canvas empty, the cart is only a text line list with no quantity controls or checkout, the struck-through checked variant reads as disabled, and the mobile header and grid overflow.",
+  "b1/j3/A-r2": "Dense five-column grid with a complete cart drawer (steppers, remove, free-shipping nudge, tax, checkout), stock tags and sold-out and max-in-cart states, though the mobile two-column grid clips at the right edge.",
+  "b1/j3/B-r2": "Restrained line-art products and clear variant chips, but the cart is only a counter with no review or checkout, a dev-only 'Simulate a failed add' toggle sits in the header, and the mobile header overflows while mixing EUR and USD.",
+  "b1/j3/B-r1": "Very restrained styling and a readable text cart list, but three products leave most of the desktop page empty, the cart has no quantity controls or checkout, the default-selected variant is sold out, and mobile clips the second card.",
+  "b1/j3/A-r1": "Tight five-column cards with category, rating, price and a labeled Add to cart row, plus a working drawer with steppers and disabled checkout when empty, but it lacks stock or sold-out states and mobile overflows with the chip row and grid cut off.",
+  "b2/j1/B-r3": "Restrained, dense card grid with real variant, save and add states, but a generic blue button and the mobile layout clips the header and overflows horizontally.",
+  "b2/j1/A-r3": "The most complete shopping job (search, categories, sort, quantity steppers, free-shipping bar, checkout), though the gradient initial tiles add decoration and the mobile grid overflows.",
+  "b2/j1/B-r4": "Clean line-icon cards with proper variant chips and states, but the bag sits below the grid, cards have dead space in their footers, and on mobile the grid is offset and clipped.",
+  "b2/j1/A-r4": "Tight, well-aligned cards with a sticky cart, quantity controls, a disabled checkout until items exist and dark mode, though the gradient tiles add decoration and the mobile grid overflows.",
+  "b2/j2/B-r4": "Restrained line-art cards with real variant chips and async add states, but oversized cards with dead space, a generic blue button, a cart buried below the fold, and a shifted single-column mobile layout.",
+  "b2/j2/A-r4": "Full storefront with search, filters, sticky cart, steppers and shipping progress, but gradient initial tiles, heavy chrome, and a second grid column that overflows the 390px mobile viewport.",
+  "b2/j2/A-r3": "The densest and most complete shopping job, with stock-aware steppers, a sticky cart and clear totals, but it is more store than component and its mobile grid overflows the viewport.",
+  "b2/j2/B-r3": "Clean, restrained product art with sale pricing, sold-out handling and a Save toggle that reads as a polished component, though the bag lacks quantity or checkout controls, desktop leaves empty space, and the mobile header clips.",
+  "b2/j3/A-r4": "Dense two-column layout with a visible cart, shipping progress and clear Add buttons, but gradient initial tiles look generic and the mobile layout clips the sort select and cards at the right edge.",
+  "b2/j3/B-r4": "Restrained neutral styling with line icons and sensible variant and sold-out states, but the cards are oversized with dead space, the cart sits below the grid, and the mobile header overflows and the column is offset.",
+  "b2/j3/B-r3": "Clean gray line-art cards, but the Save links add unrequested clutter, the default variant for the pour-over set is sold out so the first view shows a disabled button, the tote is labelled Size for One size, and the mobile header overflows.",
+  "b2/j3/A-r3": "The most complete shop job (stock counts, quantity steppers in the cart, free-shipping bar, real states) with a modern pill-and-shadow language, but blurbs and tags make it busier than asked and the narrow cards wrap names awkwardly and clip on mobile."
+ }
+}

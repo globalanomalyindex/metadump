@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j1", "scores": {
+  "W": {"compact": 8, "minimal": 8, "modern": 5, "usability": 7, "craft": 5, "overall": 6, "note": "Restrained, dense card grid with real variant, save and add states, but a generic blue button and the mobile layout clips the header and overflows horizontally."},
+  "X": {"compact": 6, "minimal": 6, "modern": 6, "usability": 9, "craft": 6, "overall": 7, "note": "The most complete shopping job (search, categories, sort, quantity steppers, free-shipping bar, checkout), though the gradient initial tiles add decoration and the mobile grid overflows."},
+  "Y": {"compact": 6, "minimal": 7, "modern": 5, "usability": 6, "craft": 4, "overall": 5, "note": "Clean line-icon cards with proper variant chips and states, but the bag sits below the grid, cards have dead space in their footers, and on mobile the grid is offset and clipped."},
+  "Z": {"compact": 8, "minimal": 6, "modern": 7, "usability": 8, "craft": 6, "overall": 7, "note": "Tight, well-aligned cards with a sticky cart, quantity controls, a disabled checkout until items exist and dark mode, though the gradient tiles add decoration and the mobile grid overflows."}
+},
+"ranking": ["Z", "X", "W", "Y"]}

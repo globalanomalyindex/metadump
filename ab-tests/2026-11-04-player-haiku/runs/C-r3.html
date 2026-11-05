@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide Player</title>
+<style>
+  :root {
+    --ink: #0a3a8f;
+    --ink-soft: #1d5bc4;
+    --white-blue: #eef9ff;
+    --cyan: #5fe6ff;
+    --cobalt: #0a6ee6;
+    --aqua-hi: #bdf3ff;
+    --green-hi: #e4ffc0;
+    --green-mid: #5cf05a;
+    --green-lo: #0fa535;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 28px 16px 40px;
+    overflow-x: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #fff;
+    background:
+      linear-gradient(180deg, #33a6ff 0%, #1479ee 46%, #0b57d2 78%, #0a48b8 100%);
+    position: relative;
+  }
+
+  /* Overexposed blue-tinted bloom across the sky */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -20%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(38% 30% at 74% 12%, rgba(255,255,255,.95) 0%, rgba(255,255,255,0) 70%),
+      radial-gradient(55% 38% at 18% 2%, rgba(205,246,255,.75) 0%, rgba(255,255,255,0) 72%),
+      radial-gradient(70% 45% at 50% 100%, rgba(120,230,255,.35) 0%, rgba(120,230,255,0) 70%);
+  }
+
+  .scene {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .scene .grass {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 38vh;
+    min-height: 220px;
+    display: block;
+  }
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%,
+      rgba(255,255,255,.9) 0 6%,
+      rgba(255,255,255,.22) 18%,
+      rgba(255,255,255,.04) 60%,
+      rgba(255,255,255,.38) 76%,
+      rgba(255,255,255,0) 80%);
+    opacity: .75;
+  }
+  .b1 { width: 150px; height: 150px; left: 6%; top: 14%; }
+  .b2 { width: 70px;  height: 70px;  right: 9%; top: 22%; }
+  .b3 { width: 96px;  height: 96px;  right: 14%; bottom: 30%; opacity: .55; }
+  .b4 { width: 40px;  height: 40px;  left: 12%; bottom: 36%; opacity: .6; }
+
+  .wordmark {
+    position: fixed;
+    top: 26px;
+    left: 36px;
+    z-index: 2;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0,70,200,.55), 0 0 16px rgba(200,245,255,.9);
+  }
+
+  /* The card: blue acrylic with light passing through it */
+  .player {
+    position: relative;
+    z-index: 1;
+    width: 392px;
+    max-width: calc(100vw - 32px);
+    padding: 20px;
+    border-radius: 30px;
+    background:
+      linear-gradient(172deg,
+        rgba(255,255,255,.62) 0%,
+        rgba(214,242,255,.34) 26%,
+        rgba(40,140,250,.40) 58%,
+        rgba(12,80,210,.50) 100%);
+    -webkit-backdrop-filter: blur(22px) saturate(190%);
+    backdrop-filter: blur(22px) saturate(190%);
+    border: 1px solid rgba(255,255,255,.78);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 -18px 40px rgba(0,110,255,.30),
+      inset 0 0 0 1px rgba(140,220,255,.35),
+      0 30px 60px -14px rgba(0,30,130,.6),
+      0 0 90px rgba(130,225,255,.38);
+  }
+  /* Glossy top sheen across the acrylic */
+  .player::before {
+    content: "";
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    top: 0;
+    height: 42%;
+    border-radius: 30px 30px 60% 60% / 30px 30px 44px 44px;
+    background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0));
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Edge catch-light */
+  .player::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,.55), inset -2px -2px 0 rgba(120,230,255,.35);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .player > * { position: relative; z-index: 1; }
+
+  /* Artwork: a printed scene seen through a glossy blue window */
+  .art {
+    position: relative;
+    height: 220px;
+    border-radius: 22px;
+    overflow: hidden;
+    isolation: isolate;
+    background: linear-gradient(180deg, var(--sky-a, #2fb6ff), var(--sky-b, #0a4fd6));
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.7),
+      inset 0 0 36px rgba(255,255,255,.45),
+      0 14px 28px -10px rgba(0,50,170,.65);
+    transition: background 0.6s ease;
+  }
+  .art svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .art::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 50% at 22% 0%, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 70%),
+      linear-gradient(115deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.22) 48%, rgba(255,255,255,0) 56%);
+  }
+  .art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: 22px;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 2px rgba(190,242,255,.6), inset 0 -22px 40px rgba(0,80,255,.35);
+  }
+  .stop-sky-a { stop-color: var(--sky-a, #2fb6ff); }
+  .stop-sky-b { stop-color: var(--sky-b, #0a4fd6); }
+  .stop-ga-a  { stop-color: var(--ga-a, #5cf24a); }
+  .stop-ga-b  { stop-color: var(--ga-b, #0d8f22); }
+
+  .cloud-g {
+    animation: drift 16s ease-in-out infinite alternate;
+    animation-play-state: paused;
+  }
+  .player.is-playing .cloud-g { animation-play-state: running; }
+  .cloud-g.c2 { animation-duration: 22s; animation-delay: -6s; }
+  @keyframes drift {
+    from { transform: translateX(-16px); }
+    to   { transform: translateX(18px); }
+  }
+
+  .meta {
+    padding: 14px 4px 0;
+  }
+  .meta h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    line-height: 1.2;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,40,140,.85), 0 0 18px rgba(170,235,255,.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .meta p {
+    margin: 3px 0 0;
+    font-size: 14px;
+    color: rgba(240,250,255,.96);
+    text-shadow: 0 1px 2px rgba(0,40,140,.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Seek tube: tinted translucent vinyl with a liquid fill */
+  .seek { margin-top: 16px; }
+  .tube {
+    position: relative;
+    height: 12px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(0,70,190,.62), rgba(130,225,255,.38));
+    box-shadow:
+      inset 0 2px 4px rgba(0,40,140,.5),
+      inset 0 -1px 0 rgba(255,255,255,.35),
+      0 1px 0 rgba(255,255,255,.7);
+    cursor: pointer;
+    touch-action: none;
+    outline: none;
+  }
+  .tube:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 0 0 5px rgba(20,120,255,.6); }
+  .tube .fill {
+    position: absolute;
+    left: 0;
+    top: 1px;
+    bottom: 1px;
+    right: 1px;
+    border-radius: 999px;
+    transform-origin: left center;
+    transform: scaleX(0);
+    background: linear-gradient(180deg, #e2fcff 0%, #6aeaff 30%, #15bcff 68%, #0a6ee6 100%);
+    box-shadow: 0 0 14px rgba(120,235,255,.95), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .tube .knob {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 28%, #ffffff 0 16%, #d9f6ff 36%, #6fdcff 74%, #1a7ee8 100%);
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,.92),
+      0 4px 10px rgba(0,50,160,.55),
+      0 0 14px rgba(140,235,255,.95);
+    pointer-events: none;
+  }
+  .times {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,60,180,.6);
+  }
+
+  /* Transport: glossy aqua orbs with a hyperreal green play */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin-top: 12px;
+  }
+  .btn {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(120% 90% at 50% 0%, var(--aqua-hi) 0%, #39c6ff 46%, #0e6fe8 100%);
+    box-shadow:
+      inset 0 -5px 9px rgba(0,40,140,.45),
+      inset 0 3px 6px rgba(255,255,255,.85),
+      0 0 0 1px rgba(255,255,255,.7),
+      0 8px 16px rgba(0,50,160,.5),
+      0 0 22px rgba(140,235,255,.55);
+    transition: transform .12s ease, filter .15s ease;
+    overflow: hidden;
+  }
+  .btn::after {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: 6%;
+    height: 44%;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.08));
+    pointer-events: none;
+  }
+  .btn svg {
+    position: relative;
+    z-index: 1;
+    width: 22px;
+    height: 22px;
+    fill: #0a3f9c;
+    filter: drop-shadow(0 1px 0 rgba(255,255,255,.85));
+  }
+  .btn:hover { filter: brightness(1.07) saturate(1.05); }
+  .btn:active { transform: scale(.94); }
+  .btn:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 3px; }
+  .btn.play {
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(120% 90% at 50% 0%, var(--green-hi) 0%, var(--green-mid) 42%, var(--green-lo) 100%);
+    box-shadow:
+      inset 0 -6px 10px rgba(0,80,20,.45),
+      inset 0 3px 7px rgba(255,255,255,.9),
+      0 0 0 1px rgba(255,255,255,.75),
+      0 9px 18px rgba(0,60,20,.45),
+      0 0 26px rgba(170,255,140,.6);
+  }
+  .btn.play svg { width: 26px; height: 26px; fill: #06401a; }
+  .btn.play::after { left: 14%; right: 14%; }
+
+  /* Volume */
+  .volume {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 0 4px;
+  }
+  .volume > svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    fill: #fff;
+    filter: drop-shadow(0 1px 1px rgba(0,60,180,.6));
+  }
+  .volume .tube { flex: 1; height: 8px; }
+  .volume .knob { width: 16px; height: 16px; margin: -8px 0 0 -8px; }
+
+  /* Up next: frosted glass rows */
+  .queue { margin-top: 18px; }
+  .queue h2 {
+    margin: 0 4px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,60,180,.6);
+  }
+  .queue ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .q-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 6px 6px;
+    border: 1px solid rgba(255,255,255,.92);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(222,245,255,.56));
+    box-shadow: 0 2px 6px rgba(0,60,170,.25), inset 0 1px 0 #fff;
+    color: #0b2e7a;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: transform .12s ease, background .2s ease;
+  }
+  .q-item:hover {
+    background: linear-gradient(180deg, #ffffff, rgba(230,248,255,.72));
+    transform: translateX(2px);
+  }
+  .q-item:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 2px; }
+  .thumb {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 10px;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--sa), var(--sb));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 2px 4px rgba(0,50,160,.35);
+  }
+  .thumb::before {
+    content: "";
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: -12%;
+    height: 52%;
+    border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+    background: linear-gradient(180deg, var(--ga), var(--gb));
+  }
+  .thumb::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0));
+  }
+  .q-text { flex: 1; min-width: 0; }
+  .q-title {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 650;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .q-artist {
+    display: block;
+    margin-top: 1px;
+    font-size: 11.5px;
+    color: rgba(11,46,122,.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .q-dur {
+    font-size: 11.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: rgba(11,46,122,.72);
+  }
+
+  svg.defs-hide { position: absolute; width: 0; height: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cloud-g { animation: none !important; }
+    .art { transition: none; }
+  }
+  @media (prefers-color-scheme: dark) {
+    /* The interface is deliberately luminous in both schemes. */
+  }
+</style>
+</head>
+<body>
+
+<svg class="defs-hide" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5h2.2v14H6zM19 5.5v13L8.6 12z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M15.8 5h2.2v14h-2.2zM5 5.5v13L15.4 12z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13L19 12z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6.5 5h3.6v14H6.5zM13.9 5h3.6v14h-3.6z"/></symbol>
+  </defs>
+</svg>
+
+<div class="scene" aria-hidden="true">
+  <div class="bubble b1"></div>
+  <div class="bubble b2"></div>
+  <div class="bubble b3"></div>
+  <div class="bubble b4"></div>
+  <svg class="grass" viewBox="0 0 1280 320" preserveAspectRatio="none" focusable="false">
+    <defs>
+      <linearGradient id="gBack" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9dff6a"/>
+        <stop offset="1" stop-color="#25c23d"/>
+      </linearGradient>
+      <linearGradient id="gFront" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#5ff23e"/>
+        <stop offset="1" stop-color="#0c9428"/>
+      </linearGradient>
+      <linearGradient id="gShadow" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0a7a22"/>
+        <stop offset="1" stop-color="#054f16"/>
+      </linearGradient>
+      <pattern id="blades" width="22" height="30" patternUnits="userSpaceOnUse">
+        <path d="M4 30 Q6 16 2 6 Q9 16 8 30 Z" fill="#b8ff7a" opacity=".45"/>
+        <path d="M13 30 Q16 18 12 8 Q19 18 18 30 Z" fill="#6bff45" opacity=".35"/>
+      </pattern>
+    </defs>
+    <path d="M0 150 C 200 88, 380 120, 560 150 S 920 98, 1280 138 L1280 320 L0 320 Z" fill="url(#gBack)"/>
+    <path d="M0 196 C 240 146, 420 212, 640 190 S 1040 150, 1280 196 L1280 320 L0 320 Z" fill="url(#gFront)"/>
+    <path d="M0 196 C 240 146, 420 212, 640 190 S 1040 150, 1280 196 L1280 320 L0 320 Z" fill="url(#blades)"/>
+    <path d="M0 250 C 300 220, 700 262, 1280 236 L1280 320 L0 320 Z" fill="url(#gShadow)" opacity=".85"/>
+  </svg>
+</div>
+
+<p class="wordmark">Tide</p>
+
+<main class="player" id="player" aria-label="Tide music player">
+
+  <div class="art" id="art">
+    <svg viewBox="0 0 352 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" class="stop-sky-a"/>
+          <stop offset="1" class="stop-sky-b"/>
+        </linearGradient>
+        <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#fffdf0" stop-opacity="1"/>
+          <stop offset=".3" stop-color="#fff8d2" stop-opacity=".8"/>
+          <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="hillBack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" class="stop-ga-a" stop-opacity=".78"/>
+          <stop offset="1" class="stop-sky-b" stop-opacity=".9"/>
+        </linearGradient>
+        <linearGradient id="hillFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" class="stop-ga-a"/>
+          <stop offset="1" class="stop-ga-b"/>
+        </linearGradient>
+        <radialGradient id="bubbleG" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+          <stop offset=".82" stop-color="#fff" stop-opacity=".1"/>
+          <stop offset=".93" stop-color="#fff" stop-opacity=".6"/>
+          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <filter id="soft2" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.6"/>
+        </filter>
+      </defs>
+
+      <rect width="352" height="220" fill="url(#skyG)"/>
+      <circle cx="262" cy="52" r="74" fill="url(#sunG)"/>
+      <circle cx="262" cy="52" r="15" fill="#fffdf2" filter="url(#soft2)"/>
+
+      <g filter="url(#soft)">
+        <g class="cloud-g">
+          <ellipse cx="72" cy="60" rx="44" ry="13" fill="#f2faff" opacity=".92"/>
+          <ellipse cx="100" cy="50" rx="30" ry="15" fill="#ffffff" opacity=".95"/>
+          <ellipse cx="54" cy="68" rx="28" ry="9" fill="#e6f5ff" opacity=".9"/>
+        </g>
+        <g class="cloud-g c2">
+          <ellipse cx="200" cy="34" rx="36" ry="10" fill="#f2faff" opacity=".8"/>
+          <ellipse cx="222" cy="28" rx="22" ry="11" fill="#ffffff" opacity=".85"/>
+        </g>
+      </g>
+
+      <path id="hillBackPath" fill="url(#hillBack)" d="M-6 150 C 70 110, 150 118, 214 150 S 320 120, 362 128 L362 230 L-6 230 Z"/>
+      <path id="hillFrontPath" fill="url(#hillFront)" d="M-6 178 C 58 132, 122 140, 176 170 S 300 176, 362 146 L362 230 L-6 230 Z"/>
+      <path id="hillRimPath" fill="none" stroke="#ffffff" stroke-opacity=".7" stroke-width="1.6" d="M-6 178 C 58 132, 122 140, 176 170 S 300 176, 362 146"/>
+
+      <circle cx="44" cy="150" r="18" fill="url(#bubbleG)" opacity=".9"/>
+      <circle cx="318" cy="186" r="11" fill="url(#bubbleG)" opacity=".8"/>
+    </svg>
+    <span></span>
+  </div>
+
+  <div class="meta">
+    <h1 id="title">Subsurface Glow</h1>
+    <p id="artist">Vellum Coast</p>
+  </div>
+
+  <div class="seek">
+    <div class="tube" id="seek" role="slider" tabindex="0"
+         aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0:00">
+      <div class="fill" id="fill"></div>
+      <div class="knob" id="knob"></div>
+    </div>
+    <div class="times">
+      <span id="elapsed">0:00</span>
+      <span id="remaining">-3:34</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="prev" type="button" aria-label="Previous track">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-prev"/></svg>
+    </button>
+    <button class="btn play" id="play" type="button" aria-label="Play">
+      <svg id="icoPlay" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg>
+      <svg id="icoPause" viewBox="0 0 24 24" aria-hidden="true" hidden><use href="#i-pause"/></svg>
+    </button>
+    <button class="btn" id="next" type="button" aria-label="Next track">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-next"/></svg>
+    </button>
+  </div>
+
+  <div class="volume">
+    <svg id="volIcon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 9h4l5-4.5v15L7 15H3z"/>
+      <path id="volWaves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.8a9 9 0 0 1 0 12.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      <path id="volMute" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" hidden/>
+    </svg>
+    <div class="tube" id="vol" role="slider" tabindex="0"
+         aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="70%">
+      <div class="fill" id="volFill"></div>
+      <div class="knob" id="volKnob"></div>
+    </div>
+  </div>
+
+  <section class="queue" aria-labelledby="upnext">
+    <h2 id="upnext">Up next</h2>
+    <ol id="queue"></ol>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // Hill silhouettes, selected per track so each cover reads as its own scene.
+  var HILLS = [
+    {
+      front: "M-6 178 C 58 132, 122 140, 176 170 S 300 176, 362 146 L362 230 L-6 230 Z",
+      back:  "M-6 150 C 70 110, 150 118, 214 150 S 320 120, 362 128 L362 230 L-6 230 Z"
+    },
+    {
+      front: "M-6 186 C 70 150, 140 196, 200 170 S 300 150, 362 168 L362 230 L-6 230 Z",
+      back:  "M-6 128 C 60 150, 110 100, 180 124 S 300 146, 362 110 L362 230 L-6 230 Z"
+    },
+    {
+      front: "M-6 160 C 50 176, 120 130, 190 158 S 300 190, 362 156 L362 230 L-6 230 Z",
+      back:  "M-6 118 C 90 92, 160 140, 250 112 S 330 96, 362 104 L362 230 L-6 230 Z"
+    }
+  ];
+
+  var TRACKS = [
+    { title: "Subsurface Glow",      artist: "Vellum Coast",   dur: 214,
+      pal: { sa: "#2fb6ff", sb: "#0a4fd6", ga: "#5cf24a", gb: "#0d8f22", hill: 0 } },
+    { title: "Electric Meadow",      artist: "Halcyon Drive",  dur: 187,
+      pal: { sa: "#4fd3ff", sb: "#1456e0", ga: "#7cff3e", gb: "#14a02a", hill: 1 } },
+    { title: "Water-Clear Resin",    artist: "Pale Lagoon",    dur: 243,
+      pal: { sa: "#00c2ff", sb: "#0b3bb8", ga: "#2fe05a", gb: "#0a7a3a", hill: 2 } },
+    { title: "Bliss Wallpaper",      artist: "Cerulean Youth", dur: 201,
+      pal: { sa: "#8fe3ff", sb: "#2a7bff", ga: "#b6ff4a", gb: "#22b03a", hill: 0 } },
+    { title: "Tinted Polycarbonate", artist: "Optical Hymn",   dur: 176,
+      pal: { sa: "#13b5f0", sb: "#0d2fa0", ga: "#4ef07a", gb: "#0c8f4a", hill: 1 } },
+    { title: "Overexposed Summer",   artist: "Sunbleach Club", dur: 258,
+      pal: { sa: "#66c8ff", sb: "#0f63e8", ga: "#a8ff2e", gb: "#1aa33a", hill: 2 } }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var player = $("player"), art = $("art");
+  var titleEl = $("title"), artistEl = $("artist");
+  var seek = $("seek"), fill = $("fill"), knob = $("knob");
+  var elapsedEl = $("elapsed"), remainingEl = $("remaining");
+  var playBtn = $("play"), icoPlay = $("icoPlay"), icoPause = $("icoPause");
+  var prevBtn = $("prev"), nextBtn = $("next");
+  var vol = $("vol"), volFill = $("volFill"), volKnob = $("volKnob");
+  var volWaves = $("volWaves"), volMute = $("volMute");
+  var queueEl = $("queue");
+  var hillBackPath = $("hillBackPath"), hillFrontPath = $("hillFrontPath"), hillRimPath = $("hillRimPath");
+
+  var state = { idx: 0, pos: 0, playing: false, volume: 0.7, lastSec: -1 };
+  var dragSeek = false, dragVol = false;
+
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s));
+    var m = Math.floor(s / 60), r = s % 60;
+    return m + ":" + (r < 10 ? "0" + r : r);
+  }
+  function current() { return TRACKS[state.idx]; }
+
+  function applyPalette(p) {
+    var s = art.style;
+    s.setProperty("--sky-a", p.sa);
+    s.setProperty("--sky-b", p.sb);
+    s.setProperty("--ga-a", p.ga);
+    s.setProperty("--ga-b", p.gb);
+    var h = HILLS[p.hill];
+    hillBackPath.setAttribute("d", h.back);
+    hillFrontPath.setAttribute("d", h.front);
+    hillRimPath.setAttribute("d", h.front);
+  }
+
+  function renderQueue() {
+    while (queueEl.firstChild) queueEl.removeChild(queueEl.firstChild);
+    for (var k = 1; k <= 4; k++) {
+      var i = (state.idx + k) % TRACKS.length;
+      var t = TRACKS[i];
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "q-item";
+      btn.setAttribute("aria-label", "Play " + t.title + " by " + t.artist);
+
+      var thumb = document.createElement("span");
+      thumb.className = "thumb";
+      thumb.style.setProperty("--sa", t.pal.sa);
+      thumb.style.setProperty("--sb", t.pal.sb);
+      thumb.style.setProperty("--ga", t.pal.ga);
+      thumb.style.setProperty("--gb", t.pal.gb);
+
+      var text = document.createElement("span");
+      text.className = "q-text";
+      var title = document.createElement("span");
+      title.className = "q-title";
+      title.textContent = t.title;
+      var artist = document.createElement("span");
+      artist.className = "q-artist";
+      artist.textContent = t.artist;
+      text.appendChild(title);
+      text.appendChild(artist);
+
+      var dur = document.createElement("span");
+      dur.className = "q-dur";
+      dur.textContent = fmt(t.dur);
+
+      btn.appendChild(thumb);
+      btn.appendChild(text);
+      btn.appendChild(dur);
+      (function (target) {
+        btn.addEventListener("click", function () { selectTrack(target); });
+      })(i);
+      li.appendChild(btn);
+      queueEl.appendChild(li);
+    }
+  }
+
+  function renderTrack() {
+    var t = current();
+    titleEl.textContent = t.title;
+    artistEl.textContent = t.artist;
+    applyPalette(t.pal);
+    renderQueue();
+    state.lastSec = -1;
+    renderProgress();
+  }
+
+  function renderProgress() {
+    var d = current().dur;
+    var p = clamp(state.pos / d, 0, 1);
+    fill.style.transform = "scaleX(" + p + ")";
+    knob.style.left = (p * 100) + "%";
+    var sec = Math.floor(state.pos);
+    if (sec !== state.lastSec) {
+      state.lastSec = sec;
+      elapsedEl.textContent = fmt(state.pos);
+      remainingEl.textContent = "-" + fmt(d - state.pos);
+      seek.setAttribute("aria-valuenow", String(Math.round(p * 100)));
+      seek.setAttribute("aria-valuetext", fmt(state.pos) + " of " + fmt(d));
+    }
+  }
+
+  function renderVolume() {
+    var v = state.volume;
+    volFill.style.transform = "scaleX(" + v + ")";
+    volKnob.style.left = (v * 100) + "%";
+    vol.setAttribute("aria-valuenow", String(Math.round(v * 100)));
+    vol.setAttribute("aria-valuetext", Math.round(v * 100) + "%");
+    var muted = v < 0.01;
+    volWaves.hidden = muted;
+    volMute.hidden = !muted;
+  }
+
+  function setPlaying(p) {
+    state.playing = p;
+    player.classList.toggle("is-playing", p);
+    icoPlay.hidden = p;
+    icoPause.hidden = !p;
+    playBtn.setAttribute("aria-label", p ? "Pause" : "Play");
+  }
+
+  function selectTrack(i) {
+    state.idx = (i + TRACKS.length) % TRACKS.length;
+    state.pos = 0;
+    renderTrack();
+  }
+
+  function nextTrack() { selectTrack(state.idx + 1); }
+  function prevTrack() {
+    if (state.pos > 3) { state.pos = 0; renderProgress(); return; }
+    selectTrack(state.idx - 1);
+  }
+
+  function seekToX(clientX) {
+    var r = seek.getBoundingClientRect();
+    var p = clamp((clientX - r.left) / r.width, 0, 1);
+    state.pos = p * current().dur;
+    renderProgress();
+  }
+  function setVolX(clientX) {
+    var r = vol.getBoundingClientRect();
+    state.volume = clamp((clientX - r.left) / r.width, 0, 1);
+    renderVolume();
+  }
+
+  // Playback clock
+  var prevTs = null;
+  function frame(ts) {
+    if (prevTs === null) prevTs = ts;
+    var dt = Math.min((ts - prevTs) / 1000, 0.25);
+    prevTs = ts;
+    if (state.playing && !dragSeek) {
+      state.pos += dt;
+      if (state.pos >= current().dur) {
+        state.pos = 0;
+        nextTrack();
+      }
+      renderProgress();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Transport
+  playBtn.addEventListener("click", function () { setPlaying(!state.playing); });
+  prevBtn.addEventListener("click", prevTrack);
+  nextBtn.addEventListener("click", nextTrack);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.code === "Space" && (e.target === document.body || e.target === player)) {
+      e.preventDefault();
+      setPlaying(!state.playing);
+    }
+  });
+
+  // Seek: pointer drag
+  seek.addEventListener("pointerdown", function (e) {
+    dragSeek = true;
+    seek.setPointerCapture(e.pointerId);
+    seekToX(e.clientX);
+  });
+  seek.addEventListener("pointermove", function (e) {
+    if (dragSeek) seekToX(e.clientX);
+  });
+  function endSeek() { dragSeek = false; }
+  seek.addEventListener("pointerup", endSeek);
+  seek.addEventListener("pointercancel", endSeek);
+
+  // Seek: keyboard
+  seek.addEventListener("keydown", function (e) {
+    var d = current().dur;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") state.pos = clamp(state.pos + 5, 0, d);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") state.pos = clamp(state.pos - 5, 0, d);
+    else if (e.key === "Home") state.pos = 0;
+    else if (e.key === "End") state.pos = d;
+    else return;
+    e.preventDefault();
+    renderProgress();
+  });
+
+  // Volume: pointer and keyboard
+  vol.addEventListener("pointerdown", function (e) {
+    dragVol = true;
+    vol.setPointerCapture(e.pointerId);
+    setVolX(e.clientX);
+  });
+  vol.addEventListener("pointermove", function (e) {
+    if (dragVol) setVolX(e.clientX);
+  });
+  function endVol() { dragVol = false; }
+  vol.addEventListener("pointerup", endVol);
+  vol.addEventListener("pointercancel", endVol);
+  vol.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") state.volume = clamp(state.volume + 0.05, 0, 1);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") state.volume = clamp(state.volume - 0.05, 0, 1);
+    else return;
+    e.preventDefault();
+    renderVolume();
+  });
+
+  // Init
+  renderTrack();
+  renderVolume();
+  setPlaying(false);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

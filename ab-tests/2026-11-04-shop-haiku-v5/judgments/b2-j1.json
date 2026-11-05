@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j1",
+  "scores": {
+    "W": {"compact": 9, "minimal": 8, "modern": 7, "usability": 8, "craft": 6, "overall": 7, "note": "Very dense 4-column Essentials grid with inline steppers and a clear bag footer, but desktop buttons and the stepper label wrap awkwardly (\"Add to / bag\", \"1 in / bag\") and names truncate."},
+    "X": {"compact": 5, "minimal": 6, "modern": 5, "usability": 8, "craft": 6, "overall": 6, "note": "Full storefront with search, chips, sort and a cart drawer with quantity controls, but emoji product art on pastel tiles reads generic and the large cards waste space."},
+    "Y": {"compact": 8, "minimal": 9, "modern": 7, "usability": 8, "craft": 7, "overall": 8, "note": "Cohesive line-art tiles, a compact bag summary with subtotal and empty-bag link, inline steppers, a reasoned sold-out note and solid focus and status handling; desktop names truncate and card heights vary."},
+    "Z": {"compact": 5, "minimal": 6, "modern": 6, "usability": 9, "craft": 7, "overall": 7, "note": "The most complete shopping flow (search, filter, sort, drawer with totals and shipping hint), but initials placeholder tiles, badges and tall cards feel like a template and are less compact."}
+  },
+  "ranking": ["Y", "W", "Z", "X"]
+}

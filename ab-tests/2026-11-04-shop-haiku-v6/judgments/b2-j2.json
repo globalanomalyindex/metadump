@@ -1,0 +1,43 @@
+{
+  "block": "b2",
+  "judge": "j2",
+  "scores": {
+    "W": {
+      "compact": 8,
+      "minimal": 8,
+      "modern": 6,
+      "usability": 8,
+      "craft": 7,
+      "overall": 8,
+      "note": "A real component with size chips, a labeled quantity stepper, pending/added/error states, sold-out with Notify me and an accessible bag drawer, though the cards' buttons do not align across the row and the blue underlined link and monogram tiles feel a little dated."
+    },
+    "X": {
+      "compact": 6,
+      "minimal": 7,
+      "modern": 7,
+      "usability": 6,
+      "craft": 6,
+      "overall": 7,
+      "note": "Clean black-and-white storefront with a polished card style, but it is a full catalogue page rather than a component, the add button has no size or quantity, and on mobile the header and search run flush to the screen edge with no gutter."
+    },
+    "Y": {
+      "compact": 4,
+      "minimal": 5,
+      "modern": 6,
+      "usability": 6,
+      "craft": 7,
+      "overall": 5,
+      "note": "Careful SVG art, persisted cart and clear totals, but the permanent sidebar and tall descriptive cards make it the least compact, and on mobile the cart sits below all twelve products so checkout is far from the action."
+    },
+    "Z": {
+      "compact": 9,
+      "minimal": 9,
+      "modern": 8,
+      "usability": 8,
+      "craft": 7,
+      "overall": 9,
+      "note": "The tightest, most restrained component: hairline cards, outline product glyphs, size radios with a struck-through sold-out option, and clear loading, error and sold-out states, with a bottom-sheet bag on phones; the XL size wraps alone onto a second row and button baselines drift across cards."
+    }
+  },
+  "ranking": ["Z", "W", "X", "Y"]
+}

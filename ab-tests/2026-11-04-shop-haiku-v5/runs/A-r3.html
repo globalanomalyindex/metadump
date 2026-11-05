@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --text: #1c1917;
+    --muted: #78716c;
+    --line: #e7e5e4;
+    --accent: #1c1917;
+    --accent-text: #ffffff;
+    --danger: #b91c1c;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0a09;
+      --surface: #1c1917;
+      --text: #fafaf9;
+      --muted: #a8a29e;
+      --line: #292524;
+      --accent: #fafaf9;
+      --accent-text: #0c0a09;
+      --danger: #f87171;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0a09;
+    --surface: #1c1917;
+    --text: #fafaf9;
+    --muted: #a8a29e;
+    --line: #292524;
+    --accent: #fafaf9;
+    --accent-text: #0c0a09;
+    --danger: #f87171;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    display: flex; align-items: center; gap: 12px;
+    height: 60px;
+  }
+  .brand { font-weight: 700; letter-spacing: -.01em; font-size: 17px; margin-right: auto; }
+  .cart-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: var(--accent-text);
+    border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600;
+  }
+  .count {
+    display: inline-grid; place-items: center;
+    min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+    background: var(--accent-text); color: var(--accent); font-size: 12px;
+  }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 20px 0 8px;
+  }
+  .search {
+    flex: 1 1 220px; min-width: 0;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 9px 16px;
+  }
+  .search::placeholder { color: var(--muted); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    border-radius: 999px; padding: 6px 12px; font-size: 14px;
+  }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  select.sort {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 12px;
+  }
+
+  .meta { color: var(--muted); font-size: 14px; padding: 4px 0 16px; }
+
+  .grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    padding-bottom: 64px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    display: flex; flex-direction: column; overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .swatch {
+    aspect-ratio: 4 / 3; display: grid; place-items: center;
+    font-size: 44px; user-select: none;
+  }
+  .info { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .name { font-weight: 600; }
+  .cat { color: var(--muted); font-size: 13px; }
+  .row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 10px; gap: 8px; }
+  .price { font-weight: 700; }
+  .rating { color: var(--muted); font-size: 13px; }
+  .add {
+    width: 100%; margin-top: 10px;
+    background: transparent; border: 1px solid var(--text); color: var(--text);
+    border-radius: 10px; padding: 8px; font-weight: 600;
+    transition: background .15s ease, color .15s ease;
+  }
+  .add:hover { background: var(--text); color: var(--bg); }
+  .add.in-cart { background: var(--text); color: var(--bg); }
+  .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 48px 0; }
+
+  /* cart drawer */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  aside.cart {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 100%);
+    background: var(--surface); border-left: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform .25s ease;
+  }
+  aside.cart.open { transform: translateX(0); }
+  .cart-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--line);
+  }
+  .cart-head h2 { margin: 0; font-size: 17px; }
+  .icon-btn { background: none; border: 0; font-size: 22px; line-height: 1; padding: 4px 6px; color: var(--muted); }
+  .cart-body { flex: 1; overflow-y: auto; padding: 8px 18px; }
+  .line {
+    display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .thumb { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-size: 22px; }
+  .line-name { font-weight: 600; font-size: 14px; }
+  .line-sub { color: var(--muted); font-size: 13px; }
+  .qty { display: inline-flex; align-items: center; gap: 2px; margin-top: 6px; border: 1px solid var(--line); border-radius: 999px; }
+  .qty button { background: none; border: 0; width: 28px; height: 26px; border-radius: 999px; color: var(--text); }
+  .qty button:hover { background: var(--line); }
+  .qty span { min-width: 22px; text-align: center; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .line-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .line-total { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .remove { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; text-decoration: underline; }
+  .remove:hover { color: var(--danger); }
+  .cart-empty { text-align: center; color: var(--muted); padding: 48px 0; }
+
+  .cart-foot { border-top: 1px solid var(--line); padding: 16px 18px 20px; display: grid; gap: 6px; }
+  .sum { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; }
+  .sum.total { color: var(--text); font-weight: 700; font-size: 16px; margin-top: 4px; }
+  .sum .v { font-variant-numeric: tabular-nums; }
+  .ship-note { font-size: 12px; color: var(--muted); }
+  .checkout {
+    margin-top: 10px; width: 100%; border: 0; border-radius: 12px; padding: 12px;
+    background: var(--accent); color: var(--accent-text); font-weight: 700;
+  }
+  .checkout:disabled { opacity: .4; cursor: not-allowed; }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
+    font-size: 14px; opacity: 0; pointer-events: none; transition: all .25s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 480px) {
+    .brand { font-size: 15px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .info { padding: 10px 11px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand">Field &amp; Fold</div>
+    <button class="cart-btn" id="openCart" aria-controls="cart" aria-expanded="false">
+      Cart <span class="count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="controls">
+    <input class="search" id="search" type="search" placeholder="Search products" aria-label="Search products">
+    <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+    <select class="sort" id="sort" aria-label="Sort products">
+      <option value="featured">Featured</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="rating">Top rated</option>
+    </select>
+  </div>
+  <div class="meta" id="meta" aria-live="polite"></div>
+  <section class="grid" id="grid"></section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="cart" id="cart" aria-label="Shopping cart" aria-hidden="true">
+  <div class="cart-head">
+    <h2>Your cart</h2>
+    <button class="icon-btn" id="closeCart" aria-label="Close cart">&times;</button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-foot">
+    <div class="sum"><span>Subtotal</span><span class="v" id="subtotal">$0.00</span></div>
+    <div class="sum"><span>Shipping</span><span class="v" id="shipping">$0.00</span></div>
+    <div class="sum"><span>Estimated tax</span><span class="v" id="tax">$0.00</span></div>
+    <div class="sum total"><span>Total</span><span class="v" id="total">$0.00</span></div>
+    <div class="ship-note" id="shipNote"></div>
+    <button class="checkout" id="checkout" disabled>Checkout</button>
+  </div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    { id: 'p1', name: 'Merino Crew Sweater', cat: 'Apparel', price: 98, rating: 4.7, reviews: 214, emoji: '🧶', bg: '#e7e5e4' },
+    { id: 'p2', name: 'Waxed Canvas Tote', cat: 'Bags', price: 64, rating: 4.5, reviews: 88, emoji: '👜', bg: '#d6d3d1' },
+    { id: 'p3', name: 'Ceramic Pour-Over Set', cat: 'Kitchen', price: 42, rating: 4.8, reviews: 301, emoji: '☕', bg: '#fde7d4' },
+    { id: 'p4', name: 'Linen Overshirt', cat: 'Apparel', price: 118, rating: 4.4, reviews: 57, emoji: '👔', bg: '#e2e8f0' },
+    { id: 'p5', name: 'Brass Desk Lamp', cat: 'Home', price: 135, rating: 4.9, reviews: 142, emoji: '💡', bg: '#fef3c7' },
+    { id: 'p6', name: 'Trail Running Cap', cat: 'Accessories', price: 28, rating: 4.2, reviews: 39, emoji: '🧢', bg: '#dcfce7' },
+    { id: 'p7', name: 'Cast Iron Skillet, 10in', cat: 'Kitchen', price: 55, rating: 4.9, reviews: 672, emoji: '🍳', bg: '#e5e7eb' },
+    { id: 'p8', name: 'Leather Card Wallet', cat: 'Accessories', price: 46, rating: 4.6, reviews: 165, emoji: '👛', bg: '#fde68a' },
+    { id: 'p9', name: 'Oak Cutting Board', cat: 'Kitchen', price: 39, rating: 4.6, reviews: 93, emoji: '🪵', bg: '#f5e6cc' },
+    { id: 'p10', name: 'Wool Throw Blanket', cat: 'Home', price: 86, rating: 4.7, reviews: 118, emoji: '🛋️', bg: '#e9d5ff' },
+    { id: 'p11', name: 'Insulated Bottle, 750ml', cat: 'Outdoor', price: 34, rating: 4.5, reviews: 420, emoji: '🫗', bg: '#cffafe' },
+    { id: 'p12', name: 'Packable Rain Shell', cat: 'Outdoor', price: 149, rating: 4.3, reviews: 77, emoji: '🌧️', bg: '#bfdbfe' }
+  ];
+  const TAX_RATE = 0.0825;
+  const FREE_SHIP_OVER = 100;
+  const SHIP_FEE = 9;
+
+  const state = { cat: 'All', query: '', sort: 'featured', cart: {} };
+
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => '$' + n.toFixed(2);
+
+  // Build category chips
+  const cats = ['All', ...new Set(PRODUCTS.map(p => p.cat))];
+  $('chips').innerHTML = cats.map(c =>
+    `<button class="chip" data-cat="${c}" aria-pressed="${c === state.cat}">${c}</button>`).join('');
+
+  function visible() {
+    const q = state.query.trim().toLowerCase();
+    let list = PRODUCTS.filter(p =>
+      (state.cat === 'All' || p.cat === state.cat) &&
+      (!q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)));
+    const sorters = {
+      'price-asc': (a, b) => a.price - b.price,
+      'price-desc': (a, b) => b.price - a.price,
+      'rating': (a, b) => b.rating - a.rating || b.reviews - a.reviews,
+      'featured': () => 0
+    };
+    return list.sort(sorters[state.sort]);
+  }
+
+  function renderGrid() {
+    const list = visible();
+    $('meta').textContent = `${list.length} ${list.length === 1 ? 'product' : 'products'}`;
+    if (!list.length) {
+      $('grid').innerHTML = `<div class="empty">No products match. Try a different search or category.</div>`;
+      return;
+    }
+    $('grid').innerHTML = list.map(p => {
+      const inCart = !!state.cart[p.id];
+      return `
+      <article class="card">
+        <div class="swatch" style="background:${p.bg}" aria-hidden="true">${p.emoji}</div>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="cat">${p.cat}</div>
+          <div class="row">
+            <span class="price">${money(p.price)}</span>
+            <span class="rating" aria-label="Rated ${p.rating} from ${p.reviews} reviews">★ ${p.rating} (${p.reviews})</span>
+          </div>
+          <button class="add ${inCart ? 'in-cart' : ''}" data-add="${p.id}">
+            ${inCart ? 'In cart · add more' : 'Add to cart'}
+          </button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  function lines() {
+    return Object.entries(state.cart).map(([id, qty]) => {
+      const p = PRODUCTS.find(x => x.id === id);
+      return { p, qty, total: p.price * qty };
+    });
+  }
+
+  function renderCart() {
+    const items = lines();
+    const count = items.reduce((s, l) => s + l.qty, 0);
+    const subtotal = items.reduce((s, l) => s + l.total, 0);
+    const shipping = subtotal === 0 || subtotal >= FREE_SHIP_OVER ? 0 : SHIP_FEE;
+    const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
+    const total = subtotal + shipping + tax;
+
+    $('cartCount').textContent = count;
+    $('subtotal').textContent = money(subtotal);
+    $('shipping').textContent = shipping === 0 && subtotal > 0 ? 'Free' : money(shipping);
+    $('tax').textContent = money(tax);
+    $('total').textContent = money(total);
+    $('shipNote').textContent = subtotal === 0 ? '' :
+      subtotal >= FREE_SHIP_OVER ? 'Free shipping applied.' :
+      `Add ${money(FREE_SHIP_OVER - subtotal)} more for free shipping.`;
+    $('checkout').disabled = count === 0;
+
+    $('cartBody').innerHTML = items.length ? items.map(({ p, qty, total }) => `
+      <div class="line">
+        <div class="thumb" style="background:${p.bg}" aria-hidden="true">${p.emoji}</div>
+        <div>
+          <div class="line-name">${p.name}</div>
+          <div class="line-sub">${money(p.price)} each</div>
+          <div class="qty">
+            <button data-dec="${p.id}" aria-label="Decrease quantity of ${p.name}">&minus;</button>
+            <span aria-live="polite">${qty}</span>
+            <button data-inc="${p.id}" aria-label="Increase quantity of ${p.name}">+</button>
+          </div>
+        </div>
+        <div class="line-right">
+          <span class="line-total">${money(total)}</span>
+          <button class="remove" data-remove="${p.id}">Remove</button>
+        </div>
+      </div>`).join('')
+      : `<div class="cart-empty">Your cart is empty.</div>`;
+  }
+
+  function render() { renderGrid(); renderCart(); }
+
+  function setQty(id, qty) {
+    if (qty <= 0) delete state.cart[id];
+    else state.cart[id] = Math.min(qty, 99);
+    render();
+  }
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => t.classList.remove('show'), 1600);
+  }
+
+  function openCart(open) {
+    $('cart').classList.toggle('open', open);
+    $('scrim').classList.toggle('open', open);
+    $('cart').setAttribute('aria-hidden', String(!open));
+    $('openCart').setAttribute('aria-expanded', String(open));
+    if (open) $('closeCart').focus();
+  }
+
+  // Events
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]');
+    if (!b) return;
+    state.cat = b.dataset.cat;
+    document.querySelectorAll('.chip').forEach(c =>
+      c.setAttribute('aria-pressed', String(c.dataset.cat === state.cat)));
+    renderGrid();
+  });
+
+  $('search').addEventListener('input', e => { state.query = e.target.value; renderGrid(); });
+  $('sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+
+  $('grid').addEventListener('click', e => {
+    const b = e.target.closest('[data-add]');
+    if (!b) return;
+    const id = b.dataset.add;
+    const name = PRODUCTS.find(p => p.id === id).name;
+    setQty(id, (state.cart[id] || 0) + 1);
+    toast(`Added ${name}`);
+  });
+
+  $('cartBody').addEventListener('click', e => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.inc) setQty(t.dataset.inc, (state.cart[t.dataset.inc] || 0) + 1);
+    else if (t.dataset.dec) setQty(t.dataset.dec, (state.cart[t.dataset.dec] || 0) - 1);
+    else if (t.dataset.remove) setQty(t.dataset.remove, 0);
+  });
+
+  $('openCart').addEventListener('click', () => openCart(true));
+  $('closeCart').addEventListener('click', () => openCart(false));
+  $('scrim').addEventListener('click', () => openCart(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') openCart(false); });
+
+  $('checkout').addEventListener('click', () => {
+    const count = Object.values(state.cart).reduce((s, q) => s + q, 0);
+    if (!count) return;
+    state.cart = {};
+    render();
+    openCart(false);
+    toast('Demo only: order placed');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

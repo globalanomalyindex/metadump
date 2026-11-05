@@ -1,0 +1,338 @@
+{
+ "by_task": {
+  "t1-flux-headphones": {
+   "A": {
+    "fidelity": 8.75,
+    "specificity": 8,
+    "target_fit": 8.25,
+    "pitfalls": 7.25,
+    "overall": 7.75,
+    "mean_rank": 2.25,
+    "n": 4
+   },
+   "C": {
+    "fidelity": 7,
+    "specificity": 8,
+    "target_fit": 7.75,
+    "pitfalls": 5.25,
+    "overall": 5.5,
+    "mean_rank": 5,
+    "n": 4
+   },
+   "B": {
+    "fidelity": 8.75,
+    "specificity": 7.25,
+    "target_fit": 8,
+    "pitfalls": 7.75,
+    "overall": 7,
+    "mean_rank": 3.25,
+    "n": 4
+   }
+  },
+  "t2-sdxl-busstop": {
+   "A": {
+    "fidelity": 8,
+    "specificity": 6.5,
+    "target_fit": 6,
+    "pitfalls": 6.25,
+    "overall": 6.25,
+    "mean_rank": 4,
+    "n": 4
+   },
+   "C": {
+    "fidelity": 7.25,
+    "specificity": 7.25,
+    "target_fit": 5.5,
+    "pitfalls": 6.25,
+    "overall": 5.75,
+    "mean_rank": 4.5,
+    "n": 4
+   },
+   "B": {
+    "fidelity": 9,
+    "specificity": 8.75,
+    "target_fit": 6.5,
+    "pitfalls": 7.75,
+    "overall": 8,
+    "mean_rank": 2,
+    "n": 4
+   }
+  },
+  "t3-hero-html": {
+   "A": {
+    "fidelity": 8,
+    "specificity": 6.5,
+    "target_fit": 7.25,
+    "pitfalls": 5,
+    "overall": 6.75,
+    "mean_rank": 3.75,
+    "n": 4
+   },
+   "C": {
+    "fidelity": 8.25,
+    "specificity": 8.25,
+    "target_fit": 8.5,
+    "pitfalls": 7.5,
+    "overall": 7.75,
+    "mean_rank": 2.25,
+    "n": 4
+   },
+   "B": {
+    "fidelity": 6.5,
+    "specificity": 6.25,
+    "target_fit": 8.75,
+    "pitfalls": 7.25,
+    "overall": 5.75,
+    "mean_rank": 4.5,
+    "n": 4
+   }
+  },
+  "t4-diagnose-render": {
+   "A": {
+    "fidelity": 7.25,
+    "specificity": 8.75,
+    "target_fit": 7.25,
+    "pitfalls": 5.25,
+    "overall": 6.25,
+    "mean_rank": 4.25,
+    "n": 4
+   },
+   "C": {
+    "fidelity": 7,
+    "specificity": 8.25,
+    "target_fit": 7.75,
+    "pitfalls": 6.5,
+    "overall": 6.75,
+    "mean_rank": 4,
+    "n": 4
+   },
+   "B": {
+    "fidelity": 9,
+    "specificity": 8.75,
+    "target_fit": 8,
+    "pitfalls": 6.75,
+    "overall": 7.75,
+    "mean_rank": 2.25,
+    "n": 4
+   }
+  }
+ },
+ "overall": {
+  "all": {
+   "A": {
+    "fidelity": 8,
+    "specificity": 7.44,
+    "target_fit": 7.19,
+    "pitfalls": 5.94,
+    "overall": 6.75,
+    "mean_rank": 3.56,
+    "n": 16
+   },
+   "C": {
+    "fidelity": 7.38,
+    "specificity": 7.94,
+    "target_fit": 7.38,
+    "pitfalls": 6.38,
+    "overall": 6.44,
+    "mean_rank": 3.94,
+    "n": 16
+   },
+   "B": {
+    "fidelity": 8.31,
+    "specificity": 7.75,
+    "target_fit": 7.81,
+    "pitfalls": 7.38,
+    "overall": 7.12,
+    "mean_rank": 3,
+    "n": 16
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 18,
+   "losses": 12,
+   "ties": 2,
+   "win_rate": 0.59
+  },
+  "B_vs_C": {
+   "wins": 19,
+   "losses": 12,
+   "ties": 1,
+   "win_rate": 0.61
+  },
+  "C_vs_A": {
+   "wins": 12,
+   "losses": 18,
+   "ties": 2,
+   "win_rate": 0.41
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 8,
+   "mean_tokens": 97284,
+   "mean_seconds": 251.3,
+   "mean_tool_uses": 5.1
+  },
+  "C": {
+   "runs": 8,
+   "mean_tokens": 108246,
+   "mean_seconds": 309.1,
+   "mean_tool_uses": 9.4
+  },
+  "B": {
+   "runs": 8,
+   "mean_tokens": 157985,
+   "mean_seconds": 430.0,
+   "mean_tool_uses": 21.4
+  }
+ },
+ "judge_agreement_pearson": 0.24,
+ "judge_mean_abs_diff": 1.54,
+ "metrics_by_arm": {
+  "t1-flux-headphones/A": {
+   "words": 387,
+   "clause_coverage": 1.0,
+   "flux_prompt_words": 260.5,
+   "negations_in_flux_prompt": 0
+  },
+  "t1-flux-headphones/C": {
+   "words": 462,
+   "clause_coverage": 0.86,
+   "flux_prompt_words": 134,
+   "negations_in_flux_prompt": 0
+  },
+  "t1-flux-headphones/B": {
+   "words": 432.5,
+   "clause_coverage": 1.0,
+   "flux_prompt_words": 161.5,
+   "negations_in_flux_prompt": 0
+  },
+  "t2-sdxl-busstop/A": {
+   "words": 324,
+   "clause_coverage": 1.0,
+   "has_negative": [
+    true,
+    true
+   ],
+   "negative_terms": 49,
+   "negations_in_positive": 0.5
+  },
+  "t2-sdxl-busstop/C": {
+   "words": 337,
+   "clause_coverage": 1.0,
+   "has_negative": [
+    true,
+    true
+   ],
+   "negative_terms": 52,
+   "negations_in_positive": 0
+  },
+  "t2-sdxl-busstop/B": {
+   "words": 276.5,
+   "clause_coverage": 0.93,
+   "has_negative": [
+    true,
+    true
+   ],
+   "negative_terms": 12,
+   "negations_in_positive": 0
+  },
+  "t3-hero-html/A": {
+   "words": 20917,
+   "clause_coverage": 0.64,
+   "backdrop_filter_uses": 7,
+   "reduced_motion": [
+    true,
+    true
+   ],
+   "bytes": 282223.5
+  },
+  "t3-hero-html/C": {
+   "words": 3165,
+   "clause_coverage": 0.86,
+   "backdrop_filter_uses": 11,
+   "reduced_motion": [
+    true,
+    true
+   ],
+   "bytes": 40887
+  },
+  "t3-hero-html/B": {
+   "words": 18445.5,
+   "clause_coverage": 0.86,
+   "backdrop_filter_uses": 7,
+   "reduced_motion": [
+    true,
+    true
+   ],
+   "bytes": 172726.5
+  },
+  "t4-diagnose-render/A": {
+   "words": 1782,
+   "clause_coverage": 1.0,
+   "list_items": 39
+  },
+  "t4-diagnose-render/C": {
+   "words": 1875,
+   "clause_coverage": 0.93,
+   "list_items": 40
+  },
+  "t4-diagnose-render/B": {
+   "words": 2544.5,
+   "clause_coverage": 1.0,
+   "list_items": 43
+  }
+ },
+ "notes": {
+  "t1-flux-headphones/j1/B-r2": "Most complete and physically coherent account of color-in-material (solid vs hollow parts deepening with thickness, darker overlaps, blue caustic shadow on a white plinth), with blue-tinted overexposure balanced against a sky that stays saturated, all phrased positively and front-loaded.",
+  "t1-flux-headphones/j1/A-r1": "Strong backlit dyed-through-plastic description and a distinctive Y2K inflatable-vinyl cushion idea, but the #3CFF2E grass risks radioactive neon, the edges drift to aqua, and 'high dynamic range' works against the overexposed look.",
+  "t1-flux-headphones/j1/C-r2": "Rich material detail, but it front-loads 'electric-cyan acrylic' instead of blue, swaps the vinyl cushions for frosted silicone (a step toward generic frosted glass), and names the Windows XP Bliss wallpaper outright.",
+  "t1-flux-headphones/j1/B-r1": "Covers every brief element correctly and cleanly, including the hollow-shell rim logic, but it is so compressed and telegraphic, with no camera or color anchors, that it gives the model less to work with.",
+  "t1-flux-headphones/j1/C-r1": "Vivid and tangible (mold seams, scuffs, overlap density), but 'tropical water', cyan rims and frosted-white silicone cushions pull it off the blue acrylic-and-vinyl brief, and it asks the model to imitate the Bliss wallpaper.",
+  "t1-flux-headphones/j1/A-r2": "Faithful and well-formed, but generic in places: filler like 'ultra-detailed' and 'gentle lens flare', a silver driver that brings in metal, and pure-neon #39FF3A grass.",
+  "t1-flux-headphones/j2/A-r2": "Front-loads the material and turns 'inside the material' into thickness-graded dye, tinted visible internals and blue caustics in tight natural language, with only minor filler (lens flare, ultra-detailed).",
+  "t1-flux-headphones/j2/C-r1": "Rich Frutiger Aero mood and strong thick-to-thin and overlap logic, but frosted-white silicone cushions replace the vinyl and the scuffs and mold seam undercut the immaculate Y2K gloss.",
+  "t1-flux-headphones/j2/B-r1": "Smart hollow-shell color logic and clean positive phrasing, but it is telegraphic and thin, with no lens, mood or Y2K detail to steer it past a generic render.",
+  "t1-flux-headphones/j2/A-r1": "Covers the brief most completely (dyed-through gradient, backlit refraction, Y2K inflatable vinyl cushions, every white carrying a cool blue cast); its only flaws are slight filler (HDR, studio-grade clarity) and materials that arrive after the scene.",
+  "t1-flux-headphones/j2/B-r2": "Has the most rigorous inside-the-material engineering (highlights over a visible blue body, hollow versus solid gradients), but 'clear neutral daylight' and a 'real lawn' with yellow-green tips pull against the blue-tinted overexposed whites and the electric grass.",
+  "t1-flux-headphones/j2/C-r2": "Detailed and well structured, but leading with electric-cyan and #00AEEF pushes the acrylic toward aqua or teal, the cushions become frosted silicone, and 'CGI-saturated' plus a named Bliss landscape invite a derivative look.",
+  "t2-sdxl-busstop/j1/C-r1": "Rich, well-guarded prompt with strong transmission cues and an anti-neon/purple negative, but it drifts toward cyan (electric cyan edges, cyan vinyl bench), muddles the thick/thin edge optics, and pushes the overexposed whites, grass and sky past the first 75-token chunk.",
+  "t2-sdxl-busstop/j1/B-r1": "Content is among the most precise (pale where thin, sapphire where thick, vinyl canopy, backlit caustics, blue shadows), but it is written as prose sentences rather than SDXL-friendly comma tags and its negative lacks quality and neon guards.",
+  "t2-sdxl-busstop/j1/A-r2": "Covers every brief element with sensible weighted groups, but puts the negation 'no people' in the positive, pads with 8k/photorealistic filler, adds a frosted sign, and leans on a heavy 1.3 weight.",
+  "t2-sdxl-busstop/j1/C-r2": "Strong negative and useful notes, but the bloated positive drops vinyl entirely, buries the overexposed whites deep past the first chunk, and leans so hard on Windows XP Bliss that it risks a wallpaper pastiche.",
+  "t2-sdxl-busstop/j1/A-r1": "Well front-loaded with acrylic, vinyl and light-transport terms plus a clever 'colored film stuck on glass' negative, but 'frosted translucent bench' invites glassmorphism, the vinyl is attached to no object, and nothing guards against neon drift.",
+  "t2-sdxl-busstop/j1/B-r2": "Tightest, best-formed answer: comma-separated and front-loaded, acrylic and vinyl both used structurally, and color-in-material rendered as concrete optics (pale where thin, sapphire where overlapping, blue shadow, refraction), though the very short negative omits quality and neon guards.",
+  "t2-sdxl-busstop/j2/B-r1": "Covers every brief element with concrete optical cues (pale where thin, sapphire where thick, glowing edges, backlit caustics) and a tight negative, but the positive is written as prose sentences rather than front-loaded comma tags, which spends CLIP tokens on grammar.",
+  "t2-sdxl-busstop/j2/C-r2": "Drops vinyl entirely (the bench becomes cyan resin), and in a bloated positive the overexposed blue-tinted whites land far past the first chunk; it also leans on the Windows XP Bliss cliche and drifts toward cyan.",
+  "t2-sdxl-busstop/j2/A-r1": "A solid, well-ordered SDXL prompt with acrylic and vinyl front-loaded and clever negatives like 'colored film stuck on glass', held back by a 'frosted translucent bench' that invites generic glassmorphism and less distinctive material-depth cues.",
+  "t2-sdxl-busstop/j2/B-r2": "The strongest read of 'color inside the material' (blue tinted through the whole material, pale where thin, sapphire where overlapping, sun shining through onto blue shadow) in clean front-loaded comma form with a short concrete negative; the 85mm lens and style tags at the tail are minor quibbles.",
+  "t2-sdxl-busstop/j2/A-r2": "Hits all brief elements, but it puts the negation 'no people' in the positive, adds '8k' filler, uses a frosted sign, and stacks six weights up to 1.3, all of which hurt SDXL behavior.",
+  "t2-sdxl-busstop/j2/C-r1": "Good transmission cues and a thorough neon/purple-guarding negative, but the positive is bloated, pushes 'electric cyan' and cyan vinyl away from the brief's blue, and leans on the Windows XP Bliss reference.",
+  "t3-hero-html/j1/A-r2": "The most exuberant Frutiger Aero take (sun rays, lime gel CTA, green-label translucent vinyl, bubbles), but crowded with stat chips, a live-listener tag and stray orbs that dilute the hero.",
+  "t3-hero-html/j1/C-r1": "Most convincing material: the vinyl visibly refracts the clouds behind it through layered multiply/screen tint, half-sleeved in tinted PVC and casting caustic light on the grass, all in a clean, legible composition.",
+  "t3-hero-html/j1/B-r1": "Very legible and accessibility-minded with excellent blade-level grass, but the pale sky, navy type and clip-art clouds lose the saturated, luminous Aero feel.",
+  "t3-hero-html/j1/A-r1": "Beautifully refractive disc and rich player card, but floating feature chips, an avatar-and-stars trust pill and a chrome-outlined headline line make it busy and template-like.",
+  "t3-hero-html/j1/B-r2": "Clean and legible, but the disc reads as an opaque painted frisbee and the washed-out sky with cartoon clouds misses the translucent-color brief.",
+  "t3-hero-html/j1/C-r2": "Saturated sky, strong sun glare and a record-in-sleeve concept, but the sleeve reads as a large flat blue panel and the player card awkwardly overlaps it.",
+  "t3-hero-html/j2/B-r2": "A perspective blue-acrylic disc with clouds caught inside it, hyperreal grass and a bright blown-out horizon, superbly legible and accessible, though the navy type and softer sky read slightly more corporate than Frutiger Aero.",
+  "t3-hero-html/j2/A-r1": "A fully committed Frutiger Aero look with translucent vinyl and gel buttons, but the chips, trust badge, bubbles, sparkles and an outlined chromatic-fringe headline make it busy, and body overflow:hidden blocks page scroll.",
+  "t3-hero-html/j2/C-r2": "A record half inside a tinted PVC sleeve, multiply-blended so the color truly reads as inside the material, though the large blue sleeve slab and the flat pale left hill weigh the composition down.",
+  "t3-hero-html/j2/B-r1": "Clean, legible and well engineered, with a nice lens label that shows the landscape upside down, but the soft sky and conventional layout feel less charged and less Y2K than the brief asks for.",
+  "t3-hero-html/j2/C-r1": "The best expression of color inside the material: grass and clouds show through a transparent disc and an overlapping PVC sleeve under a saturated sky with a blown-out sun, kept restrained and legible.",
+  "t3-hero-html/j2/A-r2": "The most maximal Y2K take, with a lime gel CTA, large bubbles, sparkles, grass chips and a vignette, but the disc reads as a painted gradient and the whole scene tips into clutter and pastiche.",
+  "t4-diagnose-render/j1/B-r1": "The most complete and optically correct fix. It covers a hard backlight, a hollow-vessel depth ramp with transmission depth, a blue caustic shadow, overexposed whites given a physical blue source (with a warning that a global cool grade turns the grass teal), the tone-mapper grey trap, haze removal and the grass and sky setting. Its only real flaw is client-facing noise about the dump, entry IDs and write-back notes.",
+  "t4-diagnose-render/j1/C-r2": "Accurate Cycles material and caustics advice (volume absorption with a white base, MNEE, bounces, AgX exposure) and a useful overcorrection section. But it makes the grass and sky an optional window, suggests a global cool Color Balance grade and a slightly warm sun, and uses prompt words like 'bright airy' and 'milky'.",
+  "t4-diagnose-render/j1/A-r1": "Highly concrete and covers several renderers, with pixel-target checks and a grass-and-sky environment. It is undercut by a blown-out emissive white background that contradicts the sky environment, the incorrect claim that a lower-contrast look brings whites to display white, 7500-9000K lights that risk teal grass, and aqua/Bondi drift.",
+  "t4-diagnose-render/j1/B-r2": "Optically excellent on backlight, the depth tint, the blue shadow, whites given a physical blue source, attaching 'overexposed' to the whites only, and holding the hue at azure-to-cobalt rather than aqua. It omits tone-mapping, albedo and bounce fixes for grey whites in 3D, and it is cluttered with bracketed dump IDs.",
+  "t4-diagnose-render/j1/A-r2": "Useful practical extras (a lightbox table, Eevee refraction, denoiser smearing, bounces). But its #2 fix calls for a large soft backlight, which contradicts its own crisp-caustics item, and it cools the lights and grades the highlights cyan across the whole frame, which risks teal grass and cyan drift.",
+  "t4-diagnose-render/j1/C-r1": "The core diagnosis is sound: material wording, volume absorption, hard backlight, tone mapping and albedo, and no global blue grade. But 'strong low sunlight' and 'sun-drenched' invite golden-hour warm whites, the grass and sky are pushed into a window reflection, the rim drifts to electric cyan, and it suggests the Frutiger Aero tags could be dropped.",
+  "t4-diagnose-render/j2/C-r1": "Cleanest and best-ordered fix set: thickness-driven volume absorption, a strong low backlight, exposure/albedo/tone-mapping for luminous blue-leaning whites, and blue caustic shadows, with sky and grass worked in through refraction.",
+  "t4-diagnose-render/j2/B-r1": "Sharpest optics (the hollow-vessel depth ramp, physical sources for the blue in the whites, an explicit guard against haze and against 'translucent' turning milky), but cluttered with internal dump/subagent/write-back material the client doesn't need.",
+  "t4-diagnose-render/j2/A-r2": "Very concrete 3D and render fixes (volume absorption, bounce limits, Eevee refraction, albedo, denoiser), but it favors a large soft backlight and a global cyan grade, which weaken crisp caustics and color that lives in the material.",
+  "t4-diagnose-render/j2/C-r2": "Competent material, backlight and exposure fixes with a useful overcorrection section, but it leaves the grass and sky out of the rewritten prompt and uses wording that tends to wash out ('milky', 'bright airy', a slightly warm sun).",
+  "t4-diagnose-render/j2/A-r1": "Practical absorption and caustics settings across engines plus a good AO catch, but 'Bondi Blue'/'pale aqua' drifts off the blue brief, the white-balance and tone-mapping advice is muddled, and wall thickness is buried at #8.",
+  "t4-diagnose-render/j2/B-r2": "Optically nuanced prompt advice that is faithful to the brief (overexposure limited to the whites, physical blue sources, hue drift), but buried under bracketed dump IDs and jq notes, and it skips the 3D albedo and tone-mapping causes of grey whites."
+ }
+}

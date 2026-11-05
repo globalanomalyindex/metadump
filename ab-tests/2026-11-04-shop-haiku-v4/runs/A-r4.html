@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop</title>
+<style>
+:root{
+  --bg:#fafaf9;--surface:#ffffff;--text:#1c1917;--muted:#78716c;--line:#e7e5e4;
+  --accent:#0f766e;--accent-ink:#ffffff;--r:12px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c0a09;--surface:#1c1917;--text:#fafaf9;--muted:#a8a29e;--line:#292524;
+    --accent:#2dd4bf;--accent-ink:#042f2e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c0a09;--surface:#1c1917;--text:#fafaf9;--muted:#a8a29e;--line:#292524;
+  --accent:#2dd4bf;--accent-ink:#042f2e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px;
+  display:grid;grid-template-columns:1fr 330px;gap:24px;align-items:start}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}}
+
+header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:20px;margin:0;letter-spacing:-.01em}
+.badge{background:var(--accent);color:var(--accent-ink);border-radius:999px;
+  padding:2px 9px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.search{flex:1 1 220px;min-width:0;padding:9px 12px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface)}
+.sort{padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;
+  padding:5px 12px;cursor:pointer;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;display:flex;flex-direction:column}
+.art{aspect-ratio:4/3;display:grid;place-items:center;color:rgba(255,255,255,.92);
+  font-size:26px;font-weight:650;letter-spacing:-.02em}
+.body{padding:12px;display:flex;flex-direction:column;gap:3px;flex:1}
+.name{font-weight:600;line-height:1.3}
+.meta{color:var(--muted);font-size:13px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px}
+.price{font-weight:600;font-variant-numeric:tabular-nums}
+.add{border:1px solid var(--text);background:var(--text);color:var(--bg);border-radius:8px;
+  padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;min-width:104px}
+.add:hover{opacity:.85}
+.add.done{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.empty{grid-column:1/-1;color:var(--muted);padding:32px 0;text-align:center}
+
+aside.cart{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px;position:sticky;top:16px}
+@media (max-width:820px){aside.cart{position:static}}
+.cart h2{font-size:16px;margin:0 0 8px}
+.lines{list-style:none;margin:0;padding:0}
+.line{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.line .name{font-size:14px}
+.line .sub{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.line .amt{font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;text-align:right}
+.ctrl{display:flex;align-items:center;gap:6px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.qty button{border:0;background:none;width:28px;height:26px;cursor:pointer;font-size:15px}
+.qty span{min-width:22px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px}
+.rm{border:0;background:none;color:var(--muted);cursor:pointer;font-size:12px;text-decoration:underline;padding:0}
+.rm:hover{color:var(--text)}
+.note{color:var(--muted);font-size:13px;margin:12px 0 6px}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s ease}
+.totals{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.totals div{display:flex;justify-content:space-between;padding:3px 0;font-variant-numeric:tabular-nums;color:var(--muted)}
+.totals .total{color:var(--text);font-weight:650;font-size:16px;padding-top:8px}
+.checkout{width:100%;margin-top:12px;padding:11px;border:0;border-radius:10px;cursor:pointer;
+  background:var(--accent);color:var(--accent-ink);font-weight:650}
+.checkout:disabled{opacity:.4;cursor:not-allowed}
+.status{color:var(--muted);font-size:13px;margin-top:10px;min-height:1em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Home Goods</h1>
+    <span class="badge" id="count" aria-live="polite">0 items</span>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <input class="search" id="q" type="search" placeholder="Search products" aria-label="Search products">
+      <select class="sort" id="sort" aria-label="Sort products">
+        <option value="featured">Featured</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="rating">Top rated</option>
+      </select>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <aside class="cart" aria-labelledby="cart-title">
+    <h2 id="cart-title">Your cart</h2>
+    <ul class="lines" id="lines"></ul>
+    <p class="note" id="ship-note"></p>
+    <div class="bar" aria-hidden="true"><i id="ship-bar"></i></div>
+    <div class="totals">
+      <div><span>Subtotal</span><span id="sub">$0.00</span></div>
+      <div><span>Shipping</span><span id="ship">$0.00</span></div>
+      <div><span>Tax (8%)</span><span id="tax">$0.00</span></div>
+      <div class="total"><span>Total</span><span id="total">$0.00</span></div>
+    </div>
+    <button class="checkout" id="checkout" disabled>Checkout</button>
+    <div class="status" id="status" role="status"></div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    { id: 'p1',  name: 'Ceramic Pour-Over Dripper', cat: 'Kitchen',     price: 3400, rating: 4.7, reviews: 218, hue: 18  },
+    { id: 'p2',  name: 'Linen Throw Blanket',       cat: 'Home',        price: 5800, rating: 4.6, reviews: 94,  hue: 200 },
+    { id: 'p3',  name: 'Natural Canvas Tote',       cat: 'Bags',        price: 2800, rating: 4.8, reviews: 402, hue: 40  },
+    { id: 'p4',  name: 'Merino Crew Socks, 3-pack', cat: 'Apparel',     price: 1900, rating: 4.5, reviews: 157, hue: 260 },
+    { id: 'p5',  name: 'Brass Desk Lamp',           cat: 'Home',        price: 8900, rating: 4.4, reviews: 61,  hue: 45  },
+    { id: 'p6',  name: 'Steel Water Bottle, 750ml', cat: 'Outdoor',     price: 2650, rating: 4.9, reviews: 733, hue: 170 },
+    { id: 'p7',  name: 'Leather Card Wallet',       cat: 'Accessories', price: 4500, rating: 4.3, reviews: 88,  hue: 25  },
+    { id: 'p8',  name: 'Cast Iron Skillet, 10in',   cat: 'Kitchen',     price: 6400, rating: 4.8, reviews: 512, hue: 0   },
+    { id: 'p9',  name: 'Trail Running Cap',         cat: 'Apparel',     price: 2400, rating: 4.2, reviews: 45,  hue: 210 },
+    { id: 'p10', name: 'Beeswax Taper Candles, 6',  cat: 'Home',        price: 1600, rating: 4.7, reviews: 176, hue: 35  },
+    { id: 'p11', name: 'Field Notebook, Set of 3',  cat: 'Stationery',  price: 1400, rating: 4.6, reviews: 129, hue: 140 },
+    { id: 'p12', name: 'Insulated Rain Jacket',     cat: 'Apparel',     price: 14800, rating: 4.5, reviews: 233, hue: 230 }
+  ];
+  const SHIP_THRESHOLD = 7500, SHIP_FEE = 695, TAX_RATE = 0.08, MAX_QTY = 99;
+
+  const state = { q: '', cat: 'All', sort: 'featured', cart: {} };
+  const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const money = c => fmt.format(c / 100);
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const $ = id => document.getElementById(id);
+
+  const els = { q: $('q'), sort: $('sort'), chips: $('chips'), grid: $('grid'), lines: $('lines'),
+    count: $('count'), shipNote: $('ship-note'), shipBar: $('ship-bar'), sub: $('sub'), ship: $('ship'),
+    tax: $('tax'), total: $('total'), checkout: $('checkout'), status: $('status') };
+
+  const categories = ['All', ...new Set(PRODUCTS.map(p => p.cat))];
+
+  function visibleProducts() {
+    const q = state.q.trim().toLowerCase();
+    let list = PRODUCTS.filter(p =>
+      (state.cat === 'All' || p.cat === state.cat) &&
+      (!q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)));
+    const sorters = {
+      'price-asc': (a, b) => a.price - b.price,
+      'price-desc': (a, b) => b.price - a.price,
+      'rating': (a, b) => b.rating - a.rating || b.reviews - a.reviews
+    };
+    if (sorters[state.sort]) list = [...list].sort(sorters[state.sort]);
+    return list;
+  }
+
+  function renderChips() {
+    els.chips.innerHTML = categories.map(c =>
+      `<button class="chip" type="button" aria-pressed="${c === state.cat}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  }
+
+  function renderGrid() {
+    const items = visibleProducts();
+    els.grid.innerHTML = items.length ? items.map(p => `
+      <article class="card">
+        <div class="art" aria-hidden="true" style="background:linear-gradient(135deg,hsl(${p.hue} 55% 58%),hsl(${(p.hue + 35) % 360} 50% 38%))">${esc(p.name.split(' ').map(w => w[0]).join('').slice(0, 3))}</div>
+        <div class="body">
+          <div class="name">${esc(p.name)}</div>
+          <div class="meta">${esc(p.cat)} · ${p.rating.toFixed(1)} ★ (${p.reviews})</div>
+          <div class="row">
+            <span class="price">${money(p.price)}</span>
+            <button class="add" type="button" data-add="${p.id}" aria-label="Add ${esc(p.name)} to cart">Add to cart</button>
+          </div>
+        </div>
+      </article>`).join('')
+      : `<p class="empty">No products match “${esc(state.q)}”.</p>`;
+  }
+
+  function renderCart() {
+    const entries = Object.entries(state.cart).map(([id, qty]) => ({ p: PRODUCTS.find(x => x.id === id), qty }));
+    const itemCount = entries.reduce((n, e) => n + e.qty, 0);
+    const subtotal = entries.reduce((n, e) => n + e.p.price * e.qty, 0);
+    const shipping = subtotal === 0 || subtotal >= SHIP_THRESHOLD ? 0 : SHIP_FEE;
+    const tax = Math.round(subtotal * TAX_RATE);
+    const total = subtotal + shipping + tax;
+
+    els.count.textContent = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+    els.lines.innerHTML = entries.length ? entries.map(({ p, qty }) => `
+      <li class="line">
+        <div>
+          <div class="name">${esc(p.name)}</div>
+          <div class="sub">${money(p.price)} each</div>
+        </div>
+        <div class="amt">${money(p.price * qty)}</div>
+        <div class="ctrl">
+          <div class="qty" role="group" aria-label="Quantity for ${esc(p.name)}">
+            <button type="button" data-dec="${p.id}" aria-label="Decrease quantity">−</button>
+            <span aria-live="polite">${qty}</span>
+            <button type="button" data-inc="${p.id}" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="rm" type="button" data-rm="${p.id}">Remove</button>
+        </div>
+      </li>`).join('')
+      : `<li class="note" style="border:0">Your cart is empty.</li>`;
+
+    if (subtotal === 0) {
+      els.shipNote.textContent = `Free shipping on orders over ${money(SHIP_THRESHOLD)}.`;
+    } else if (shipping === 0) {
+      els.shipNote.textContent = "You've unlocked free shipping.";
+    } else {
+      els.shipNote.textContent = `Add ${money(SHIP_THRESHOLD - subtotal)} more for free shipping.`;
+    }
+    els.shipBar.style.width = `${Math.min(100, (subtotal / SHIP_THRESHOLD) * 100)}%`;
+
+    els.sub.textContent = money(subtotal);
+    els.ship.textContent = subtotal === 0 ? '$0.00' : shipping === 0 ? 'Free' : money(shipping);
+    els.tax.textContent = money(tax);
+    els.total.textContent = money(total);
+    els.checkout.disabled = entries.length === 0;
+  }
+
+  function setQty(id, qty) {
+    if (qty <= 0) delete state.cart[id];
+    else state.cart[id] = Math.min(qty, MAX_QTY);
+    renderCart();
+  }
+
+  // Events
+  els.q.addEventListener('input', e => { state.q = e.target.value; renderGrid(); });
+  els.sort.addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+
+  els.chips.addEventListener('click', e => {
+    const btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    state.cat = btn.dataset.cat;
+    renderChips();
+    renderGrid();
+  });
+
+  els.grid.addEventListener('click', e => {
+    const btn = e.target.closest('[data-add]');
+    if (!btn) return;
+    const id = btn.dataset.add;
+    setQty(id, (state.cart[id] || 0) + 1);
+    btn.textContent = 'Added';
+    btn.classList.add('done');
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { btn.textContent = 'Add to cart'; btn.classList.remove('done'); }, 900);
+    els.status.textContent = '';
+  });
+
+  els.lines.addEventListener('click', e => {
+    const t = e.target.closest('[data-inc],[data-dec],[data-rm]');
+    if (!t) return;
+    if (t.dataset.inc) setQty(t.dataset.inc, (state.cart[t.dataset.inc] || 0) + 1);
+    else if (t.dataset.dec) setQty(t.dataset.dec, (state.cart[t.dataset.dec] || 0) - 1);
+    else setQty(t.dataset.rm, 0);
+  });
+
+  els.checkout.addEventListener('click', () => {
+    const n = Object.values(state.cart).reduce((a, b) => a + b, 0);
+    const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+    state.cart = {};
+    renderCart();
+    els.status.textContent = `Demo order ${ref} placed for ${n} item${n === 1 ? '' : 's'}. No payment was taken.`;
+  });
+
+  renderChips();
+  renderGrid();
+  renderCart();
+})();
+</script>
+</body>
+</html>

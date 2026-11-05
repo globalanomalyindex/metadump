@@ -1,0 +1,6 @@
+# Moodboard images are screenshots and images of third-party sites; the dumps keep their sources and links.
+*/metadumps/*.moodboard/
+*/metadumps/*.moodboard.png
+*/metadumps/*.moodboard.html
+# Label-shuffled copies of runs and shots for the blind graders; regenerate with blind.py (key.json maps them back).
+*/blind/

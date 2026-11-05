@@ -5,12 +5,12 @@
     "name": "christopher robin fiore",
     "url": "https://github.com/globalanomalyindex"
   },
-  "description": "the metadump plugin: treat AI like a search engine by giving it a meta dump to search.",
+  "description": "The metadump plugin: treat AI like a search engine by giving it a meta dump to search.",
   "plugins": [
     {
       "name": "metadump",
       "source": "./",
-      "description": "build and use meta dumps: self-indexing JSON brain dumps that seed any project and any skill with collected facts and ideas.",
+      "description": "Build and use meta dumps: self-indexing JSON brain dumps that seed any project and any skill with collected facts and ideas.",
       "category": "productivity",
       "keywords": [
         "metadata",

@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop: compact product cards</title>
+<style>
+  :root {
+    --page: #F6F7F9;
+    --surface: #FFFFFF;
+    --ink: #111827;
+    --ink-muted: #6B7280;
+    --hairline: #E5E7EB;
+    --accent: #2563EB;
+    --accent-hover: #1D4ED8;
+    --accent-press: #1E40AF;
+    --accent-ink: #FFFFFF;
+    --focus: #2563EB;
+    --radius: 8px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: #0B0F17;
+      --surface: #111827;
+      --ink: #F9FAFB;
+      --ink-muted: #9CA3AF;
+      --hairline: #2D3748;
+      --accent: #60A5FA;
+      --accent-hover: #3B82F6;
+      --accent-press: #2563EB;
+      --accent-ink: #0B0F17;
+      --focus: #93C5FD;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #0B0F17;
+    --surface: #111827;
+    --ink: #F9FAFB;
+    --ink-muted: #9CA3AF;
+    --hairline: #2D3748;
+    --accent: #60A5FA;
+    --accent-hover: #3B82F6;
+    --accent-press: #2563EB;
+    --accent-ink: #0B0F17;
+    --focus: #93C5FD;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--page);
+    color: var(--ink);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .shop { max-width: 960px; margin: 0 auto; }
+
+  .sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0; border: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* Top bar: title, cart summary, empty action */
+  .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .bar h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  .summary { color: var(--ink-muted); }
+  .ghost {
+    height: 32px; padding: 0 12px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: transparent; color: var(--ink);
+    font: inherit; cursor: pointer;
+    transition: background-color 150ms ease-out;
+  }
+  .ghost:hover { background: var(--surface); }
+  .ghost:disabled { color: var(--ink-muted); cursor: not-allowed; }
+
+  .lines {
+    list-style: none; margin: 0 0 16px; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 4px 12px;
+    color: var(--ink-muted); font-size: 12px; min-height: 16px;
+  }
+
+  /* Grid of compact cards */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  /* One card */
+  .card {
+    position: relative;
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+  }
+  .media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    display: grid; place-items: center;
+    background: var(--page);
+    border-radius: 6px;
+    color: var(--ink-muted);
+  }
+  .media svg { width: 56%; height: auto; }
+  .pill {
+    position: absolute; top: 8px; left: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--hairline); border-radius: 999px;
+    background: var(--surface); color: var(--ink);
+    font-size: 12px; font-weight: 600;
+  }
+  .name {
+    margin: 0;
+    font-size: 16px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .price { display: flex; align-items: baseline; gap: 8px; }
+  .now { font-size: 16px; font-weight: 600; }
+  .sale .now { color: var(--accent); }
+  .was { font-size: 14px; color: var(--ink-muted); text-decoration: line-through; }
+
+  /* Variant chips (radio inputs, keyboard reachable) */
+  .options { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .options legend { padding: 0; margin-bottom: 8px; font-size: 12px; color: var(--ink-muted); }
+  .options-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { position: relative; display: inline-block; }
+  .chip input {
+    position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0;
+  }
+  .chip span {
+    display: inline-block; min-width: 40px; height: 32px; padding: 0 10px;
+    line-height: 32px; text-align: center;
+    border: 1px solid var(--hairline); border-radius: 6px;
+    color: var(--ink); cursor: pointer;
+    transition: border-color 150ms ease-out;
+  }
+  .chip input:checked + span { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .chip.soldout span { color: var(--ink-muted); text-decoration: line-through; }
+  .chip input:focus-visible + span,
+  .chip:has(input:focus-visible) span { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* Add to cart: one primary action, fixed box in every state */
+  .buy { display: flex; flex-direction: column; gap: 8px; }
+  .add {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    background: var(--accent); color: var(--accent-ink);
+    font: inherit; font-weight: 600; cursor: pointer;
+    transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out;
+  }
+  .add:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .add:active { background: var(--accent-press); border-color: var(--accent-press); }
+  .add:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .add[aria-disabled="true"] {
+    background: transparent; border-color: var(--hairline);
+    color: var(--ink-muted); cursor: not-allowed;
+  }
+  .add[aria-disabled="true"]:active { background: transparent; }
+  .add[aria-busy="true"] { cursor: progress; }
+  .add svg { width: 14px; height: 14px; flex: none; }
+  .spinner {
+    width: 14px; height: 14px; flex: none;
+    border: 2px solid currentColor; border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 700ms linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .reason { margin: 0; min-height: 16px; font-size: 12px; color: var(--ink-muted); }
+  .reason.error { color: var(--ink); font-weight: 600; }
+
+  .sim {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 16px; color: var(--ink-muted); font-size: 12px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .add, .chip span, .ghost { transition: none; }
+    .spinner { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main class="shop">
+  <header class="bar">
+    <h1>Essentials</h1>
+    <span class="summary" id="summary">Cart is empty</span>
+    <button type="button" class="ghost" id="empty" disabled>Empty cart</button>
+  </header>
+  <ul class="lines" id="lines"></ul>
+
+  <section class="grid" id="grid" aria-label="Products"></section>
+
+  <label class="sim">
+    <input type="checkbox" id="fail"> Simulate a failed add request
+  </label>
+</main>
+
+<p class="sr-only" id="status" role="status" aria-live="polite"></p>
+
+<script>
+  // Sample data shaped like Shopify-style products: Money objects with amount strings and ISO currency codes.
+  // A variant without availableForSale has no stock state, so it is treated as purchasable, not as false.
+  const PRODUCTS = [
+    {
+      id: 'linen-overshirt', name: 'Linen Overshirt', image: 'shirt', option: 'Size',
+      price: { amount: '84.00', currencyCode: 'USD' },
+      compareAt: { amount: '98.00', currencyCode: 'USD' },
+      variants: [
+        { id: 's',  title: 'S',  availableForSale: true },
+        { id: 'm',  title: 'M',  availableForSale: false },
+        { id: 'l',  title: 'L',  availableForSale: true },
+        { id: 'xl', title: 'XL', availableForSale: true }
+      ]
+    },
+    {
+      id: 'canvas-tote', name: 'Canvas Tote', image: 'bag', option: 'Color',
+      price: { amount: '32.50', currencyCode: 'USD' },
+      variants: [
+        { id: 'natural', title: 'Natural' },
+        { id: 'black',   title: 'Black' }
+      ]
+    },
+    {
+      id: 'pour-over-set', name: 'Ceramic Pour-Over Set', image: 'mug', option: 'Set',
+      price: { amount: '64.00', currencyCode: 'USD' },
+      variants: [
+        { id: 'two',  title: 'Set of 2', availableForSale: false },
+        { id: 'four', title: 'Set of 4', availableForSale: true }
+      ]
+    }
+  ];
+
+  const ICONS = {
+    shirt: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><path d="M22 10l-14 8 5 12 7-3v27h24V27l7 3 5-12-14-8c-2 4-6 6-10 6s-8-2-10-6z"/></svg>',
+    bag:   '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 22h40l-3 32H15z"/><path d="M24 22v-6a8 8 0 0 1 16 0v6"/></svg>',
+    mug:   '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><path d="M16 18h28v28a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6z"/><path d="M44 24h4a6 6 0 0 1 0 12h-4"/><path d="M10 52h44"/></svg>'
+  };
+  const CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+
+  const ADD_MS = 700;      // simulated request time
+  const HOLD_MS = 1500;    // how long "Added" stays before returning to idle
+
+  const cart = new Map();  // key: productId:variantId -> { product, variant, qty }
+  const grid = document.getElementById('grid');
+  const summary = document.getElementById('summary');
+  const linesEl = document.getElementById('lines');
+  const emptyBtn = document.getElementById('empty');
+  const statusEl = document.getElementById('status');
+  const failBox = document.getElementById('fail');
+
+  const money = m => new Intl.NumberFormat('en-US', { style: 'currency', currency: m.currencyCode }).format(Number(m.amount));
+  const cents = m => Math.round(Number(m.amount) * 100);
+  const buyable = v => v.availableForSale !== false;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function announce(msg) { statusEl.textContent = msg; }
+
+  function variantOf(card) {
+    return card.product.variants.find(v => v.id === card.variantId);
+  }
+
+  function renderCard(p) {
+    const hasSale = p.compareAt && cents(p.compareAt) > cents(p.price);
+    const el = document.createElement('article');
+    el.className = 'card';
+    el.setAttribute('aria-labelledby', p.id + '-name');
+    el.innerHTML = `
+      <div class="media">
+        ${hasSale ? '<span class="pill">Sale</span>' : ''}
+        ${ICONS[p.image]}
+      </div>
+      <h2 class="name" id="${p.id}-name">${esc(p.name)}</h2>
+      <div class="price${hasSale ? ' sale' : ''}">
+        <span class="now">${money(p.price)}</span>
+        ${hasSale ? `<span class="was"><span class="sr-only">Was </span>${money(p.compareAt)}</span>` : ''}
+      </div>
+      <fieldset class="options">
+        <legend>${esc(p.option)}</legend>
+        <div class="options-list">
+          ${p.variants.map((v, i) => `
+            <label class="chip" data-variant="${v.id}">
+              <input type="radio" name="${p.id}-opt" value="${v.id}"${i === 0 ? ' checked' : ''}>
+              <span>${esc(v.title)}</span>
+            </label>`).join('')}
+        </div>
+      </fieldset>
+      <div class="buy">
+        <button type="button" class="add" aria-describedby="${p.id}-reason"></button>
+        <p class="reason" id="${p.id}-reason" aria-live="polite"></p>
+      </div>`;
+    grid.appendChild(el);
+
+    const card = {
+      product: p,
+      el,
+      variantId: p.variants[0].id,
+      status: 'idle',       // idle | adding | added
+      error: false,
+      timer: null,
+      btn: el.querySelector('.add'),
+      reason: el.querySelector('.reason')
+    };
+
+    el.addEventListener('change', e => {
+      if (e.target.type !== 'radio') return;
+      clearTimeout(card.timer);
+      card.variantId = e.target.value;
+      card.status = 'idle';
+      card.error = false;
+      paint(card);
+    });
+    card.btn.addEventListener('click', () => addToCart(card));
+    paint(card);
+    return card;
+  }
+
+  function addToCart(card) {
+    const v = variantOf(card);
+    if (card.status === 'adding' || !buyable(v)) return;   // guarded: aria-disabled still ignores taps
+    clearTimeout(card.timer);
+    card.error = false;
+    card.status = 'adding';
+    paint(card);
+
+    card.timer = setTimeout(() => {
+      if (failBox.checked) {
+        card.status = 'idle';
+        card.error = true;
+        announce(`Could not add ${card.product.name}. Try again.`);
+        paint(card);
+        return;
+      }
+      const key = card.product.id + ':' + v.id;
+      const line = cart.get(key) || { product: card.product, variant: v, qty: 0 };
+      line.qty += 1;
+      cart.set(key, line);
+      card.status = 'added';
+      announce(`Added ${card.product.name}, ${v.title}, to cart`);
+      paint(card);
+      updateCart();
+
+      card.timer = setTimeout(() => {
+        card.status = 'idle';
+        paint(card);
+      }, HOLD_MS);
+    }, ADD_MS);
+  }
+
+  function paint(card) {
+    const p = card.product;
+    const v = variantOf(card);
+
+    card.el.querySelectorAll('.chip').forEach(chip => {
+      const cv = p.variants.find(x => x.id === chip.dataset.variant);
+      chip.classList.toggle('soldout', !buyable(cv));
+    });
+
+    let icon = '';
+    let text = 'Add to cart';
+    if (card.status === 'adding') {
+      icon = '<span class="spinner" aria-hidden="true"></span>';
+      text = 'Adding…';
+    } else if (card.status === 'added') {
+      icon = CHECK;
+      text = 'Added';
+    }
+    const blocked = !buyable(v) || card.status === 'adding';
+    card.btn.innerHTML = `${icon}<span>${text}</span><span class="sr-only">, ${esc(p.name)}, ${esc(v.title)}</span>`;
+    card.btn.setAttribute('aria-disabled', String(blocked));
+    card.btn.setAttribute('aria-busy', String(card.status === 'adding'));
+
+    if (!buyable(v)) {
+      card.reason.textContent = `Sold out in this ${p.option.toLowerCase()}`;
+      card.reason.classList.remove('error');
+    } else if (card.error) {
+      card.reason.textContent = 'Could not add. Try again.';
+      card.reason.classList.add('error');
+    } else {
+      card.reason.textContent = '';
+      card.reason.classList.remove('error');
+    }
+  }
+
+  function updateCart() {
+    let count = 0;
+    let total = 0;
+    linesEl.innerHTML = '';
+    for (const line of cart.values()) {
+      count += line.qty;
+      total += cents(line.product.price) * line.qty;
+      const li = document.createElement('li');
+      li.textContent = `${line.product.name} (${line.variant.title}) × ${line.qty}`;
+      linesEl.appendChild(li);
+    }
+    summary.textContent = count
+      ? `${count} item${count === 1 ? '' : 's'} · ${money({ amount: (total / 100).toFixed(2), currencyCode: 'USD' })}`
+      : 'Cart is empty';
+    emptyBtn.disabled = count === 0;
+  }
+
+  emptyBtn.addEventListener('click', () => {
+    cart.clear();
+    updateCart();
+    announce('Cart emptied');
+  });
+
+  const cards = PRODUCTS.map(renderCard);
+  updateCart();
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+{
+ "scores": {
+  "A": {
+   "compact": 5.0,
+   "minimal": 5.83,
+   "modern": 5.75,
+   "usability": 7.58,
+   "craft": 5.08,
+   "overall": 5.58,
+   "mean_rank": 3.17,
+   "n_scores": 12,
+   "per_run_overall": {
+    "A-r1": 6.33,
+    "A-r2": 3.67,
+    "A-r3": 5.67,
+    "A-r4": 6.67
+   }
+  },
+  "B": {
+   "compact": 8.25,
+   "minimal": 8.25,
+   "modern": 6.67,
+   "usability": 6.75,
+   "craft": 6.5,
+   "overall": 7.17,
+   "mean_rank": 1.83,
+   "n_scores": 12,
+   "per_run_overall": {
+    "B-r1": 7.0,
+    "B-r2": 7.67,
+    "B-r3": 6.33,
+    "B-r4": 7.67
+   }
+  }
+ },
+ "pairwise": {
+  "B_vs_A": {
+   "wins": 19,
+   "losses": 3,
+   "ties": 2,
+   "win_rate": 0.83
+  }
+ },
+ "functional": {
+  "A": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 5
+  },
+  "B": {
+   "works": "4/4",
+   "action_found": "4/4",
+   "action_changes_state": "4/4",
+   "qty_found": "4/4",
+   "qty_changes_number": "4/4",
+   "mobile_no_overflow": "4/4",
+   "js_errors_total": 0,
+   "unnamed_buttons_total": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 86418,
+   "mean_seconds": 60.2,
+   "mean_tool_uses": 3.5
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 134338,
+   "mean_seconds": 121.0,
+   "mean_tool_uses": 14.2
+  },
+  "dump_build": {
+   "run": "dump",
+   "tokens": 184955,
+   "ms": 1665089,
+   "tool_uses": 28
+  }
+ },
+ "judge_agreement_mean_pearson": 0.67,
+ "notes": {
+  "b1/j1/B-r1": "Tight four-column card grid with a clear add-to-bag and stepper, but the desktop stepper label wraps to two lines and several product names are truncated.",
+  "b1/j1/A-r1": "The most complete shop (search, filters, sort, cart drawer with shipping progress and checkout), but it is large for a compact component, uses generic placeholder glyphs, and on mobile the header has no side gutter and the Cart button is clipped at the right edge.",
+  "b1/j1/B-r2": "The densest and most restrained option, with clear price, add and stepper states, a sold-out state, and a live status line, though it has no cart drawer and some names truncate.",
+  "b1/j1/A-r2": "Gradient swatches and a full cart drawer look current, but the badge text inherits a 64px swatch rule so it renders as a large white blob over each product, and the mobile header also loses its gutter.",
+  "b1/j2/B-r2": "Tight four-column grid with consistent line icons, a clear blue add action and a live status line, but several product names are truncated and prices sit at uneven heights in the desktop row.",
+  "b1/j2/A-r2": "The full cart drawer with shipping progress and checkout is the most complete flow, but the Best seller and New tags render as giant white blobs over the product art, the mobile header is clipped at the left edge, and the oversized cards are not compact.",
+  "b1/j2/A-r1": "Dense five-column grid and a well-labelled cart drawer with a free-shipping meter and quantity controls, but the Add to cart buttons sit at uneven heights across each row, the mobile layout has no side gutter, and the product art is generic.",
+  "b1/j2/B-r1": "Restrained cards with aligned action rows, a clean stepper that doubles as the in-bag state, a clear sold-out treatment and a proper mobile gutter, though the stepper label wraps on desktop and there is no cart review or checkout.",
+  "b1/j3/A-r2": "The .swatch span rule also matches the tag pill, so the tags render as giant white blobs covering the product art, the header is flush against the mobile edge, and the oversized gradient letter tiles are neither compact nor minimal, though the drawer, quantity controls and checkout flow are complete.",
+  "b1/j3/B-r2": "A tight four-column grid of line-icon cards with clear price, labelled add/stepper controls, a proper disabled sold-out state and a live status line, with minor flaws such as the '2 in bag' stepper label wrapping and names truncating, and no bag view or checkout.",
+  "b1/j3/B-r1": "Compact and restrained with a helpful header total, live status feedback and a dashed sold-out treatment, but the stepper label wraps on desktop, names and meta lines truncate heavily, and there is no bag view or checkout.",
+  "b1/j3/A-r1": "Restrained outlined buttons, a full cart drawer with free-shipping progress, quantity steppers, clear and checkout, but the mobile header and select sit flush to the edges, card buttons are misaligned across the row, and the generic silhouettes are weak for the products.",
+  "b2/j1/B-r3": "Very dense 4-column Essentials grid with inline steppers and a clear bag footer, but desktop buttons and the stepper label wrap awkwardly (\"Add to / bag\", \"1 in / bag\") and names truncate.",
+  "b2/j1/A-r3": "Full storefront with search, chips, sort and a cart drawer with quantity controls, but emoji product art on pastel tiles reads generic and the large cards waste space.",
+  "b2/j1/B-r4": "Cohesive line-art tiles, a compact bag summary with subtotal and empty-bag link, inline steppers, a reasoned sold-out note and solid focus and status handling; desktop names truncate and card heights vary.",
+  "b2/j1/A-r4": "The most complete shopping flow (search, filter, sort, drawer with totals and shipping hint), but initials placeholder tiles, badges and tall cards feel like a template and are less compact.",
+  "b2/j2/B-r4": "Tight 4-column grid with single-line add and stepper controls and clear status feedback, though long product names truncate on desktop and the blue accent reads a little generic.",
+  "b2/j2/A-r4": "Most complete shopping flow with search, filters, sort, a cart drawer with totals and checkout, but initials placeholder tiles, ratings and tags add clutter and the cards are tall.",
+  "b2/j2/A-r3": "Restrained outlined buttons and clear cart drawer, but emoji product art looks dated and inconsistent, cards are roomy, and the mobile filter chips wrap into an awkward stack.",
+  "b2/j2/B-r3": "Dense and restrained with consistent hand-drawn product art and a clean mobile layout, but desktop button labels and stepper counts wrap awkwardly and there is no cart review or checkout.",
+  "b2/j3/A-r4": "Full shopping loop (search, category chips, sort, cart drawer with steppers, totals, free-shipping hint, checkout, toast) in a restrained layout, though the initials placeholder tiles (two of them both reading WC) and roomy card bodies make it less dense and less specific than it could be.",
+  "b2/j3/B-r4": "Tight four-column grid with bespoke line-drawn product art and inline minus/count/plus steppers is the most compact and restrained, but product names truncate with ellipses on desktop and there is no bag review or checkout beyond a summary line.",
+  "b2/j3/B-r3": "Desktop buttons and steppers wrap their labels onto two lines ('Add to / bag', '1 in / bag') and several product names truncate, and the bag is only a count pill with a footer with no cart review or checkout.",
+  "b2/j3/A-r3": "Full cart drawer with quantity controls, totals and checkout is strong, but emoji as product imagery (a couch for a blanket, a pouring glyph for a bottle) reads dated and decorative and weakens the minimal, modern brief."
+ }
+}

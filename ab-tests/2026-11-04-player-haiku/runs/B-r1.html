@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tide Player</title>
+<style>
+/* Tokens: colors live inside the material. Values follow the luminous-translucency metadump. */
+:root {
+  --sky-zenith: #1F64D4;
+  --sky-mid: #5E98E4;
+  --sky-horizon: #9DCBF4;
+  --white-page: #F6FAFF;
+  --white-plate: #EAF4FF;
+  --white-lit: #DDEDFF;
+  --white-shade: #B3CBEA;
+  --acrylic-body: #2E8BF0;
+  --acrylic-edge: #1E6BFF;
+  --acrylic-core: #0A43B0;
+  --acrylic-caustic: #8FC8FF;
+  --cta-body: linear-gradient(180deg, #1457D8 0%, #0A43B0 100%);
+  --grass-tip: #A8F03A;
+  --grass-body: #3DCB2A;
+  --grass-base: #13702A;
+  --ink: #0A2350;
+  --ink-muted: #34507F;
+
+  --edge-specular: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --edge-rim: inset 0 -1px 0 rgba(10, 67, 176, 0.45);
+  --edge-outline: inset 0 0 0 1px rgba(10, 67, 176, 0.18);
+  --glow-exit: inset 0 -14px 24px -10px rgba(143, 200, 255, 0.55);
+  --shadow-spill: 0 18px 40px -12px rgba(46, 139, 240, 0.40);
+  --shadow-contact: 0 2px 6px rgba(10, 67, 176, 0.18);
+  --backdrop: blur(14px) saturate(1.4);
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--sky-zenith);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.scene svg { width: 100%; height: 100%; display: block; }
+
+main {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+/* The player is one acrylic slab: tint deepens toward the rim, lit top edge, glowing bottom edge, blue spill. */
+.player {
+  position: relative;
+  width: min(400px, 100%);
+  padding: 18px 18px 18px;
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 32%),
+    linear-gradient(180deg, rgba(46, 139, 240, 0.06) 0%, rgba(46, 139, 240, 0.20) 100%),
+    rgba(234, 244, 255, 0.78);
+  -webkit-backdrop-filter: var(--backdrop);
+  backdrop-filter: var(--backdrop);
+  box-shadow:
+    var(--edge-specular),
+    var(--edge-rim),
+    var(--edge-outline),
+    var(--glow-exit),
+    var(--shadow-spill),
+    var(--shadow-contact);
+}
+/* Lit border: white at the top, pale caustic blue through the middle, core blue at the bottom. */
+.player::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(143, 200, 255, 0.55) 45%, rgba(10, 67, 176, 0.55));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+/* Without backdrop blur, the panel falls back to an opaque tinted fill with the same rim and spill. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .player { background: var(--white-plate); }
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Header */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 0;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+.brand svg { width: 26px; height: 26px; display: block; }
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* Artwork */
+.art {
+  position: relative;
+  margin-top: 14px;
+  height: 200px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    var(--edge-specular),
+    0 0 0 1px rgba(10, 67, 176, 0.18),
+    0 16px 30px -14px rgba(10, 67, 176, 0.55);
+}
+.art svg { width: 100%; height: 100%; display: block; }
+.art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.art.sweep::after { animation: sweep 750ms ease-out forwards; }
+@keyframes sweep { to { transform: translateX(120%); } }
+
+/* Track meta */
+.meta { margin-top: 14px; padding: 0 4px; min-width: 0; }
+.title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.artist {
+  margin: 2px 0 0;
+  font-size: 15px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Progress: an acrylic channel with a blue fill and a lit knob. */
+.progress {
+  position: relative;
+  height: 22px;
+  margin: 14px 4px 0;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  --p: 0;
+}
+.progress .rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 7px;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 60%),
+    rgba(46, 139, 240, 0.16);
+  box-shadow:
+    inset 0 1px 2px rgba(10, 67, 176, 0.25),
+    inset 0 0 0 1px rgba(10, 67, 176, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.progress .fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8FC8FF 0%, #2E8BF0 55%, #0A43B0 100%);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--p));
+}
+.progress .knob {
+  position: absolute;
+  top: 2px;
+  left: calc(var(--p) * 100%);
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0 25%, #8FC8FF 60%, #1E6BFF 100%);
+  box-shadow: 0 0 0 1px rgba(10, 67, 176, 0.45), 0 2px 6px rgba(10, 67, 176, 0.35);
+  pointer-events: none;
+}
+.progress.dragging .knob { transform: scale(1.15); }
+
+.times {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 4px 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+/* Transport */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 10px;
+}
+.icon-btn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(180deg, rgba(46, 139, 240, 0.10) 0%, rgba(46, 139, 240, 0.24) 100%),
+    var(--white-plate);
+  box-shadow:
+    var(--edge-specular),
+    var(--edge-rim),
+    0 10px 20px -10px rgba(46, 139, 240, 0.55),
+    var(--shadow-contact);
+  transition: box-shadow 160ms ease, transform 90ms ease;
+}
+.icon-btn svg { width: 22px; height: 22px; display: block; }
+.icon-btn:hover {
+  box-shadow:
+    var(--edge-specular),
+    var(--edge-rim),
+    0 12px 24px -10px rgba(46, 139, 240, 0.7),
+    var(--shadow-contact);
+}
+.icon-btn:active { transform: translateY(1px); }
+
+/* Primary CTA: gel pill body with one curved reflection in the top third. The label sits in the clear middle band. */
+.play {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #FFFFFF;
+  cursor: pointer;
+  background: var(--cta-body);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -10px 18px -8px rgba(143, 200, 255, 0.6),
+    0 14px 26px -10px rgba(30, 107, 255, 0.7),
+    var(--shadow-contact);
+  transition: transform 90ms ease, box-shadow 160ms ease;
+}
+.play::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 6%;
+  height: 34%;
+  border-radius: 999px 999px 60% 60% / 999px 999px 40% 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+.play svg { width: 28px; height: 28px; display: block; position: relative; }
+.play:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -10px 18px -8px rgba(143, 200, 255, 0.7), 0 18px 30px -10px rgba(30, 107, 255, 0.8), var(--shadow-contact); }
+.play:active { transform: translateY(1px); }
+
+/* Volume */
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 0 4px;
+}
+.icon-btn.mini { width: 36px; height: 36px; }
+.icon-btn.mini svg { width: 18px; height: 18px; }
+
+input[type="range"].vol {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 22px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  --v: 70%;
+}
+input[type="range"].vol::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background:
+    linear-gradient(90deg, #8FC8FF 0%, #2E8BF0 55%, #0A43B0 100%) 0 0 / var(--v) 100% no-repeat,
+    rgba(46, 139, 240, 0.16);
+  box-shadow: inset 0 1px 2px rgba(10, 67, 176, 0.25), inset 0 0 0 1px rgba(10, 67, 176, 0.18);
+}
+input[type="range"].vol::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0 25%, #8FC8FF 60%, #1E6BFF 100%);
+  box-shadow: 0 0 0 1px rgba(10, 67, 176, 0.45), 0 2px 6px rgba(10, 67, 176, 0.35);
+}
+input[type="range"].vol::-moz-range-track {
+  height: 8px;
+  border: 0;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #8FC8FF 0%, #2E8BF0 55%, #0A43B0 100%);
+  background-size: var(--v) 100%;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 1px 2px rgba(10, 67, 176, 0.25), inset 0 0 0 1px rgba(10, 67, 176, 0.18);
+}
+input[type="range"].vol::-moz-range-progress {
+  background: linear-gradient(90deg, #8FC8FF 0%, #2E8BF0 55%, #0A43B0 100%);
+  height: 8px;
+  border-radius: 9999px;
+}
+input[type="range"].vol::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0 25%, #8FC8FF 60%, #1E6BFF 100%);
+  box-shadow: 0 0 0 1px rgba(10, 67, 176, 0.45), 0 2px 6px rgba(10, 67, 176, 0.35);
+}
+
+/* Up next */
+.queue { margin-top: 14px; }
+.queue h2 {
+  margin: 0 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.queue ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.queue button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 12px 5px 5px;
+  border: 0;
+  border-radius: 18px;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(180deg, rgba(46, 139, 240, 0.05) 0%, rgba(46, 139, 240, 0.14) 100%),
+    rgba(234, 244, 255, 0.6);
+  box-shadow: var(--edge-specular) inset, var(--edge-outline), 0 6px 12px -8px rgba(46, 139, 240, 0.5);
+  transition: box-shadow 160ms ease, background-color 160ms ease;
+}
+.queue button:hover {
+  box-shadow: var(--edge-specular) inset, var(--glow-exit), 0 8px 16px -8px rgba(46, 139, 240, 0.6);
+}
+.thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 30% 25%, #FFFFFF 0 8%, rgba(255, 255, 255, 0) 24%),
+    linear-gradient(180deg, var(--a), var(--b));
+  box-shadow: var(--edge-specular) inset, 0 0 0 1px rgba(10, 67, 176, 0.18);
+}
+.qtext { min-width: 0; display: grid; gap: 1px; }
+.qt {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qa {
+  font-size: 13px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qd {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+/* Motion preferences: keep state changes, drop sweeps and lifts. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 1ms !important;
+  }
+  .icon-btn:active, .play:active { transform: none; }
+}
+
+@media (max-width: 440px) {
+  .player { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <svg id="scene" viewBox="0 0 1280 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="sceneSky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1F64D4"/>
+        <stop offset="0.46" stop-color="#5E98E4"/>
+        <stop offset="0.76" stop-color="#9DCBF4"/>
+        <stop offset="0.9" stop-color="#DDEDFF"/>
+      </linearGradient>
+      <radialGradient id="sceneBloom" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+        <stop offset="0.45" stop-color="#DDEDFF" stop-opacity="0.6"/>
+        <stop offset="1" stop-color="#9DCBF4" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="sceneField" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#A8F03A"/>
+        <stop offset="0.35" stop-color="#3DCB2A"/>
+        <stop offset="1" stop-color="#13702A"/>
+      </linearGradient>
+      <linearGradient id="sceneFieldFar" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3DCB2A" stop-opacity="0.7"/>
+        <stop offset="1" stop-color="#13702A" stop-opacity="0.9"/>
+      </linearGradient>
+      <filter id="sceneSoft" x="-20%" y="-50%" width="140%" height="200%">
+        <feGaussianBlur stdDeviation="18"/>
+      </filter>
+    </defs>
+    <rect width="1280" height="800" fill="url(#sceneSky)"/>
+    <g fill="#FFFFFF" filter="url(#sceneSoft)" opacity="0.7">
+      <ellipse cx="180" cy="170" rx="170" ry="34"/>
+      <ellipse cx="1080" cy="130" rx="200" ry="40"/>
+      <ellipse cx="860" cy="330" rx="120" ry="22"/>
+      <ellipse cx="260" cy="470" rx="150" ry="24"/>
+      <ellipse cx="1140" cy="520" rx="130" ry="26"/>
+    </g>
+    <ellipse cx="640" cy="612" rx="900" ry="190" fill="url(#sceneBloom)"/>
+    <path d="M0 602 C240 566 420 612 640 592 C860 572 1060 614 1280 588 L1280 800 L0 800 Z" fill="url(#sceneFieldFar)"/>
+    <path d="M0 650 C260 620 470 662 700 640 C930 618 1100 660 1280 636 L1280 800 L0 800 Z" fill="url(#sceneField)"/>
+    <g id="tufts"></g>
+  </svg>
+</div>
+
+<main>
+  <section class="player" id="player" aria-labelledby="np-label">
+    <header class="top">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoBody" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2E8BF0" stop-opacity="0.35"/>
+              <stop offset="1" stop-color="#0A43B0" stop-opacity="0.95"/>
+            </linearGradient>
+          </defs>
+          <path d="M16 3 C23 11 27 16 27 21 A11 11 0 0 1 5 21 C5 16 9 11 16 3 Z" fill="url(#logoBody)" stroke="#1E6BFF" stroke-width="1"/>
+          <path d="M11 19 C11 22 13 24 15.5 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span>Tide</span>
+      </div>
+      <span class="eyebrow" id="np-label">Now playing</span>
+    </header>
+
+    <div class="art" id="art" role="img" aria-label="Track artwork"></div>
+
+    <div class="meta">
+      <h1 class="title" id="title"></h1>
+      <p class="artist" id="artist"></p>
+    </div>
+
+    <div class="progress" id="progress" role="slider" tabindex="0"
+         aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00 of 0:00">
+      <div class="rail"><div class="fill"></div></div>
+      <div class="knob"></div>
+    </div>
+    <div class="times" aria-hidden="true">
+      <span id="elapsed">0:00</span>
+      <span id="remaining">-0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="icon-btn" id="prev" type="button" aria-label="Previous track"></button>
+      <button class="play" id="play" type="button" aria-label="Play"></button>
+      <button class="icon-btn" id="next" type="button" aria-label="Next track"></button>
+    </div>
+
+    <div class="volume">
+      <button class="icon-btn mini" id="mute" type="button" aria-label="Mute" aria-pressed="false"></button>
+      <input class="vol" id="volume" type="range" min="0" max="100" step="1" value="70" aria-label="Volume">
+    </div>
+
+    <section class="queue" aria-labelledby="upnext">
+      <h2 id="upnext">Up next</h2>
+      <ol id="queue"></ol>
+    </section>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var TRACKS = [
+    { title: 'Cloud Spill',      artist: 'Halcyon Vinyl',  dur: 222, a: '#9DCBF4', b: '#1F64D4' },
+    { title: 'Caustic Light',    artist: 'Marisol Reed',   dur: 245, a: '#8FC8FF', b: '#0A43B0' },
+    { title: 'Blue Hour Glass',  artist: 'The Tinted Set', dur: 178, a: '#5E98E4', b: '#0A43B0' },
+    { title: 'Overexposed',      artist: 'Nova Field',     dur: 211, a: '#DDEDFF', b: '#2E8BF0' },
+    { title: 'Electric Grass',   artist: 'Pale Horizon',   dur: 190, a: '#A8F03A', b: '#13702A' },
+    { title: 'Deep Sky Acrylic', artist: 'Lumen Tide',     dur: 263, a: '#1F64D4', b: '#06380F' }
+  ];
+
+  var SHAPES = [
+    'M160 40 C238 28 286 100 270 176 C254 250 190 288 124 268 C58 248 36 186 52 118 C68 62 100 48 160 40Z',
+    'M150 52 C222 44 278 98 262 170 C248 236 206 262 146 258 C86 254 50 214 60 154 C70 96 96 58 150 52Z',
+    'M168 40 C244 62 286 128 264 198 C242 268 160 286 104 250 C52 216 44 150 74 100 C96 64 134 34 168 40Z'
+  ];
+  var ROTS = [-8, 6, 14, -4, 10, -12];
+
+  var ICON = {
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.2v13.6c0 .8.9 1.3 1.6.9l10.6-6.8c.6-.4.6-1.4 0-1.8L9.6 4.3C8.9 3.9 8 4.4 8 5.2z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect fill="currentColor" x="6.5" y="5" width="4" height="14" rx="1.2"/><rect fill="currentColor" x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>',
+    prev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 5h2.2v14H6z"/><path fill="currentColor" d="M19 5.9v12.2c0 .9-1 1.4-1.7.9l-8.6-6.1a1.1 1.1 0 0 1 0-1.8l8.6-6.1c.7-.5 1.7 0 1.7.9z"/></svg>',
+    next: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.8 5h2.2v14h-2.2z"/><path fill="currentColor" d="M5 5.9v12.2c0 .9 1 1.4 1.7.9l8.6-6.1a1.1 1.1 0 0 0 0-1.8L6.7 5c-.7-.5-1.7 0-1.7.9z"/></svg>',
+    high: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9.5h3.2L12 5.8v12.4l-4.8-3.7H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 8.6a5 5 0 0 1 0 6.8M18.4 6a8.6 8.6 0 0 1 0 12"/></svg>',
+    low: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9.5h3.2L12 5.8v12.4l-4.8-3.7H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 8.6a5 5 0 0 1 0 6.8"/></svg>',
+    mute: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9.5h3.2L12 5.8v12.4l-4.8-3.7H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5l5 5M20.5 9.5l-5 5"/></svg>'
+  };
+
+  var els = {
+    player: document.getElementById('player'),
+    art: document.getElementById('art'),
+    title: document.getElementById('title'),
+    artist: document.getElementById('artist'),
+    bar: document.getElementById('progress'),
+    elapsed: document.getElementById('elapsed'),
+    remaining: document.getElementById('remaining'),
+    prev: document.getElementById('prev'),
+    play: document.getElementById('play'),
+    next: document.getElementById('next'),
+    mute: document.getElementById('mute'),
+    volume: document.getElementById('volume'),
+    queue: document.getElementById('queue')
+  };
+
+  var state = { index: 0, playing: false, elapsed: 0, volume: 70, muted: false, dragging: false };
+  var lastSec = -1;
+
+  function dur() { return TRACKS[state.index].dur; }
+
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  /* Procedural scene: grass tufts drawn once in the page background. */
+  (function drawTufts() {
+    var g = document.getElementById('tufts');
+    var seed = 7;
+    function r() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    var out = '';
+    for (var i = 0; i < 280; i++) {
+      var x = r() * 1320 - 20;
+      var y = 650 + r() * 150;
+      var h = 14 + r() * 34;
+      var lean = (r() - 0.5) * 18;
+      var w = 3 + r() * 4;
+      var fill = r() > 0.6 ? '#A8F03A' : '#3DCB2A';
+      var op = (0.5 + r() * 0.45).toFixed(2);
+      out += '<path d="M' + x.toFixed(1) + ' ' + y.toFixed(1) +
+        ' Q' + (x + lean * 0.3).toFixed(1) + ' ' + (y - h * 0.7).toFixed(1) +
+        ' ' + (x + lean).toFixed(1) + ' ' + (y - h).toFixed(1) +
+        ' Q' + (x + lean * 0.3 + w).toFixed(1) + ' ' + (y - h * 0.6).toFixed(1) +
+        ' ' + (x + w).toFixed(1) + ' ' + y.toFixed(1) +
+        ' Z" fill="' + fill + '" opacity="' + op + '"/>';
+    }
+    g.innerHTML = out;
+  })();
+
+  /* Artwork: an acrylic object in a sky, bloom and grass scene. Shape and tilt vary per track. */
+  function artSVG(i) {
+    var shape = SHAPES[i % SHAPES.length];
+    var rot = ROTS[i % ROTS.length];
+    return '<svg viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+        '<linearGradient id="a-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F64D4"/><stop offset="0.55" stop-color="#5E98E4"/><stop offset="0.85" stop-color="#9DCBF4"/><stop offset="1" stop-color="#DDEDFF"/></linearGradient>' +
+        '<radialGradient id="a-bloom"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="0.45" stop-color="#DDEDFF" stop-opacity="0.55"/><stop offset="1" stop-color="#9DCBF4" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="a-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A8F03A"/><stop offset="0.45" stop-color="#3DCB2A"/><stop offset="1" stop-color="#13702A"/></linearGradient>' +
+        '<linearGradient id="a-acrylic" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E8BF0" stop-opacity="0.30"/><stop offset="0.6" stop-color="#1E6BFF" stop-opacity="0.45"/><stop offset="1" stop-color="#0A43B0" stop-opacity="0.92"/></linearGradient>' +
+        '<radialGradient id="a-caustic"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="0.35" stop-color="#8FC8FF" stop-opacity="0.6"/><stop offset="1" stop-color="#2E8BF0" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="a-rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.45" stop-color="#8FC8FF"/><stop offset="1" stop-color="#0A43B0"/></linearGradient>' +
+        '<filter id="a-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>' +
+      '</defs>' +
+      '<rect width="320" height="240" fill="url(#a-sky)"/>' +
+      '<circle cx="236" cy="62" r="78" fill="url(#a-bloom)"/>' +
+      '<path d="M0 176 C60 158 120 194 180 174 C240 154 286 184 320 170 L320 240 L0 240 Z" fill="url(#a-grass)"/>' +
+      '<ellipse cx="160" cy="214" rx="86" ry="8" fill="#0A43B0" opacity="0.28" filter="url(#a-blur)"/>' +
+      '<g transform="translate(40 -2) scale(0.78)"><g transform="rotate(' + rot + ' 160 160)">' +
+        '<path d="' + shape + '" fill="url(#a-acrylic)" stroke="url(#a-rim)" stroke-width="1.6"/>' +
+        '<ellipse cx="170" cy="200" rx="70" ry="22" fill="url(#a-caustic)" opacity="0.8"/>' +
+        '<path d="M96 96 C120 70 156 62 182 70" fill="none" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="4" stroke-linecap="round"/>' +
+      '</g></g>' +
+      '</svg>';
+  }
+
+  function renderTrack() {
+    var t = TRACKS[state.index];
+    els.art.innerHTML = artSVG(state.index);
+    els.art.setAttribute('aria-label', 'Artwork for ' + t.title);
+    els.title.textContent = t.title;
+    els.title.title = t.title;
+    els.artist.textContent = t.artist;
+    els.artist.title = t.artist;
+    els.bar.setAttribute('aria-valuemax', String(t.dur));
+    document.title = 'Tide - ' + t.title;
+    sweep();
+  }
+
+  function renderQueue() {
+    var buttons = els.queue.querySelectorAll('button');
+    var focusedAt = Array.prototype.indexOf.call(buttons, document.activeElement);
+    var html = '';
+    for (var k = 1; k <= 4; k++) {
+      var idx = (state.index + k) % TRACKS.length;
+      var t = TRACKS[idx];
+      html += '<li><button type="button" data-i="' + idx + '" aria-label="Play ' +
+        escapeAttr(t.title) + ' by ' + escapeAttr(t.artist) + '" style="--a:' + t.a + ';--b:' + t.b + '">' +
+        '<span class="thumb" aria-hidden="true"></span>' +
+        '<span class="qtext"><span class="qt">' + escapeHTML(t.title) + '</span><span class="qa">' + escapeHTML(t.artist) + '</span></span>' +
+        '<span class="qd">' + fmt(t.dur) + '</span>' +
+        '</button></li>';
+    }
+    els.queue.innerHTML = html;
+    if (focusedAt >= 0) {
+      var next = els.queue.querySelectorAll('button')[focusedAt];
+      if (next) next.focus({ preventScroll: true });
+    }
+  }
+
+  function renderPlayState() {
+    els.player.classList.toggle('is-playing', state.playing);
+    els.play.innerHTML = state.playing ? ICON.pause : ICON.play;
+    els.play.setAttribute('aria-label', state.playing ? 'Pause' : 'Play');
+  }
+
+  function renderVolume() {
+    var v = state.muted ? 0 : state.volume;
+    els.volume.style.setProperty('--v', v + '%');
+    els.volume.value = state.volume;
+    els.volume.setAttribute('aria-valuetext', v + '%');
+    els.mute.setAttribute('aria-pressed', String(state.muted));
+    els.mute.setAttribute('aria-label', state.muted ? 'Unmute' : 'Mute');
+    els.mute.innerHTML = v === 0 ? ICON.mute : (v < 40 ? ICON.low : ICON.high);
+  }
+
+  function sweep() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    els.art.classList.remove('sweep');
+    void els.art.offsetWidth;
+    els.art.classList.add('sweep');
+  }
+
+  function setTrack(i, play) {
+    var n = TRACKS.length;
+    state.index = ((i % n) + n) % n;
+    state.elapsed = 0;
+    lastSec = -1;
+    if (typeof play === 'boolean') state.playing = play;
+    renderTrack();
+    renderQueue();
+    renderPlayState();
+    paint();
+  }
+
+  function paint() {
+    var d = dur();
+    var e = Math.min(state.elapsed, d);
+    els.bar.style.setProperty('--p', (d ? e / d : 0).toFixed(5));
+    var sec = Math.floor(e);
+    if (sec !== lastSec) {
+      lastSec = sec;
+      els.elapsed.textContent = fmt(sec);
+      els.remaining.textContent = '-' + fmt(d - sec);
+      els.bar.setAttribute('aria-valuenow', String(sec));
+      els.bar.setAttribute('aria-valuetext', fmt(sec) + ' of ' + fmt(d));
+    }
+  }
+
+  function seekTo(seconds) {
+    var d = dur();
+    state.elapsed = Math.max(0, Math.min(d - 0.5, seconds));
+    lastSec = -1;
+    paint();
+  }
+
+  function seekFromX(clientX) {
+    var r = els.bar.getBoundingClientRect();
+    var p = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+    seekTo(p * dur());
+  }
+
+  /* Playback clock. No audio: time advances while playing and the track advances at its end. */
+  var last = performance.now();
+  function tick(now) {
+    var dt = Math.min(0.25, (now - last) / 1000);
+    last = now;
+    if (state.playing && !state.dragging) {
+      state.elapsed += dt;
+      if (state.elapsed >= dur()) {
+        setTrack(state.index + 1);
+      }
+    }
+    paint();
+    requestAnimationFrame(tick);
+  }
+
+  /* Events */
+  els.play.addEventListener('click', function () {
+    state.playing = !state.playing;
+    renderPlayState();
+  });
+
+  els.next.addEventListener('click', function () {
+    setTrack(state.index + 1);
+  });
+
+  els.prev.addEventListener('click', function () {
+    if (state.elapsed > 3) {
+      seekTo(0);
+    } else {
+      setTrack(state.index - 1);
+    }
+  });
+
+  els.queue.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-i]');
+    if (!btn) return;
+    setTrack(parseInt(btn.getAttribute('data-i'), 10), true);
+  });
+
+  els.bar.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0) return;
+    state.dragging = true;
+    els.bar.classList.add('dragging');
+    els.bar.setPointerCapture(e.pointerId);
+    seekFromX(e.clientX);
+  });
+  els.bar.addEventListener('pointermove', function (e) {
+    if (state.dragging) seekFromX(e.clientX);
+  });
+  function endDrag(e) {
+    if (!state.dragging) return;
+    state.dragging = false;
+    els.bar.classList.remove('dragging');
+    try { els.bar.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ }
+  }
+  els.bar.addEventListener('pointerup', endDrag);
+  els.bar.addEventListener('pointercancel', endDrag);
+
+  els.bar.addEventListener('keydown', function (e) {
+    var step = 0;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step = 5;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') step = -5;
+    else if (e.key === 'Home') { e.preventDefault(); seekTo(0); return; }
+    else if (e.key === 'End') { e.preventDefault(); seekTo(dur()); return; }
+    else return;
+    e.preventDefault();
+    seekTo(state.elapsed + step);
+  });
+
+  els.volume.addEventListener('input', function () {
+    state.volume = Number(els.volume.value);
+    state.muted = false;
+    renderVolume();
+  });
+
+  els.mute.addEventListener('click', function () {
+    state.muted = !state.muted;
+    renderVolume();
+  });
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function escapeAttr(s) { return escapeHTML(s); }
+
+  /* Init: starts paused on the first track. */
+  setTrack(0, false);
+  renderVolume();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

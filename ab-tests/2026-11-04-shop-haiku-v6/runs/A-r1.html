@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Standard Goods</title>
+<style>
+  :root {
+    --bg: #fafaf9; --surface: #ffffff; --text: #1c1917; --muted: #78716c; --line: #e7e5e4;
+    --accent: #1c1917; --accent-text: #ffffff; --radius: 14px;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 12px 32px rgba(0,0,0,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0a09; --surface: #1c1917; --text: #fafaf9; --muted: #a8a29e; --line: #292524;
+      --accent: #fafaf9; --accent-text: #0c0a09; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0a09; --surface: #1c1917; --text: #fafaf9; --muted: #a8a29e; --line: #292524;
+    --accent: #fafaf9; --accent-text: #0c0a09; --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--text); outline-offset: 2px;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* Header */
+  .top {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    max-width: 1120px; margin: 0 auto; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand { font-weight: 700; letter-spacing: -.01em; font-size: 17px; margin-right: auto; }
+  .search input {
+    width: 240px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface);
+  }
+  .cart-btn {
+    position: relative; border: 1px solid var(--line); background: var(--surface);
+    border-radius: 10px; padding: 8px 14px; font-weight: 600;
+  }
+  .count {
+    position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px; padding: 0 6px;
+    border-radius: 10px; background: var(--accent); color: var(--accent-text);
+    font-size: 12px; line-height: 20px; text-align: center;
+  }
+  .count[hidden] { display: none; }
+
+  /* Main */
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 72px; }
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    gap: 12px; margin-bottom: 22px;
+  }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface);
+    padding: 7px 14px; border-radius: 999px; font-size: 14px;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .sort { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+  .sort select {
+    padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+  }
+  .meta-line { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px 20px;
+  }
+  .card { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tile {
+    position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius);
+    display: grid; place-items: center;
+    background: linear-gradient(145deg, hsl(var(--h) 80% 91%), hsl(var(--h) 55% 74%));
+    color: rgba(0,0,0,.5); font-size: 42px; font-weight: 700; letter-spacing: -.02em;
+  }
+  .badge {
+    position: absolute; top: 10px; left: 10px; background: var(--surface); color: var(--text);
+    font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+  }
+  .name { font-weight: 600; margin: 0; font-size: 15px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+  .price { font-weight: 600; }
+  .note { font-size: 12px; color: var(--muted); margin: -4px 0 0; min-height: 1em; }
+
+  .btn {
+    border: 0; background: var(--accent); color: var(--accent-text);
+    padding: 9px 16px; border-radius: 10px; font-weight: 600;
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  .btn:hover { opacity: .88; }
+  .btn:active { transform: scale(.97); }
+  .btn.wide { width: 100%; padding: 12px; }
+  .link {
+    border: 0; background: none; padding: 0; color: var(--muted);
+    font-size: 13px; text-decoration: underline; text-underline-offset: 3px;
+  }
+  .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 56px 0; }
+
+  /* Drawer */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 100%);
+    background: var(--surface); box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    transform: translateX(100%); visibility: hidden;
+    transition: transform .25s cubic-bezier(.2,.8,.2,1), visibility .25s;
+  }
+  body.drawer-open .overlay { opacity: 1; pointer-events: auto; }
+  body.drawer-open .drawer { transform: none; visibility: visible; }
+
+  .drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid var(--line);
+  }
+  .drawer-head h2 { margin: 0; font-size: 17px; }
+  .icon-btn {
+    border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
+    width: 36px; height: 36px; font-size: 18px; line-height: 1;
+  }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 8px 20px; }
+  .empty-cart { color: var(--muted); text-align: center; padding: 48px 0; }
+  .lines { list-style: none; margin: 0; padding: 0; }
+  .line {
+    display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .mini {
+    width: 56px; height: 56px; border-radius: 10px; display: grid; place-items: center;
+    background: linear-gradient(145deg, hsl(var(--h) 80% 91%), hsl(var(--h) 55% 74%));
+    color: rgba(0,0,0,.5); font-weight: 700; font-size: 16px;
+  }
+  .line .name { font-size: 14px; }
+  .line .sub { margin-top: 0; }
+  .step {
+    display: inline-flex; align-items: center; border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden;
+  }
+  .step button { border: 0; background: var(--surface); width: 30px; height: 30px; font-size: 16px; }
+  .step span { min-width: 28px; text-align: center; font-size: 14px; font-variant-numeric: tabular-nums; }
+
+  .drawer-foot { border-top: 1px solid var(--line); padding: 16px 20px 20px; }
+  .totals { margin: 0 0 16px; padding: 0; list-style: none; font-size: 14px; }
+  .totals li { display: flex; justify-content: space-between; padding: 3px 0; color: var(--muted); }
+  .totals li.grand { color: var(--text); font-weight: 700; font-size: 16px; padding-top: 10px; }
+  .hint { font-size: 12px; color: var(--muted); margin: 0 0 12px; text-align: center; }
+  .placed { text-align: center; padding: 48px 8px; }
+  .placed h3 { margin: 0 0 6px; font-size: 18px; }
+  .placed p { color: var(--muted); margin: 0 0 20px; }
+
+  @media (max-width: 640px) {
+    .search { order: 3; flex: 1 1 100%; }
+    .search input { width: 100%; }
+    .bar { flex-wrap: wrap; }
+    .brand { margin-right: auto; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 20px 14px; }
+    .tile { font-size: 32px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .drawer, .btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="bar">
+    <div class="brand">Standard Goods</div>
+    <label class="search">
+      <span class="sr-only">Search products</span>
+      <input id="search" type="search" placeholder="Search products" autocomplete="off">
+    </label>
+    <button id="cart-open" class="cart-btn" type="button" aria-controls="drawer" aria-label="Open cart">
+      Cart
+      <span id="count" class="count" hidden>0</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <div class="chips" role="group" aria-label="Filter by category">
+      <button class="chip" type="button" data-cat="All" aria-pressed="true">All</button>
+      <button class="chip" type="button" data-cat="Apparel" aria-pressed="false">Apparel</button>
+      <button class="chip" type="button" data-cat="Home" aria-pressed="false">Home</button>
+      <button class="chip" type="button" data-cat="Accessories" aria-pressed="false">Accessories</button>
+    </div>
+    <label class="sort">
+      Sort
+      <select id="sort">
+        <option value="featured">Featured</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="rating">Top rated</option>
+      </select>
+    </label>
+  </div>
+
+  <p id="meta-line" class="meta-line" aria-live="polite"></p>
+  <section id="grid" class="grid" aria-label="Products"></section>
+  <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+</main>
+
+<div class="overlay" data-close></div>
+<aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true" inert>
+  <div class="drawer-head">
+    <h2 id="drawer-title">Your cart</h2>
+    <button id="drawer-close" class="icon-btn" type="button" data-close aria-label="Close cart">&times;</button>
+  </div>
+  <div id="cart-body" class="drawer-body"></div>
+  <div id="cart-foot" class="drawer-foot"></div>
+</aside>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    { id: 'p1',  name: 'Merino Crew Sweater',    cat: 'Apparel',     price: 8900,  rating: 4.8, reviews: 212, hue: 210, badge: 'New' },
+    { id: 'p2',  name: 'Canvas Work Jacket',     cat: 'Apparel',     price: 12400, rating: 4.6, reviews: 98,  hue: 28 },
+    { id: 'p3',  name: 'Relaxed Linen Shirt',    cat: 'Apparel',     price: 6800,  rating: 4.5, reviews: 57,  hue: 160 },
+    { id: 'p4',  name: 'Selvedge Denim',         cat: 'Apparel',     price: 9500,  rating: 4.7, reviews: 341, hue: 225 },
+    { id: 'p5',  name: 'Ceramic Pour-Over Set',  cat: 'Home',        price: 4200,  rating: 4.9, reviews: 486, hue: 14,  badge: 'Bestseller' },
+    { id: 'p6',  name: 'Soy Candle, Cedar',      cat: 'Home',        price: 2400,  rating: 4.4, reviews: 129, hue: 90 },
+    { id: 'p7',  name: 'Linen Throw Blanket',    cat: 'Home',        price: 7600,  rating: 4.6, reviews: 76,  hue: 200 },
+    { id: 'p8',  name: 'Walnut Desk Organizer',  cat: 'Home',        price: 5400,  rating: 4.3, reviews: 44,  hue: 30 },
+    { id: 'p9',  name: 'Leather Card Wallet',    cat: 'Accessories', price: 3800,  rating: 4.7, reviews: 263, hue: 20 },
+    { id: 'p10', name: 'Titanium Field Watch',   cat: 'Accessories', price: 21500, rating: 4.8, reviews: 150, hue: 250, badge: 'Limited' },
+    { id: 'p11', name: 'Recycled Canvas Tote',   cat: 'Accessories', price: 2900,  rating: 4.2, reviews: 88,  hue: 120 },
+    { id: 'p12', name: 'Polarized Sunglasses',   cat: 'Accessories', price: 11200, rating: 4.5, reviews: 37,  hue: 340 },
+  ];
+
+  const FREE_SHIPPING_AT = 7500; // cents
+  const SHIPPING_FEE = 695;
+  const TAX_RATE = 0.08;
+
+  const state = {
+    query: '',
+    cat: 'All',
+    sort: 'featured',
+    cart: {},        // { productId: qty }
+    drawerOpen: false,
+    placed: false,
+    orderNo: 4821,
+  };
+
+  const $ = (sel) => document.querySelector(sel);
+  const money = (cents) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const initials = (name) => name.split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+  const byId = (id) => PRODUCTS.find((p) => p.id === id);
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+  function totals() {
+    const lines = Object.entries(state.cart)
+      .filter(([, qty]) => qty > 0)
+      .map(([id, qty]) => ({ p: byId(id), qty }));
+    const items = lines.reduce((sum, l) => sum + l.qty, 0);
+    const subtotal = lines.reduce((sum, l) => sum + l.p.price * l.qty, 0);
+    const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
+    const tax = Math.round(subtotal * TAX_RATE);
+    return { lines, items, subtotal, shipping, tax, total: subtotal + shipping + tax };
+  }
+
+  function visibleProducts() {
+    const q = state.query.trim().toLowerCase();
+    let list = PRODUCTS.filter((p) =>
+      (state.cat === 'All' || p.cat === state.cat) &&
+      (!q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q))
+    );
+    const sorters = {
+      'price-asc': (a, b) => a.price - b.price,
+      'price-desc': (a, b) => b.price - a.price,
+      'rating': (a, b) => b.rating - a.rating || b.reviews - a.reviews,
+    };
+    if (sorters[state.sort]) list = list.sort(sorters[state.sort]);
+    return list;
+  }
+
+  function card(p) {
+    const inCart = state.cart[p.id] || 0;
+    return `
+      <article class="card">
+        <div class="tile" style="--h:${p.hue}" aria-hidden="true">
+          <span>${esc(initials(p.name))}</span>
+          ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}
+        </div>
+        <div>
+          <h3 class="name">${esc(p.name)}</h3>
+          <p class="sub">${esc(p.cat)} &middot; &#9733; ${p.rating.toFixed(1)} (${p.reviews})</p>
+        </div>
+        <div class="row">
+          <span class="price">${money(p.price)}</span>
+          <button class="btn" type="button" data-action="add" data-id="${p.id}" aria-label="Add ${esc(p.name)} to cart">Add</button>
+        </div>
+        <p class="note">${inCart ? `${inCart} in cart` : ''}</p>
+      </article>`;
+  }
+
+  function renderGrid() {
+    const list = visibleProducts();
+    $('#grid').innerHTML = list.length
+      ? list.map(card).join('')
+      : `<p class="empty">No products match &ldquo;${esc(state.query)}&rdquo;.<br>
+           <button class="link" type="button" data-action="clear">Clear search and filters</button></p>`;
+    $('#meta-line').textContent = `${plural(list.length, 'product')}${state.cat !== 'All' ? ` in ${state.cat}` : ''}`;
+  }
+
+  function renderBadge() {
+    const { items } = totals();
+    const badge = $('#count');
+    badge.textContent = items;
+    badge.hidden = items === 0;
+    $('#cart-open').setAttribute('aria-label', `Open cart, ${plural(items, 'item')}`);
+  }
+
+  function line({ p, qty }) {
+    return `
+      <li class="line">
+        <div class="mini" style="--h:${p.hue}" aria-hidden="true">${esc(initials(p.name))}</div>
+        <div>
+          <div class="name">${esc(p.name)}</div>
+          <div class="sub">${money(p.price)} each &middot; <button class="link" type="button" data-action="remove" data-id="${p.id}">Remove</button></div>
+        </div>
+        <div class="step" role="group" aria-label="Quantity of ${esc(p.name)}">
+          <button type="button" data-action="dec" data-id="${p.id}" aria-label="Decrease quantity">&minus;</button>
+          <span aria-live="polite">${qty}</span>
+          <button type="button" data-action="inc" data-id="${p.id}" aria-label="Increase quantity">+</button>
+        </div>
+      </li>`;
+  }
+
+  function renderCart() {
+    const t = totals();
+    const body = $('#cart-body');
+    const foot = $('#cart-foot');
+
+    if (state.placed) {
+      body.innerHTML = `
+        <div class="placed">
+          <h3>Order #${state.orderNo} placed</h3>
+          <p>Thanks for shopping with us. A confirmation is on its way.</p>
+          <button class="btn" type="button" data-action="continue">Keep shopping</button>
+        </div>`;
+      foot.innerHTML = '';
+      return;
+    }
+
+    if (t.lines.length === 0) {
+      body.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
+      foot.innerHTML = '';
+      return;
+    }
+
+    body.innerHTML = `<ul class="lines">${t.lines.map(line).join('')}</ul>`;
+
+    const remaining = FREE_SHIPPING_AT - t.subtotal;
+    const hint = remaining > 0
+      ? `Add ${money(remaining)} more for free shipping`
+      : 'You qualify for free shipping';
+
+    foot.innerHTML = `
+      <p class="hint">${hint}</p>
+      <ul class="totals">
+        <li><span>Subtotal (${plural(t.items, 'item')})</span><span>${money(t.subtotal)}</span></li>
+        <li><span>Shipping</span><span>${t.shipping === 0 ? 'Free' : money(t.shipping)}</span></li>
+        <li><span>Estimated tax</span><span>${money(t.tax)}</span></li>
+        <li class="grand"><span>Total</span><span>${money(t.total)}</span></li>
+      </ul>
+      <button class="btn wide" type="button" data-action="checkout">Checkout &middot; ${money(t.total)}</button>`;
+  }
+
+  function renderAll() {
+    renderGrid();
+    renderBadge();
+    renderCart();
+  }
+
+  function announce(msg) {
+    $('#status').textContent = msg;
+  }
+
+  function setQty(id, qty, refocus) {
+    const p = byId(id);
+    if (qty <= 0) {
+      delete state.cart[id];
+      announce(`Removed ${p.name} from cart.`);
+    } else {
+      state.cart[id] = Math.min(qty, 99);
+      announce(`${p.name}: ${state.cart[id]} in cart.`);
+    }
+    renderAll();
+    if (refocus) {
+      const btn = document.querySelector(`[data-action="add"][data-id="${id}"]`);
+      if (btn) btn.focus();
+    }
+  }
+
+  function setDrawer(open) {
+    state.drawerOpen = open;
+    document.body.classList.toggle('drawer-open', open);
+    const drawer = $('#drawer');
+    drawer.setAttribute('aria-hidden', String(!open));
+    drawer.inert = !open;
+    if (open) {
+      renderCart();
+      $('#drawer-close').focus();
+    } else {
+      $('#cart-open').focus();
+    }
+  }
+
+  function placeOrder() {
+    const { items, total } = totals();
+    state.placed = true;
+    state.cart = {};
+    announce(`Order #${state.orderNo} placed for ${money(total)}, ${plural(items, 'item')}.`);
+    state.orderNo += 1;
+    renderAll();
+  }
+
+  // Events
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close]')) return setDrawer(false);
+
+    const chip = e.target.closest('[data-cat]');
+    if (chip) {
+      state.cat = chip.dataset.cat;
+      document.querySelectorAll('.chip').forEach((c) =>
+        c.setAttribute('aria-pressed', String(c === chip)));
+      return renderGrid();
+    }
+
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'cart-open') return setDrawer(true);
+
+    const id = btn.dataset.id;
+    switch (btn.dataset.action) {
+      case 'add':      setQty(id, (state.cart[id] || 0) + 1, true); break;
+      case 'inc':      setQty(id, (state.cart[id] || 0) + 1, false); break;
+      case 'dec':      setQty(id, (state.cart[id] || 0) - 1, false); break;
+      case 'remove':   setQty(id, 0, false); break;
+      case 'checkout': placeOrder(); break;
+      case 'continue': state.placed = false; renderCart(); setDrawer(false); break;
+      case 'clear':
+        state.query = '';
+        state.cat = 'All';
+        $('#search').value = '';
+        document.querySelectorAll('.chip').forEach((c) =>
+          c.setAttribute('aria-pressed', String(c.dataset.cat === 'All')));
+        renderGrid();
+        break;
+    }
+  });
+
+  $('#search').addEventListener('input', (e) => {
+    state.query = e.target.value;
+    renderGrid();
+  });
+
+  $('#sort').addEventListener('change', (e) => {
+    state.sort = e.target.value;
+    renderGrid();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.drawerOpen) setDrawer(false);
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop</title>
+<style>
+  :root {
+    --bg: #fafaf9; --surface: #ffffff; --text: #1c1917; --muted: #78716c;
+    --line: #e7e5e4; --accent: #1c1917; --accent-text: #ffffff; --focus: #2563eb;
+    --danger: #b91c1c; --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0a09; --surface: #1c1917; --text: #fafaf9; --muted: #a8a29e;
+      --line: #292524; --accent: #fafaf9; --accent-text: #0c0a09; --danger: #f87171;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0a09; --surface: #1c1917; --text: #fafaf9; --muted: #a8a29e;
+    --line: #292524; --accent: #fafaf9; --accent-text: #0c0a09; --danger: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  button, input, select { font: inherit; color: inherit; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  header.top { border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 2; }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .brand { font-weight: 700; letter-spacing: -0.01em; }
+  .cart-pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
+    border: 1px solid var(--line); border-radius: 999px; background: transparent; cursor: pointer;
+  }
+  .cart-pill .n {
+    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-text); font-size: 12px; font-weight: 600;
+    display: inline-grid; place-items: center;
+  }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; padding-top: 24px; padding-bottom: 48px; align-items: start; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
+  .toolbar input, .toolbar select {
+    height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface);
+  }
+  .toolbar input { flex: 1 1 220px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 6px; }
+  .chip {
+    padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .count { color: var(--muted); font-size: 13px; margin: 8px 0 16px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: var(--line); }
+  .meta { padding: 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .cat { margin: 0; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .meta h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .desc { margin: 0; color: var(--muted); font-size: 13px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; }
+  .price { font-weight: 600; }
+  .rating { font-size: 13px; color: var(--muted); }
+  .btn {
+    margin-top: 12px; width: 100%; height: 40px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-text); font-weight: 600;
+  }
+  .btn.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+  .btn:hover { opacity: 0.9; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .empty-results { color: var(--muted); padding: 40px 0; text-align: center; grid-column: 1 / -1; }
+
+  .cart {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px; position: sticky; top: 76px;
+  }
+  .cart h2 { margin: 0 0 12px; font-size: 18px; }
+  .lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .line { display: grid; grid-template-columns: 56px 1fr; gap: 12px; }
+  .line img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
+  .line .name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
+  .line .each { color: var(--muted); font-size: 13px; }
+  .line .ctrl { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .stepper button { width: 30px; height: 28px; border: 0; background: transparent; cursor: pointer; }
+  .stepper output { min-width: 28px; text-align: center; font-size: 14px; }
+  .remove { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; text-decoration: underline; padding: 4px; }
+  .remove:hover { color: var(--danger); }
+  .empty { color: var(--muted); margin: 8px 0 0; }
+  .hint { color: var(--muted); font-size: 13px; margin: 10px 0 0; min-height: 1.2em; }
+  dl.totals { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
+  dl.totals dt { color: var(--muted); }
+  dl.totals dd { margin: 0; text-align: right; }
+  dl.totals .total { font-weight: 700; font-size: 16px; }
+  .checkout { margin-top: 16px; width: 100%; height: 46px; }
+  .clear { margin-top: 8px; width: 100%; height: 36px; border: 0; background: transparent; color: var(--muted); cursor: pointer; text-decoration: underline; }
+  .clear:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { margin: 12px 0 0; font-size: 14px; min-height: 1.2em; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .cart { position: static; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <span class="brand">Field &amp; Form</span>
+    <button id="cartBtn" class="cart-pill" type="button" aria-label="Go to cart">Cart <span class="n" id="count">0</span></button>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <section aria-label="Products">
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off">
+      <select id="sort" aria-label="Sort products">
+        <option value="featured">Featured</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="rating">Top rated</option>
+      </select>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Category"></div>
+    <p class="count" id="resultCount" aria-live="polite"></p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <aside class="cart" id="cart" aria-labelledby="cartHeading">
+    <h2 id="cartHeading">Your cart</h2>
+    <ul class="lines" id="lines"></ul>
+    <p class="empty" id="empty">Your cart is empty.</p>
+    <dl class="totals">
+      <dt>Subtotal</dt><dd id="sub">$0.00</dd>
+      <dt>Shipping</dt><dd id="ship">$0.00</dd>
+      <dt>Tax (8%)</dt><dd id="tax">$0.00</dd>
+      <dt class="total">Total</dt><dd class="total" id="total">$0.00</dd>
+    </dl>
+    <p class="hint" id="hint"></p>
+    <button class="btn checkout" id="checkout" type="button" disabled>Checkout</button>
+    <button class="clear" id="clear" type="button" disabled>Clear cart</button>
+    <p class="status" id="status" role="status"></p>
+  </aside>
+</main>
+
+<script>
+(() => {
+  const PRODUCTS = [
+    { id: 'p1',  name: 'Merino Crew Sweater',      cat: 'Apparel',     price: 8900,  rating: 4.7, reviews: 212, desc: 'Fine-gauge merino, relaxed fit.',        bg: '#e7dcc9', fg: '#8a6d4b', shape: 'rect' },
+    { id: 'p2',  name: 'Waxed Canvas Jacket',      cat: 'Apparel',     price: 16500, rating: 4.8, reviews: 96,  desc: 'Water-resistant, brass hardware.',        bg: '#d6dccf', fg: '#4a5a3c', shape: 'tri' },
+    { id: 'p3',  name: 'Linen Overshirt',          cat: 'Apparel',     price: 7400,  rating: 4.4, reviews: 58,  desc: 'Breathable linen, two chest pockets.',    bg: '#dfe6ec', fg: '#4d6478', shape: 'rect' },
+    { id: 'p4',  name: 'Everyday Chino',           cat: 'Apparel',     price: 6800,  rating: 4.5, reviews: 340, desc: 'Garment-washed cotton twill.',            bg: '#ece3d3', fg: '#7a6a4f', shape: 'arc' },
+    { id: 'p5',  name: 'Ceramic Pour-Over Set',    cat: 'Home',        price: 4800,  rating: 4.9, reviews: 77,  desc: 'Dripper, carafe and two filters.',        bg: '#e9e4e1', fg: '#6b5b52', shape: 'circle' },
+    { id: 'p6',  name: 'Stoneware Vase',           cat: 'Home',        price: 5600,  rating: 4.3, reviews: 41,  desc: 'Hand-thrown, matte glaze.',               bg: '#d9d3cc', fg: '#5c5249', shape: 'circle' },
+    { id: 'p7',  name: 'Walnut Desk Tray',         cat: 'Home',        price: 3200,  rating: 4.6, reviews: 129, desc: 'Solid walnut, oiled finish.',             bg: '#e6d5bd', fg: '#7b5a3a', shape: 'rect' },
+    { id: 'p8',  name: 'Wool Throw Blanket',       cat: 'Home',        price: 9500,  rating: 4.7, reviews: 263, desc: 'Brushed wool, 50 x 70 in.',               bg: '#dad6e0', fg: '#5d5375', shape: 'arc' },
+    { id: 'p9',  name: 'Leather Card Wallet',      cat: 'Accessories', price: 4200,  rating: 4.6, reviews: 188, desc: 'Vegetable-tanned, six card slots.',       bg: '#e3d2c4', fg: '#6f4a32', shape: 'rect' },
+    { id: 'p10', name: 'Titanium Field Watch',     cat: 'Accessories', price: 22000, rating: 4.8, reviews: 54,  desc: 'Sapphire crystal, 40 mm case.',           bg: '#d9dee0', fg: '#3b4449', shape: 'circle' },
+    { id: 'p11', name: 'Canvas Tote',              cat: 'Accessories', price: 3600,  rating: 4.2, reviews: 97,  desc: 'Heavy cotton canvas, inside pocket.',     bg: '#e8e2cf', fg: '#7a7048', shape: 'tri' },
+    { id: 'p12', name: 'Polarized Sunglasses',     cat: 'Accessories', price: 12800, rating: 4.5, reviews: 150, desc: 'Acetate frame, UV400 lenses.',            bg: '#d3dbd6', fg: '#2f4a40', shape: 'arc' }
+  ];
+  const BY_ID = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+  const CATS = ['All', 'Apparel', 'Home', 'Accessories'];
+  const MAX_QTY = 10;
+  const TAX_RATE = 0.08;
+  const FREE_SHIP_AT = 7500;   // cents
+  const SHIP_FEE = 800;        // cents
+  const STORE_KEY = 'field-form-cart';
+
+  const money = c => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
+  const $ = sel => document.querySelector(sel);
+
+  const state = { q: '', cat: 'All', sort: 'featured', cart: loadCart() };
+
+  function loadCart() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+      const clean = {};
+      for (const [id, qty] of Object.entries(saved)) {
+        if (BY_ID[id] && Number.isInteger(qty) && qty > 0) clean[id] = Math.min(qty, MAX_QTY);
+      }
+      return clean;
+    } catch (e) { return {}; }
+  }
+  function saveCart() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state.cart)); } catch (e) { /* storage unavailable */ }
+  }
+
+  function art(p) {
+    const shapes = {
+      circle: `<circle cx="200" cy="200" r="78" fill="${p.fg}"/>`,
+      tri: `<path d="M200 118 L290 276 L110 276 Z" fill="${p.fg}"/>`,
+      arc: `<path d="M116 262 A84 84 0 0 1 284 262 Z" fill="${p.fg}"/>`,
+      rect: `<rect x="120" y="144" width="160" height="120" rx="16" fill="${p.fg}"/>`
+    };
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">` +
+      `<rect width="400" height="400" fill="${p.bg}"/>` +
+      `<circle cx="200" cy="200" r="130" fill="${p.fg}" opacity=".12"/>` +
+      (shapes[p.shape] || shapes.rect) + `</svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  function visibleProducts() {
+    const q = state.q.trim().toLowerCase();
+    let list = PRODUCTS.filter(p =>
+      (state.cat === 'All' || p.cat === state.cat) &&
+      (!q || p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q))
+    );
+    const sorts = {
+      'price-asc': (a, b) => a.price - b.price,
+      'price-desc': (a, b) => b.price - a.price,
+      'rating': (a, b) => b.rating - a.rating
+    };
+    if (sorts[state.sort]) list = [...list].sort(sorts[state.sort]);
+    return list;
+  }
+
+  function renderChips() {
+    $('#chips').innerHTML = CATS.map(c =>
+      `<button type="button" class="chip" data-cat="${c}" aria-pressed="${c === state.cat}">${c}</button>`
+    ).join('');
+  }
+
+  function renderGrid() {
+    const list = visibleProducts();
+    $('#resultCount').textContent = `${list.length} product${list.length === 1 ? '' : 's'}`;
+    $('#grid').innerHTML = list.length ? list.map(p => {
+      const qty = state.cart[p.id] || 0;
+      const atMax = qty >= MAX_QTY;
+      return `
+        <article class="card">
+          <img src="${art(p)}" alt="">
+          <div class="meta">
+            <p class="cat">${p.cat}</p>
+            <h3>${p.name}</h3>
+            <p class="desc">${p.desc}</p>
+            <div class="row">
+              <span class="price">${money(p.price)}</span>
+              <span class="rating" aria-label="Rated ${p.rating} out of 5">&#9733; ${p.rating} (${p.reviews})</span>
+            </div>
+            <button type="button" class="btn ${qty ? 'ghost' : ''}" data-add="${p.id}" ${atMax ? 'disabled' : ''}>
+              ${atMax ? 'Maximum in cart' : qty ? `In cart (${qty}), add one more` : 'Add to cart'}
+            </button>
+          </div>
+        </article>`;
+    }).join('') : `<p class="empty-results">No products match. Try another search or category.</p>`;
+  }
+
+  function renderCart() {
+    const entries = Object.entries(state.cart).filter(([, q]) => q > 0);
+    const count = entries.reduce((n, [, q]) => n + q, 0);
+    const subtotal = entries.reduce((s, [id, q]) => s + BY_ID[id].price * q, 0);
+    const shipping = subtotal === 0 || subtotal >= FREE_SHIP_AT ? 0 : SHIP_FEE;
+    const tax = Math.round(subtotal * TAX_RATE);
+    const total = subtotal + shipping + tax;
+
+    $('#count').textContent = count;
+    $('#empty').hidden = entries.length > 0;
+    $('#lines').innerHTML = entries.map(([id, q]) => {
+      const p = BY_ID[id];
+      return `
+        <li class="line">
+          <img src="${art(p)}" alt="">
+          <div>
+            <div class="name"><span>${p.name}</span><span>${money(p.price * q)}</span></div>
+            <div class="each">${money(p.price)} each</div>
+            <div class="ctrl">
+              <div class="stepper">
+                <button type="button" data-dec="${id}" aria-label="Decrease ${p.name}">&minus;</button>
+                <output aria-live="polite">${q}</output>
+                <button type="button" data-inc="${id}" aria-label="Increase ${p.name}" ${q >= MAX_QTY ? 'disabled' : ''}>+</button>
+              </div>
+              <button type="button" class="remove" data-remove="${id}">Remove</button>
+            </div>
+          </div>
+        </li>`;
+    }).join('');
+
+    $('#sub').textContent = money(subtotal);
+    $('#ship').textContent = shipping === 0 && subtotal > 0 ? 'Free' : money(shipping);
+    $('#tax').textContent = money(tax);
+    $('#total').textContent = money(total);
+    $('#hint').textContent = subtotal === 0 ? '' :
+      shipping === 0 ? 'Free shipping applied.' :
+      `Add ${money(FREE_SHIP_AT - subtotal)} more for free shipping.`;
+    $('#checkout').disabled = count === 0;
+    $('#clear').disabled = count === 0;
+  }
+
+  function setQty(id, qty) {
+    if (qty <= 0) delete state.cart[id];
+    else state.cart[id] = Math.min(qty, MAX_QTY);
+    saveCart();
+    renderGrid();
+    renderCart();
+  }
+
+  function announce(msg) { $('#status').textContent = msg; }
+
+  // Search and sort: update state, redraw only the grid so the input keeps focus.
+  $('#q').addEventListener('input', e => { state.q = e.target.value; renderGrid(); });
+  $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const d = btn.dataset;
+    if (d.cat) { state.cat = d.cat; renderChips(); renderGrid(); return; }
+    if (d.add) {
+      const p = BY_ID[d.add];
+      setQty(d.add, (state.cart[d.add] || 0) + 1);
+      announce(`Added ${p.name} to cart.`);
+      return;
+    }
+    if (d.inc) { setQty(d.inc, (state.cart[d.inc] || 0) + 1); return; }
+    if (d.dec) { setQty(d.dec, (state.cart[d.dec] || 0) - 1); return; }
+    if (d.remove) { setQty(d.remove, 0); announce(`Removed ${BY_ID[d.remove].name}.`); return; }
+    if (btn.id === 'cartBtn') { $('#cart').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (btn.id === 'clear') { state.cart = {}; saveCart(); renderGrid(); renderCart(); announce('Cart cleared.'); return; }
+    if (btn.id === 'checkout') {
+      const entries = Object.entries(state.cart).filter(([, q]) => q > 0);
+      if (!entries.length) return;
+      const items = entries.reduce((n, [, q]) => n + q, 0);
+      const subtotal = entries.reduce((s, [id, q]) => s + BY_ID[id].price * q, 0);
+      const shipping = subtotal >= FREE_SHIP_AT ? 0 : SHIP_FEE;
+      const total = subtotal + shipping + Math.round(subtotal * TAX_RATE);
+      state.cart = {}; saveCart(); renderGrid(); renderCart();
+      announce(`Order placed: ${items} item${items === 1 ? '' : 's'}, ${money(total)} total. Demo only, nothing was charged.`);
+    }
+  });
+
+  renderChips();
+  renderGrid();
+  renderCart();
+})();
+</script>
+</body>
+</html>
