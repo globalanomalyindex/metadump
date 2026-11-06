@@ -21,6 +21,7 @@ h2{font-size:20px;margin:0}.prompt{font:15px/1.5 ui-serif,Georgia,serif;margin:0
 .score{font-size:14px;color:var(--muted);white-space:nowrap}.score b{color:var(--ink)}.score .bb{color:var(--b)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:820px){.pair{grid-template-columns:1fr}}
+@media (max-width:520px){.score{white-space:normal}}
 .side{display:flex;flex-direction:column;gap:8px;min-width:0}
 .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
 .tag{font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip)}
@@ -32,6 +33,9 @@ h2{font-size:20px;margin:0}.prompt{font:15px/1.5 ui-serif,Georgia,serif;margin:0
 .runscore{font-size:12px;color:var(--muted)}
 iframe{width:100%;height:520px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .text iframe{height:440px}
+/* a stage gives a build a laptop-sized viewport and scales it down to the column, so it keeps its desktop layout */
+.stage{position:relative;width:100%;aspect-ratio:var(--vw)/var(--vh);overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#111}
+.stage iframe{position:absolute;top:0;left:0;width:calc(var(--vw)*1px);height:calc(var(--vh)*1px);border:0;border-radius:0;transform-origin:0 0;transform:scale(var(--s,.5))}
 .open{font-size:12px;color:var(--muted)}
 .hint{font-size:13px;color:var(--muted);margin:10px 0 0}.finding{font-size:14px;margin:12px 0 0}
 footer{font-size:13px;color:var(--muted)}footer a{color:inherit}
@@ -41,7 +45,7 @@ footer{font-size:13px;color:var(--muted)}footer a{color:inherit}
 <body>
 <main>
 <h1>Same model, same prompt. Left without a meta dump, right with one.</h1>
-<p class="meta">Round 2: three new tasks, one imaginative, one technical, one visual. Round 1 (button, haiku, toast) is <a href="../">here</a>.</p>
+<p class="meta">Three new tasks MetaDump was never tuned on: one imaginative, one technical, one visual.</p>
 <p class="lede">Every pair below was built by Sonnet 5.5 at medium effort from the exact prompt shown. The right side also got a meta dump of the task, made by <a href="https://github.com/globalanomalyindex/metadump">MetaDump</a> (its dumps are built by a swarm of Haiku 5.5 agents), and looked at its own page before finishing. Blind Sonnet graders scored all 8 builds per task without knowing which side was which.</p>
 <p class="meta">Run 1 of each side is shown by default; it was picked before grading. Switch runs to see all four. Full method, grades and every file: <a href="https://github.com/globalanomalyindex/metadump/tree/main/ab-tests/2026-11-05-recipe-game-lemon-sonnet">ab-tests/2026-11-05-recipe-game-lemon-sonnet</a>.</p>
 <p class="pooled" id="pooled"></p>
@@ -56,15 +60,19 @@ if (POOLED) document.getElementById('pooled').innerHTML = `Across all three task
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hint = { play: 'Play a game on each side.', turn: 'Drag the lemons to turn them.' };
 const root = document.getElementById('tasks');
+// builds that only fit a laptop-sized viewport: their sidebars stack over the model below about 820 px wide
+const STAGE = { 't3-lemon': [1024, 768] };
+const fit = new ResizeObserver(es => es.forEach(e => e.target.style.setProperty('--s', e.target.clientWidth / +e.target.style.getPropertyValue('--vw'))));
 for (const t of DATA) {
   const s = t.scores;
   const score = s ? `<span class="score">Blind score <b>${s.A}</b> vs <b class="bb">${s.B}</b> · right side won ${s.wins} of ${s.wins + s.losses + s.ties} head-to-heads</span>` : '<span class="score">grading in progress</span>';
   const side = (arm, label) => {
-    const runs = t.runs[arm];
+    const runs = t.runs[arm], st = STAGE[t.slug];
+    const frame = `<iframe title="${esc(t.title)}, ${label}, run 1" src="${t.slug}/${runs[0]}.html" sandbox="allow-scripts"></iframe>`;
     return `<div class="side ${arm.toLowerCase()}" data-arm="${arm}">
       <div class="bar"><span class="tag">${label}</span><span class="runscore"></span>
         <span class="runs" role="group" aria-label="${label} runs">${runs.map((r, i) => `<button type="button" data-run="${r}" aria-pressed="${i === 0}">run ${i + 1}</button>`).join('')}</span></div>
-      <iframe title="${esc(t.title)}, ${label}, run 1" src="${t.slug}/${runs[0]}.html" sandbox="allow-scripts"></iframe>
+      ${st ? `<div class="stage" style="--vw:${st[0]};--vh:${st[1]}">${frame}</div>` : frame}
       <a class="open" href="${t.slug}/${runs[0]}.html" target="_blank" rel="noopener">open on its own ↗</a></div>`;
   };
   const sec = document.createElement('section');
@@ -72,6 +80,7 @@ for (const t of DATA) {
   sec.innerHTML = `<div class="head"><h2>${esc(t.title)}</h2>${score}</div><p class="prompt">${esc(t.prompt)}</p>
     <div class="pair">${side('A', 'Prompt only')}${side('B', 'Prompt + MetaDump')}</div>${t.note ? `<p class="finding">${esc(t.note)}</p>` : ''}${hint[t.interaction] ? `<p class="hint">${hint[t.interaction]}</p>` : ''}`;
   root.appendChild(sec);
+  sec.querySelectorAll('.stage').forEach(s => fit.observe(s));
   sec.querySelectorAll('.side').forEach(el => {
     const arm = el.dataset.arm, frame = el.querySelector('iframe'), open = el.querySelector('.open'), rs = el.querySelector('.runscore');
     const show = run => {
