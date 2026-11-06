@@ -1,0 +1,66 @@
+{
+ "A-r1": {
+  "words_total": 595,
+  "headings": 6,
+  "list_items": 25,
+  "temperatures": 12,
+  "times": 10,
+  "title": "Mammoth Steak"
+ },
+ "A-r2": {
+  "words_total": 525,
+  "headings": 5,
+  "list_items": 26,
+  "temperatures": 9,
+  "times": 12,
+  "title": "Mammoth Steak"
+ },
+ "A-r3": {
+  "words_total": 572,
+  "headings": 5,
+  "list_items": 27,
+  "temperatures": 1,
+  "times": 12,
+  "title": "Mammoth Steak"
+ },
+ "A-r4": {
+  "words_total": 605,
+  "headings": 5,
+  "list_items": 32,
+  "temperatures": 0,
+  "times": 11,
+  "title": "Mammoth Steak"
+ },
+ "B-r1": {
+  "words_total": 1342,
+  "headings": 8,
+  "list_items": 25,
+  "temperatures": 0,
+  "times": 20,
+  "title": "Mammoth Steak: a bone-in bison rib steak, reverse-seared and carved at the table"
+ },
+ "B-r2": {
+  "words_total": 1494,
+  "headings": 14,
+  "list_items": 25,
+  "temperatures": 0,
+  "times": 18,
+  "title": "Mammoth Steak (bone-in bison, reverse-seared, carved at the table)"
+ },
+ "B-r3": {
+  "words_total": 1376,
+  "headings": 10,
+  "list_items": 26,
+  "temperatures": 21,
+  "times": 12,
+  "title": "Mammoth Steak: the show plate"
+ },
+ "B-r4": {
+  "words_total": 1297,
+  "headings": 14,
+  "list_items": 21,
+  "temperatures": 22,
+  "times": 18,
+  "title": "Mammoth Steak (bone-in, reverse-seared, carved at the table)"
+ }
+}

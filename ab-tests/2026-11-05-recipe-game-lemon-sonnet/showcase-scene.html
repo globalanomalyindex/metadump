@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>MetaDump scene</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--muted:#6b6862;--line:#e4e1da;--b:#2d5bd7;--chip:#e9e6df}
+*{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.top{padding:46px 48px 0}.brand{font:600 22px system-ui;color:var(--muted);letter-spacing:.01em}.brand b{color:var(--ink)}
+h1{font-size:46px;line-height:1.08;margin:14px 0 12px;letter-spacing:-.015em}
+.prompt{font:27px/1.35 ui-serif,Georgia,serif;margin:0;color:var(--ink);max-height:110px;overflow:hidden}
+.prompt::before{content:"“"}.prompt::after{content:"”"}
+.pair{position:absolute;left:48px;right:48px;top:300px;bottom:150px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.col{display:flex;flex-direction:column;min-width:0}
+.tag{align-self:flex-start;font:600 22px system-ui;padding:6px 16px;border-radius:999px;background:var(--chip);margin-bottom:12px}
+.col.b .tag{background:var(--b);color:#fff}
+.frame{position:relative;flex:1;border:2px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+.col.b .frame{border-color:var(--b)}
+iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0}
+.foot{position:absolute;left:48px;right:48px;bottom:46px;display:flex;justify-content:space-between;align-items:flex-end;font-size:24px;color:var(--muted)}
+.foot b{color:var(--ink)}.foot .bb{color:var(--b)}
+.cursor{position:absolute;left:-60px;top:-60px;width:38px;height:38px;z-index:10;pointer-events:none;transition-property:left,top;transition-timing-function:cubic-bezier(.3,.7,.2,1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.card{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:90px 80px}
+.card h1{font-size:76px;line-height:1.02;margin:0 0 30px}.card p{font-size:34px;line-height:1.35;margin:0 0 22px;color:var(--muted)}.card p b{color:var(--ink)}
+.card .k{display:inline-block;width:24px;height:24px;border-radius:6px;vertical-align:-2px;margin-right:10px}
+table{border-collapse:collapse;font-size:31px;margin:10px 0 40px;width:100%}td{padding:12px 0;border-bottom:2px solid var(--line)}td.n{text-align:right;font-variant-numeric:tabular-nums;width:150px}
+td.n.bb{color:var(--b)}td.n.win{font-weight:700}th{font:600 21px system-ui;color:var(--muted);text-align:right;padding-bottom:8px}th:first-child{text-align:left}
+.url{font:600 32px ui-monospace,monospace;color:var(--ink)}
+.note{position:absolute;left:48px;right:48px;bottom:98px;font-size:23px;line-height:1.3;color:var(--ink)}
+</style>
+</head>
+<body>
+<svg class="cursor" id="cursor" viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2 3.8 7.3-2.7 1.4-3.8-7.3L4 20z" fill="#111" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+<div id="root"></div>
+<script>
+const DATA = /*__DATA__*/[];
+const POOLED = /*__POOLED__*/null;
+const q = new URLSearchParams(location.search), which = q.get('task') || 'intro';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const root = document.getElementById('root');
+const INNER_W = ({ 't1-recipe': 460, 't2-tictactoe': 520, 't3-lemon': 640 })[which] || 560;
+if (which === 'intro') {
+  root.innerHTML = `<div class="card"><div class="brand"><b>MetaDump</b> · A/B test</div><h1 style="margin-top:28px">Same model.<br>Same prompt.</h1>
+    <p><span class="k" style="background:#bdb8ae"></span>Left: <b>just the prompt</b></p><p><span class="k" style="background:var(--b)"></span>Right: <b>the prompt + a meta dump</b></p>
+    <p style="margin-top:30px">3 tasks · built and graded blind by Sonnet 5.5 at medium effort</p></div>`;
+} else if (which === 'outro') {
+  const rows = DATA.filter(t => t.scores).map(t => `<tr><td>${esc(t.title)}</td><td class="n${t.scores.A > t.scores.B ? ' win' : ''}">${t.scores.A}</td><td class="n bb${t.scores.B > t.scores.A ? ' win' : ''}">${t.scores.B}</td></tr>`).join('');
+  root.innerHTML = `<div class="card"><div class="brand"><b>MetaDump</b> · blind scores out of 10</div>
+    <table style="margin-top:34px"><tr><th>task</th><th>prompt only</th><th>+ meta dump</th></tr>${rows}</table>
+    ${POOLED ? `<p style="font-size:31px;color:var(--ink)">The meta dump side won <b style="color:var(--b)">${POOLED.pooled_wins} of ${POOLED.pooled_wins + POOLED.pooled_losses + POOLED.pooled_ties}</b> blind head-to-heads (${POOLED.p_two_sided < 0.001 ? 'p &lt; 0.001' : 'p = ' + POOLED.p_two_sided.toFixed(2)}).</p>` : ''}<p style="font-size:26px">Three tasks it was never tuned on. 4 builds per side per task, graded by Sonnet. A direction, not proof.<br>Every build, grade and script is public.</p><p class="url">github.com/globalanomalyindex/metadump</p></div>`;
+} else {
+  const t = DATA.find(x => x.slug === which), s = t.scores;
+  const a = q.get('a') || t.runs.A[0], b = q.get('b') || t.runs.B[0];
+  root.innerHTML = `<div class="top"><div class="brand"><b>MetaDump</b> · same model, same prompt</div><h1>${esc(t.title)}</h1><p class="prompt">${esc(t.prompt)}</p></div>
+    <div class="pair"${t.note ? ' style="bottom:200px"' : ''}><div class="col a"><span class="tag">Prompt only</span><div class="frame"><iframe id="fa" src="${t.slug}/${a}.html"></iframe></div></div>
+    <div class="col b"><span class="tag">Prompt + MetaDump</span><div class="frame"><iframe id="fb" src="${t.slug}/${b}.html"></iframe></div></div></div>
+    ${t.note ? `<p class="note">${esc(t.note)}</p>` : ''}<div class="foot"><span>Sonnet 5.5 builds · run 1 of 4 per side</span>${s ? `<span>Blind score <b>${s.A}</b> vs <b class="bb">${s.B}</b></span>` : ''}</div>`;
+  for (const f of document.querySelectorAll('.frame')) {
+    const fr = f.querySelector('iframe'), r = f.getBoundingClientRect(), k = r.width / INNER_W;
+    fr.style.width = INNER_W + 'px'; fr.style.height = (r.height / k) + 'px'; fr.style.transform = `scale(${k})`; fr.dataset.k = k
+  }
+}
+// Scroll both answers top to bottom together (long text scenes).
+window.scrollFrames = ms => new Promise(done => {
+  const wins = [...document.querySelectorAll('iframe')].map(f => f.contentWindow)
+  const max = wins.map(w => Math.max(0, w.document.documentElement.scrollHeight - w.innerHeight))
+  const t0 = performance.now()
+  const step = now => { const k = Math.min(1, (now - t0) / ms), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2
+    wins.forEach((w, i) => w.scrollTo(0, max[i] * e)); k < 1 ? requestAnimationFrame(step) : done() }
+  requestAnimationFrame(step)
+});
+const cursor = document.getElementById('cursor');
+window.cursorTo = (x, y, ms) => { cursor.style.transitionDuration = ms + 'ms'; cursor.style.left = (x - 6) + 'px'; cursor.style.top = (y - 3) + 'px' };
+// Page coordinates of a target inside one of the two frames (same origin when served over http).
+window.targetIn = (id, kind) => {
+  const fr = document.getElementById(id); if (!fr) return null
+  const d = fr.contentDocument, k = +fr.dataset.k, box = fr.getBoundingClientRect()
+  const vis = e => { const r = e.getBoundingClientRect(); return r.width > 6 && r.height > 6 }
+  let el
+  if (kind === 'cell') {   // the next empty cell in the order 1,4,2,5,3,6,7,8,9; null once the page announces an end
+    const st = (window.__game = window.__game || {})[id] = (window.__game || {})[id] || { clicked: [], base: d.body.innerText }
+    const fresh = d.body.innerText.split('\n').map(l => l.trim()).filter(l => l && !st.base.includes(l))
+    if (fresh.some(l => /wins?\b|won\b|winner|draw|tie\b|stalemate|game over/i.test(l)) || st.clicked.length >= 9) return null
+    const ok = e => { const r = e.getBoundingClientRect(); return r.width >= 24 && r.height >= 24 && r.width <= 320 && r.height <= 320 && getComputedStyle(e).visibility !== 'hidden' }
+    const bands = vs => { const s = [...vs].sort((a, b) => a - b), g = [[s[0]]]; for (const v of s.slice(1)) { if (v - g[g.length - 1].slice(-1)[0] > 8) g.push([v]); else g[g.length - 1].push(v) } return g.length }
+    let cells = null
+    for (const p of d.querySelectorAll('body, body *')) {
+      const kids = [...p.children].filter(ok); if (kids.length !== 9) continue
+      const rs = kids.map(e => e.getBoundingClientRect())
+      if (bands(rs.map(r => r.x + r.width / 2)) !== 3 || bands(rs.map(r => r.y + r.height / 2)) !== 3) continue
+      cells = kids.map((e, i) => [e, rs[i]]).sort((a, b) => (Math.abs(a[1].y + a[1].height / 2 - b[1].y - b[1].height / 2) > 8 ? a[1].y - b[1].y : a[1].x - b[1].x)).map(o => o[0]); break }
+    if (!cells) return null
+    const marked = e => /\b[XOxo]\b|[✕✖×○◯⭕]/.test((e.innerText || '') + ' ' + (e.className.baseVal ?? e.className)) || !!e.querySelector('svg, img')
+    const i = [0, 3, 1, 4, 2, 5, 6, 7, 8].find(k => !marked(cells[k]) && !st.clicked.includes(k)); if (i === undefined) return null
+    st.clicked.push(i); el = cells[i]
+  } else if (kind === 'model') {
+    el = [...d.querySelectorAll('canvas, svg')].filter(vis).sort((p, q) => { const a = p.getBoundingClientRect(), b = q.getBoundingClientRect(); return b.width * b.height - a.width * a.height })[0]
+    if (!el) return { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+    const r = el.getBoundingClientRect(), vh = fr.contentWindow.innerHeight, top = Math.max(0, r.top), bot = Math.min(vh, r.bottom)
+    return { x: box.left + (r.left + r.width / 2) * k, y: box.top + ((top + bot) / 2) * k }
+  } else if (kind === 'drag') {
+    let bs = []; try { bs = fr.contentWindow.boxes() || [] } catch (e) {}
+    if (!bs.length) return null
+    const b = bs.reduce((m, o) => (o.y > m.y ? o : m), bs[0])
+    return { x: box.left + b.x * k, y: box.top + b.y * k, k }
+  }
+  if (el) {} else if (kind === 'hover') el = [...d.querySelectorAll('button, a, [role=button], input[type=button], input[type=submit]')].filter(vis)
+    .sort((p, q) => { const a = p.getBoundingClientRect(), b = q.getBoundingClientRect(); return b.width * b.height - a.width * a.height })[0]
+  else el = [...d.querySelectorAll('[aria-expanded]')].find(vis) || [...d.querySelectorAll('summary')].find(vis)
+    || [...d.querySelectorAll('button, [role=button]')].find(e => vis(e) && /expand|collapse|details|toggle|more|show|open|track|chevron|view/i.test((e.getAttribute('aria-label') || '') + e.innerText))
+    || [...d.querySelectorAll('button, [role=button]')].find(vis)
+  if (!el) return null
+  el.scrollIntoView({ block: 'center' })
+  const r = el.getBoundingClientRect()
+  return { x: box.left + (r.left + r.width / 2) * k, y: box.top + (r.top + r.height / 2) * k }
+};
+</script>
+</body>
+</html>

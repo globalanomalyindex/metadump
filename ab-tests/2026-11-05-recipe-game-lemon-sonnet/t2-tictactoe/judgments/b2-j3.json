@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j3","scores":{
+"W":{"basic":9,"correctness":9,"usability":7,"craft":7,"code":9,"overall":8,"note":"Clean, compact and correct with a score tally and clear win highlight, but cell labels do not announce marks and there is no focus style."},
+"X":{"basic":4,"correctness":8,"usability":8,"craft":6,"code":5,"overall":6,"note":"Nicest SVG marks, dark mode and arrow keys, but it adds an unrequested computer opponent and loser-starts rule, and the bottom row collapses once marks are placed."},
+"Y":{"basic":10,"correctness":9,"usability":9,"craft":8,"code":9,"overall":9,"note":"Exactly a basic game with a stable board, strong contrast, dark mode, focus rings, descriptive labels and a live status, and no layout glitches."},
+"Z":{"basic":8,"correctness":8,"usability":5,"craft":5,"code":8,"overall":6,"note":"Simple and tidy with a nice framed board, but the board rows distort after moves, cell labels are only Cell n, and there is no focus-visible polish for marks."}},
+"ranking":["Y","W","X","Z"]}

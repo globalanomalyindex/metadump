@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic Tac Toe</title>
+<style>
+:root{--bg:#4aa3df;--tile:#fff;--ink:#12324a;--x:#d9480f;--o:#0b7285;--win:#ffe066;--panel:#fff;--muted:#3b5a73}
+@media (prefers-color-scheme:dark){:root{--bg:#10283a;--tile:#1d3f58;--ink:#f1f7fb;--x:#ffa94d;--o:#66d9e8;--win:#5c4a00;--panel:#16344b;--muted:#b6cfe0}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{margin:0;font-size:clamp(1.6rem,6vw,2.2rem);color:#fff}
+@media (prefers-color-scheme:dark){h1{color:var(--ink)}}
+#status{margin:0;min-height:2.4em;padding:8px 18px;border-radius:999px;background:var(--panel);font-size:1.15rem;font-weight:700;text-align:center;display:flex;align-items:center}
+#board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(88vvw,88vh - 200px,380px);width:min(88vw,380px);aspect-ratio:1}
+.cell{border:0;border-radius:12px;background:var(--tile);font:800 clamp(2.4rem,14vw,4.6rem)/1 system-ui,sans-serif;cursor:pointer;min-width:24px;min-height:24px;padding:0;color:var(--ink);transition:transform .08s}
+.cell:hover:not(:disabled):not(.filled){transform:scale(1.04)}
+.cell:focus-visible,#restart:focus-visible{outline:4px solid var(--ink);outline-offset:2px}
+.cell.filled{cursor:default}
+.cell.X{color:var(--x)}.cell.O{color:var(--o)}
+.cell.win{background:var(--win)}
+#restart{font:700 1rem system-ui,sans-serif;padding:10px 24px;border:0;border-radius:999px;background:var(--ink);color:var(--panel);cursor:pointer}
+#score{margin:0;color:#fff;font-size:.95rem}
+@media (prefers-color-scheme:dark){#score{color:var(--muted)}}
+</style>
+</head>
+<body>
+<h1>Tic Tac Toe</h1>
+<p id="status" role="status" aria-live="polite"></p>
+<div id="board" role="group" aria-label="Tic tac toe board"></div>
+<button id="restart" type="button">Restart</button>
+<p id="score"></p>
+<script>
+(function(){
+  var LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  var board,turn,over,tally={X:0,O:0,Draw:0};
+  var boardEl=document.getElementById('board'),statusEl=document.getElementById('status'),scoreEl=document.getElementById('score');
+  var cells=[];
+  for(var i=0;i<9;i++){
+    var b=document.createElement('button');
+    b.type='button';b.className='cell';b.dataset.i=i;
+    b.addEventListener('click',onMove);
+    boardEl.appendChild(b);cells.push(b);
+  }
+  function winner(){
+    for(var k=0;k<LINES.length;k++){
+      var l=LINES[k];
+      if(board[l[0]]&&board[l[0]]===board[l[1]]&&board[l[1]]===board[l[2]])return{mark:board[l[0]],line:l};
+    }
+    return null;
+  }
+  function render(res){
+    cells.forEach(function(c,i){
+      var v=board[i];
+      c.textContent=v||'';
+      c.className='cell'+(v?' filled '+v:'');
+      c.setAttribute('aria-label','Cell '+(Math.floor(i/3)+1)+','+(i%3+1)+': '+(v||'empty'));
+      c.disabled=false;
+      c.setAttribute('aria-disabled',(over||v)?'true':'false');
+    });
+    if(res&&res.line)res.line.forEach(function(i){cells[i].classList.add('win')});
+    if(res)statusEl.textContent=res.mark+' wins!';
+    else if(over)statusEl.textContent="Draw: nine cells filled, no line of three.";
+    else statusEl.textContent=turn+"'s turn";
+    scoreEl.textContent='X '+tally.X+'  ·  O '+tally.O+'  ·  Draws '+tally.Draw;
+  }
+  function onMove(e){
+    var i=+e.currentTarget.dataset.i;
+    if(over||board[i])return;
+    board[i]=turn;
+    var w=winner();
+    if(w){over=true;tally[w.mark]++;}
+    else if(board.every(Boolean)){over=true;tally.Draw++;}
+    else turn=turn==='X'?'O':'X';
+    render(w);
+  }
+  function reset(){
+    board=Array(9).fill(null);turn='X';over=false;render(null);
+  }
+  document.getElementById('restart').addEventListener('click',reset);
+  reset();
+})();
+</script>
+</body>
+</html>

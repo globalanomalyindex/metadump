@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic Tac Toe</title>
+<style>
+:root{
+  --bg:#f4f1ea; --ink:#23262b; --muted:#6a6f78; --cell:#fffdf8; --line:#cfc8b8;
+  --x:#2a5d9f; --o:#b4532a; --win:#e8f0d8; --winb:#3d7a2a; --focus:#111;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1b1d21;--ink:#ecebe6;--muted:#9a9ea6;--cell:#26292f;--line:#3d424b;--x:#7fb0ee;--o:#f0a07a;--win:#2c3f26;--winb:#8fd072;--focus:#fff}
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);
+  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}
+main{width:min(92vw,380px);text-align:center}
+h1{font-size:1.4rem;margin:0 0 12px;letter-spacing:.02em}
+#status{min-height:2.6em;font-size:1.15rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+#status .chip{width:1.1em;height:1.1em;display:inline-block}
+#board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;aspect-ratio:1;margin:0 auto}
+.cell{appearance:none;border:2px solid var(--line);background:var(--cell);border-radius:10px;padding:14%;cursor:pointer;
+  display:grid;place-items:center;color:var(--ink);transition:background .12s,border-color .12s,transform .08s}
+.cell svg{width:100%;height:100%;overflow:visible}
+.cell:not(:disabled):hover,.cell.empty:hover{border-color:var(--muted)}
+.cell.empty:hover{background:color-mix(in srgb,var(--cell) 88%,var(--muted))}
+.cell:active.empty{transform:scale(.97)}
+.cell:disabled{cursor:default}
+.cell:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.cell.win{background:var(--win);border-color:var(--winb);border-width:3px}
+.cell.dim{opacity:.55}
+.x{color:var(--x)} .o{color:var(--o)}
+.mark path,.mark circle{fill:none;stroke:currentColor;stroke-width:12;stroke-linecap:round}
+.mark.pop{animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.mark.pop{animation:none}.cell{transition:none}}
+.row{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:16px;flex-wrap:wrap}
+button.ctl{font:inherit;font-weight:600;padding:10px 18px;min-height:44px;border-radius:8px;border:2px solid var(--ink);
+  background:var(--ink);color:var(--bg);cursor:pointer}
+button.ctl.alt{background:transparent;color:var(--ink)}
+button.ctl:hover{opacity:.88}
+button.ctl:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+#score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;color:var(--muted);font-size:.9rem}
+#score div{border-top:2px solid var(--line);padding-top:6px}
+#score b{display:block;font-size:1.4rem;color:var(--ink)}
+#score .sx b{color:var(--x)} #score .so b{color:var(--o)}
+.hint{color:var(--muted);font-size:.8rem;margin-top:12px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Tic Tac Toe</h1>
+  <div id="status" role="status" aria-live="polite"></div>
+  <div id="board" role="group" aria-label="Tic tac toe board"></div>
+  <div class="row">
+    <button class="ctl" id="restart" type="button">New round</button>
+    <button class="ctl alt" id="mode" type="button" aria-pressed="false">Play the computer: off</button>
+  </div>
+  <div id="score" aria-label="Score">
+    <div class="sx"><b id="sx">0</b>X wins</div>
+    <div><b id="sd">0</b>Draws</div>
+    <div class="so"><b id="so">0</b>O wins</div>
+  </div>
+  <p class="hint">Click a square, or use the arrow keys and Enter. X moves first; the loser opens the next round.</p>
+</main>
+<script>
+(function(){
+  var LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  var board, turn, over, vsCpu=false, starter='X', scores={X:0,O:0,D:0}, cpuTimer=null;
+  var boardEl=document.getElementById('board'), statusEl=document.getElementById('status');
+  var cells=[];
+
+  function markSvg(p){
+    return p==='X'
+      ? '<svg class="mark pop" viewBox="0 0 100 100" aria-hidden="true"><path d="M18 18L82 82M82 18L18 82"/></svg>'
+      : '<svg class="mark pop" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="32"/></svg>';
+  }
+  function name(i){return 'row '+(Math.floor(i/3)+1)+', column '+(i%3+1);}
+
+  for(var i=0;i<9;i++){
+    var b=document.createElement('button');
+    b.type='button'; b.className='cell empty'; b.dataset.i=i;
+    b.setAttribute('aria-label',name(i)+', empty');
+    b.addEventListener('click',onCell);
+    boardEl.appendChild(b); cells.push(b);
+  }
+
+  function winner(bd){
+    for(var k=0;k<LINES.length;k++){
+      var l=LINES[k];
+      if(bd[l[0]]&&bd[l[0]]===bd[l[1]]&&bd[l[0]]===bd[l[2]]) return {p:bd[l[0]],line:l};
+    }
+    return null;
+  }
+  function setStatus(p,text){
+    statusEl.innerHTML='';
+    if(p){var s=document.createElement('span');s.className='chip '+p.toLowerCase();
+      s.innerHTML=markSvg(p).replace(' pop','');statusEl.appendChild(s);}
+    var t=document.createElement('span');t.textContent=text;statusEl.appendChild(t);
+  }
+  function render(){
+    cells.forEach(function(c,i){
+      var v=board[i];
+      c.innerHTML=v?markSvg(v):'';
+      c.className='cell '+(v?v.toLowerCase():'empty');
+      c.disabled=!!v||over;
+      c.setAttribute('aria-label',name(i)+', '+(v?v:'empty'));
+    });
+  }
+  function reset(){
+    clearTimeout(cpuTimer);
+    board=Array(9).fill(null); turn=starter; over=false;
+    render();
+    setStatus(turn,(vsCpu&&turn==='O'?'Computer (O) is thinking':'Player '+turn+"'s turn"));
+    if(vsCpu&&turn==='O') cpuTimer=setTimeout(cpuMove,350);
+  }
+  function place(i){
+    board[i]=turn;
+    var w=winner(board);
+    var full=board.every(Boolean);
+    if(w||full){
+      over=true;
+      render();
+      if(w){
+        w.line.forEach(function(j){cells[j].classList.add('win');});
+        cells.forEach(function(c,j){if(w.line.indexOf(j)<0)c.classList.add('dim');});
+        scores[w.p]++;
+        starter=w.p==='X'?'O':'X';
+        setStatus(w.p,(vsCpu&&w.p==='O'?'Computer (O)':'Player '+w.p)+' wins');
+      }else{
+        scores.D++;
+        starter=starter==='X'?'O':'X';
+        setStatus(null,"It's a draw");
+      }
+      document.getElementById('sx').textContent=scores.X;
+      document.getElementById('so').textContent=scores.O;
+      document.getElementById('sd').textContent=scores.D;
+      document.getElementById('restart').focus();
+      return;
+    }
+    turn=turn==='X'?'O':'X';
+    render();
+    cells[i].classList.remove('empty');
+    setStatus(turn,(vsCpu&&turn==='O'?'Computer (O) is thinking':'Player '+turn+"'s turn"));
+    if(vsCpu&&turn==='O') cpuTimer=setTimeout(cpuMove,350);
+  }
+  function onCell(e){
+    var i=+e.currentTarget.dataset.i;
+    if(over||board[i]||(vsCpu&&turn==='O')) return;
+    place(i);
+  }
+  // simple computer: win, block, centre, corner, random
+  function cpuMove(){
+    if(over) return;
+    var empty=[];board.forEach(function(v,i){if(!v)empty.push(i);});
+    function find(p){
+      for(var k=0;k<LINES.length;k++){
+        var l=LINES[k],vals=l.map(function(j){return board[j];});
+        if(vals.filter(function(v){return v===p;}).length===2){
+          var e=l.filter(function(j){return !board[j];});
+          if(e.length) return e[0];
+        }
+      }
+      return -1;
+    }
+    var m=find('O'); if(m<0) m=find('X');
+    if(m<0&&!board[4]) m=4;
+    if(m<0){var cs=[0,2,6,8].filter(function(j){return !board[j];});if(cs.length)m=cs[Math.floor(Math.random()*cs.length)];}
+    if(m<0) m=empty[Math.floor(Math.random()*empty.length)];
+    place(m);
+  }
+  // arrow-key navigation
+  boardEl.addEventListener('keydown',function(e){
+    var i=cells.indexOf(document.activeElement); if(i<0) return;
+    var d={ArrowLeft:-1,ArrowRight:1,ArrowUp:-3,ArrowDown:3}[e.key];
+    if(!d) return;
+    var r=Math.floor(i/3),c=i%3;
+    if(e.key==='ArrowLeft'&&c===0||e.key==='ArrowRight'&&c===2) return;
+    var n=i+d; if(n<0||n>8) return;
+    e.preventDefault();
+    var tgt=cells[n]; tgt.disabled?tgt.focus():tgt.focus();
+  });
+  document.getElementById('restart').addEventListener('click',reset);
+  var modeBtn=document.getElementById('mode');
+  modeBtn.addEventListener('click',function(){
+    vsCpu=!vsCpu;
+    modeBtn.setAttribute('aria-pressed',vsCpu);
+    modeBtn.textContent='Play the computer: '+(vsCpu?'on':'off');
+    starter='X'; scores={X:0,O:0,D:0};
+    ['sx','so','sd'].forEach(function(id){document.getElementById(id).textContent=0;});
+    reset();
+  });
+  reset();
+})();
+</script>
+</body>
+</html>

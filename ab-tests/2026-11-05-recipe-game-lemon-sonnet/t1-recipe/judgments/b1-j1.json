@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j1", "scores": {
+"W": {"imagination": 6, "recipe": 9, "specificity": 7, "voice": 6, "freshness": 6, "overall": 7, "note": "Thorough reverse-sear bison rib with honest mammoth sourcing (permafrost meat, lab-grown meatball) and an ice-age table, though it runs long and gets clinical."},
+"X": {"imagination": 3, "recipe": 7, "specificity": 3, "voice": 5, "freshness": 3, "overall": 5, "note": "Clean, compact bison reverse sear with an honest opener, but mammoth is barely present beyond the juniper and a stock 'ice age' nod."},
+"Y": {"imagination": 6, "recipe": 9, "specificity": 8, "voice": 6, "freshness": 6, "overall": 7, "note": "Most mammoth-literate (Yuka, dogs eating carcasses, Yakutian horse, reindeer swap) with a carve-at-the-table show, but heavy on caveats and sections."},
+"Z": {"imagination": 2, "recipe": 5, "specificity": 2, "voice": 4, "freshness": 2, "overall": 3, "note": "Generic pan-seared steak with a one-line mammoth disclaimer and inconsistent oven/timing instructions."}
+}, "ranking": ["Y", "W", "X", "Z"]}

@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"imagination": 5, "recipe": 9, "specificity": 7, "voice": 6, "freshness": 5, "overall": 7, "note": "Rigorous, honest sourcing and a show-cut reverse sear, but long and more steak manual than mammoth play."},
+"X": {"imagination": 3, "recipe": 6, "specificity": 4, "voice": 5, "freshness": 3, "overall": 5, "note": "Competent but generic steak with a muddled premise about cooking a real mammoth cut and a stray 'check for parasites' note."},
+"Y": {"imagination": 6, "recipe": 9, "specificity": 7, "voice": 6, "freshness": 5, "overall": 7, "note": "Mammoth-as-size-and-story tomahawk carved at table, thorough times and temps, honest about sourcing, though a bit padded."},
+"Z": {"imagination": 4, "recipe": 7, "specificity": 4, "voice": 5, "freshness": 3, "overall": 5, "note": "Clean concise recipe with a juniper pan sauce but treats mammoth as a beef steak with only a nod to the animal."}},
+"ranking": ["Y", "W", "Z", "X"]}

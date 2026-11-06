@@ -1,0 +1,157 @@
+{
+ "scores": {
+  "A": {
+   "imagination": 3.08,
+   "recipe": 6.75,
+   "specificity": 3.17,
+   "voice": 4.83,
+   "freshness": 3.17,
+   "overall": 4.92,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "A-r1": 5.33,
+    "A-r2": 4.0,
+    "A-r3": 4.67,
+    "A-r4": 5.67
+   }
+  },
+  "B": {
+   "imagination": 6.08,
+   "recipe": 8.92,
+   "specificity": 7.08,
+   "voice": 6.17,
+   "freshness": 5.92,
+   "overall": 7.0,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "B-r1": 7.67,
+    "B-r2": 7.0,
+    "B-r3": 6.67,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 22,
+  "losses": 0,
+  "ties": 2,
+  "win_rate": 0.96
+ },
+ "functional": {
+  "A-r1": {
+   "words_total": 595,
+   "headings": 6,
+   "list_items": 25,
+   "temperatures": 12,
+   "times": 10,
+   "title": "Mammoth Steak"
+  },
+  "A-r2": {
+   "words_total": 525,
+   "headings": 5,
+   "list_items": 26,
+   "temperatures": 9,
+   "times": 12,
+   "title": "Mammoth Steak"
+  },
+  "A-r3": {
+   "words_total": 572,
+   "headings": 5,
+   "list_items": 27,
+   "temperatures": 1,
+   "times": 12,
+   "title": "Mammoth Steak"
+  },
+  "A-r4": {
+   "words_total": 605,
+   "headings": 5,
+   "list_items": 32,
+   "temperatures": 0,
+   "times": 11,
+   "title": "Mammoth Steak"
+  },
+  "B-r1": {
+   "words_total": 1342,
+   "headings": 8,
+   "list_items": 25,
+   "temperatures": 0,
+   "times": 20,
+   "title": "Mammoth Steak: a bone-in bison rib steak, reverse-seared and carved at the table"
+  },
+  "B-r2": {
+   "words_total": 1494,
+   "headings": 14,
+   "list_items": 25,
+   "temperatures": 0,
+   "times": 18,
+   "title": "Mammoth Steak (bone-in bison, reverse-seared, carved at the table)"
+  },
+  "B-r3": {
+   "words_total": 1376,
+   "headings": 10,
+   "list_items": 26,
+   "temperatures": 21,
+   "times": 12,
+   "title": "Mammoth Steak: the show plate"
+  },
+  "B-r4": {
+   "words_total": 1297,
+   "headings": 14,
+   "list_items": 21,
+   "temperatures": 22,
+   "times": 18,
+   "title": "Mammoth Steak (bone-in, reverse-seared, carved at the table)"
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 70307,
+   "mean_seconds": 15.1
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 111335,
+   "mean_seconds": 50.2
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 192643,
+   "ms": 1844065,
+   "tool_uses": 35,
+   "agents_spawned": 20
+  }
+ },
+ "agreement_r": 0.87,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Thorough reverse-sear bison rib with honest mammoth sourcing (permafrost meat, lab-grown meatball) and an ice-age table, though it runs long and gets clinical.",
+  "b1/j1/A-r1": "Clean, compact bison reverse sear with an honest opener, but mammoth is barely present beyond the juniper and a stock 'ice age' nod.",
+  "b1/j1/B-r2": "Most mammoth-literate (Yuka, dogs eating carcasses, Yakutian horse, reindeer swap) with a carve-at-the-table show, but heavy on caveats and sections.",
+  "b1/j1/A-r2": "Generic pan-seared steak with a one-line mammoth disclaimer and inconsistent oven/timing instructions.",
+  "b1/j2/B-r2": "Very rigorous, honest reverse-sear with real mammoth facts, but long and padded with sourcing and safety sections.",
+  "b1/j2/A-r2": "Competent generic ribeye recipe with a one-line extinction caveat and almost no mammoth world.",
+  "b1/j2/A-r1": "Clean, concise reverse sear with a tidy honest note and juniper, but little mammoth texture.",
+  "b1/j2/B-r1": "Best blend of mammoth lore, tundra table staging and precise method, though somewhat long.",
+  "b1/j3/A-r2": "Competent generic bison steak with a one-line mammoth disclaimer and almost no mammoth world.",
+  "b1/j3/B-r2": "Rich, honest sourcing (Yuka, permits, dogs eating carcasses), carve-at-table showpiece and thorough method, though long and a bit heavy on caveats.",
+  "b1/j3/B-r1": "Same strong research as X (lab-grown mammoth meatball, permafrost fry) plus a tundra-table serving scene, rye, lingonberry and a leftovers plan; tighter and more playful.",
+  "b1/j3/A-r1": "Concise, clean recipe with a nice extinct-4000-years note and 'very ice age' juniper, but otherwise a standard game steak.",
+  "b2/j1/B-r3": "Rigorous, honest sourcing and a show-cut reverse sear, but long and more steak manual than mammoth play.",
+  "b2/j1/A-r3": "Competent but generic steak with a muddled premise about cooking a real mammoth cut and a stray 'check for parasites' note.",
+  "b2/j1/B-r4": "Mammoth-as-size-and-story tomahawk carved at table, thorough times and temps, honest about sourcing, though a bit padded.",
+  "b2/j1/A-r4": "Clean concise recipe with a juniper pan sauce but treats mammoth as a beef steak with only a nod to the animal.",
+  "b2/j2/B-r4": "Thorough, honest reverse-sear tomahawk with real permafrost and permit facts, but long and the mammoth is only a size gag.",
+  "b2/j2/A-r4": "Clean, concise pan-seared steak with juniper sauce; competent but generic, and calls mammoth close to elephant lean red meat with little else.",
+  "b2/j2/A-r3": "Treats real mammoth meat as an option and gives hot-and-fast advice for tough old meat, which is muddled and inconsistent.",
+  "b2/j2/B-r3": "Show-plate framing with Yakutia horse and reindeer stand-ins, sourcing options and scaling table, but heavy with extras and padding.",
+  "b2/j3/A-r4": "Clean, honest, compact stand-in recipe with a juniper wine sauce, but little mammoth world beyond a one-line nod.",
+  "b2/j3/B-r4": "Thorough bone-in reverse-sear with real permafrost and permit detail, but long with troubleshooting and gamey-fix padding.",
+  "b2/j3/B-r3": "Show-plate framing with Yakutia horse and reindeer and carved-at-table drama; most mammoth-aware but overlong with scaling tables.",
+  "b2/j3/A-r3": "Treats extinct meat as legitimate then hedges; ingredients list mammoth steaks and advice is muddled, though lingonberry and braise tips are nice."
+ }
+}

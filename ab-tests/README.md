@@ -25,6 +25,7 @@ Does a meta dump make downstream work better? Each test builds the same brief wi
 | [2026-11-05-three-tasks-sonnet-medium-v2](2026-11-05-three-tasks-sonnet-medium-v2/writeup.md) | Sonnet 5.5 at medium (builders and graders), metadump 0.11.0 (ADR 0016, amplify the user's words), dumps rebuilt by the Haiku swarm; A reused from test 15 | the same three tasks, 12 new B runs: button **7.50** vs 7.33, haiku 5.33 vs **7.00**, toast **7.96** vs 5.83 | 6.93 (mean of the three) | – | 6.72 | 0.42 | r = 0.79 to 0.91 |
 | [2026-11-05-three-tasks-sonnet-0.8.0](2026-11-05-three-tasks-sonnet-0.8.0/writeup.md) | Sonnet 5.5 at medium (builders and graders), **metadump 0.8.0** restored (ADR 0017), test 12's dumps | the same three tasks, 24 fresh runs: button **8.08** vs 5.75, haiku 5.25 vs **7.50**, toast **7.33** vs 6.62 | 6.89 (mean of the three) | – | 6.62 | 0.42 | r = 0.13 to 0.80 |
 | [2026-11-05-three-tasks-sonnet-medium-v3](2026-11-05-three-tasks-sonnet-medium-v3/writeup.md) | Sonnet 5.5 at medium (builders and graders), **metadump 0.12.0** (0.11.0 plus the look, ADR 0018); test 16's dumps and prompt-only builds reused | the same three tasks, 12 new B runs: button 6.50 vs **8.25**, haiku 5.08 vs **8.00**, toast 6.83 vs **7.50** | 6.14 (mean of the three) | – | **7.92** | **0.84** | r = 0.79 to 0.90 |
+| [2026-11-05-recipe-game-lemon-sonnet](2026-11-05-recipe-game-lemon-sonnet/writeup.md) | Sonnet 5.5 at medium (builders and graders), metadump 0.12.0, **three new tasks**, fresh dumps from the Haiku swarm, both arms fresh | 24 runs: mammoth steak recipe 4.92 vs **7.00**, basic tic tac toe 6.50 vs **7.67**, 3D lemon 5.00 vs **6.67** | 5.47 (mean of the three) | – | **7.11** | **0.80** | r = 0.87 to 0.95 |
 
 Scores are 0–10 means across graders. The win rate counts every A×B pair the same grader scored in the same block.
 
@@ -75,6 +76,11 @@ Scores are 0–10 means across graders. The win rate counts every A×B pair the 
   - With test 16's dumps and prompt-only builds unchanged, the dump side went from 27–39–6 to **57–8–7** (p = 0.0002): button 23–0–1, haiku 23–1–0, toast 11–7–6. All nine variety graders picked the dump side.
   - The button graders' words went from "quiet" and "barely reads as ethereal" to "pointer-following bloom" and "aurora halo". The toast's craft score went from 5.17 to 7.58.
   - Caveat: graders score within a block of four, so the prompt-only side's absolute scores fell when the dump side stopped breaking; the head-to-heads are the comparison that holds.
+- **Three new tasks (test 19, 0.12.0).**
+  - A recipe for mammoth steak, a basic tic tac toe game and a 3D model of a lemon, none of which the plugin was tuned on. Fresh dumps, fresh builds on both sides.
+  - The dump side won all three and **54–11–7** pooled (p = 0.019): recipe 22–0–2, game 15–5–4, lemon 17–6–1.
+  - Variety split: the dump games were more varied, but the dump recipes (three of four the same bone-in bison tomahawk) and lemons (one sidebar layout) were less varied. Builders still converge on a dump's strong thesis.
+  - The lemon builders read their screenshots 4 to 10 times each; the game builders never opened theirs, and a squashed-row bug that only shows mid-game got past the look.
 - **The meta dump beat the hand-made file** in both tests that had one (61% and 54% head to head). Scoped anti-keywords and provenance stopped the drift to cyan, aqua and frosted glass that the hand-made file caused.
 
 ## Caveats

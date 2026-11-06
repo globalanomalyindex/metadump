@@ -1,0 +1,32 @@
+{
+ "tasks": [
+  "t1-recipe",
+  "t2-tictactoe",
+  "t3-lemon"
+ ],
+ "per_task": {
+  "t1-recipe": {
+   "A_mean": 4.92,
+   "B_mean": 7.0,
+   "diff": 2.08
+  },
+  "t2-tictactoe": {
+   "A_mean": 6.5,
+   "B_mean": 7.67,
+   "diff": 1.17
+  },
+  "t3-lemon": {
+   "A_mean": 5.0,
+   "B_mean": 6.67,
+   "diff": 1.67
+  }
+ },
+ "pooled_mean_diff": 1.639,
+ "p_two_sided": 0.0194,
+ "p_one_sided_B_better": 0.0097,
+ "splits": 343000,
+ "pooled_wins": 54,
+ "pooled_losses": 11,
+ "pooled_ties": 7,
+ "pooled_win_rate": 0.8
+}

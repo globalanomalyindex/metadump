@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"likeness": 5, "form": 6, "surface": 7, "presentation": 5, "overall": 5, "note": "Nicely pitted peel but the body is a near-symmetric egg with only faint nubs, and on phone the panel and readout cover the fruit."},
+"X": {"likeness": 8, "form": 7, "surface": 8, "presentation": 8, "overall": 8, "note": "Reads as a real lemon with stem stub, nipple, waxy highlight and soft shadow, plus clean staging and a good phone layout, though the shape is a little pear-like."},
+"Y": {"likeness": 8, "form": 8, "surface": 7, "presentation": 7, "overall": 8, "note": "Large, convincing lemon with a pointed nipple, stem and calyx and pitted peel, a slightly flat matte look but solid geometry that holds up when orbited."},
+"Z": {"likeness": 2, "form": 3, "surface": 3, "presentation": 4, "overall": 2, "note": "Washed-out grey-white translucent blob with meridian lines and no visible lemon shape, and the phone panel covers it."}
+}, "ranking": ["Y", "X", "W", "Z"]}

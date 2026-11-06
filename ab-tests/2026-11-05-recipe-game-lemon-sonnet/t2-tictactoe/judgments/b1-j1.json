@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j1", "scores": {
+"W": {"basic": 8, "correctness": 8, "usability": 8, "craft": 6, "code": 8, "overall": 7, "note": "Bold blue theme with pill status, dark mode and good row/column labels, but empty bottom row renders squashed on the end screen and cells stay focusable after the game ends."},
+"X": {"basic": 8, "correctness": 8, "usability": 5, "craft": 6, "code": 8, "overall": 6, "note": "Clean and correct, but cell aria-labels are static 'Cell n' so screen readers never hear the marks, and the bottom row is squashed in play."},
+"Y": {"basic": 8, "correctness": 9, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Square stable board, dark mode, aria-labels that include the mark, a visible focus ring, clear win highlight and a sound alternating-first-player restart."},
+"Z": {"basic": 8, "correctness": 8, "usability": 4, "craft": 5, "code": 8, "overall": 5, "note": "Correct logic, but static 'Cell n' labels hide marks from screen readers, there is no focus style or dark mode, and the bottom row is squashed."}
+}, "ranking": ["Y", "W", "X", "Z"]}

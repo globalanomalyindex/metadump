@@ -1,0 +1,211 @@
+{
+ "scores": {
+  "A": {
+   "likeness": 5.0,
+   "form": 5.42,
+   "surface": 5.42,
+   "presentation": 5.08,
+   "overall": 5.0,
+   "mean_rank": 3,
+   "per_run_overall": {
+    "A-r1": 2.0,
+    "A-r2": 6.0,
+    "A-r3": 9.0,
+    "A-r4": 3.0
+   }
+  },
+  "B": {
+   "likeness": 6.42,
+   "form": 6.83,
+   "surface": 6.75,
+   "presentation": 7.42,
+   "overall": 6.67,
+   "mean_rank": 2,
+   "per_run_overall": {
+    "B-r1": 8.0,
+    "B-r2": 8.0,
+    "B-r3": 6.0,
+    "B-r4": 4.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 17,
+  "losses": 6,
+  "ties": 1,
+  "win_rate": 0.73
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl",
+   "model_element": "canvas",
+   "untouched_motion": 2.4,
+   "drag_horizontal_change": 1.9,
+   "drag_vertical_change": 2.9,
+   "yellow_share": 0.015,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl",
+   "model_element": "canvas",
+   "untouched_motion": 7.6,
+   "drag_horizontal_change": 7.4,
+   "drag_vertical_change": 3.6,
+   "yellow_share": 0.134,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl",
+   "model_element": "canvas",
+   "untouched_motion": 2.8,
+   "drag_horizontal_change": 7.2,
+   "drag_vertical_change": 3.9,
+   "yellow_share": 0.143,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl",
+   "model_element": "canvas",
+   "untouched_motion": 4.4,
+   "drag_horizontal_change": 3.7,
+   "drag_vertical_change": 5.7,
+   "yellow_share": 0.079,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl2",
+   "model_element": "canvas",
+   "untouched_motion": 7,
+   "drag_horizontal_change": 10.9,
+   "drag_vertical_change": 6,
+   "yellow_share": 0.187,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl2",
+   "model_element": "canvas",
+   "untouched_motion": 3,
+   "drag_horizontal_change": 3.2,
+   "drag_vertical_change": 2.2,
+   "yellow_share": 0.082,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl2",
+   "model_element": "canvas",
+   "untouched_motion": 2.9,
+   "drag_horizontal_change": 2.3,
+   "drag_vertical_change": 3.5,
+   "yellow_share": 0.127,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "renderer": "webgl",
+   "model_element": "canvas",
+   "untouched_motion": 1.2,
+   "drag_horizontal_change": 2.5,
+   "drag_vertical_change": 9.1,
+   "yellow_share": 0.112,
+   "renders": true,
+   "turns_when_dragged": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 92076,
+   "mean_seconds": 121.5
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 146914,
+   "mean_seconds": 344.2
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 217274,
+   "ms": 1618231,
+   "tool_uses": 45,
+   "agents_spawned": 22
+  }
+ },
+ "agreement_r": 0.95,
+ "permutation": {
+  "p": 0.4,
+  "extreme": 28,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Clear lemon with pitted peel, stem and calyx, and a pointed nub that shows when turned, though the body is a bit lumpy and egg-like, with a good control panel that stacks on phone.",
+  "b1/j1/A-r1": "A pale, translucent grey-white blob with radial lines that reads as an umbrella or shell rather than a lemon, and on phone the model is cropped behind the panel.",
+  "b1/j1/B-r2": "Convincing yellow lemon with a stalk stub, soft shadow, pitted peel and glossy highlights, nicely staged with clean phone layout, though the model is small on mobile and the nipple is mild.",
+  "b1/j1/A-r2": "Richly textured peel with a clear pointed nub and solid 3D under rotation, but the shape is an elongated egg and the phone layout has overlapping text and the panel covering the model.",
+  "b1/j2/B-r2": "Convincing lemon with nub, stem stub, pitted glossy peel and soft shadow, plus clean controls and a sensible phone layout, though the pointed end reads slightly pear-like.",
+  "b1/j2/A-r2": "Nicely textured peel but the shape is a plain egg whose nub only shows at some angles, and on phone the model is cropped and the overlay panel covers it.",
+  "b1/j2/A-r1": "Pale translucent blob with meridian lines that does not read as a lemon, and it is mostly hidden by the panel on mobile.",
+  "b1/j2/B-r1": "Strong lemon with nipple, calyx and stem, leaf option, pitted peel and a very thorough control panel, though the pits look a little sparse and flat.",
+  "b1/j3/A-r2": "Nicely pitted peel but the body is a near-symmetric egg with only faint nubs, and on phone the panel and readout cover the fruit.",
+  "b1/j3/B-r2": "Reads as a real lemon with stem stub, nipple, waxy highlight and soft shadow, plus clean staging and a good phone layout, though the shape is a little pear-like.",
+  "b1/j3/B-r1": "Large, convincing lemon with a pointed nipple, stem and calyx and pitted peel, a slightly flat matte look but solid geometry that holds up when orbited.",
+  "b1/j3/A-r1": "Washed-out grey-white translucent blob with meridian lines and no visible lemon shape, and the phone panel covers it.",
+  "b2/j1/B-r3": "Polished and feature-rich with a pleasing peel, but the body is a rounded egg with only a tiny nub that appears from some angles, so it reads as a melon or yellow ball more than a lemon.",
+  "b2/j1/A-r3": "Clearly a lemon with a pointed stem end, dimpled peel, warm highlight, leaf and stem, and a smooth turn; the stem end is clipped off at the canvas edge on desktop and mobile, but it is still the best lemon.",
+  "b2/j1/B-r4": "Tall, capsule-shaped body with harsh speckled pits and no pointed nub, so it looks more like a pickle or corn cob than a lemon, and the leaf placement is odd.",
+  "b2/j1/A-r4": "A glittery, over-noisy egg with no stem nub, cluttered by overlay panels that cover the model on phone.",
+  "b2/j2/B-r4": "Tall barrel-shaped fruit with dense pitting and a leaf, but the proportions read more like a yellow pill or melon than a lemon and the nub is barely there.",
+  "b2/j2/A-r4": "A glittery yellow egg with noisy speckles, no visible nub or stem, and the control panel overlaps the model on a phone.",
+  "b2/j2/A-r3": "Unmistakably a lemon: a proper pointed nub with a stem and leaf, soft pitted peel, a believable highlight and contact shadow, and a clean layout.",
+  "b2/j2/B-r3": "Smooth, well-lit lemon-yellow fruit that shows a real nub from some angles, but at rest it reads as a plain egg and the pitting is faint.",
+  "b2/j3/A-r4": "Egg-shaped yellow blob with harsh glittery speckle noise and no visible nub or stem; mobile layout has the panel covering the model.",
+  "b2/j3/B-r4": "Pitted, nicely lit peel but the body is a tall rounded capsule (more like a corn cob or pill) with only a faint tip, and a leaf that looks detached at the bottom.",
+  "b2/j3/B-r3": "Smooth, convincing lemon-yellow ovoid with soft shading, floor shadow and cut-open options, but the nub shows only from some angles and is mostly a round egg at rest.",
+  "b2/j3/A-r3": "Unmistakably a lemon with a clear pointed nub, stem and leaf, fine pitted peel, soft highlights and tidy controls, though the leaf clips at the viewport edge."
+ }
+}

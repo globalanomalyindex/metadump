@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"likeness": 3, "form": 4, "surface": 3, "presentation": 4, "overall": 3, "note": "Egg-shaped yellow blob with harsh glittery speckle noise and no visible nub or stem; mobile layout has the panel covering the model."},
+"X": {"likeness": 5, "form": 5, "surface": 6, "presentation": 7, "overall": 5, "note": "Pitted, nicely lit peel but the body is a tall rounded capsule (more like a corn cob or pill) with only a faint tip, and a leaf that looks detached at the bottom."},
+"Y": {"likeness": 5, "form": 7, "surface": 6, "presentation": 8, "overall": 6, "note": "Smooth, convincing lemon-yellow ovoid with soft shading, floor shadow and cut-open options, but the nub shows only from some angles and is mostly a round egg at rest."},
+"Z": {"likeness": 9, "form": 8, "surface": 8, "presentation": 8, "overall": 9, "note": "Unmistakably a lemon with a clear pointed nub, stem and leaf, fine pitted peel, soft highlights and tidy controls, though the leaf clips at the viewport edge."}},
+"ranking": ["Z", "Y", "X", "W"]}

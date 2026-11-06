@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"likeness": 8, "form": 8, "surface": 8, "presentation": 8, "overall": 8, "note": "Convincing lemon with nub, stem stub, pitted glossy peel and soft shadow, plus clean controls and a sensible phone layout, though the pointed end reads slightly pear-like."},
+"X": {"likeness": 6, "form": 6, "surface": 7, "presentation": 5, "overall": 6, "note": "Nicely textured peel but the shape is a plain egg whose nub only shows at some angles, and on phone the model is cropped and the overlay panel covers it."},
+"Y": {"likeness": 2, "form": 3, "surface": 3, "presentation": 3, "overall": 2, "note": "Pale translucent blob with meridian lines that does not read as a lemon, and it is mostly hidden by the panel on mobile."},
+"Z": {"likeness": 8, "form": 8, "surface": 8, "presentation": 8, "overall": 9, "note": "Strong lemon with nipple, calyx and stem, leaf option, pitted peel and a very thorough control panel, though the pits look a little sparse and flat."}
+}, "ranking": ["Z", "W", "X", "Y"]}

@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"basic": 8, "correctness": 10, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Cells keep a fixed square size so the board never shifts, with row/column aria-labels, a live status, a win highlight, and alternating first player."},
+"X": {"basic": 8, "correctness": 9, "usability": 6, "craft": 5, "code": 8, "overall": 6, "note": "The logic is correct and compact, but the bottom row shrinks once the other rows fill in, and cell labels are just 'Cell n' with no focus styling."},
+"Y": {"basic": 8, "correctness": 9, "usability": 7, "craft": 6, "code": 7, "overall": 7, "note": "The logic is correct and it has a focus ring and role=status, but the bottom row squishes during play, and the leftover starter='O' before reset() is a hack."},
+"Z": {"basic": 8, "correctness": 9, "usability": 7, "craft": 7, "code": 7, "overall": 7, "note": "The blue palette and status pill look distinctive and it has good labels and dark mode, but the bottom row squishes during play and aria-disabled leaves finished cells focusable."}
+}, "ranking": ["W", "Z", "Y", "X"]}

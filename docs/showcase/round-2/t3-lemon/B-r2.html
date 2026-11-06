@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lemon, 3D model</title>
+<style>
+:root{
+  --bg1:#f6efe0; --bg2:#d9cdb2; --ink:#2b2616; --mut:#6d6547; --panel:#fffaf0; --line:#e3d8bb; --acc:#e0a800; --accink:#2b2100;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg1:#3a3526; --bg2:#14120b; --ink:#f4ecd2; --mut:#b5aa83; --panel:#201d12; --line:#3a3522; --acc:#f2c21b; --accink:#1b1600; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg2)}
+.app{display:grid;grid-template-columns:1fr 330px;height:100vh;height:100dvh}
+.stage{position:relative;min-height:0;background:radial-gradient(120% 90% at 50% 38%,var(--bg1),var(--bg2));overflow:hidden;touch-action:none;cursor:grab}
+.stage.drag{cursor:grabbing}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;left:16px;top:14px;pointer-events:none}
+.hud h1{font-size:20px;margin:0;letter-spacing:.01em;font-weight:650}
+.hud p{margin:2px 0 0;color:var(--mut);font-size:12.5px}
+.read{position:absolute;left:16px;bottom:14px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.read div{background:color-mix(in srgb,var(--panel) 82%,transparent);border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:74px}
+.read b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.read span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.panel{background:var(--panel);border-left:1px solid var(--line);overflow:auto;padding:14px 16px 24px}
+.panel h2{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:18px 0 8px;font-weight:650}
+.panel h2:first-child{margin-top:2px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}
+.seg button{font:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:7px 4px;cursor:pointer;min-height:36px}
+.seg button:hover{border-color:var(--acc)}
+.seg button[aria-pressed=true]{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;margin:9px 0 0;gap:2px 8px}
+.row label{font-size:13px}
+.row output{font-variant-numeric:tabular-nums;color:var(--mut);font-size:12.5px}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--acc);height:26px;margin:0}
+.chk{display:flex;align-items:center;gap:8px;margin:10px 0 0;min-height:30px;cursor:pointer}
+.chk input{width:24px;height:24px;accent-color:var(--acc)}
+.btns{display:flex;gap:6px;margin-top:16px}
+.btns button{flex:1;font:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:8px;cursor:pointer;min-height:38px}
+.btns button:hover{border-color:var(--acc)}
+.note{color:var(--mut);font-size:12px;margin-top:14px}
+.fail{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--mut)}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:58vh 1fr;height:auto;min-height:100vh}
+  .stage{height:58vh}
+  .panel{border-left:0;border-top:1px solid var(--line)}
+  .hud p{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage">
+    <canvas id="gl" aria-label="3D lemon. Drag to rotate, scroll to zoom."></canvas>
+    <div class="hud"><h1>Lemon</h1><p>Drag to turn it, scroll to zoom, arrow keys also turn.</p></div>
+    <div class="read" id="read" aria-live="polite">
+      <div><b id="rLen">-</b><span>length</span></div>
+      <div><b id="rWid">-</b><span>width</span></div>
+      <div><b id="rRat">-</b><span>L : W</span></div>
+      <div><b id="rMass">-</b><span>mass</span></div>
+    </div>
+    <div class="fail" id="fail">This model needs WebGL 2, which this browser did not provide.</div>
+  </div>
+  <aside class="panel">
+    <h2>Shape</h2>
+    <div class="seg" id="shape" role="group" aria-label="Shape preset">
+      <button data-v="classic" aria-pressed="true">Classic</button>
+      <button data-v="round" aria-pressed="false">Round</button>
+      <button data-v="lopsided" aria-pressed="false">Grown</button>
+      <button data-v="squat" aria-pressed="false">Squat</button>
+    </div>
+    <div class="row"><label for="len">Length</label><output id="lenO"></output><input id="len" type="range" min="5" max="10" step="0.1" value="7.2"></div>
+    <div class="row"><label for="nip">Blossom nipple</label><output id="nipO"></output><input id="nip" type="range" min="0" max="1" step="0.01" value="0.5"></div>
+    <label class="chk"><input id="stalk" type="checkbox" checked> Stalk stub on the stem end</label>
+
+    <h2>Peel</h2>
+    <div class="row"><label for="ripe">Ripeness (green to yellow)</label><output id="ripeO"></output><input id="ripe" type="range" min="0" max="1" step="0.01" value="0.82"></div>
+    <div class="row"><label for="pit">Oil-gland pits</label><output id="pitO"></output><input id="pit" type="range" min="0" max="0.05" step="0.001" value="0.02"></div>
+    <div class="row"><label for="gloss">Waxy gloss</label><output id="glossO"></output><input id="gloss" type="range" min="0" max="1" step="0.01" value="0.55"></div>
+    <div class="row"><label for="sss">Subsurface glow</label><output id="sssO"></output><input id="sss" type="range" min="0" max="1" step="0.01" value="0.55"></div>
+
+    <h2>Cut</h2>
+    <div class="seg" id="cut" role="group" aria-label="Cut">
+      <button data-v="0" aria-pressed="true">Whole</button>
+      <button data-v="1" aria-pressed="false">Lengthwise</button>
+      <button data-v="2" aria-pressed="false">Across</button>
+    </div>
+    <div class="row"><label for="cutp">Cut position</label><output id="cutpO"></output><input id="cutp" type="range" min="-0.8" max="0.8" step="0.01" value="0"></div>
+
+    <h2>Light</h2>
+    <div class="row"><label for="lamp">Lamp angle from front</label><output id="lampO"></output><input id="lamp" type="range" min="10" max="85" step="1" value="45"></div>
+    <div class="seg" id="lampk" role="group" aria-label="Lamp type">
+      <button data-v="soft" aria-pressed="true">Soft box</button>
+      <button data-v="hard" aria-pressed="false">Hard lamp</button>
+    </div>
+
+    <h2>View</h2>
+    <label class="chk"><input id="spin" type="checkbox" checked> Turntable spin</label>
+    <div class="btns"><button id="reset">Reset view</button><button id="snap">Save PNG</button></div>
+    <p class="note">The skin is a procedural cell-noise pit field in object space, so there is no UV seam at either pole. Size and mass update as the shape changes (mass assumes about 0.95 g per cm&sup3;).</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var canvas=$('gl'), stage=$('stage');
+var gl=canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:true,preserveDrawingBuffer:true});
+if(!gl){ $('fail').style.display='flex'; return; }
+
+/* ---------- state ---------- */
+var PRESETS={
+  classic :{ratio:.70,skew:.53,pw:.72,nip:.15,nipS:.04,cup:.06,bend:0,   lump:.004,flat:0},
+  round   :{ratio:.88,skew:.50,pw:.70,nip:.03,nipS:.05, cup:.05,bend:0,   lump:.003,flat:0},
+  lopsided:{ratio:.69,skew:.62,pw:.80,nip:.17,nipS:.04, cup:.07,bend:.035,lump:.013,flat:.14},
+  squat   :{ratio:.82,skew:.53,pw:.78,nip:.22,nipS:.06, cup:.10,bend:0,   lump:.002,flat:0}
+};
+var S={shape:'classic',len:7.2,nip:.5,stalk:true,ripe:.82,pit:.02,gloss:.55,sss:.55,
+       cut:0,cutp:0,lamp:45,hard:false,spin:true,yaw:.55,pitch:.32,zoom:1,tilt:-1.42};
+var DEF=JSON.parse(JSON.stringify(S));
+
+/* ---------- math ---------- */
+function mul(a,b){var o=new Float32Array(16);for(var c=0;c<4;c++)for(var r=0;r<4;r++){var s=0;for(var k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];o[c*4+r]=s}return o}
+function persp(f,a,n,fa){var t=1/Math.tan(f/2),o=new Float32Array(16);o[0]=t/a;o[5]=t;o[10]=(fa+n)/(n-fa);o[11]=-1;o[14]=2*fa*n/(n-fa);return o}
+function norm3(v){var l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l]}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+function lookAt(e,t,u){var z=norm3([e[0]-t[0],e[1]-t[1],e[2]-t[2]]),x=norm3(cross(u,z)),y=cross(z,x);
+  return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]),-(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]),-(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]),1])}
+function rotX(a){var c=Math.cos(a),s=Math.sin(a);return new Float32Array([1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1])}
+function rotY(a){var c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1])}
+function rotZ(a){var c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,s,0,0,-s,c,0,0,0,0,1,0,0,0,0,1])}
+function sstep(a,b,x){var t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)}
+
+/* tiny value noise for lumps (CPU) */
+function h3(x,y,z){var n=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453;return n-Math.floor(n)}
+function vnoise(x,y,z){var xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z),xf=x-xi,yf=y-yi,zf=z-zi;
+  xf=xf*xf*(3-2*xf);yf=yf*yf*(3-2*yf);zf=zf*zf*(3-2*zf);
+  function L(a,b,t){return a+(b-a)*t}
+  return L(L(L(h3(xi,yi,zi),h3(xi+1,yi,zi),xf),L(h3(xi,yi+1,zi),h3(xi+1,yi+1,zi),xf),yf),
+           L(L(h3(xi,yi,zi+1),h3(xi+1,yi,zi+1),xf),L(h3(xi,yi+1,zi+1),h3(xi+1,yi+1,zi+1),xf),yf),zf)}
+
+/* ---------- geometry ---------- */
+var NR=170, NS=96, PROFN=96;
+var mesh={pos:null,count:0,idx:null,profR:new Float32Array(PROFN),profX:new Float32Array(PROFN),
+          stats:{width:0,vol:0}, stalk:null};
+function profile(u,P){
+  var L=S.len, W=L*P.ratio*.5, d=1-u;
+  var k=Math.log(.5)/Math.log(P.skew);
+  var body=W*Math.pow(Math.max(Math.sin(Math.PI*Math.pow(u,k)),0),P.pw);
+  var nipH=P.nip*(S.nip*2)*Math.exp(-Math.pow(d/P.nipS,2));
+  var ring=.012*L*Math.exp(-Math.pow((u-.05)/.012,2));
+  var r=body+nipH+ring;
+  var cs=Math.min(1,u/.01), ce=Math.min(1,d/.012);
+  r*=Math.sqrt(1-Math.pow(1-cs,2))*Math.sqrt(1-Math.pow(1-ce,2));
+  var y=(u-.5)*L + P.cup*L*Math.exp(-Math.pow(u/.06,2))*1.0;
+  var cx=P.bend*L*Math.sin(Math.PI*u);
+  return {r:r,y:y,cx:cx};
+}
+function buildMesh(){
+  var P=PRESETS[S.shape], L=S.len, n=(NR+1)*NS;
+  var pos=new Float32Array(n*3), nor=new Float32Array(n*3), us=new Float32Array(NR+1);
+  var maxW=0, vol=0, prevY=0, prevR=0;
+  for(var i=0;i<=NR;i++){
+    var u=.5-.5*Math.cos(Math.PI*i/NR); us[i]=u;
+    var pr=profile(u,P);
+    if(i>0){ vol+=Math.PI*((pr.r*pr.r+prevR*prevR)/2)*(pr.y-prevY); } prevY=pr.y; prevR=pr.r;
+    if(pr.r>maxW)maxW=pr.r;
+    for(var j=0;j<NS;j++){
+      var th=2*Math.PI*j/NS, c=Math.cos(th), s=Math.sin(th);
+      var rr=pr.r*(1-P.flat*sstep(.45,1,c)*Math.sin(Math.PI*u));
+      var x=pr.cx+rr*c, z=rr*s, y=pr.y;
+      var lump=P.lump*L*(vnoise(x*.55+3,y*.55,z*.55)-.5)*2*Math.pow(Math.sin(Math.PI*u),.6);
+      x+=c*lump; z+=s*lump;
+      var o=(i*NS+j)*3; pos[o]=x;pos[o+1]=y;pos[o+2]=z;
+    }
+  }
+  for(var i2=0;i2<=NR;i2++)for(var j2=0;j2<NS;j2++){
+    var o2=(i2*NS+j2)*3, ia=Math.max(i2-1,0), ib=Math.min(i2+1,NR);
+    var A=(ia*NS+j2)*3,B=(ib*NS+j2)*3,C=(i2*NS+(j2+1)%NS)*3,D=(i2*NS+(j2+NS-1)%NS)*3;
+    var du=[pos[B]-pos[A],pos[B+1]-pos[A+1],pos[B+2]-pos[A+2]], dt=[pos[C]-pos[D],pos[C+1]-pos[D+1],pos[C+2]-pos[D+2]];
+    var nn=cross(du,dt), l=Math.hypot(nn[0],nn[1],nn[2]);
+    if(i2===0) nn=[0,-1,0]; else if(i2===NR) nn=[0,1,0]; else if(l<1e-9) nn=[Math.cos(2*Math.PI*j2/NS),0,Math.sin(2*Math.PI*j2/NS)]; else nn=[nn[0]/l,nn[1]/l,nn[2]/l];
+    nor[o2]=nn[0];nor[o2+1]=nn[1];nor[o2+2]=nn[2];
+  }
+  var data=new Float32Array(n*7);
+  for(var q=0;q<n;q++){var ri=Math.floor(q/NS);
+    data[q*7]=pos[q*3];data[q*7+1]=pos[q*3+1];data[q*7+2]=pos[q*3+2];
+    data[q*7+3]=nor[q*3];data[q*7+4]=nor[q*3+1];data[q*7+5]=nor[q*3+2];data[q*7+6]=us[ri];}
+  var idx=new Uint32Array(NR*NS*6), t=0;
+  for(var a=0;a<NR;a++)for(var b=0;b<NS;b++){
+    var v0=a*NS+b, v1=(a+1)*NS+b, v2=a*NS+(b+1)%NS, v3=(a+1)*NS+(b+1)%NS;
+    idx[t++]=v0;idx[t++]=v1;idx[t++]=v2;idx[t++]=v1;idx[t++]=v3;idx[t++]=v2;
+  }
+  mesh.pos=pos; mesh.data=data; mesh.idx=idx;
+  for(var k2=0;k2<PROFN;k2++){var pp=profile(k2/(PROFN-1),P);mesh.profR[k2]=pp.r;mesh.profX[k2]=pp.cx}
+  mesh.stats.width=maxW*2; mesh.stats.vol=vol;
+  var ymin=1e9,ymax=-1e9; for(var m=0;m<n;m++){var yy=pos[m*3+1]; if(yy<ymin)ymin=yy; if(yy>ymax)ymax=yy;}
+  mesh.stats.len=ymax-ymin;
+  /* stalk stub */
+  var p0=profile(0,P), sl=.55, seg=10, rad=12, sd=[], si=[];
+  for(var a2=0;a2<=seg;a2++){var tt=a2/seg, yy2=p0.y-tt*sl+.03, cxx=p0.cx+.12*tt*tt*sl, rd=.065-.02*tt;
+    for(var b2=0;b2<rad;b2++){var th2=2*Math.PI*b2/rad, cc=Math.cos(th2), ss=Math.sin(th2);
+      sd.push(cxx+rd*cc,yy2,rd*ss, cc,0,ss, -1);} }
+  for(var a3=0;a3<seg;a3++)for(var b3=0;b3<rad;b3++){
+    var w0=a3*rad+b3,w1=(a3+1)*rad+b3,w2=a3*rad+(b3+1)%rad,w3=(a3+1)*rad+(b3+1)%rad;
+    si.push(w0,w1,w2,w1,w3,w2);}
+  mesh.stalk={data:new Float32Array(sd),idx:new Uint32Array(si)};
+  upload();
+}
+
+/* ---------- GL programs ---------- */
+function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(s));}return s}
+function prog(vs,fs){var p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,vs));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error(gl.getProgramInfoLog(p));return p}
+
+var VS="#version 300 es\n\
+in vec3 aPos; in vec3 aNor; in float aU;\n\
+uniform mat4 uVP; uniform mat4 uModel;\n\
+out vec3 vObj; out vec3 vWorld; out vec3 vN; out float vU;\n\
+void main(){ vec4 w=uModel*vec4(aPos,1.0); vWorld=w.xyz; vObj=aPos; vN=mat3(uModel)*aNor; vU=aU; gl_Position=uVP*w; }";
+
+var FS="#version 300 es\n\
+precision highp float;\n\
+in vec3 vObj; in vec3 vWorld; in vec3 vN; in float vU;\n\
+uniform mat4 uModel; uniform vec3 uEyeW; uniform vec3 uEyeObj;\n\
+uniform float uRipe, uPit, uGloss, uSss, uLampA, uHard;\n\
+uniform int uCut; uniform float uCutPos; uniform float uLen;\n\
+uniform float uProfR[96]; uniform float uProfX[96];\n\
+out vec4 outc;\n\
+vec3 hash3(vec3 p){ p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }\n\
+float hash1(vec3 p){ return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453); }\n\
+float vnoise(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.0-2.0*f);\n\
+  return mix(mix(mix(hash1(i),hash1(i+vec3(1,0,0)),f.x),mix(hash1(i+vec3(0,1,0)),hash1(i+vec3(1,1,0)),f.x),f.y),\n\
+             mix(mix(hash1(i+vec3(0,0,1)),hash1(i+vec3(1,0,1)),f.x),mix(hash1(i+vec3(0,1,1)),hash1(i+vec3(1,1,1)),f.x),f.y),f.z); }\n\
+float fbm(vec3 p){ return 0.5*vnoise(p)+0.3*vnoise(p*2.1+7.0)+0.2*vnoise(p*4.3+13.0); }\n\
+float worley(vec3 x, out float id){ vec3 p=floor(x), f=fract(x); float d=9.0; id=0.0;\n\
+  for(int k=-1;k<=1;k++)for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){ vec3 g=vec3(float(i),float(j),float(k)); vec3 o=hash3(p+g); vec3 r=g+o-f; float dd=dot(r,r); if(dd<d){d=dd; id=o.x*0.5+o.y*0.5;} }\n\
+  return sqrt(d); }\n\
+float profLook(float u, bool xs){ float f=clamp(u,0.0,1.0)*95.0; int i=int(floor(f)); int j=min(i+1,95); float t=f-float(i);\n\
+  return xs ? mix(uProfX[i],uProfX[j],t) : mix(uProfR[i],uProfR[j],t); }\n\
+vec3 srgb(vec3 c){ return pow(c,vec3(2.2)); }\n\
+vec3 lighting(vec3 alb, vec3 N, vec3 V, vec3 wp, float gloss, float sss, float glossMul, vec3 sssTint, float rimAmt){\n\
+  float a=radians(uLampA);\n\
+  vec3 Lk=normalize(vec3(-sin(a),0.42*sin(a)+0.34,cos(a)));\n\
+  vec3 Lf=normalize(vec3(0.8,-0.15,0.55));\n\
+  vec3 Lr=normalize(vec3(0.2,0.7,-0.8));\n\
+  float wrap=0.12+0.38*sss;\n\
+  float nk=dot(N,Lk);\n\
+  float dk=clamp((nk+wrap)/(1.0+wrap),0.0,1.0);\n\
+  float df=clamp((dot(N,Lf)+0.3)/1.3,0.0,1.0);\n\
+  float dr=clamp(dot(N,Lr),0.0,1.0);\n\
+  vec3 keyC=vec3(1.0,0.95,0.86)*(uHard>0.5?3.1:2.4);\n\
+  vec3 hemi=mix(vec3(0.46,0.34,0.14), vec3(0.62,0.66,0.72), N.y*0.5+0.5)*0.42;\n\
+  vec3 col=alb*(keyC*dk*mix(1.0,0.94,sss)+vec3(0.55,0.62,0.78)*df*0.30+hemi+vec3(0.4)*dr*0.18);\n\
+  /* subsurface: warm light bleeding at terminator and thin rims */\n\
+  float ndv=clamp(dot(N,V),0.0,1.0);\n\
+  float term=smoothstep(-0.35,0.15,nk)*(1.0-smoothstep(0.15,0.65,nk));\n\
+  col+=sssTint*sss*(0.55*term*keyC.r*0.30 + rimAmt*pow(1.0-ndv,2.6)*0.55*(0.35+0.65*clamp(nk+0.5,0.0,1.0)));\n\
+  /* specular: broad waxy lobe, pits break it up */\n\
+  vec3 H=normalize(Lk+V); float nh=clamp(dot(N,H),0.0,1.0);\n\
+  float shin=mix(10.0,uHard>0.5?420.0:150.0,gloss)*glossMul;\n\
+  float fres=0.04+0.96*pow(1.0-ndv,5.0);\n\
+  float spec=pow(nh,shin)*(shin+8.0)/(8.0*3.14159)*0.5*(0.12+0.88*gloss)*max(nk,0.0);\n\
+  float spec2=pow(nh,shin*0.12)*0.10*gloss*max(nk,0.0);\n\
+  col+=vec3(1.0,0.97,0.9)*(spec*(0.35+fres*2.0)*1.6+spec2);\n\
+  /* soft-window environment reflection */\n\
+  vec3 R=reflect(-V,N);\n\
+  float win=smoothstep(0.35,0.75,dot(R,normalize(vec3(-0.6,0.7,0.5))))*(0.5+0.5*smoothstep(0.1,0.9,R.y));\n\
+  float env=(win*1.0+0.15*smoothstep(-0.2,0.8,R.y))*fres*gloss*glossMul;\n\
+  col+=vec3(1.0,0.98,0.94)*env*1.6;\n\
+  return col; }\n\
+void main(){\n\
+  vec3 pn = (uCut==1)?vec3(1.0,0.0,0.0):vec3(0.0,1.0,0.0);\n\
+  if(uCut>0 && vU>-0.5){ if(dot(vObj,pn)>uCutPos) discard; }\n\
+  vec3 V=normalize(uEyeW-vWorld);\n\
+  vec3 col; \n\
+  bool front=gl_FrontFacing;\n\
+  if(vU<-0.5){\n\
+    /* stalk stub */\n\
+    vec3 N=normalize(vN); float n=fbm(vObj*9.0);\n\
+    vec3 alb=srgb(mix(vec3(0.40,0.34,0.12),vec3(0.30,0.36,0.10),n)); alb*=0.8+0.4*n;\n\
+    col=lighting(alb,N,V,vWorld,0.1,0.1,1.0,vec3(0.4,0.5,0.1),0.2);\n\
+  } else if(uCut>0 && !front){\n\
+    /* cut face, found by intersecting the view ray with the cut plane */\n\
+    vec3 d=normalize(vObj-uEyeObj);\n\
+    float t=(uCutPos-dot(uEyeObj,pn))/dot(d,pn);\n\
+    vec3 q=uEyeObj+d*t;\n\
+    float u=(q.y+uLen*0.5)/uLen;\n\
+    float R=profLook(u,false); float cx=profLook(u,true);\n\
+    vec2 rv=vec2(q.x-cx,q.z); float rho=length(rv);\n\
+    vec3 Nw=normalize(mat3(uModel)*pn);\n\
+    vec3 wp=(uModel*vec4(q,1.0)).xyz;\n\
+    vec3 alb; float gls=0.0; float glm=1.0; float sssA=0.3; vec3 sssT=vec3(1.0,0.8,0.15);\n\
+    if(t<=0.0 || u<0.0 || u>1.0 || rho>R){\n\
+      /* we are looking at the inside of the far wall */\n\
+      alb=srgb(vec3(0.93,0.88,0.60)); Nw=normalize(mat3(uModel)*(-normalize(vN))); gls=0.1; wp=vWorld;\n\
+    } else {\n\
+      float s=rho/max(R,1e-4);\n\
+      float rind=0.055/max(R,0.5)*2.2;\n\
+      float pithIn=0.84;\n\
+      float sid; float w=worley(vec3(q.x,q.y*0.6,q.z)*26.0,sid);\n\
+      float pt=fbm(q*14.0);\n\
+      vec3 pith=srgb(mix(vec3(0.96,0.93,0.78),vec3(0.99,0.98,0.90),pt));\n\
+      vec3 flav=srgb(vec3(0.96,0.76,0.07));\n\
+      float ang=atan(rv.y,rv.x);\n\
+      float sg=ang/6.2831853*9.0; float fsg=fract(sg); float md=min(fsg,1.0-fsg);\n\
+      float seg2=(uCut==2)?1.0:0.0;\n\
+      float membrane=seg2*(1.0-smoothstep(0.0,0.045,md))*smoothstep(0.08,0.2,s);\n\
+      float sac=1.0-smoothstep(0.0,0.62,w);\n\
+      vec3 juice=mix(srgb(vec3(0.90,0.74,0.20)),srgb(vec3(1.0,0.93,0.55)),sac);\n\
+      juice*=0.9+0.2*sid;\n\
+      float col_=1.0-smoothstep(0.05,0.11,s);\n\
+      alb=juice;\n\
+      alb=mix(alb,pith*0.95,membrane*0.9);\n\
+      alb=mix(alb,pith,col_);\n\
+      float pb=smoothstep(pithIn-0.03,pithIn+0.03,s);\n\
+      alb=mix(alb,pith*mix(0.95,0.8,pt),pb);\n\
+      float fl=smoothstep(1.0-rind,1.0-rind*0.6,s);\n\
+      alb=mix(alb,flav,fl);\n\
+      gls=mix(0.85,0.12,max(pb,col_*0.8)); gls=mix(gls,0.3,fl); glm=1.0;\n\
+      sssA=0.55;\n\
+      /* wet sac bumps */\n\
+      vec3 g1=vec3(dFdx(sac),dFdy(sac),0.0);\n\
+      Nw=normalize(Nw+0.0*g1);\n\
+    }\n\
+    col=lighting(alb,Nw,V,wp,gls,sssA,glm,sssT,0.0);\n\
+  } else {\n\
+    /* peel */\n\
+    vec3 N=normalize(vN); if(!front) N=-N;\n\
+    float id; float F=worley(vObj*13.0,id);\n\
+    float lumps=fbm(vObj*2.3);\n\
+    float px=length(fwidth(vObj))*13.0;\n\
+    float fade=1.0-smoothstep(0.30,0.75,px);\n\
+    float pitMask=(1.0-smoothstep(0.08,0.40,F));\n\
+    float h=(-uPit*pitMask*(0.55+0.9*id) + uPit*0.55*(lumps-0.5))*fade;\n\
+    vec3 dpx=dFdx(vWorld), dpy=dFdy(vWorld);\n\
+    vec3 r1=cross(dpy,N), r2=cross(N,dpx); float det=dot(dpx,r1);\n\
+    vec3 grad=sign(det)*(dFdx(h)*r1+dFdy(h)*r2);\n\
+    N=normalize(abs(det)*N-grad);\n\
+    /* colour: green to yellow across one fruit, pale highlights, reddish underside */\n\
+    float blot=fbm(vObj*0.8+3.0);\n\
+    float stemG=1.0-smoothstep(0.0,0.5,vU);\n\
+    float g=clamp((1.0-uRipe)*1.05+stemG*0.30*(1.0-uRipe*0.55)+(blot-0.5)*0.55*(0.25+(1.0-uRipe)),0.0,1.0);\n\
+    vec3 yel=mix(vec3(0.99,0.80,0.07),vec3(0.96,0.70,0.03),smoothstep(0.35,0.75,blot));\n\
+    vec3 grn=vec3(0.60,0.68,0.13);\n\
+    vec3 base=mix(yel,grn,g);\n\
+    base=mix(base,vec3(0.97,0.90,0.52),0.14*smoothstep(0.55,0.9,lumps)*(1.0-g));\n\
+    float under=smoothstep(0.1,-0.9,normalize(vN).y);\n\
+    base=mix(base,vec3(0.78,0.52,0.03),under*0.30*uRipe);\n\
+    vec3 alb=srgb(base);\n\
+    alb*=1.0-0.17*pitMask*fade*(0.6+0.6*id);\n\
+    alb=mix(alb,alb*vec3(1.0,0.82,0.4),0.20*pitMask*fade);\n\
+    float glMul=1.0-0.62*pitMask*fade;\n\
+    glMul*=0.8+0.4*smoothstep(0.2,0.8,lumps);\n\
+    col=lighting(alb,N,V,vWorld,uGloss,uSss,glMul,vec3(1.0,0.62,0.06),0.9);\n\
+  }\n\
+  col*=0.92;\n\
+  col=(col*(2.51*col+0.03))/(col*(2.43*col+0.59)+0.14);\n\
+  col=pow(clamp(col,0.0,1.0),vec3(1.0/2.2));\n\
+  outc=vec4(col,1.0);\n\
+}";
+FS=FS.replace("uniform float uRipe, uPit, uGloss, uSss, uLampA, uHard;","uniform float uRipe, uPit, uGloss, uSss, uLampA, uHard;");
+FS=FS.replace(/uPit/g,"uPit"); /* keep names */
+var pm=prog(VS,FS);
+
+var GVS="#version 300 es\nin vec2 aP; uniform mat4 uVP; uniform float uY; out vec2 vP;\nvoid main(){ vP=aP; gl_Position=uVP*vec4(aP.x,uY,aP.y,1.0); }";
+var GFS="#version 300 es\nprecision highp float;\nin vec2 vP; uniform vec2 uC; uniform vec3 uCov; uniform vec2 uOff; uniform float uSoft; uniform float uStr; out vec4 o;\n\
+void main(){ vec2 d=vP-uC-uOff; float det=uCov.x*uCov.y-uCov.z*uCov.z; \n\
+  float q=(uCov.y*d.x*d.x-2.0*uCov.z*d.x*d.y+uCov.x*d.y*d.y)/max(det,1e-5);\n\
+  float a=exp(-q*uSoft)*0.34*uStr; vec2 d2=vP-uC; float q2=(uCov.y*d2.x*d2.x-2.0*uCov.z*d2.x*d2.y+uCov.x*d2.y*d2.y)/max(det,1e-5);\n\
+  a+=exp(-q2*3.2)*0.30; \n\
+  a*=1.0-smoothstep(25.0,60.0,length(vP)); o=vec4(0.06,0.04,0.0,a)*vec4(a>0.0?a:0.0,a,a,1.0)/max(a,1e-4)*vec4(1.0); o=vec4(vec3(0.05,0.035,0.0)*a,a); }";
+var pg=prog(GVS,GFS);
+
+/* buffers */
+var vaoM=gl.createVertexArray(), vaoS=gl.createVertexArray(), vaoG=gl.createVertexArray();
+var bufM=gl.createBuffer(), ibM=gl.createBuffer(), bufS=gl.createBuffer(), ibS=gl.createBuffer(), bufG=gl.createBuffer();
+function bindLayout(p){
+  var aP=gl.getAttribLocation(p,'aPos'),aN=gl.getAttribLocation(p,'aNor'),aU=gl.getAttribLocation(p,'aU');
+  gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,28,0);
+  gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,28,12);
+  gl.enableVertexAttribArray(aU);gl.vertexAttribPointer(aU,1,gl.FLOAT,false,28,24);
+}
+function upload(){
+  gl.bindVertexArray(vaoM);gl.bindBuffer(gl.ARRAY_BUFFER,bufM);gl.bufferData(gl.ARRAY_BUFFER,mesh.data,gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibM);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,mesh.idx,gl.DYNAMIC_DRAW);bindLayout(pm);
+  gl.bindVertexArray(vaoS);gl.bindBuffer(gl.ARRAY_BUFFER,bufS);gl.bufferData(gl.ARRAY_BUFFER,mesh.stalk.data,gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibS);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,mesh.stalk.idx,gl.DYNAMIC_DRAW);bindLayout(pm);
+  gl.bindVertexArray(null);
+}
+gl.bindVertexArray(vaoG);gl.bindBuffer(gl.ARRAY_BUFFER,bufG);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-80,-80,80,-80,80,80,-80,-80,80,80,-80,80]),gl.STATIC_DRAW);
+var gP=gl.getAttribLocation(pg,'aP');gl.enableVertexAttribArray(gP);gl.vertexAttribPointer(gP,2,gl.FLOAT,false,0,0);gl.bindVertexArray(null);
+
+var U={};['uVP','uModel','uEyeW','uEyeObj','uRipe','uPit','uGloss','uSss','uLampA','uHard','uCut','uCutPos','uLen','uProfR','uProfX'].forEach(function(n){U[n]=gl.getUniformLocation(pm,n)});
+var GU={};['uVP','uY','uC','uCov','uOff','uSoft','uStr'].forEach(function(n){GU[n]=gl.getUniformLocation(pg,n)});
+
+/* ---------- UI ---------- */
+function setSeg(id,val){var b=$(id).querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].setAttribute('aria-pressed',String(b[i].dataset.v===String(val)))}
+function bindSeg(id,fn){$(id).addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;fn(b.dataset.v);setSeg(id,b.dataset.v);refreshUI()})}
+function bindRange(id,key,rebuild){$(id).addEventListener('input',function(){S[key]=parseFloat($(id).value);if(rebuild)buildMesh();refreshUI()})}
+bindSeg('shape',function(v){S.shape=v;buildMesh()});
+bindSeg('cut',function(v){S.cut=parseInt(v,10);if(S.cut>0){faceOpening();S.spin=false;$('spin').checked=false}});
+function faceOpening(){
+  var pn=S.cut===1?[1,0,0]:[0,1,0],best=-9,by=S.yaw,bp=S.pitch;
+  for(var yi=0;yi<72;yi++)for(var pi=-8;pi<=8;pi++){
+    var yw=S.yaw+(yi-36)*Math.PI/36,pt=pi*.1;
+    var R=mul(mul(rotX(pt),rotY(yw)),rotZ(S.tilt));
+    var w=[R[0]*pn[0]+R[4]*pn[1]+R[8]*pn[2],R[1]*pn[0]+R[5]*pn[1]+R[9]*pn[2],R[2]*pn[0]+R[6]*pn[1]+R[10]*pn[2]];
+    var sc=w[2]*1+w[1]*.28-Math.abs(yi-36)*.004-Math.abs(pt)*.05;
+    if(sc>best){best=sc;by=yw;bp=pt}}
+  S.goal={yaw:by,pitch:bp};
+}
+bindSeg('lampk',function(v){S.hard=v==='hard'});
+bindRange('len','len',true);bindRange('nip','nip',true);
+bindRange('ripe','ripe');bindRange('pit','pit');bindRange('gloss','gloss');bindRange('sss','sss');bindRange('cutp','cutp');bindRange('lamp','lamp');
+$('stalk').addEventListener('change',function(){S.stalk=$('stalk').checked;refreshUI()});
+$('spin').addEventListener('change',function(){S.spin=$('spin').checked});
+$('reset').addEventListener('click',function(){
+  var keep=S.spin; Object.assign(S,JSON.parse(JSON.stringify(DEF)));
+  $('len').value=S.len;$('nip').value=S.nip;$('stalk').checked=S.stalk;$('ripe').value=S.ripe;$('pit').value=S.pit;$('gloss').value=S.gloss;
+  $('sss').value=S.sss;$('cutp').value=S.cutp;$('lamp').value=S.lamp;$('spin').checked=S.spin;
+  setSeg('shape',S.shape);setSeg('cut',S.cut);setSeg('lampk','soft');buildMesh();refreshUI();});
+$('snap').addEventListener('click',function(){draw();var a=document.createElement('a');a.download='lemon.png';a.href=canvas.toDataURL('image/png');a.click()});
+function refreshUI(){
+  $('lenO').textContent=S.len.toFixed(1)+' cm';
+  $('nipO').textContent=(PRESETS[S.shape].nip*S.nip*2*10).toFixed(1)+' mm';
+  $('ripeO').textContent=S.ripe<.25?'green':S.ripe<.55?'yellow-green':S.ripe<.85?'yellow':'deep yellow';
+  $('pitO').textContent=(S.pit*10).toFixed(2)+' mm';
+  $('glossO').textContent=Math.round(S.gloss*100)+'%';
+  $('sssO').textContent=Math.round(S.sss*100)+'%';
+  $('cutpO').textContent=S.cut===0?'(cut off)':(S.cutp>=0?'+':'')+(S.cutp*100).toFixed(0)+'%';
+  $('cutp').disabled=S.cut===0;
+  $('lampO').textContent=S.lamp+'°';
+  var st=mesh.stats;
+  $('rLen').textContent=st.len.toFixed(1)+' cm';
+  $('rWid').textContent=st.width.toFixed(1)+' cm';
+  $('rRat').textContent=(st.len/st.width).toFixed(2);
+  $('rMass').textContent=Math.round(st.vol*.95)+' g';
+}
+
+/* ---------- interaction ---------- */
+var drag=null;
+stage.addEventListener('pointerdown',function(e){S.goal=null;drag={x:e.clientX,y:e.clientY};stage.classList.add('drag');stage.setPointerCapture(e.pointerId)});
+stage.addEventListener('pointermove',function(e){if(!drag)return;S.yaw+=(e.clientX-drag.x)*.008;S.pitch=Math.max(-1.2,Math.min(1.2,S.pitch+(e.clientY-drag.y)*.008));drag={x:e.clientX,y:e.clientY}});
+function end(){drag=null;stage.classList.remove('drag')}
+stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
+stage.addEventListener('wheel',function(e){e.preventDefault();S.zoom=Math.max(.45,Math.min(1.8,S.zoom*Math.exp(e.deltaY*.0012)))},{passive:false});
+window.addEventListener('keydown',function(e){
+  if(e.target&&/INPUT|BUTTON/.test(e.target.tagName)&&e.key.indexOf('Arrow')===0&&e.target.type==='range')return;
+  if(e.key==='ArrowLeft')S.yaw-=.12;else if(e.key==='ArrowRight')S.yaw+=.12;else if(e.key==='ArrowUp')S.pitch=Math.max(-1.2,S.pitch-.1);else if(e.key==='ArrowDown')S.pitch=Math.min(1.2,S.pitch+.1);});
+
+/* ---------- draw ---------- */
+function resize(){var dpr=Math.min(window.devicePixelRatio||1,2),w=Math.round(stage.clientWidth*dpr),h=Math.round(stage.clientHeight*dpr);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}}
+var last=0;
+function draw(){
+  resize();
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  var asp=canvas.width/canvas.height;
+  var R=mul(mul(rotX(S.pitch),rotY(S.yaw)),rotZ(S.tilt));
+  var dist=S.len*(asp<.9?4.6:3.1)*S.zoom/ Math.min(1,Math.max(.7,asp*.75));
+  var eye=[0,dist*.26,dist];
+  var P=persp(.55,asp,dist*.05,dist*6), V=lookAt(eye,[0,-S.len*.04,0],[0,1,0]);
+  var VP=mul(P,V);
+  /* eye in object space: R is a rotation, so inverse = transpose */
+  var eo=[R[0]*eye[0]+R[1]*eye[1]+R[2]*eye[2],R[4]*eye[0]+R[5]*eye[1]+R[6]*eye[2],R[8]*eye[0]+R[9]*eye[1]+R[10]*eye[2]];
+  /* footprint of the fruit on the ground, from its world-space vertices */
+  var p=mesh.pos,n=p.length/3,ymin=1e9,sx=0,sz=0,sxx=0,szz=0,sxz=0,ymax=-1e9;
+  for(var i=0;i<n;i++){var x=p[i*3],y=p[i*3+1],z=p[i*3+2];
+    var wx=R[0]*x+R[4]*y+R[8]*z, wy=R[1]*x+R[5]*y+R[9]*z, wz=R[2]*x+R[6]*y+R[10]*z;
+    if(wy<ymin)ymin=wy; if(wy>ymax)ymax=wy; sx+=wx;sz+=wz;sxx+=wx*wx;szz+=wz*wz;sxz+=wx*wz;}
+  var mx=sx/n,mz=sz/n,cxx=sxx/n-mx*mx+.02,czz=szz/n-mz*mz+.02,cxz=sxz/n-mx*mz;
+  /* ground shadow */
+  gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+  gl.useProgram(pg);gl.bindVertexArray(vaoG);
+  var sa=S.lamp*Math.PI/180, hh=(ymax-ymin);
+  gl.uniformMatrix4fv(GU.uVP,false,VP);gl.uniform1f(GU.uY,ymin-.01);
+  gl.uniform2f(GU.uC,mx,mz);gl.uniform3f(GU.uCov,cxx*4,czz*4,cxz*4);
+  gl.uniform2f(GU.uOff,Math.sin(sa)*hh*.35,-hh*.12);
+  gl.uniform1f(GU.uSoft,S.hard?1.9:.85);gl.uniform1f(GU.uStr,S.hard?1.2:.9);
+  gl.drawArrays(gl.TRIANGLES,0,6);
+  gl.disable(gl.BLEND);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);
+  /* lemon */
+  gl.useProgram(pm);
+  gl.uniformMatrix4fv(U.uVP,false,mul(VP,R)); /* model folded into VP only for position; uModel kept for lighting */
+  gl.uniformMatrix4fv(U.uModel,false,new Float32Array(16)); /* placeholder, replaced below */
+  /* position transform uses uVP * uModel, so give VP and R separately */
+  gl.uniformMatrix4fv(U.uVP,false,VP);gl.uniformMatrix4fv(U.uModel,false,R);
+  gl.uniform3fv(U.uEyeW,new Float32Array(eye));gl.uniform3fv(U.uEyeObj,new Float32Array(eo));
+  gl.uniform1f(U.uRipe,S.ripe);gl.uniform1f(U.uPit,S.pit);gl.uniform1f(U.uGloss,S.gloss);gl.uniform1f(U.uSss,S.sss);
+  gl.uniform1f(U.uLampA,S.lamp);gl.uniform1f(U.uHard,S.hard?1:0);
+  gl.uniform1i(U.uCut,S.cut);
+  var cutv=S.cut===1?S.cutp*mesh.stats.width*.5:S.cutp*mesh.stats.len*.5;
+  gl.uniform1f(U.uCutPos,cutv);gl.uniform1f(U.uLen,S.len);
+  gl.uniform1fv(U.uProfR,mesh.profR);gl.uniform1fv(U.uProfX,mesh.profX);
+  gl.bindVertexArray(vaoM);gl.drawElements(gl.TRIANGLES,mesh.idx.length,gl.UNSIGNED_INT,0);
+  if(S.stalk){
+    var wasCut=S.cut; gl.uniform1i(U.uCut,0);
+    gl.bindVertexArray(vaoS);gl.drawElements(gl.TRIANGLES,mesh.stalk.idx.length,gl.UNSIGNED_INT,0);
+    gl.uniform1i(U.uCut,wasCut);
+  }
+  gl.bindVertexArray(null);
+}
+function frame(t){
+  var dt=Math.min(.05,(t-last)/1000||0);last=t;
+  if(S.goal&&!drag){S.yaw+=(S.goal.yaw-S.yaw)*Math.min(1,dt*6);S.pitch+=(S.goal.pitch-S.pitch)*Math.min(1,dt*6);if(Math.abs(S.goal.yaw-S.yaw)<.002)S.goal=null}
+  if(S.spin&&!drag){S.yaw+=dt*.45;S.goal=null}
+  draw();requestAnimationFrame(frame);
+}
+buildMesh();refreshUI();
+window.addEventListener('resize',draw);
+requestAnimationFrame(frame);
+window.__lemon={state:S,mesh:mesh};
+})();
+</script>
+</body>
+</html>

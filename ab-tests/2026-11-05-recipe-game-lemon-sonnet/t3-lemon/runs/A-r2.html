@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lemon 3D</title>
+<style>
+  :root{--ink:#2b2a1f;--panel:rgba(255,252,238,.82);--accent:#d9a900;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);
+    background:radial-gradient(ellipse at 50% 35%,#7fb6a4 0%,#3f7f78 55%,#27504f 100%);}
+  #stage{position:fixed;inset:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  canvas.drag{cursor:grabbing}
+  #shadow{position:absolute;left:50%;top:73%;width:34vmin;height:5vmin;transform:translate(-50%,0);
+    background:radial-gradient(ellipse,rgba(0,0,0,.38),rgba(0,0,0,0) 70%);pointer-events:none;transition:width .2s}
+  #panel{position:fixed;left:16px;bottom:16px;width:min(300px,calc(100vw - 32px));padding:14px 16px;border-radius:14px;
+    background:var(--panel);backdrop-filter:blur(8px);box-shadow:0 6px 24px rgba(0,0,0,.25);font-size:13px}
+  h1{font-size:15px;margin:0 0 8px;letter-spacing:.02em}
+  label{display:flex;justify-content:space-between;margin-top:8px;font-weight:600}
+  label span{font-weight:400;font-variant-numeric:tabular-nums;opacity:.75}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .row{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px}
+  .row label{margin:0;font-weight:500;gap:6px;justify-content:flex-start;align-items:center}
+  button{font:inherit;border:0;border-radius:8px;padding:5px 10px;background:#f2d230;color:#2b2a1f;cursor:pointer;font-weight:600}
+  button:hover{background:#ffe04a}
+  .presets{display:flex;gap:6px;margin-top:8px}
+  #readout{position:fixed;right:16px;top:14px;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.35);color:#fff;
+    font:12px ui-monospace,Menlo,monospace;line-height:1.5;white-space:pre}
+  #hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);color:#fff;opacity:.85;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.4);text-align:center}
+  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#fff;font-size:16px;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="shadow"></div>
+  <canvas id="gl"></canvas>
+</div>
+<div id="hint">Drag to turn the lemon &middot; scroll to zoom &middot; double-click to reset</div>
+<div id="readout"></div>
+<div id="err">WebGL is not available in this browser.</div>
+<div id="panel">
+  <h1>Lemon</h1>
+  <div class="presets">
+    <button data-r="0.05">Unripe</button><button data-r="0.6">Ripe</button><button data-r="1">Golden</button>
+  </div>
+  <label>Ripeness <span id="vRipe"></span></label>
+  <input id="ripe" type="range" min="0" max="1" step="0.01" value="0.85">
+  <label>Peel pores <span id="vBump"></span></label>
+  <input id="bump" type="range" min="0" max="1" step="0.01" value="0.55">
+  <label>Light angle <span id="vLight"></span></label>
+  <input id="light" type="range" min="-180" max="180" step="1" value="-35">
+  <label>Cut depth <span id="vCut"></span></label>
+  <input id="cutd" type="range" min="-0.6" max="0.6" step="0.01" value="0">
+  <div class="row">
+    <label><input id="spin" type="checkbox" checked> Auto-spin</label>
+    <label><input id="cut" type="checkbox"> Cut open</label>
+    <label><input id="wire" type="checkbox"> Wireframe</label>
+    <button id="reset">Reset view</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var canvas=document.getElementById('gl');
+var gl=canvas.getContext('webgl',{antialias:true,alpha:true,premultipliedAlpha:false})||canvas.getContext('experimental-webgl');
+if(!gl){document.getElementById('err').style.display='flex';return;}
+
+/* ---------- state ---------- */
+var TILT=0.38;
+var S={yaw:0.6,pitch:0.28,dist:6.4,vyaw:0,vpitch:0,ripe:0.85,bump:0.55,light:-35,cut:false,cutd:0,wire:false,spin:true};
+var DEF={yaw:0.6,pitch:0.28,dist:6.4};
+
+/* ---------- geometry: lathe around the x axis ---------- */
+var A=1.3,B=0.88,NU=110,NV=140;
+function P(u,v){
+  var s=Math.sin(u),c=Math.cos(u);
+  var r=B*Math.pow(s,0.78)*(1-0.075*c+0.03*Math.cos(2*u));
+  var x=-A*c;
+  // nipple at the stem end (u=0) and a smaller one at the blossom end (u=pi)
+  var e0=Math.exp(-Math.pow(u/0.17,2)), e1=Math.exp(-Math.pow((Math.PI-u)/0.13,2));
+  r+=0.03*e0*Math.min(1,s/0.1)+0.02*e1*Math.min(1,s/0.1);
+  x+= -0.16*e0+0.1*e1;
+  // slight lumpiness so it is not a perfect surface of revolution
+  var lump=1+0.025*Math.sin(3*v+1.3)*s+0.02*Math.sin(2*v+u*2);
+  r*=lump;
+  return [x,r*Math.cos(v),r*Math.sin(v)];
+}
+var pos=[],nor=[],idx=[],lines=[];
+(function build(){
+  var e=1e-3;
+  for(var i=0;i<=NU;i++){
+    var u=i/NU*Math.PI;
+    for(var j=0;j<=NV;j++){
+      var v=j/NV*Math.PI*2;
+      var uu=Math.min(Math.max(u,0.004),Math.PI-0.004);
+      var p=P(u,v);
+      var pu1=P(uu+e,v),pu0=P(uu-e,v),pv1=P(uu,v+e),pv0=P(uu,v-e);
+      var du=[pu1[0]-pu0[0],pu1[1]-pu0[1],pu1[2]-pu0[2]];
+      var dv=[pv1[0]-pv0[0],pv1[1]-pv0[1],pv1[2]-pv0[2]];
+      var n=[du[1]*dv[2]-du[2]*dv[1],du[2]*dv[0]-du[0]*dv[2],du[0]*dv[1]-du[1]*dv[0]];
+      var l=Math.hypot(n[0],n[1],n[2])||1;n=[n[0]/l,n[1]/l,n[2]/l];
+      var ref=P(uu,v);
+      if(n[0]*ref[0]+n[1]*ref[1]+n[2]*ref[2]<0)n=[-n[0],-n[1],-n[2]];
+      pos.push(p[0],p[1],p[2]);nor.push(n[0],n[1],n[2]);
+    }
+  }
+  for(var a=0;a<NU;a++)for(var b=0;b<NV;b++){
+    var i0=a*(NV+1)+b,i1=i0+1,i2=i0+NV+1,i3=i2+1;
+    idx.push(i0,i2,i1,i1,i2,i3);
+    if(a%4===0)lines.push(i0,i1);
+    if(b%5===0)lines.push(i0,i2);
+  }
+})();
+
+function buf(target,data,Type){var b=gl.createBuffer();gl.bindBuffer(target,b);gl.bufferData(target,new Type(data),gl.STATIC_DRAW);return b;}
+var bPos=buf(gl.ARRAY_BUFFER,pos,Float32Array),bNor=buf(gl.ARRAY_BUFFER,nor,Float32Array);
+var bIdx=buf(gl.ELEMENT_ARRAY_BUFFER,idx,Uint16Array),bLn=buf(gl.ELEMENT_ARRAY_BUFFER,lines,Uint16Array);
+
+/* ---------- shaders ---------- */
+var VS=[
+"attribute vec3 aPos;attribute vec3 aNor;",
+"uniform mat4 uMV;uniform mat4 uP;",
+"varying vec3 vObj;varying vec3 vN;varying vec3 vView;",
+"void main(){vec4 v=uMV*vec4(aPos,1.0);vView=v.xyz;vObj=aPos;vN=aNor;gl_Position=uP*v;}"
+].join("\n");
+
+var FS=[
+"precision highp float;",
+"varying vec3 vObj;varying vec3 vN;varying vec3 vView;",
+"uniform mat3 uR;uniform float uRipe,uBump,uCutOn,uCutD,uLightA,uWire;",
+"vec3 hash3(vec3 p){p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6)));",
+"  return fract(sin(p)*43758.5453123);}",
+"float vnoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);",
+"  float n=0.0;for(int z=0;z<2;z++)for(int y=0;y<2;y++)for(int x=0;x<2;x++){",
+"    vec3 g=vec3(float(x),float(y),float(z));",
+"    float w=(x==0?1.0-f.x:f.x)*(y==0?1.0-f.y:f.y)*(z==0?1.0-f.z:f.z);",
+"    n+=w*hash3(i+g).x;}return n;}",
+"float cell(vec3 p){vec3 i=floor(p),f=fract(p);float d=8.0;",
+"  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){",
+"    vec3 g=vec3(float(x),float(y),float(z));vec3 r=g+hash3(i+g)-f;d=min(d,dot(r,r));}",
+"  return sqrt(d);}",
+/* peel height: pores (dimples) plus broad undulation */
+"float height(vec3 p){",
+"  float pores=smoothstep(0.0,0.42,cell(p*26.0));",
+"  float fine=vnoise(p*70.0)*0.25;",
+"  float wav=vnoise(p*6.0)*0.6;",
+"  return (pores*0.8+fine)*uBump+wav*0.06;}",
+"void main(){",
+"  vec3 nO=normalize(vN);",
+"  vec3 V=normalize(-vView);",
+"  vec3 nvTest=normalize(uR*nO);",
+"  bool back=dot(nvTest,V)<0.0;",
+"  if(uCutOn>0.5&&vObj.z>uCutD)discard;",
+"  if(uWire>0.5){gl_FragColor=vec4(0.25,0.22,0.0,1.0);return;}",
+"  vec3 L=normalize(vec3(sin(radians(uLightA))*0.9,0.7,cos(radians(uLightA))*0.9+0.25));",
+"  vec3 H=normalize(L+V);",
+"  vec3 col;float spec=0.0;vec3 n;",
+"  if(back&&uCutOn>0.5){",
+/* interior: pale flesh, radial segments, juice vesicles */
+"    vec3 p=vObj;float ang=atan(p.z,p.y);",
+"    float seg=abs(sin(ang*4.5));",
+"    float membrane=1.0-smoothstep(0.0,0.14,seg);",
+"    float ves=cell(p*34.0);",
+"    vec3 flesh=mix(vec3(1.0,0.86,0.25),vec3(1.0,0.95,0.55),smoothstep(0.1,0.6,ves));",
+"    flesh=mix(flesh,vec3(0.99,0.96,0.78),membrane*0.9);",
+"    float rad=length(p.yz)/0.9;",
+"    flesh*=mix(1.0,0.82,smoothstep(0.7,1.0,rad));",
+"    n=normalize(uR*(-nO));",
+"    n=normalize(n+0.25*vec3(vnoise(p*40.0)-0.5,vnoise(p*40.0+9.0)-0.5,0.0)*(1.0-membrane));",
+"    float nl=max(dot(n,L),0.0)*0.7+0.4;",
+"    spec=pow(max(dot(n,H),0.0),48.0)*0.5*(1.0-membrane*0.7);",
+"    col=flesh*nl+vec3(spec);",
+"  } else {",
+/* rind */
+"    vec3 p=vObj;",
+"    float e=0.012;",
+"    float h0=height(p);",
+"    vec3 g=vec3(height(p+vec3(e,0,0))-h0,height(p+vec3(0,e,0))-h0,height(p+vec3(0,0,e))-h0)/e;",
+"    g-=nO*dot(g,nO);",
+"    vec3 nb=normalize(nO-g*0.05*(0.3+uBump));",
+"    n=normalize(uR*nb);",
+"    float t=clamp((p.x+1.5)/3.0,0.0,1.0);",
+"    float tipG=smoothstep(0.78,1.0,abs(p.x)/1.5);",
+"    float var1=vnoise(p*5.0);float var2=vnoise(p*21.0);",
+"    vec3 green=vec3(0.36,0.52,0.10),yel=vec3(0.95,0.74,0.04),deep=vec3(0.95,0.68,0.03);",
+"    float r=clamp(uRipe+(var1-0.5)*0.18,0.0,1.0);",
+"    vec3 base=mix(green,yel,smoothstep(0.0,0.75,r));",
+"    base=mix(base,deep,smoothstep(0.7,1.0,uRipe)*0.55*var1);",
+"    base=mix(base,green*0.9,tipG*(1.0-uRipe)*0.6);",
+"    base=mix(base,vec3(0.99,0.88,0.28),tipG*0.25*uRipe);",
+"    base*=0.9+0.2*var2;",
+"    float hh=h0/(0.8*uBump+0.25+0.06);",
+"    base*=1.0-0.18*uBump*(1.0-smoothstep(0.0,0.9,height(p)/(0.8*uBump+0.001+0.25)));",
+"    float nl=dot(n,L);",
+"    float diff=clamp((nl+0.4)/1.4,0.0,1.0);",
+"    vec3 sss=base*vec3(1.0,0.85,0.35)*0.35*pow(clamp(1.0-abs(nl),0.0,1.0),2.0);",
+"    vec3 hemi=mix(vec3(0.20,0.17,0.08),vec3(0.35,0.42,0.48),n.y*0.5+0.5);",
+"    float ndv=max(dot(n,V),0.0);",
+"    float gloss=0.55+0.45*(1.0-uBump*0.5);",
+"    spec=pow(max(dot(n,H),0.0),70.0)*0.55*gloss*(0.55+0.45*smoothstep(0.0,0.5,height(p)));",
+"    float rim=pow(1.0-ndv,3.0);",
+"    col=base*(diff*vec3(1.0,0.97,0.90)*0.82+hemi)+sss+vec3(spec)+rim*vec3(0.55,0.65,0.55)*0.22;",
+/* pith ring at the cut edge */
+"    if(uCutOn>0.5){float ed=uCutD-vObj.z;col=mix(vec3(0.97,0.95,0.78),col,smoothstep(0.0,0.045,ed));}",
+"  }",
+"  col=pow(col,vec3(0.4545));",
+"  gl_FragColor=vec4(col,1.0);",
+"}"
+].join("\n");
+
+function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
+var prog=gl.createProgram();
+gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+gl.bindAttribLocation(prog,0,'aPos');gl.bindAttribLocation(prog,1,'aNor');
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+var U={};['uMV','uP','uR','uRipe','uBump','uCutOn','uCutD','uLightA','uWire'].forEach(function(n){U[n]=gl.getUniformLocation(prog,n);});
+gl.bindBuffer(gl.ARRAY_BUFFER,bPos);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+gl.bindBuffer(gl.ARRAY_BUFFER,bNor);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
+gl.enable(gl.DEPTH_TEST);gl.clearColor(0,0,0,0);
+
+/* ---------- matrices (column-major) ---------- */
+function mul(a,b){var o=new Array(16);for(var c=0;c<4;c++)for(var r=0;r<4;r++){var s=0;for(var k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];o[c*4+r]=s;}return o;}
+function rotX(a){var c=Math.cos(a),s=Math.sin(a);return [1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1];}
+function rotY(a){var c=Math.cos(a),s=Math.sin(a);return [c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1];}
+function rotZ(a){var c=Math.cos(a),s=Math.sin(a);return [c,s,0,0,-s,c,0,0,0,0,1,0,0,0,0,1];}
+function persp(fov,asp,n,f){var t=1/Math.tan(fov/2);return [t/asp,0,0,0,0,t,0,0,0,0,(f+n)/(n-f),-1,0,0,2*f*n/(n-f),0];}
+
+/* ---------- render ---------- */
+function resize(){
+  var d=Math.min(window.devicePixelRatio||1,2),w=Math.floor(canvas.clientWidth*d),h=Math.floor(canvas.clientHeight*d);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+}
+function draw(){
+  resize();
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  var asp=canvas.width/canvas.height;
+  var R=mul(rotX(S.pitch),mul(rotY(S.yaw),rotZ(TILT)));
+  var T=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,-S.dist,1];
+  var MV=mul(T,R);
+  var fov=asp<0.8?0.85:0.6;
+  gl.uniformMatrix4fv(U.uMV,false,new Float32Array(MV));
+  gl.uniformMatrix4fv(U.uP,false,new Float32Array(persp(fov,asp,0.1,50)));
+  gl.uniformMatrix3fv(U.uR,false,new Float32Array([R[0],R[1],R[2],R[4],R[5],R[6],R[8],R[9],R[10]]));
+  gl.uniform1f(U.uRipe,S.ripe);gl.uniform1f(U.uBump,S.bump);
+  gl.uniform1f(U.uCutOn,S.cut?1:0);gl.uniform1f(U.uCutD,S.cutd);
+  gl.uniform1f(U.uLightA,S.light);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bIdx);
+  gl.uniform1f(U.uWire,0);
+  if(S.wire){
+    gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);
+    gl.drawElements(gl.TRIANGLES,idx.length,gl.UNSIGNED_SHORT,0);
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    gl.uniform1f(U.uWire,1);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bLn);
+    gl.drawElements(gl.LINES,lines.length,gl.UNSIGNED_SHORT,0);
+  }else{
+    gl.drawElements(gl.TRIANGLES,idx.length,gl.UNSIGNED_SHORT,0);
+  }
+  var sh=document.getElementById('shadow');
+  sh.style.width=(34*(DEF.dist/S.dist))+'vmin';
+}
+
+/* ---------- UI + state ---------- */
+var $=function(id){return document.getElementById(id);};
+var readout=$('readout');
+function deg(r){var d=(r*180/Math.PI)%360;if(d<0)d+=360;return d;}
+function ripeName(r){return r<0.2?'unripe':r<0.55?'ripening':r<0.9?'ripe':'golden';}
+function updateUI(){
+  $('vRipe').textContent=Math.round(S.ripe*100)+'% '+ripeName(S.ripe);
+  $('vBump').textContent=Math.round(S.bump*100)+'%';
+  $('vLight').textContent=S.light+'°';
+  $('vCut').textContent=S.cutd.toFixed(2);
+  $('cutd').disabled=!S.cut;
+  readout.textContent=
+    'yaw    '+deg(S.yaw).toFixed(0).padStart(3)+'°\n'+
+    'pitch  '+deg(S.pitch).toFixed(0).padStart(3)+'°\n'+
+    'zoom   '+(DEF.dist/S.dist).toFixed(2)+'x\n'+
+    'ripe   '+ripeName(S.ripe)+'\n'+
+    'view   '+(S.cut?'cut open':S.wire?'wireframe':'whole')+(S.spin?' / spinning':'');
+}
+$('ripe').oninput=function(){S.ripe=+this.value;updateUI();};
+$('bump').oninput=function(){S.bump=+this.value;updateUI();};
+$('light').oninput=function(){S.light=+this.value;updateUI();};
+$('cutd').oninput=function(){S.cutd=+this.value;updateUI();};
+$('spin').onchange=function(){S.spin=this.checked;updateUI();};
+$('cut').onchange=function(){S.cut=this.checked;if(S.cut){S.wire=false;$('wire').checked=false;}updateUI();};
+$('wire').onchange=function(){S.wire=this.checked;if(S.wire){S.cut=false;$('cut').checked=false;}updateUI();};
+function setRipe(v){S.ripe=v;$('ripe').value=v;updateUI();}
+Array.prototype.forEach.call(document.querySelectorAll('[data-r]'),function(b){b.onclick=function(){setRipe(+b.getAttribute('data-r'));};});
+function reset(){S.yaw=DEF.yaw;S.pitch=DEF.pitch;S.dist=DEF.dist;S.vyaw=S.vpitch=0;updateUI();}
+$('reset').onclick=reset;
+canvas.addEventListener('dblclick',reset);
+
+var drag=null;
+canvas.addEventListener('pointerdown',function(e){
+  canvas.setPointerCapture(e.pointerId);canvas.classList.add('drag');
+  drag={x:e.clientX,y:e.clientY,t:performance.now()};S.vyaw=S.vpitch=0;
+});
+canvas.addEventListener('pointermove',function(e){
+  if(!drag)return;
+  var dx=e.clientX-drag.x,dy=e.clientY-drag.y,now=performance.now(),dt=Math.max(now-drag.t,1);
+  S.yaw+=dx*0.009;S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch+dy*0.009));
+  S.vyaw=dx*0.009/dt*16;S.vpitch=dy*0.009/dt*16;
+  drag.x=e.clientX;drag.y=e.clientY;drag.t=now;updateUI();
+});
+function end(){drag=null;canvas.classList.remove('drag');}
+canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+canvas.addEventListener('wheel',function(e){
+  e.preventDefault();
+  S.dist=Math.max(3.4,Math.min(12,S.dist*Math.exp(e.deltaY*0.0012)));updateUI();
+},{passive:false});
+window.addEventListener('keydown',function(e){
+  var k=e.key;
+  if(k==='ArrowLeft')S.yaw-=0.1;else if(k==='ArrowRight')S.yaw+=0.1;
+  else if(k==='ArrowUp')S.pitch=Math.max(-1.45,S.pitch-0.1);else if(k==='ArrowDown')S.pitch=Math.min(1.45,S.pitch+0.1);
+  else if(k==='+'||k==='=')S.dist=Math.max(3.4,S.dist*0.92);else if(k==='-')S.dist=Math.min(12,S.dist/0.92);
+  else return;
+  updateUI();
+});
+
+var last=performance.now(),uiT=0;
+function frame(now){
+  var dt=Math.min(now-last,50);last=now;
+  if(!drag){
+    if(Math.abs(S.vyaw)>1e-4||Math.abs(S.vpitch)>1e-4){
+      S.yaw+=S.vyaw;S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch+S.vpitch));
+      var f=Math.pow(0.94,dt/16);S.vyaw*=f;S.vpitch*=f;
+    }else if(S.spin){S.yaw+=dt*0.0004*1.5;}
+    uiT+=dt;if(uiT>100){uiT=0;updateUI();}
+  }
+  draw();
+  requestAnimationFrame(frame);
+}
+updateUI();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

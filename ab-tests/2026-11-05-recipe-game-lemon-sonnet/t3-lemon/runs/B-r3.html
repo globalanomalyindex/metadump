@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemon, 3D model</title>
+<style>
+:root{
+  --bg:#1f2b2c; --bg2:#34484a; --panel:#16201f; --ink:#f3efe2; --mute:#a9b5a8; --line:#2f4140;
+  --lemon:#f2cf2c; --leaf:#7fae4a; --warn:#e8a23a; --bad:#e2674f; --ok:#8fcf6a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;min-height:100vh}
+header{padding:12px 20px;display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:18px;letter-spacing:.02em}
+header span{color:var(--mute);font-size:13px}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 340px;min-height:0}
+#stage{position:relative;min-height:420px;background:radial-gradient(ellipse at 50% 38%,var(--bg2) 0%,var(--bg) 70%);overflow:hidden;touch-action:none;cursor:grab}
+#stage.drag{cursor:grabbing}
+#shadow{position:absolute;left:50%;bottom:11%;width:46%;height:7%;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(0,0,0,.5),rgba(0,0,0,0) 70%);pointer-events:none;transition:opacity .4s}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hud{position:absolute;left:14px;bottom:12px;right:14px;display:flex;justify-content:space-between;gap:10px;color:var(--mute);font-size:12px;pointer-events:none}
+#hud b{color:var(--ink);font-weight:600}
+#nogl{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--mute)}
+aside{background:var(--panel);border-left:1px solid var(--line);overflow:auto;padding:14px 16px 24px;max-height:calc(100vh - 50px)}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);margin:18px 0 8px;font-weight:600}
+h2:first-child{margin-top:0}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:none;border:0;color:var(--ink);padding:8px 6px;font:inherit;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:#243433}
+.seg button[aria-pressed=true]{background:var(--lemon);color:#241f05;font-weight:600}
+.row{display:grid;grid-template-columns:104px 1fr 56px;align-items:center;gap:8px;margin:7px 0}
+.row label{color:var(--ink)}
+.row output{text-align:right;color:var(--mute);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--lemon);height:24px}
+.chk{display:flex;align-items:center;gap:8px;margin:6px 0;cursor:pointer}
+.chk input{accent-color:var(--lemon);width:16px;height:16px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{background:#22312f;border:1px solid var(--line);color:var(--ink);padding:7px 11px;border-radius:8px;font:inherit;cursor:pointer}
+.btn:hover{background:#2b3f3c;border-color:#4a6562}
+.btn.primary{background:var(--lemon);color:#241f05;border-color:var(--lemon);font-weight:600}
+button:focus-visible,input:focus-visible{outline:2px solid var(--lemon);outline-offset:2px}
+#read{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0}
+#read dt{color:var(--mute)} #read dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+#checks{list-style:none;margin:0;padding:0}
+#checks li{display:grid;grid-template-columns:12px 1fr;gap:9px;margin:7px 0;font-size:13px;color:var(--mute)}
+#checks li i{width:10px;height:10px;border-radius:50%;margin-top:5px;background:var(--ok)}
+#checks li.w i{background:var(--warn)} #checks li.b i{background:var(--bad)}
+#checks li b{color:var(--ink);font-weight:600}
+#note{font-size:12px;color:var(--mute);margin-top:14px}
+@media (max-width:820px){
+  main{grid-template-columns:1fr;grid-template-rows:62vh auto}
+  #stage{min-height:0}
+  aside{border-left:0;border-top:1px solid var(--line);max-height:none}
+  header span{display:none}
+}
+@media (prefers-reduced-motion:reduce){#shadow{transition:none}}
+</style>
+</head>
+<body>
+<header><h1>Lemon</h1><span>Citrus limon, a procedural 3D model. Drag to turn it, scroll to zoom.</span></header>
+<main>
+  <div id="stage" aria-label="3D lemon viewport">
+    <div id="shadow"></div>
+    <canvas id="gl"></canvas>
+    <div id="nogl">This model needs WebGL 2, which this browser did not provide.</div>
+    <div id="hud"><div id="hudL"></div><div id="hudR"></div></div>
+  </div>
+  <aside>
+    <h2>View</h2>
+    <div class="seg" id="segView" role="group" aria-label="View">
+      <button data-v="whole" aria-pressed="true">Whole</button>
+      <button data-v="half" aria-pressed="false">Cut lengthwise</button>
+      <button data-v="slice" aria-pressed="false">Cut across</button>
+    </div>
+
+    <h2>Ends</h2>
+    <div class="seg" id="segEnds" role="group" aria-label="Ends">
+      <button data-v="varied" aria-pressed="true">Varied</button>
+      <button data-v="matching" aria-pressed="false">Matching</button>
+      <button data-v="damaged" aria-pressed="false">Damaged</button>
+    </div>
+
+    <h2>Form</h2>
+    <div class="row"><label for="len">Length</label><input id="len" type="range" min="5" max="10" step="0.1"><output></output></div>
+    <div class="row"><label for="ratio">Length / width</label><input id="ratio" type="range" min="1.05" max="2" step="0.01"><output></output></div>
+    <div class="row"><label for="tip">Blossom tip</label><input id="tip" type="range" min="0" max="5" step="0.1"><output></output></div>
+    <div class="row"><label for="lump">Lumpiness</label><input id="lump" type="range" min="0" max="1" step="0.01"><output></output></div>
+
+    <h2>Peel</h2>
+    <div class="row"><label for="ripe">Green to yellow</label><input id="ripe" type="range" min="0" max="1" step="0.01"><output></output></div>
+    <div class="row"><label for="pit">Oil-gland pits</label><input id="pit" type="range" min="0" max="1" step="0.01"><output></output></div>
+    <div class="row"><label for="rough">Roughness</label><input id="rough" type="range" min="0.12" max="0.85" step="0.01"><output></output></div>
+
+    <h2>Options</h2>
+    <label class="chk"><input type="checkbox" id="style"> Low-poly stylized mesh</label>
+    <label class="chk"><input type="checkbox" id="wire"> Wireframe</label>
+    <label class="chk"><input type="checkbox" id="leaf"> Stalk and leaf</label>
+    <label class="chk"><input type="checkbox" id="spin"> Turntable</label>
+
+    <h2>Presets</h2>
+    <div class="btns" id="presets">
+      <button class="btn" data-p="fresh">Fresh-picked</button>
+      <button class="btn" data-p="green">Unripe</button>
+      <button class="btn" data-p="pointed">Pointed</button>
+      <button class="btn" data-p="round">Round-leaning</button>
+      <button class="btn" id="shuffle">New lumps</button>
+      <button class="btn" id="reset">Reset view</button>
+    </div>
+
+    <h2>Measured</h2>
+    <dl id="read"></dl>
+
+    <h2>Against a real lemon</h2>
+    <ul id="checks"></ul>
+
+    <h2>Export</h2>
+    <div class="btns"><button class="btn primary" id="obj">Download OBJ</button></div>
+    <p id="note"></p>
+  </aside>
+</main>
+
+<script>
+"use strict";
+/* ---------- state ---------- */
+const S = {len:7, ratio:1.5, tip:2, lump:0.35, ripe:0.85, pit:0.6, rough:0.45,
+  seed:7, view:'whole', ends:'varied', low:false, wire:false, leaf:false, spin:true};
+const V = {yaw:0.0, pitch:0.12, tilt:1.12, dist:3.1, gYaw:null, gPitch:null, gTilt:1.12, dragging:false};
+const PRESETS = {
+  fresh:   {len:7, ratio:1.5, tip:2, lump:.35, ripe:.85, pit:.6, rough:.45},
+  green:   {len:6.2, ratio:1.4, tip:1.4, lump:.3, ripe:.1, pit:.55, rough:.55},
+  pointed: {len:8.6, ratio:1.78, tip:4.2, lump:.25, ripe:.92, pit:.65, rough:.4},
+  round:   {len:5.6, ratio:1.14, tip:.6, lump:.45, ripe:.7, pit:.5, rough:.5}
+};
+
+/* ---------- small math ---------- */
+const M = {
+  mul(a,b){const o=new Float32Array(16);for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];o[i*4+j]=s}return o},
+  rx(a){const c=Math.cos(a),s=Math.sin(a);return new Float32Array([1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1])},
+  ry(a){const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1])},
+  rz(a){const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1])},
+  persp(f,asp,n,fa){const t=1/Math.tan(f/2);return new Float32Array([t/asp,0,0,0, 0,t,0,0, 0,0,(fa+n)/(n-fa),-1, 0,0,2*fa*n/(n-fa),0])},
+  trans(x,y,z){return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1])}
+};
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]};
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+function rng(seed){let s=seed*2654435761>>>0;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296}}
+
+/* ---------- geometry ---------- */
+let phases=[];
+function reseed(){const r=rng(S.seed*977+13);phases=[];for(let i=0;i<10;i++)phases.push(r()*6.283)}
+reseed();
+
+/* A lathe surface along Y. v=0 is the stem end (top), v=PI the blossom end. Length is 1. */
+function surf(u,v){
+  const W=1/S.ratio, sv=Math.sin(v), cv=Math.cos(v), PI=Math.PI;
+  let r=(W/2)*Math.pow(Math.max(sv,0),0.98)*(1+0.05*cv)*(1+0.1*Math.sin(v)**2);
+  const bl=S.tip*2.1/(S.len*10);                       // nipple height as a fraction of length
+  let y=0.5*cv, dB=PI-v, dT=v;
+  const ends=S.ends;
+  if(ends==='matching'){
+    y+= -bl*Math.exp(-Math.pow(dB/0.17,2)) + bl*Math.exp(-Math.pow(dT/0.17,2));
+    r*=1-6*bl*(Math.exp(-Math.pow(dB/0.5,2))+Math.exp(-Math.pow(dT/0.5,2)))*0.5;
+  }else if(ends==='damaged'){
+    y+= -bl*0.45*Math.exp(-Math.pow(dB/0.2,2)) + 0.018*Math.exp(-Math.pow(dB/0.6,2)) - 0.014*Math.exp(-Math.pow(dT/0.2,2));
+    r*=1-5*bl*0.5*Math.exp(-Math.pow(dB/0.5,2));
+    r*=1-0.05*Math.exp(-(((v-2.3)/0.35)**2))*(0.5+0.5*Math.cos(u-1.0));   // a dent
+  }else{
+    y+= -bl*Math.exp(-Math.pow(dB/0.2,2)) - 0.013*Math.exp(-Math.pow(dT/0.2,2)) + 0.007*Math.exp(-(((v-0.21)/0.06)**2));
+    r*=1-6*bl*Math.exp(-Math.pow(dB/0.5,2))*0.5;
+    r*=1+0.012*Math.exp(-(((v-0.2)/0.07)**2));      // calyx ring
+  }
+  const L=S.lump*0.028*W;
+  const p=phases;
+  const lump=Math.sin(2*u+p[0]+3*v)*0.5+Math.sin(3*u+p[1]-2*v)*0.3+Math.sin(u+p[2]+5*v)*0.4+Math.sin(5*u+p[3]+v*2)*0.15;
+  r*=1+L/W*lump*0.9;
+  return [r*Math.cos(u), y, r*Math.sin(u)];
+}
+
+function peelGrid(){return S.low?{nu:14,nv:9}:{nu:120,nv:80}}
+
+function buildPeel(){
+  const {nu,nv}=peelGrid();
+  const P=[],N=[],T=[];
+  const e=0.0015;
+  for(let j=0;j<=nv;j++){
+    const v=j/nv*Math.PI, vv=clamp(v,0.012,Math.PI-0.012);
+    for(let i=0;i<=nu;i++){
+      const u=i/nu*Math.PI*2;
+      const p=surf(u,v);
+      const a=surf(u+e,vv), b=surf(u-e,vv), c=surf(u,vv+e), d=surf(u,vv-e);
+      let n=norm(cross([a[0]-b[0],a[1]-b[1],a[2]-b[2]],[c[0]-d[0],c[1]-d[1],c[2]-d[2]]));
+      P.push(p[0],p[1],p[2]);N.push(n[0],n[1],n[2]);T.push(i/nu,j/nv);
+    }
+  }
+  const I=[],W=[];
+  const row=nu+1;
+  for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){
+    const a=j*row+i,b=a+1,c=a+row,d=c+1;
+    I.push(a,c,b,b,c,d);
+  }
+  const su=S.low?1:5, sv=S.low?1:5;
+  for(let j=0;j<=nv;j++)for(let i=0;i<nu;i++)if(j%sv===0)W.push(j*row+i,j*row+i+1);
+  for(let i=0;i<=nu;i++)for(let j=0;j<nv;j++)if(i%su===0)W.push(j*row+i,(j+1)*row+i);
+  return {P,N,T,I,W};
+}
+
+function buildCap(kind){
+  const P=[],N=[],T=[],I=[];
+  if(kind==='half'){
+    const nvc=70,K=28;
+    for(let j=0;j<=nvc;j++){
+      const v=j/nvc*Math.PI, a=surf(Math.PI,v), b=surf(0,v);
+      for(let k=0;k<=K;k++){
+        const s=k/K*2-1, f=(s+1)/2;
+        P.push(a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, 0);
+        N.push(0,0,1);T.push(s,j/nvc);
+      }
+    }
+    for(let j=0;j<nvc;j++)for(let k=0;k<K;k++){const a=j*(K+1)+k,b=a+1,c=a+K+1,d=c+1;I.push(a,b,c,b,d,c)}
+  }else{
+    const nr=16,na=96;
+    P.push(0,0,0);N.push(0,1,0);T.push(0,0);
+    for(let r=1;r<=nr;r++){
+      const f=r/nr;
+      for(let i=0;i<=na;i++){
+        const u=i/na*Math.PI*2, q=surf(u,Math.PI/2);
+        P.push(q[0]*f,0,q[2]*f);N.push(0,1,0);T.push(Math.cos(u)*f,Math.sin(u)*f);
+      }
+    }
+    const ring=na+1;
+    for(let i=0;i<na;i++)I.push(0,1+i+ring*0+1,1+i);   // fan
+    for(let r=1;r<nr;r++)for(let i=0;i<na;i++){
+      const a=1+(r-1)*ring+i,b=a+1,c=a+ring,d=c+1;I.push(a,b,c,b,d,c);
+    }
+  }
+  return {P,N,T,I};
+}
+
+function accNormals(P,I){
+  const N=new Array(P.length).fill(0);
+  for(let t=0;t<I.length;t+=3){
+    const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3;
+    const n=cross([P[b]-P[a],P[b+1]-P[a+1],P[b+2]-P[a+2]],[P[c]-P[a],P[c+1]-P[a+1],P[c+2]-P[a+2]]);
+    for(const q of [a,b,c]){N[q]+=n[0];N[q+1]+=n[1];N[q+2]+=n[2]}
+  }
+  for(let i=0;i<N.length;i+=3){const n=norm([N[i],N[i+1],N[i+2]]);N[i]=n[0];N[i+1]=n[1];N[i+2]=n[2]}
+  return N;
+}
+
+function stemTop(){ // y of the stem button
+  const q=surf(0,0); return q[1];
+}
+
+function buildStalk(){
+  const long=S.leaf, h=long?0.11:0.045, rad=long?0.0105:0.0095, seg=10, rings=6;
+  const y0=stemTop()-0.004, P=[],T=[],I=[];
+  for(let r=0;r<=rings;r++){
+    const t=r/rings, bend=long?0.03*t*t:0.004*t*t, rr=rad*(1-0.18*t)*(1+(r===0?0.35:0));
+    for(let i=0;i<=seg;i++){
+      const a=i/seg*Math.PI*2;
+      P.push(Math.cos(a)*rr+bend, y0+h*t, Math.sin(a)*rr);T.push(i/seg,t);
+    }
+  }
+  for(let r=0;r<rings;r++)for(let i=0;i<seg;i++){const a=r*(seg+1)+i,b=a+1,c=a+seg+1,d=c+1;I.push(a,c,b,b,c,d)}
+  // cap on top
+  const topC=P.length/3; P.push(long?0.03:0.004,y0+h,0);T.push(.5,1);
+  for(let i=0;i<seg;i++)I.push(topC,rings*(seg+1)+i,rings*(seg+1)+i+1);
+  return {P,N:accNormals(P,I),T,I,top:[long?0.03:0.004,y0+h]};
+}
+
+function buildLeaf(base){
+  const nl=22,nw=8,len=0.62,wid=0.2;
+  const P=[],T=[],I=[];
+  let x=base[0],y=base[1],z=0;
+  const pts=[];
+  for(let i=0;i<=nl;i++){
+    const t=i/nl, phi=0.35+1.15*t+0.2*t*t;
+    pts.push([x,y,z+0.05*t*t]);
+    x+=Math.sin(phi)*len/nl; y+=Math.cos(phi)*len/nl*0.9;
+  }
+  for(let i=0;i<=nl;i++){
+    const t=i/nl, w=wid*Math.pow(Math.sin(Math.PI*Math.pow(t,0.75)),0.9)*(1-0.15*t)+0.003;
+    const p=pts[i];
+    for(let k=0;k<=nw;k++){
+      const s=k/nw*2-1;
+      const fold=Math.abs(s)*w*0.32, curl=s*s*w*0.12;
+      P.push(p[0]-fold*0.5, p[1]-fold*0.7+curl*0.1, p[2]+s*w*0.5);
+      T.push(k/nw,t);
+    }
+  }
+  for(let i=0;i<nl;i++)for(let k=0;k<nw;k++){const a=i*(nw+1)+k,b=a+1,c=a+nw+1,d=c+1;I.push(a,b,c,b,d,c)}
+  return {P,N:accNormals(P,I),T,I};
+}
+
+/* ---------- GL ---------- */
+const canvas=document.getElementById('gl');
+const gl=canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:false});
+const VS=`#version 300 es
+in vec3 aP; in vec3 aN; in vec2 aT;
+uniform mat4 uM; uniform mat4 uVP;
+out vec3 vO; out vec3 vNO; out vec3 vW; out vec2 vT;
+void main(){ vec4 w=uM*vec4(aP,1.0); vW=w.xyz; vO=aP; vNO=aN; vT=aT; gl_Position=uVP*w; }`;
+const FS=`#version 300 es
+precision highp float;
+in vec3 vO; in vec3 vNO; in vec3 vW; in vec2 vT;
+uniform mat4 uM;
+uniform int uMat;      // 0 peel, 1 cap lengthwise, 2 cap across, 3 wire, 4 leaf, 5 stalk
+uniform int uCut;      // 0 none, 1 lengthwise (z>0 removed), 2 across (y>0 removed)
+uniform float uRipe, uPit, uRough, uFlat, uDamage, uCell, uLen;
+uniform vec3 uCam;
+out vec4 outc;
+
+vec3 hash3(vec3 p){ p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }
+vec2 hash2(vec2 p){ p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))); return fract(sin(p)*43758.5453); }
+float vnoise(vec3 p){
+  vec3 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+  float a=hash3(i).x,b=hash3(i+vec3(1,0,0)).x,c=hash3(i+vec3(0,1,0)).x,d=hash3(i+vec3(1,1,0)).x;
+  float e=hash3(i+vec3(0,0,1)).x,g=hash3(i+vec3(1,0,1)).x,h=hash3(i+vec3(0,1,1)).x,k=hash3(i+vec3(1,1,1)).x;
+  return mix(mix(mix(a,b,f.x),mix(c,d,f.x),f.y),mix(mix(e,g,f.x),mix(h,k,f.x),f.y),f.z);
+}
+float pits(vec3 p){
+  vec3 ip=floor(p), fp=fract(p); float h=0.0;
+  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+    vec3 g=vec3(float(x),float(y),float(z)); vec3 r=hash3(ip+g);
+    if(r.y<0.08) continue;
+    vec3 c=g+0.18+0.64*hash3(ip+g+7.3);
+    float d=length(fp-c); float rad=0.2+0.26*r.x;
+    float pit=1.0-smoothstep(0.0,rad,d);
+    h=max(h,pit*(0.55+0.45*r.z));
+  }
+  return h;
+}
+vec3 cell2(vec2 p){
+  vec2 ip=floor(p), fp=fract(p); float d1=9.0; vec2 best=vec2(0.);
+  for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+    vec2 g=vec2(float(x),float(y)); vec2 o=0.12+0.76*hash2(ip+g); vec2 r=g+o-fp; float d=dot(r,r);
+    if(d<d1){d1=d;best=r;}
+  }
+  return vec3(sqrt(d1),best);
+}
+vec3 light(vec3 n, vec3 v, vec3 alb, float rough, float spec, float sss, vec3 sssCol){
+  vec3 Ld[3]; vec3 Lc[3];
+  Ld[0]=normalize(vec3(-0.55,0.8,0.75)); Lc[0]=vec3(1.0,0.93,0.8)*2.3;
+  Ld[1]=normalize(vec3(0.85,0.1,0.5));   Lc[1]=vec3(0.55,0.68,0.85)*0.75;
+  Ld[2]=normalize(vec3(0.1,0.35,-1.0));  Lc[2]=vec3(1.0,0.95,0.85)*1.1;
+  vec3 col=vec3(0.0);
+  float sh=max(2.0/(rough*rough)-2.0,2.0);
+  for(int i=0;i<3;i++){
+    float ndl=dot(n,Ld[i]);
+    float wrap=clamp((ndl+0.35)/1.35,0.0,1.0);
+    col+=alb*Lc[i]*wrap*0.62;
+    vec3 h=normalize(Ld[i]+v);
+    float fr=0.04+0.96*pow(1.0-max(dot(h,v),0.0),5.0);
+    col+=Lc[i]*spec*fr*pow(max(dot(n,h),0.0),sh)*(sh+8.0)/25.0*max(ndl,0.0)*5.5;
+  }
+  vec3 sky=vec3(0.50,0.56,0.64), gnd=vec3(0.42,0.27,0.12);
+  col+=alb*mix(gnd,sky,n.y*0.5+0.5)*0.55;
+  col+=sssCol*sss*pow(1.0-max(dot(n,v),0.0),2.5)*0.45;
+  return col;
+}
+void main(){
+  if(uMat!=1 && uMat!=2 && uMat!=4 && uMat!=5){
+    if(uCut==1 && vO.z>0.0005) discard;
+    if(uCut==2 && vO.y>0.0005) discard;
+  }
+  vec3 v=normalize(uCam-vW);
+  vec3 col;
+  if(uMat==3){ outc=vec4(0.06,0.09,0.06,0.55); return; }
+  vec3 nO=normalize(vNO);
+  if(uMat==0){
+    bool front=dot(normalize(mat3(uM)*nO),v)>-0.02;
+    vec3 nWf=normalize(cross(dFdx(vW),dFdy(vW)));
+    if(uFlat>0.5) nWf=faceforward(nWf,-v,nWf);
+    float h=0.0, h2=0.0;
+    vec3 nW;
+    if(uFlat<0.5){
+      vec3 p=vO*uCell; float e=0.12;
+      h=pits(p);
+      vec3 g=vec3(pits(p+vec3(e,0,0))-h,pits(p+vec3(0,e,0))-h,pits(p+vec3(0,0,e))-h)/e;
+      g=g-dot(g,nO)*nO;
+      float broad=vnoise(vO*60.0);
+      vec3 g2=vec3(vnoise(vO*60.0+vec3(.1,0,0))-broad,vnoise(vO*60.0+vec3(0,.1,0))-broad,vnoise(vO*60.0+vec3(0,0,.1))-broad)/0.1;
+      g2=g2-dot(g2,nO)*nO;
+      vec3 nn=normalize(nO-uPit*0.11*g*1.0-0.004*g2*uPit);
+      nW=normalize(mat3(uM)*nn);
+      h=h*uPit;
+    }else{ nW=nWf; }
+    if(!front){
+      col=light(-normalize(mat3(uM)*nO),v,vec3(0.85,0.78,0.5),0.7,0.05,0.0,vec3(0.));
+    }else{
+      float n1=vnoise(vO*5.0+3.0), n2=vnoise(vO*19.0+9.0);
+      float endg=smoothstep(0.30,0.52,abs(vO.y));
+      float rip=clamp(uRipe+(n1-0.5)*0.28-endg*0.22*(1.0-uRipe*0.4),0.0,1.0);
+      vec3 green=vec3(0.26,0.38,0.035), yel=vec3(0.90,0.61,0.012), pale=vec3(0.97,0.82,0.3);
+      vec3 alb=mix(green,yel,smoothstep(0.15,0.9,rip));
+      alb=mix(alb,pale,0.1*smoothstep(0.55,0.9,vnoise(vO*34.0))*smoothstep(0.3,0.8,rip));
+      alb=mix(alb,alb*vec3(1.0,0.72,0.38),h*0.8);          // pits sit a little deeper in colour
+      alb*=1.0-0.16*h;
+      if(uDamage>0.5){
+        float m=smoothstep(-0.30,-0.46,vO.y)+0.5*(vnoise(vO*14.0)-0.5);
+        float scar=smoothstep(0.35,0.7,m);
+        alb=mix(alb,vec3(0.22,0.11,0.035),scar*0.85);
+        alb=mix(alb,vec3(0.4,0.22,0.06),smoothstep(0.2,0.5,m)*(1.0-scar)*0.6);
+      }
+      float rough=clamp(uRough+0.28*h-0.06*(1.0-h)*uPit,0.1,0.95);
+      float spec=mix(1.0,0.35,h);
+      vec3 sssC=mix(vec3(0.5,0.55,0.05),vec3(1.0,0.78,0.12),rip);
+      col=light(nW,v,alb,rough,spec,1.0,sssC);
+    }
+  }else if(uMat==1 || uMat==2){
+    vec2 uv=vT; float rind=0.0, alb_=0.0; vec3 base; vec3 tilt=vec3(0.);
+    float rho; float rindEdge;
+    vec3 juice=vec3(0.95,0.72,0.12), wall=vec3(0.97,0.93,0.66), pith=vec3(0.93,0.88,0.62), flav=vec3(0.88,0.58,0.02);
+    float inside=1.0, isWall=0.0, isSeed=0.0, isPith=0.0, isFlav=0.0;
+    vec2 sac;
+    if(uMat==1){
+      float s=uv.x, t=uv.y;
+      float thick=0.15+0.7*pow(abs(2.0*t-1.0),7.0);
+      float a=abs(s);
+      isFlav=step(1.0-0.045,a);
+      isPith=step(1.0-thick,a)*(1.0-isFlav);
+      float col_=1.0-smoothstep(0.05,0.085,a);
+      float wl=1.0-smoothstep(0.012,0.03,abs(a-0.52+0.04*sin(t*9.0)));
+      isWall=max(col_,wl)*(1.0-isPith)*(1.0-isFlav);
+      sac=cell2(vec2(s*21.0,t*12.0)).yz;
+      vec3 c2=cell2(vec2(s*21.0,t*12.0));
+      float body=1.0-smoothstep(0.35,0.62,c2.x);
+      juice=mix(vec3(0.99,0.9,0.5),juice,body);
+      tilt=vec3(c2.y,-c2.z,0.0)*body*0.9;
+      float s1=length(vec2((s-0.30)/0.13,(t-0.40)/0.05));
+      float s2=length(vec2((s+0.34)/0.13,(t-0.56)/0.05));
+      float s3=length(vec2((s-0.74)/0.1,(t-0.62)/0.045));
+      isSeed=1.0-smoothstep(0.85,1.0,min(s1,min(s2,s3)));
+    }else{
+      rho=length(uv); float th=atan(uv.y,uv.x);
+      float thick=0.17;
+      isFlav=step(0.955,rho);
+      isPith=step(1.0-thick,rho)*(1.0-isFlav);
+      float f=fract(th*10.0/6.2831853+0.5/10.0+0.04*sin(th*3.0)); float dw=min(f,1.0-f)*(6.2831853/10.0)*rho;
+      float wl=1.0-smoothstep(0.012,0.032,dw);
+      float col_=1.0-smoothstep(0.09,0.14,rho);
+      isWall=max(wl,col_)*(1.0-isPith)*(1.0-isFlav);
+      vec3 c2=cell2(uv*26.0);
+      float body=1.0-smoothstep(0.35,0.62,c2.x);
+      juice=mix(vec3(0.99,0.9,0.5),juice,body);
+      juice*=0.94+0.12*sin(floor(th*10.0/6.2831853+0.5)*2.7);
+      tilt=vec3(c2.y,0.0,c2.z)*body*0.9;
+      float sg=floor(th*10.0/6.2831853+0.5);
+      float sd=0.0;
+      vec2 q=vec2(rho-0.5, (fract(th*10.0/6.2831853+0.5)-0.5)*0.9);
+      float seedSel=step(0.5,hash2(vec2(sg,3.0)).x);
+      isSeed=(1.0-smoothstep(0.85,1.0,length(vec2(q.x/0.09,q.y/0.09))))*seedSel;
+    }
+    vec3 a=juice;
+    a=mix(a,wall,isWall);
+    a=mix(a,pith,isPith);
+    a=mix(a,flav,isFlav);
+    a=mix(a,vec3(0.9,0.84,0.6),isSeed*(1.0-isPith)*(1.0-isFlav));
+    float wet=(1.0-isWall)*(1.0-isPith)*(1.0-isFlav)*(1.0-isSeed);
+    vec3 n0=normalize(vNO);
+    vec3 nn=normalize(n0+ (uMat==1? vec3(tilt.x,tilt.y,0.0): vec3(tilt.x,0.0,tilt.z))*0.7*wet);
+    vec3 nW=normalize(mat3(uM)*nn);
+    col=light(nW,v,a,mix(0.55,0.2,wet),mix(0.3,2.2,wet),1.0,vec3(1.0,0.85,0.2)*wet);
+  }else if(uMat==4){ // leaf
+    vec3 nW=normalize(mat3(uM)*nO);
+    if(dot(nW,v)<0.0) nW=-nW;
+    float vein=1.0-smoothstep(0.0,0.025,abs(vT.x-0.5));
+    float side=1.0-smoothstep(0.0,0.012,abs(fract((vT.y*9.0)-abs(vT.x-0.5)*3.2)-0.5)-0.43);
+    vec3 a=mix(vec3(0.07,0.2,0.04),vec3(0.2,0.38,0.07),vT.y*0.7+0.1*vnoise(vec3(vT*14.0,1.0)));
+    a=mix(a,vec3(0.5,0.62,0.22),vein*0.8+0.15*side*smoothstep(0.0,0.5,0.5-abs(vT.x-0.5)));
+    col=light(nW,v,a,0.38,1.0,1.0,vec3(0.25,0.5,0.05));
+  }else{ // stalk
+    vec3 nW=normalize(mat3(uM)*nO);
+    vec3 a=mix(vec3(0.3,0.36,0.08),vec3(0.28,0.2,0.07),vT.y);
+    col=light(nW,v,a,0.6,0.4,0.0,vec3(0.));
+  }
+  col=1.0-exp(-col*1.25);
+  col=pow(col,vec3(1.0/2.2));
+  outc=vec4(col,1.0);
+}`;
+let prog,U={},meshes={};
+function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s}
+function initGL(){
+  prog=gl.createProgram();
+  gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+  gl.bindAttribLocation(prog,0,'aP');gl.bindAttribLocation(prog,1,'aN');gl.bindAttribLocation(prog,2,'aT');
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(prog));
+  for(const n of ['uM','uVP','uMat','uCut','uRipe','uPit','uRough','uFlat','uDamage','uCell','uLen','uCam'])U[n]=gl.getUniformLocation(prog,n);
+  gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+}
+function upload(m){
+  const o={n:m.I.length,vao:gl.createVertexArray()};
+  gl.bindVertexArray(o.vao);
+  const buf=(data,loc,size)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,0,0)};
+  buf(m.P,0,3);buf(m.N,1,3);buf(m.T,2,2);
+  const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(m.I),gl.STATIC_DRAW);
+  if(m.W){
+    o.vaoW=gl.createVertexArray();gl.bindVertexArray(o.vaoW);
+    buf(m.P,0,3);buf(m.N,1,3);buf(m.T,2,2);
+    const wb=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,wb);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(m.W),gl.STATIC_DRAW);o.nW=m.W.length;
+  }
+  gl.bindVertexArray(null);
+  o.src=m;
+  return o;
+}
+let stats={tris:0,verts:0};
+function rebuild(){
+  const peel=buildPeel();
+  const list={peel:upload(peel)};
+  let tris=peel.I.length/3, verts=peel.P.length/3;
+  if(S.view!=='whole'){const c=buildCap(S.view);list.cap=upload(c);tris+=c.I.length/3;verts+=c.P.length/3}
+  if(S.ends!=='matching'&&S.view!=='slice'){
+    const st=buildStalk();list.stalk=upload(st);tris+=st.I.length/3;verts+=st.P.length/3;
+    if(S.leaf){const lf=buildLeaf(st.top);list.leaf=upload(lf);tris+=lf.I.length/3;verts+=lf.P.length/3}
+  }
+  meshes=list;stats={tris,verts};
+  readout();
+}
+
+function modelMatrix(){return M.mul(M.rx(V.pitch),M.mul(M.ry(V.yaw),M.rz(V.tilt)))}
+function draw(){
+  const w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(window.devicePixelRatio||1,2);
+  if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.useProgram(prog);
+  const asp=w/h, fov=asp<0.9?0.62:0.5;
+  const VP=M.mul(M.persp(fov,asp,0.1,20),M.trans(0,0,-V.dist));
+  const Mm=modelMatrix();
+  gl.uniformMatrix4fv(U.uM,false,Mm);gl.uniformMatrix4fv(U.uVP,false,VP);
+  gl.uniform3f(U.uCam,0,0,V.dist);
+  gl.uniform1f(U.uRipe,S.ripe);gl.uniform1f(U.uPit,S.pit);gl.uniform1f(U.uRough,S.rough);
+  gl.uniform1f(U.uFlat,S.low?1:0);gl.uniform1f(U.uDamage,S.ends==='damaged'?1:0);
+  gl.uniform1f(U.uCell,S.len*10/1.7);gl.uniform1f(U.uLen,S.len);
+  gl.uniform1i(U.uCut,S.view==='half'?1:S.view==='slice'?2:0);
+  const run=(m,mat,wire)=>{
+    gl.uniform1i(U.uMat,mat);
+    if(wire){gl.bindVertexArray(m.vaoW);gl.drawElements(gl.LINES,m.nW,gl.UNSIGNED_INT,0)}
+    else{gl.bindVertexArray(m.vao);gl.drawElements(gl.TRIANGLES,m.n,gl.UNSIGNED_INT,0)}
+  };
+  gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);
+  run(meshes.peel,0);
+  if(meshes.cap)run(meshes.cap,S.view==='half'?1:2);
+  if(meshes.stalk)run(meshes.stalk,5);
+  if(meshes.leaf)run(meshes.leaf,4);
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  if(S.wire)run(meshes.peel,3,true);
+  gl.bindVertexArray(null);
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const SL={len:v=>v.toFixed(1)+' cm',ratio:v=>v.toFixed(2),tip:v=>v.toFixed(1)+' mm',lump:v=>Math.round(v*100)+'%',
+  ripe:v=>v<.25?'green':v<.6?'turning':v<.9?'yellow':'deep',pit:v=>Math.round(v*100)+'%',rough:v=>v.toFixed(2)};
+function syncUI(){
+  for(const k in SL){const el=$(k);el.value=S[k];el.nextElementSibling.textContent=SL[k](+S[k])}
+  $('style').checked=S.low;$('wire').checked=S.wire;$('leaf').checked=S.leaf;$('spin').checked=S.spin;
+  for(const b of document.querySelectorAll('#segView button'))b.setAttribute('aria-pressed',b.dataset.v===S.view);
+  for(const b of document.querySelectorAll('#segEnds button'))b.setAttribute('aria-pressed',b.dataset.v===S.ends);
+  $('leaf').disabled=S.ends==='matching';
+}
+function readout(){
+  const W=S.len/S.ratio;
+  const rows=[['Length',S.len.toFixed(1)+' cm'],['Width',W.toFixed(1)+' cm'],['Length / width',S.ratio.toFixed(2)],
+    ['Blossom tip',S.tip.toFixed(1)+' mm'],['Mesh',stats.tris.toLocaleString()+' triangles'],['Vertices',stats.verts.toLocaleString()],
+    ['Ends',S.ends],['View',S.view==='whole'?'whole fruit':S.view==='half'?'cut lengthwise':'cut across']];
+  $('read').innerHTML=rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('');
+  const C=[];
+  const rr=S.ratio;
+  C.push(rr<1.2?['w','Outline',`ratio ${rr.toFixed(2)} reads round, closer to an orange`]:rr<=1.65?['','Outline',`ratio ${rr.toFixed(2)} is the classic lemon oval (1.3 to 1.6)`]:rr<=1.9?['w','Outline',`ratio ${rr.toFixed(2)} reads elongated`]:['b','Outline',`ratio ${rr.toFixed(2)} reads pointed, past a typical lemon`]);
+  C.push(S.tip<0.5?['w','Blossom tip','barely a bump, the fruit loses its orientation cue']:S.tip<=3.2?['','Blossom tip',`${S.tip.toFixed(1)} mm nipple, a bump rather than a spike`]:['w','Blossom tip',`${S.tip.toFixed(1)} mm starts to read as a point or cone`]);
+  C.push(S.len>=5&&S.len<=10?['','Scale',`${S.len.toFixed(1)} cm sits inside the 5 to 10 cm range`]:['b','Scale','outside 5 to 10 cm']);
+  C.push(S.pit<0.2?['w','Pitting','almost smooth, loses the citrus skin read']:S.pit<=0.85?['','Pitting','dense oil-gland pits carry the skin']:['w','Pitting','strong enough to read as sandpaper']);
+  C.push(S.rough<0.25?['b','Sheen','this slick reads as plastic, widen the highlight']:S.rough>0.7?['w','Sheen','chalky, the waxy sheen is nearly gone']:['','Sheen','broad soft waxy sheen, duller in the pits']);
+  C.push(['','Colour',S.ripe<.25?'green with a yellow hint at the shoulders':S.ripe<.6?'green shifting to yellow across one fruit':'yellow body, greener at both ends']);
+  if(S.ends==='matching')C.push(['w','Ends','both ends match: a clean oval, but it can read like a manufactured shape']);
+  $('checks').innerHTML=C.map(c=>`<li class="${c[0]}"><i></i><span><b>${c[1]}</b> ${c[2]}</span></li>`).join('');
+  $('hudL').innerHTML=`<span><b>${S.len.toFixed(1)} × ${W.toFixed(1)} cm</b> · ${stats.tris.toLocaleString()} tris</span>`;
+  $('hudR').innerHTML=S.view==='whole'?'drag to rotate · scroll to zoom':'cut view · drag to look around';
+}
+$('note').textContent='Geometry is a lathe surface with a blossom nipple, stem cup and calyx ring; pits, colour shift and the juice-sac cut face are procedural. The OBJ is written in metres at the length you set.';
+
+for(const k in SL){
+  $(k).addEventListener('input',e=>{
+    S[k]=+e.target.value;e.target.nextElementSibling.textContent=SL[k](S[k]);
+    if(['len','ratio','tip','lump'].includes(k))rebuild();else readout();
+  });
+}
+function applyView(v){
+  S.view=v;
+  if(v==='whole'){V.gTilt=1.12;V.gPitch=0.12;V.gYaw=null}
+  if(v==='half'){V.gTilt=0.3;V.gPitch=0.05;V.gYaw=0;S.spin=false}
+  if(v==='slice'){V.gTilt=0;V.gPitch=0.95;V.gYaw=0.4;S.spin=false}
+  rebuild();syncUI();
+}
+$('segView').addEventListener('click',e=>{const b=e.target.closest('button');if(b)applyView(b.dataset.v)});
+$('segEnds').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.ends=b.dataset.v;if(S.ends==='matching')S.leaf=false;rebuild();syncUI()});
+$('style').addEventListener('change',e=>{S.low=e.target.checked;rebuild()});
+$('wire').addEventListener('change',e=>{S.wire=e.target.checked;});
+$('leaf').addEventListener('change',e=>{S.leaf=e.target.checked;rebuild()});
+$('spin').addEventListener('change',e=>{S.spin=e.target.checked;if(S.spin&&S.view!=='whole'){applyView('whole')}});
+$('presets').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;Object.assign(S,PRESETS[b.dataset.p]);rebuild();syncUI()});
+$('shuffle').addEventListener('click',()=>{S.seed=Math.floor(Math.random()*9999)+1;reseed();rebuild()});
+$('reset').addEventListener('click',()=>{V.yaw=0.0;V.pitch=0.12;V.dist=3.1;V.gYaw=null;V.gPitch=null;V.gTilt=S.view==='whole'?1.12:S.view==='half'?0.3:0;if(S.view==='half'){V.gYaw=0;V.gPitch=0.05}if(S.view==='slice'){V.gYaw=0.4;V.gPitch=0.95}});
+
+/* ---------- interaction ---------- */
+const stage=$('stage');let last=null;
+stage.addEventListener('pointerdown',e=>{stage.setPointerCapture(e.pointerId);V.dragging=true;stage.classList.add('drag');last=[e.clientX,e.clientY];V.gYaw=null;V.gPitch=null});
+stage.addEventListener('pointermove',e=>{if(!V.dragging)return;V.yaw+=(e.clientX-last[0])*0.01;V.pitch=clamp(V.pitch+(e.clientY-last[1])*0.01,-1.5,1.5);last=[e.clientX,e.clientY]});
+const endDrag=()=>{V.dragging=false;stage.classList.remove('drag')};
+stage.addEventListener('pointerup',endDrag);stage.addEventListener('pointercancel',endDrag);
+stage.addEventListener('wheel',e=>{e.preventDefault();V.dist=clamp(V.dist*Math.exp(e.deltaY*0.001),1.6,6)},{passive:false});
+stage.tabIndex=0;
+stage.addEventListener('keydown',e=>{
+  const k=e.key;let used=true;V.gYaw=null;V.gPitch=null;
+  if(k==='ArrowLeft')V.yaw-=0.12;else if(k==='ArrowRight')V.yaw+=0.12;else if(k==='ArrowUp')V.pitch=clamp(V.pitch-0.1,-1.5,1.5);else if(k==='ArrowDown')V.pitch=clamp(V.pitch+0.1,-1.5,1.5);
+  else if(k==='+'||k==='=')V.dist=clamp(V.dist*0.92,1.6,6);else if(k==='-')V.dist=clamp(V.dist/0.92,1.6,6);else used=false;
+  if(used)e.preventDefault();
+});
+
+/* ---------- OBJ export ---------- */
+$('obj').addEventListener('click',()=>{
+  const sc=S.len/100, out=['# Lemon, procedural, metres',`# length ${S.len.toFixed(1)} cm, ratio ${S.ratio.toFixed(2)}`];
+  let off=1;
+  const dump=(name,m)=>{
+    out.push('o '+name);
+    for(let i=0;i<m.P.length;i+=3)out.push(`v ${(m.P[i]*sc).toFixed(6)} ${(m.P[i+1]*sc).toFixed(6)} ${(m.P[i+2]*sc).toFixed(6)}`);
+    for(let i=0;i<m.N.length;i+=3)out.push(`vn ${m.N[i].toFixed(4)} ${m.N[i+1].toFixed(4)} ${m.N[i+2].toFixed(4)}`);
+    for(let i=0;i<m.I.length;i+=3){const a=m.I[i]+off,b=m.I[i+1]+off,c=m.I[i+2]+off;out.push(`f ${a}//${a} ${b}//${b} ${c}//${c}`)}
+    off+=m.P.length/3;
+  };
+  for(const k in meshes)dump(k==='peel'?'lemon_peel':k==='cap'?'cut_face':k,meshes[k].src);
+  const blob=new Blob([out.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lemon.obj';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  $('note').textContent=`Exported lemon.obj: ${stats.tris.toLocaleString()} triangles, ${S.len.toFixed(1)} cm long.`;
+});
+
+/* ---------- loop ---------- */
+let t0=performance.now();
+function frame(t){
+  const dt=Math.min((t-t0)/1000,0.1);t0=t;
+  const k=Math.min(1,dt*6);
+  V.tilt+=(V.gTilt-V.tilt)*k;
+  if(V.gYaw!==null&&!V.dragging){V.yaw+=(V.gYaw-V.yaw)*k}
+  if(V.gPitch!==null&&!V.dragging){V.pitch+=(V.gPitch-V.pitch)*k}
+  if(S.spin&&!V.dragging&&V.gYaw===null&&!matchMedia('(prefers-reduced-motion: reduce)').matches)V.yaw+=dt*0.5;
+  $('shadow').style.opacity=S.view==='whole'?1:0.7;
+  draw();requestAnimationFrame(frame);
+}
+try{
+  if(!gl)throw new Error('no webgl2');
+  initGL();rebuild();syncUI();requestAnimationFrame(frame);
+}catch(err){
+  console.error(err);$('nogl').style.display='flex';$('nogl').textContent='This model needs WebGL 2 ('+err.message+').';
+}
+</script>
+</body>
+</html>

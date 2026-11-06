@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic Tac Toe</title>
+<style>
+  :root {
+    --bg: #f4f1ea; --ink: #1d1d1f; --cell: #ffffff; --line: #1d1d1f;
+    --x: #b3261e; --o: #0b57a4; --win: #fff1b8; --muted: #55524b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17181a; --ink: #f2f0ea; --cell: #232427; --line: #f2f0ea;
+            --x: #ff8a80; --o: #8ab8ff; --win: #5a4a12; --muted: #b5b1a6; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { width: min(92vw, 380px); padding: 16px 0; text-align: center; }
+  h1 { font-size: 1.5rem; margin: 0 0 12px; }
+  #status { font-size: 1.2rem; font-weight: 600; min-height: 2.8rem; margin: 0 0 12px; display: flex; align-items: center; justify-content: center; }
+  #board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cell {
+    aspect-ratio: 1; min-height: 88px; font: inherit; font-size: clamp(2.5rem, 14vw, 4rem); font-weight: 700;
+    background: var(--cell); color: var(--ink); border: 3px solid var(--line); border-radius: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .cell:hover:not(:disabled):not(.filled) { background: var(--win); }
+  .cell:focus-visible, #restart:focus-visible { outline: 4px solid var(--o); outline-offset: 2px; }
+  .cell.filled { cursor: default; }
+  .cell.X { color: var(--x); }
+  .cell.O { color: var(--o); }
+  .cell.win { background: var(--win); border-width: 6px; }
+  .cell.win::after { content: ""; }
+  .cell:disabled { opacity: 1; }
+  #board.over .cell:not(.win) { opacity: .6; }
+  #restart {
+    margin-top: 16px; font: inherit; font-size: 1.05rem; font-weight: 600; padding: 12px 24px; min-height: 48px;
+    background: var(--ink); color: var(--bg); border: 0; border-radius: 10px; cursor: pointer;
+  }
+  .hint { color: var(--muted); font-size: .85rem; margin-top: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tic Tac Toe</h1>
+  <p id="status" role="status" aria-live="polite"></p>
+  <div id="board" role="group" aria-label="Tic tac toe board"></div>
+  <button id="restart" type="button">New game</button>
+  <p class="hint">Two players share one board. X goes first.</p>
+</main>
+<script>
+  var LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  var board, turn, over;
+  var boardEl = document.getElementById('board');
+  var statusEl = document.getElementById('status');
+  var cells = [];
+
+  for (var i = 0; i < 9; i++) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cell';
+    b.dataset.i = i;
+    b.addEventListener('click', onPlay);
+    boardEl.appendChild(b);
+    cells.push(b);
+  }
+
+  function winner() {
+    for (var k = 0; k < LINES.length; k++) {
+      var l = LINES[k];
+      if (board[l[0]] && board[l[0]] === board[l[1]] && board[l[0]] === board[l[2]]) return l;
+    }
+    return null;
+  }
+
+  function label(i) {
+    return 'Row ' + (Math.floor(i / 3) + 1) + ', column ' + (i % 3 + 1) + ', ' + (board[i] || 'empty');
+  }
+
+  function render(winLine) {
+    cells.forEach(function (c, i) {
+      c.textContent = board[i];
+      c.className = 'cell' + (board[i] ? ' filled ' + board[i] : '') +
+        (winLine && winLine.indexOf(i) > -1 ? ' win' : '');
+      c.setAttribute('aria-label', label(i));
+      c.setAttribute('aria-disabled', (over || board[i]) ? 'true' : 'false');
+    });
+    boardEl.className = over ? 'over' : '';
+  }
+
+  function onPlay(e) {
+    var i = +e.currentTarget.dataset.i;
+    if (over || board[i]) return;
+    board[i] = turn;
+    var line = winner();
+    if (line) {
+      over = true;
+      statusEl.textContent = 'Player ' + turn + ' wins!';
+    } else if (board.every(Boolean)) {
+      over = true;
+      statusEl.textContent = "It's a draw. Nobody wins this round.";
+    } else {
+      turn = turn === 'X' ? 'O' : 'X';
+      statusEl.textContent = 'Player ' + turn + "'s turn";
+    }
+    render(line);
+  }
+
+  function reset() {
+    board = Array(9).fill('');
+    turn = 'X';
+    over = false;
+    statusEl.textContent = "Player X's turn";
+    render(null);
+  }
+
+  document.getElementById('restart').addEventListener('click', reset);
+  reset();
+</script>
+</body>
+</html>

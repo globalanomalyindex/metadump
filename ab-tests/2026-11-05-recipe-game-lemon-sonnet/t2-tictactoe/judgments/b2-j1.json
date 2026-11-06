@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"basic": 9, "correctness": 9, "usability": 9, "craft": 7, "code": 8, "overall": 9, "note": "Plain, complete two-player game with row/column aria-labels, live status, clear win highlight, dark mode and a solid phone layout; no layout glitches."},
+"X": {"basic": 7, "correctness": 8, "usability": 6, "craft": 6, "code": 8, "overall": 6, "note": "Correct with scores and alternating starter, but the board rows squash unevenly once marks appear, labels are only 'Cell n', and there is no cell-state announcement."},
+"Y": {"basic": 4, "correctness": 8, "usability": 8, "craft": 7, "code": 5, "overall": 6, "note": "Best-looking with SVG marks, arrow keys and focus handling, but it adds a computer opponent, scoreboard and mode toggle (overbuilt) and the board rows visibly squash at game end."},
+"Z": {"basic": 8, "correctness": 8, "usability": 6, "craft": 6, "code": 9, "overall": 7, "note": "Smallest and cleanest working game with a fixed grid that stays stable, but only 'Cell n' labels, no focus styling, and a bare look."}
+},
+"ranking": ["W", "Z", "Y", "X"]}

@@ -1,0 +1,5 @@
+{"block": "b1", "judge": "j3", "scores": {"W": {"basic": 8, "correctness": 9, "usability": 6, "craft": 6, "code": 8, "overall": 7, "note": "Correct and simple, but cells only say 'Cell n' to screen readers, there is no custom focus style, and the look is plain."},
+"X": {"basic": 8, "correctness": 9, "usability": 9, "craft": 8, "code": 7, "overall": 8.5, "note": "Correct and tidy, with row/column/state aria labels, a focus ring, dark mode and a 44px button; the draw message is a bit wordy."},
+"Y": {"basic": 8, "correctness": 8, "usability": 7, "craft": 6, "code": 7, "overall": 6.5, "note": "Bold, friendly blue look, but the board rows visibly squash at the end state, and aria-disabled cells still take clicks and focus."},
+"Z": {"basic": 8, "correctness": 9, "usability": 6, "craft": 6, "code": 7, "overall": 7, "note": "Correct and clean, but screen-reader labels are bare 'Cell n' and the starter-flip setup is awkward."}},
+"ranking": ["X", "W", "Z", "Y"]}

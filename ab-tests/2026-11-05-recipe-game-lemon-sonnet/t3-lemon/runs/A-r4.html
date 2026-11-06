@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lemon 3D</title>
+<style>
+  :root{--bg1:#2b3a2f;--bg2:#0f1713;--ink:#fdf6c8;--acc:#f6d928}
+  html,body{margin:0;height:100%;background:radial-gradient(circle at 50% 40%,var(--bg1),var(--bg2));color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  canvas.drag{cursor:grabbing}
+  .panel{position:fixed;left:16px;bottom:16px;background:rgba(10,16,12,.72);backdrop-filter:blur(6px);border:1px solid rgba(246,217,40,.25);border-radius:14px;padding:14px 16px;width:260px;max-width:calc(100vw - 64px);font-size:13px}
+  .panel h1{font-size:15px;margin:0 0 10px;letter-spacing:.04em;color:var(--acc)}
+  label{display:flex;justify-content:space-between;align-items:center;margin:8px 0 2px}
+  input[type=range]{width:100%;accent-color:var(--acc)}
+  .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  button{background:#1d2a21;color:var(--ink);border:1px solid rgba(246,217,40,.4);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+  button.on{background:var(--acc);color:#2a2400;font-weight:600}
+  button:hover{border-color:var(--acc)}
+  #state{position:fixed;right:16px;top:16px;font:12px ui-monospace,Menlo,monospace;background:rgba(10,16,12,.6);padding:8px 10px;border-radius:10px;line-height:1.6;opacity:.9}
+  .hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);font-size:12px;opacity:.7}
+  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:18px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hint">Drag to rotate · scroll to zoom</div>
+<div id="state"></div>
+<div class="panel">
+  <h1>LEMON</h1>
+  <label><span>Ripeness</span><span id="ripeV"></span></label>
+  <input id="ripe" type="range" min="0" max="100" value="100">
+  <label><span>Rind bumpiness</span><span id="bumpV"></span></label>
+  <input id="bump" type="range" min="0" max="100" value="55">
+  <label><span>Cut position</span><span id="cutV"></span></label>
+  <input id="cut" type="range" min="-60" max="60" value="0" disabled>
+  <div class="row">
+    <button id="spin" class="on">Auto-spin: on</button>
+    <button id="slice">Cut open: off</button>
+    <button id="reset">Reset</button>
+  </div>
+</div>
+<div id="err">WebGL is not available in this browser.</div>
+<script>
+(function(){
+"use strict";
+var canvas=document.getElementById('c');
+var gl=canvas.getContext('webgl',{antialias:true})||canvas.getContext('experimental-webgl');
+if(!gl){document.getElementById('err').style.display='flex';return;}
+
+var S={yaw:0.6,pitch:0.35,zoom:4.2,ripe:1,bump:0.55,cutOn:false,cut:0,spin:true};
+var DEF=JSON.parse(JSON.stringify(S));
+
+var VS='attribute vec3 aPos;attribute vec3 aNor;uniform mat4 uMVP;uniform mat3 uRot;varying vec3 vP;varying vec3 vN;varying vec3 vW;'+
+'void main(){vP=aPos;vN=aNor;vW=uRot*aPos;gl_Position=uMVP*vec4(aPos,1.0);}';
+
+var FS='precision highp float;varying vec3 vP;varying vec3 vN;varying vec3 vW;'+
+'uniform mat3 uRot;uniform float uRipe;uniform float uBump;uniform float uCutOn;uniform float uCut;uniform vec3 uCam;'+
+'float h3(vec3 p){p=fract(p*0.3183099+vec3(.1,.2,.3));p*=17.0;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}'+
+'float vn(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.0-2.0*f);'+
+'return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),'+
+'mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}'+
+'float pores(vec3 p){vec3 q=p*34.0;vec3 i=floor(q);float m=1.0;'+
+'for(int a=-1;a<=1;a++)for(int b=-1;b<=1;b++)for(int c=-1;c<=1;c++){vec3 o=vec3(float(a),float(b),float(c));vec3 r=i+o;'+
+'vec3 pt=r+vec3(h3(r),h3(r+7.3),h3(r+3.7));m=min(m,length(q-pt));}return m;}'+
+'float height(vec3 p){return vn(p*9.0)*0.5+vn(p*22.0)*0.25-smoothstep(0.0,0.42,pores(p))*0.0-(1.0-smoothstep(0.1,0.38,pores(p)))*0.9;}'+
+'void main(){'+
+' if(uCutOn>0.5&&vP.y>uCut)discard;'+
+' vec3 L=normalize(vec3(-0.5,0.8,0.7));vec3 L2=normalize(vec3(0.7,-0.2,-0.6));'+
+' vec3 V=normalize(uCam-vW);'+
+' if(!gl_FrontFacing){'+
+'  float ang=atan(vP.z,vP.y);float seg=abs(fract(ang*10.0/6.28318+0.5)-0.5);'+
+'  float pith=smoothstep(0.03,0.07,seg);'+
+'  float fib=vn(vec3(ang*18.0,vP.x*6.0,length(vP.yz)*30.0));'+
+'  vec3 flesh=mix(vec3(1.0,0.93,0.35),vec3(1.0,0.82,0.18),fib);'+
+'  vec3 col=mix(vec3(1.0,0.98,0.8),flesh,pith);'+
+'  float rr=length(vP.yz);float ring=smoothstep(0.0,0.1,rr);'+
+'  col=mix(vec3(0.98,0.97,0.82),col,ring);'+
+'  float d=0.55+0.45*max(dot(normalize(-vN),L),0.0);'+
+'  gl_FragColor=vec4(col*d*(0.75+0.25*dot(normalize(-vN),L)),1.0);return;}'+
+' vec3 N=normalize(vN);'+
+' float e=0.02;float h0=height(vP);'+
+' vec3 g=vec3(height(vP+vec3(e,0,0))-h0,height(vP+vec3(0,e,0))-h0,height(vP+vec3(0,0,e))-h0)/e;'+
+' g-=N*dot(g,N);'+
+' vec3 Nb=normalize(N-g*uBump*0.045);'+
+' vec3 Nw=normalize(uRot*Nb);'+
+' float t=abs(vP.x)/1.1;'+
+' vec3 unripe=vec3(0.45,0.62,0.12);vec3 ripe=vec3(0.98,0.80,0.06);'+
+' vec3 base=mix(unripe,ripe,uRipe);'+
+' base=mix(base,mix(vec3(0.62,0.7,0.15),vec3(0.95,0.68,0.05),uRipe),smoothstep(0.7,1.0,t)*0.8);'+
+' base*=0.9+0.2*vn(vP*4.0);'+
+' float p=pores(vP);base*=mix(0.78,1.0,smoothstep(0.08,0.3,p));'+
+' float dif=max(dot(Nw,L),0.0);float dif2=max(dot(Nw,L2),0.0)*0.25;'+
+' float wrap=0.5+0.5*dot(Nw,L);'+
+' vec3 H=normalize(L+V);float sp=pow(max(dot(Nw,H),0.0),24.0+30.0*uRipe)*0.35;'+
+' float sp2=pow(max(dot(normalize(vN),normalize(uRot[0]*0.0+normalize(uRot*normalize(vN)))),0.0),1.0)*0.0;'+
+' float rim=pow(1.0-max(dot(Nw,V),0.0),3.0)*0.18;'+
+' vec3 col=base*(0.28+0.62*dif+0.18*wrap)+base*dif2*vec3(0.6,0.8,1.0)+vec3(1.0,0.97,0.8)*sp+vec3(0.9,1.0,0.6)*rim;'+
+' gl_FragColor=vec4(pow(col,vec3(0.92)),1.0);}';
+
+function sh(t,s){var o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);
+  if(!gl.getShaderParameter(o,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(o));}return o;}
+var pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));
+gl.bindAttribLocation(pr,0,'aPos');gl.bindAttribLocation(pr,1,'aNor');gl.linkProgram(pr);
+if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){console.error(gl.getProgramInfoLog(pr));}
+gl.useProgram(pr);
+
+// ---- geometry: surface of revolution about the x axis ----
+function prof(u){ // u in [0,1] -> {x,r}
+  var th=Math.PI*u, s=Math.sin(th), c=Math.cos(th);
+  var x=c*0.98;
+  var tip=Math.pow(Math.abs(c),14);
+  x+= (c>=0?1:-1)*0.14*tip;               // nipple stretch
+  var body=0.66*Math.pow(s,0.78);
+  var asym=1+0.04*c;                       // slightly fuller on one side
+  var r=body*asym;
+  r*= (1-0.28*tip) ;                       // narrow the nipple
+  return {x:x,r:r};
+}
+var NU=120,NV=72,pos=[],nor=[],idx=[];
+for(var i=0;i<=NU;i++){
+  var u=i/NU,p=prof(u),e=1e-4;
+  var a=prof(Math.max(0,u-e)),b=prof(Math.min(1,u+e));
+  var dx=b.x-a.x,dr=b.r-a.r;
+  var nx=dr,nr=-dx,l=Math.hypot(nx,nr)||1;nx/=l;nr/=l;
+  if(i===0){nx=1;nr=0;} if(i===NU){nx=-1;nr=0;}
+  // sign: ensure outward
+  if(i>0&&i<NU&&nr<0){nx=-nx;nr=-nr;}
+  for(var j=0;j<=NV;j++){
+    var ph=j/NV*Math.PI*2,cp=Math.cos(ph),sp=Math.sin(ph);
+    pos.push(p.x,p.r*cp,p.r*sp);
+    nor.push(nx,nr*cp,nr*sp);
+  }
+}
+for(i=0;i<NU;i++)for(j=0;j<NV;j++){
+  var q=i*(NV+1)+j;idx.push(q,q+NV+1,q+1,q+1,q+NV+1,q+NV+2);
+}
+function buf(t,d,T){var b=gl.createBuffer();gl.bindBuffer(t,b);gl.bufferData(t,d,gl.STATIC_DRAW);return b;}
+buf(gl.ARRAY_BUFFER,new Float32Array(pos));gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+buf(gl.ARRAY_BUFFER,new Float32Array(nor));gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
+buf(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idx));
+var NI=idx.length;
+
+// ---- uniforms ----
+var U={};['uMVP','uRot','uRipe','uBump','uCutOn','uCut','uCam'].forEach(function(n){U[n]=gl.getUniformLocation(pr,n);});
+
+function persp(f,a,n,fa){var t=1/Math.tan(f/2),nf=1/(n-fa);
+  return [t/a,0,0,0, 0,t,0,0, 0,0,(fa+n)*nf,-1, 0,0,2*fa*n*nf,0];}
+function mul(A,B){var o=new Array(16);for(var c=0;c<4;c++)for(var r=0;r<4;r++){var s=0;for(var k=0;k<4;k++)s+=A[k*4+r]*B[c*4+k];o[c*4+r]=s;}return o;}
+
+function rotMat(){ // R = Rx(pitch) * Ry(yaw)   (column-major 3x3)
+  var cy=Math.cos(S.yaw),sy=Math.sin(S.yaw),cx=Math.cos(S.pitch),sx=Math.sin(S.pitch);
+  var Ry=[cy,0,-sy, 0,1,0, sy,0,cy];
+  var Rx=[1,0,0, 0,cx,sx, 0,-sx,cx];
+  var o=new Array(9);
+  for(var c=0;c<3;c++)for(var r=0;r<3;r++){var s=0;for(var k=0;k<3;k++)s+=Rx[k*3+r]*Ry[c*3+k];o[c*3+r]=s;}
+  return o;
+}
+
+function resize(){
+  var d=Math.min(window.devicePixelRatio||1,2);
+  var w=Math.floor(canvas.clientWidth*d),h=Math.floor(canvas.clientHeight*d);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+  gl.viewport(0,0,w,h);
+}
+
+gl.enable(gl.DEPTH_TEST);
+
+var stateEl=document.getElementById('state');
+function draw(){
+  resize();
+  gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  var R=rotMat();
+  var P=persp(0.8,canvas.width/canvas.height,0.1,50);
+  var M=[R[0],R[1],R[2],0, R[3],R[4],R[5],0, R[6],R[7],R[8],0, 0,0,-S.zoom,1];
+  gl.uniformMatrix4fv(U.uMVP,false,new Float32Array(mul(P,M)));
+  gl.uniformMatrix3fv(U.uRot,false,new Float32Array(R));
+  gl.uniform1f(U.uRipe,S.ripe);gl.uniform1f(U.uBump,S.bump*2);
+  gl.uniform1f(U.uCutOn,S.cutOn?1:0);gl.uniform1f(U.uCut,S.cut);
+  gl.uniform3f(U.uCam,0,0,S.zoom);
+  gl.disable(gl.CULL_FACE);
+  gl.drawElements(gl.TRIANGLES,NI,gl.UNSIGNED_SHORT,0);
+  var deg=function(r){return ((r*180/Math.PI)%360+360)%360;};
+  stateEl.innerHTML='yaw '+deg(S.yaw).toFixed(0)+'°<br>pitch '+(S.pitch*180/Math.PI).toFixed(0)+'°<br>zoom '+S.zoom.toFixed(1)+
+    '<br>ripeness '+Math.round(S.ripe*100)+'%<br>cut '+(S.cutOn?'open @ '+S.cut.toFixed(2):'closed');
+}
+
+// ---- UI ----
+var el=function(i){return document.getElementById(i);};
+var ripe=el('ripe'),bump=el('bump'),cut=el('cut'),spin=el('spin'),slice=el('slice');
+function ui(){
+  el('ripeV').textContent=Math.round(S.ripe*100)+'%';
+  el('bumpV').textContent=Math.round(S.bump*100)+'%';
+  el('cutV').textContent=S.cutOn?S.cut.toFixed(2):'—';
+  cut.disabled=!S.cutOn;
+  spin.textContent='Auto-spin: '+(S.spin?'on':'off');spin.classList.toggle('on',S.spin);
+  slice.textContent='Cut open: '+(S.cutOn?'on':'off');slice.classList.toggle('on',S.cutOn);
+  ripe.value=S.ripe*100;bump.value=S.bump*100;cut.value=S.cut*100;
+}
+ripe.oninput=function(){S.ripe=ripe.value/100;ui();};
+bump.oninput=function(){S.bump=bump.value/100;ui();};
+cut.oninput=function(){S.cut=cut.value/100;ui();};
+spin.onclick=function(){S.spin=!S.spin;ui();};
+slice.onclick=function(){S.cutOn=!S.cutOn;if(S.cutOn){S.spin=false;S.pitch=0.9;S.yaw=0.3;}ui();};
+el('reset').onclick=function(){for(var k in DEF)S[k]=DEF[k];ui();};
+
+// drag + wheel + pinch
+var drag=null,pts={};
+canvas.addEventListener('pointerdown',function(e){canvas.setPointerCapture(e.pointerId);pts[e.pointerId]=[e.clientX,e.clientY];
+  drag={x:e.clientX,y:e.clientY};canvas.classList.add('drag');});
+canvas.addEventListener('pointermove',function(e){
+  if(!(e.pointerId in pts))return;
+  var old=pts[e.pointerId];pts[e.pointerId]=[e.clientX,e.clientY];
+  var ids=Object.keys(pts);
+  if(ids.length===2){
+    var a=pts[ids[0]],b=pts[ids[1]],oa=ids[0]==e.pointerId?old:a,ob=ids[1]==e.pointerId?old:b;
+    var nd=Math.hypot(a[0]-b[0],a[1]-b[1]),od=Math.hypot(oa[0]-ob[0],oa[1]-ob[1]);
+    if(od>0)S.zoom=Math.min(9,Math.max(2.2,S.zoom*od/nd));
+    return;
+  }
+  S.yaw+=(e.clientX-old[0])*0.01;
+  S.pitch=Math.max(-1.5,Math.min(1.5,S.pitch+(e.clientY-old[1])*0.01));
+});
+function up(e){delete pts[e.pointerId];if(!Object.keys(pts).length)canvas.classList.remove('drag');}
+canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
+canvas.addEventListener('wheel',function(e){e.preventDefault();
+  S.zoom=Math.min(9,Math.max(2.2,S.zoom*Math.exp(e.deltaY*0.001)));},{passive:false});
+
+ui();
+var last=performance.now();
+function frame(t){
+  var dt=Math.min(0.05,(t-last)/1000);last=t;
+  if(S.spin&&!Object.keys(pts).length)S.yaw+=dt*0.5;
+  draw();requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

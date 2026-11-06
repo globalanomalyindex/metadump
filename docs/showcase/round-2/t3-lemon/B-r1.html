@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lemon, 3D model</title>
+<style>
+:root{--bg:#10191a;--bg2:#1b2a2a;--panel:#162223;--line:#2c4040;--ink:#eef2e4;--mute:#97aaa4;--acc:#f3d21c;--acc2:#d8a40a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;min-height:100vh}
+header{padding:12px 16px;display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line)}
+header h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.01em}
+header span{color:var(--mute);font-size:12.5px}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 330px;min-height:0}
+#stage{position:relative;min-height:420px;background:radial-gradient(120% 90% at 50% 38%,#31484a 0%,#1b2b2c 55%,#101a1b 100%);overflow:hidden;touch-action:none;cursor:grab}
+#stage.drag{cursor:grabbing}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hint{position:absolute;left:14px;bottom:12px;font-size:12px;color:var(--mute);pointer-events:none;text-shadow:0 1px 2px #000}
+#read{position:absolute;left:14px;top:12px;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cfe0d6;background:#0c1516aa;border:1px solid var(--line);border-radius:8px;padding:8px 10px;pointer-events:none;backdrop-filter:blur(4px)}
+#read b{color:var(--acc);font-weight:600}
+#nogl{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--mute)}
+aside{background:var(--panel);border-left:1px solid var(--line);padding:12px 14px 18px;overflow:auto;max-height:calc(100vh - 50px)}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);margin:16px 0 8px;font-weight:600}
+h2:first-child{margin-top:2px}
+.row{display:grid;grid-template-columns:96px 1fr 44px;align-items:center;gap:8px;margin:7px 0}
+.row label{color:#cfdcd4}
+.row output{text-align:right;font:12px ui-monospace,Menlo,monospace;color:var(--acc)}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;color:var(--ink);background:#223636;border:1px solid var(--line);border-radius:7px;padding:8px 11px;min-height:36px;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+button:hover{background:#2c4545;border-color:#4c6c68}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button.on{background:var(--acc);color:#1a1700;border-color:var(--acc2);font-weight:600}
+button.go{background:#2a4a35;border-color:#46805a}
+@media (max-width:820px){main{grid-template-columns:1fr;grid-template-rows:62vh auto}aside{max-height:none;border-left:0;border-top:1px solid var(--line)}header span{display:none}}
+</style>
+</head>
+<body>
+<header><h1>Lemon</h1><span>Citrus limon as a mesh: nipple, stem end, pitted waxy peel. Drag to turn it, scroll to zoom.</span></header>
+<main>
+<div id="stage">
+  <canvas id="gl"></canvas>
+  <div id="read"></div>
+  <div id="hint">drag: orbit &middot; wheel / pinch: zoom &middot; double-click: reset view</div>
+  <div id="nogl">This browser has no WebGL 2, so the lemon cannot be drawn here.</div>
+</div>
+<aside id="panel">
+  <h2>Looks</h2>
+  <div class="btns" id="presets"></div>
+  <h2>Form</h2><div id="g-form"></div>
+  <h2>Peel</h2><div id="g-peel"></div>
+  <h2>Light</h2><div id="g-light"></div>
+  <h2>Show</h2><div class="btns" id="toggles"></div>
+  <h2>Model</h2>
+  <div class="btns">
+    <button id="roll" title="New random irregularity and new gland pattern">Roll another fruit</button>
+    <button id="reset">Reset view</button>
+    <button id="obj" class="go">Download .obj</button>
+  </div>
+</aside>
+</main>
+<script>
+(function(){
+"use strict";
+var UNIT_CM = 7.5;               // 1 model unit = 7.5 cm, so the default lemon is about 7.5 cm long
+var P = {ratio:1.45,nip:0.07,shoulder:0.08,irr:1.0,seed:3,
+         pit:0.65,density:55,rough:0.42,ripe:0.8,
+         light:35,sss:0.6,
+         stem:true,leaf:false,cut:false,wire:false,auto:true};
+var DEF = JSON.parse(JSON.stringify(P));
+var cam = {yaw:0.35,pitch:0.22,dist:2.15};
+var CAM0 = JSON.parse(JSON.stringify(cam));
+
+/* ---------- small math ---------- */
+function sub(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]]}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+function len(a){return Math.hypot(a[0],a[1],a[2])}
+function nrm(a){var l=len(a)||1;return [a[0]/l,a[1]/l,a[2]/l]}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
+function persp(f,a,n,fa){var t=1/Math.tan(f/2),r=1/(n-fa);return new Float32Array([t/a,0,0,0, 0,t,0,0, 0,0,(n+fa)*r,-1, 0,0,2*n*fa*r,0])}
+function lookAt(e,c,u){var z=nrm(sub(e,c)),x=nrm(cross(u,z)),y=cross(z,x);
+  return new Float32Array([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -dot(x,e),-dot(y,e),-dot(z,e),1])}
+function mul(a,b){var o=new Float32Array(16);for(var i=0;i<4;i++)for(var j=0;j<4;j++){var s=0;for(var k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];o[i*4+j]=s}return o}
+var ALPHA=-82*Math.PI/180;       // fruit lies on its side, blossom end tilted a little up
+var ca=Math.cos(ALPHA),sa=Math.sin(ALPHA);
+var MODEL=new Float32Array([ca,sa,0,0, -sa,ca,0,0, 0,0,1,0, 0,0,0,1]);
+function toWorld(p){return [ca*p[0]-sa*p[1], sa*p[0]+ca*p[1], p[2]]}
+function toObj(p){return [ca*p[0]+sa*p[1], -sa*p[0]+ca*p[1], p[2]]}
+
+/* ---------- geometry ---------- */
+function rng(seed){var s=seed*9301+49297;return function(){s=(s*9301+49297)%233280;return s/233280}}
+function surf(fn,nu,nv,center,uClamp){
+  var pos=[],nr=[],uv=[],idx=[],e=1e-3;
+  for(var i=0;i<=nu;i++){for(var j=0;j<=nv;j++){
+    var u=i/nu,v=j/nv,p=fn(u,v);
+    var uc=uClamp?Math.min(Math.max(u,uClamp),1-uClamp):u;
+    var u0=Math.max(uc-e,0),u1=Math.min(uc+e,1),v0=v-e,v1=v+e;
+    var du=sub(fn(u1,v),fn(u0,v)),dv=sub(fn(uc,v1),fn(uc,v0));
+    var n=cross(du,dv);
+    if(len(n)<1e-12){n=[0,1,0]}else n=nrm(n);
+    if(center){var c=center(u,v);if(dot(n,sub(p,c))<0)n=[-n[0],-n[1],-n[2]]}
+    pos.push(p[0],p[1],p[2]);nr.push(n[0],n[1],n[2]);uv.push(u,v);
+  }}
+  for(var a=0;a<nu;a++)for(var b=0;b<nv;b++){
+    var q=a*(nv+1)+b,r=q+nv+1;idx.push(q,q+1,r,q+1,r+1,r);
+  }
+  return {pos:pos,nrm:nr,uv:uv,idx:idx,nu:nu,nv:nv};
+}
+function lemonFn(){
+  var a=0.5,b=a/P.ratio,R=rng(P.seed),ph=[R()*6.28,R()*6.28,R()*6.28],am=[R(),R(),R()];
+  return function(u,v){
+    var t=u*Math.PI,phi=v*Math.PI*2,ct=Math.cos(t),st=Math.sin(t);
+    var tipW=0.34,gt=Math.exp(-(t/tipW)*(t/tipW));
+    var ts=Math.PI-t,gs=Math.exp(-(ts/0.38)*(ts/0.38));
+    var y=a*ct+P.nip*gt-0.02*gs;
+    var r=b*st*(1+P.shoulder*ct)*(1-Math.min(P.nip*5.2,0.62)*gt)*(1-0.13*gs);
+    var irr=P.irr*(0.028*(am[0]-0.2)*Math.sin(2*phi+ph[0]+2.2*t)+0.022*(am[1]+0.1)*Math.sin(3*phi+ph[1]+1.5*t)+0.014*Math.sin(5*phi+ph[2]+4*t));
+    r*=1+irr*st;
+    y+=P.irr*0.012*(am[2]-0.5)*Math.sin(phi+ph[1])*st;
+    return [r*Math.cos(phi),y,r*Math.sin(phi)];
+  };
+}
+function tubeFn(path,rad){
+  return function(u,v){
+    var c=path(u),c2=path(Math.min(u+1e-3,1)),c1=path(Math.max(u-1e-3,0));
+    var tg=nrm(sub(c2,c1)),n2=[-tg[1],tg[0],0],phi=v*Math.PI*2;
+    var r=rad(u);
+    return [c[0]+r*Math.cos(phi)*n2[0], c[1]+r*Math.cos(phi)*n2[1], c[2]+r*Math.sin(phi)];
+  };
+}
+var stemPath=function(u){return [0.05*u*u,-0.5-0.0-0.02-0.14*u+0.0,0.0]};
+var Y_END=0;
+function build(){
+  var mesh={};
+  var lf=lemonFn();
+  mesh.lemon=surf(lf,110,72,function(u,v){var p=lf(u,v);return [0,p[1],0]},0.004);
+  // bounds and profile
+  var minY=1e9,maxY=-1e9,maxR=0,ring=[];
+  var p=mesh.lemon.pos;
+  for(var i=0;i<p.length;i+=3){minY=Math.min(minY,p[i+1]);maxY=Math.max(maxY,p[i+1]);maxR=Math.max(maxR,Math.hypot(p[i],p[i+2]))}
+  var nv=mesh.lemon.nv;
+  for(var k=0;k<=mesh.lemon.nu;k++){var q=k*(nv+1)*3;ring.push([p[q+1],Math.hypot(p[q],p[q+2])])}
+  var prof=new Float32Array(64);
+  for(var s=0;s<64;s++){var y=maxY-(maxY-minY)*s/63,best=0;
+    for(var m=0;m<ring.length-1;m++){var y0=ring[m][0],y1=ring[m+1][0];
+      if((y0>=y&&y1<=y)||(y0<=y&&y1>=y)){var f=(y1===y0)?0:(y-y0)/(y1-y0);best=ring[m][1]+(ring[m+1][1]-ring[m][1])*f;break}}
+    prof[s]=best}
+  mesh.prof=prof;mesh.y0=minY;mesh.y1=maxY;mesh.maxR=maxR;
+  // lines for wireframe
+  var li=[],nu=mesh.lemon.nu;
+  for(var a=0;a<=nu;a++)for(var b=0;b<=nv;b++){var q0=a*(nv+1)+b;
+    if(a%2===0&&b<nv)li.push(q0,q0+1);
+    if(b%3===0&&a<nu)li.push(q0,q0+nv+1);}
+  mesh.lemon.lines=li;
+  // stem end location
+  var yEnd=lf(1,0)[1];Y_END=yEnd;
+  var sp=function(u){return [0.05*u*u,yEnd-0.15*u,0]};
+  if(P.stem){
+    mesh.stem=surf(tubeFn(sp,function(u){return 0.021*(1-0.25*u)*(1-Math.pow(Math.max(u-0.92,0)/0.08,2)*0.9)}),14,14,function(u){return sp(u)},0);
+    var cal=function(u,v){var phi=v*Math.PI*2,lobes=1+0.16*Math.cos(5*phi)*u;
+      var rho=0.088*u*lobes,h=0.032*(1-u*u);
+      return [rho*Math.cos(phi),yEnd+0.012-0.012*u-h*0.9,rho*Math.sin(phi)]};
+    mesh.calyx=surf(cal,10,30,function(){return [0,yEnd-0.02,0]},0);
+  }
+  if(P.leaf){
+    var E=sp(1),dirA=nrm([0.62,-0.62,0.22]),upv=nrm([0.1,0.35,1]),side=nrm(cross(dirA,upv)),nup=cross(side,dirA);
+    mesh.leaf=surf(function(u,v){
+      var L=0.5,w=0.12*Math.pow(Math.sin(Math.PI*Math.pow(u,0.72)),0.85),x=(v*2-1);
+      var c=[E[0]+dirA[0]*u*L, E[1]+dirA[1]*u*L, E[2]+dirA[2]*u*L];
+      var droop=0.16*u*u, fold=0.35*Math.abs(x)*w;
+      return [c[0]+side[0]*w*x+nup[0]*(fold-droop), c[1]+side[1]*w*x+nup[1]*(fold-droop)-0.0*u, c[2]+side[2]*w*x+nup[2]*(fold-droop)];
+    },36,10,null,0);
+  }
+  // ground height
+  var gy=1e9;for(var i2=0;i2<p.length;i2+=3){var w=toWorld([p[i2],p[i2+1],p[i2+2]]);gy=Math.min(gy,w[1])}
+  mesh.ground=gy;
+  return mesh;
+}
+
+/* ---------- GL ---------- */
+var canvas=document.getElementById('gl'),stage=document.getElementById('stage');
+var gl=canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:false});
+if(!gl){document.getElementById('nogl').style.display='flex';document.getElementById('read').style.display='none';}
+
+var VS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;layout(location=1) in vec3 aNrm;layout(location=2) in vec2 aUV;\nuniform mat4 uVP,uM;out vec3 vW,vN,vO;out vec2 vUV;\nvoid main(){vO=aPos;vec4 w=uM*vec4(aPos,1.);vW=w.xyz;vN=mat3(uM)*aNrm;vUV=aUV;gl_Position=uVP*w;}";
+var FS=[
+"#version 300 es","precision highp float;",
+"in vec3 vW,vN,vO;in vec2 vUV;out vec4 o;",
+"uniform int uMode;uniform vec3 uEyeW,uEyeO,uLight;uniform mat4 uM;",
+"uniform float uPit,uScale,uRough,uRipe,uSSS,uCut,uSeed,uY0,uY1,uGround;uniform float uProf[64];",
+"vec3 hash33(vec3 p){p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6)));return fract(sin(p)*43758.5453);}",
+"float worley(vec3 x,out float id){vec3 p=floor(x),f=fract(x);float md=8.;id=0.;",
+" for(int k=-1;k<=1;k++)for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){vec3 g=vec3(float(i),float(j),float(k));vec3 h=hash33(p+g);vec3 r=g+h-f;float d=dot(r,r);if(d<md){md=d;id=fract(h.x*7.+h.y*13.);}}",
+" return sqrt(md);}",
+"float vnoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);float a=0.;for(int k=0;k<2;k++)for(int j=0;j<2;j++)for(int l=0;l<2;l++){vec3 g=vec3(float(l),float(j),float(k));vec3 h=hash33(i+g);float w=(l==0?1.-f.x:f.x)*(j==0?1.-f.y:f.y)*(k==0?1.-f.z:f.z);a+=h.x*w;}return a;}",
+"vec3 lin(vec3 c){return pow(c,vec3(2.2));}",
+"float prof(float y){float f=clamp((uY1-y)/(uY1-uY0),0.,1.)*63.;int i=int(floor(f));int j=min(i+1,63);return mix(uProf[i],uProf[j],f-float(i));}",
+"vec3 lightAll(vec3 alb,vec3 N,vec3 V,float rough,float sss,vec3 sssC,float wy){",
+" vec3 L=normalize(uLight);vec3 H=normalize(L+V);float NL=dot(N,L);float NV=max(dot(N,V),1e-3);",
+" float wrap=clamp((NL+0.35)/1.35,0.,1.);",
+" vec3 sky=vec3(.48,.60,.70),gnd=vec3(.30,.26,.17);vec3 hemi=mix(gnd,sky,N.y*.5+.5)*.55;",
+" float ao=mix(.42,1.,smoothstep(uGround-.02,uGround+.3,wy));",
+" vec3 d=alb*(wrap*vec3(1.75,1.65,1.5)+hemi*ao);",
+" float a=max(rough*rough,.02);float NH=max(dot(N,H),0.);float dd=NH*NH*(a*a-1.)+1.;float D=a*a/(3.14159*dd*dd);",
+" float VH=max(dot(V,H),0.);float F=.04+.96*pow(1.-VH,5.);",
+" float sp=D*F*.25/max(VH*VH,.05)*max(NL,0.);",
+" vec3 R=reflect(-V,N);float Fe=.04+.96*pow(1.-NV,5.);",
+" float sh=pow(max(dot(R,L),0.),mix(90.,5.,rough));",
+" vec3 env=(mix(gnd,sky,smoothstep(-.3,.6,R.y))*.5+vec3(.9,.88,.8)*sh*(1.-rough*.5))*ao;",
+" vec3 col=d+vec3(1.6,1.55,1.45)*sp*.9+env*(Fe*.55+.01);",
+" float rim=pow(1.-NV,2.2);float bl=pow(max(dot(-L,V),0.),3.);",
+" col+=sss*sssC*(rim*.4*(.4+.6*max(NL,-.2))+bl*.6)*ao;",
+" return col;}",
+"vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}",
+"void main(){",
+" if(uMode==3){vec2 q=vec2(vW.x/.62,vW.z/.40);float r=length(q);float al=.5*exp(-r*r*1.6)+.18*exp(-r*r*.35);o=vec4(0.,0.,0.,al*(1.-smoothstep(.9,1.7,r)));return;}",
+" if(uMode==4){o=vec4(.05,.07,.05,.55);return;}",
+" if(uCut>.5&&vO.z>0.)discard;",
+" vec3 V=normalize(uEyeW-vW);vec3 N=normalize(vN);bool back=!gl_FrontFacing;",
+" vec3 col;",
+" if(back&&uCut>.5){",
+"  vec3 d=normalize(vO-uEyeO);float t=(0.-uEyeO.z)/d.z;vec3 q=uEyeO+d*t;",
+"  float R=max(prof(q.y),1e-3);float s=abs(q.x)/R;vec3 cN=normalize(mat3(uM)*vec3(0.,0.,1.));",
+"  vec3 alb;float rough=.45;",
+"  if(t<0.||s>1.){alb=lin(vec3(.95,.86,.42))*.7;N=-N;}",
+"  else if(s>.93){float id;float w=worley(q*uScale*1.2,id);alb=lin(mix(vec3(.93,.76,.10),vec3(.98,.88,.35),smoothstep(.0,.4,w)));rough=.5;N=cN;}",
+"  else if(s>.84){float n=vnoise(q*90.);alb=lin(vec3(.97,.95,.82)-.05*n);rough=.85;N=cN;}",
+"  else{float id;float w=worley(q*70.,id);float memb=0.;",
+"   for(int m=0;m<3;m++){float k=m==0?.1:(m==1?.44:.72);memb=max(memb,1.-smoothstep(0.,.014,abs(s-k)));}",
+"   vec3 sac=mix(vec3(.96,.80,.22),vec3(1.,.93,.5),smoothstep(.1,.5,w)*.8+.2*id);",
+"   alb=lin(mix(sac,vec3(.99,.96,.78),max(memb,(1.-smoothstep(.0,.12,s))*.9)));rough=.22+.4*memb;N=cN;",
+"   N=normalize(N+.35*(hash33(floor(q*70.)).xyz-.5)*(1.-memb));}",
+"  float wy=vW.y;col=lightAll(alb,N,V,rough,.5,vec3(1.,.85,.25),wy);",
+"  col=aces(col*.8);o=vec4(pow(col,vec3(1./2.2)),1.);return;}",
+" if(back)N=-N;",
+" if(uMode==0){",
+"  vec3 q=vO*uScale+uSeed*13.7;float id;float F1=worley(q,id);float id2;float F2=worley(q*.33+4.1,id2);",
+"  float pr=.2+.2*id;float pit=1.-smoothstep(0.,pr,F1);pit=pit*pit*(3.-2.*pit)*(.55+.45*step(.2,id));",
+"  float lump=vnoise(vO*uScale*.42+uSeed)-.35;",
+"  float fw=length(dFdx(q))+length(dFdy(q));float fade=1.-smoothstep(.25,.9,fw);",
+"  float h=uPit*.012*(-pit+.9*lump)*fade;",
+"  vec3 dpx=dFdx(vW),dpy=dFdy(vW);vec3 r1=cross(dpy,N),r2=cross(N,dpx);float det=dot(dpx,r1);",
+"  vec3 gr=sign(det)*(dFdx(h)*r1+dFdy(h)*r2);N=normalize(abs(det)*N-gr);",
+"  float stemEnd=smoothstep(.05,.55,-vO.y);float tipEnd=smoothstep(.2,.6,vO.y);",
+"  float blotch=vnoise(vO*5.+uSeed)*.6+vnoise(vO*14.)*.4;",
+"  float g=clamp((1.-uRipe)*1.15+.32*stemEnd*(.5+.5*blotch)+.25*(blotch-.5)*(1.-uRipe*.6),0.,1.);",
+"  vec3 yel=mix(vec3(.97,.82,.10),vec3(1.,.9,.35),tipEnd*.35);",
+"  vec3 grn=vec3(.55,.68,.10);vec3 alb=mix(yel,grn,g);",
+"  alb=mix(alb,vec3(.98,.9,.55),.12*smoothstep(.3,.9,blotch)*uRipe);",
+"  alb*=mix(vec3(1.),vec3(.78,.58,.16),pit*.6*clamp(uPit+.2,0.,1.));",
+"  alb=lin(alb);",
+"  float rough=clamp(uRough+.28*pit-.06*lump,.05,1.);",
+"  float under=(1.-smoothstep(-.8,.1,N.y))*.5;",
+"  col=lightAll(alb,N,V,rough,uSSS,vec3(1.,.72,.08),vW.y);",
+"  col=mix(col,col*vec3(1.1,.68,.4),under);",
+" } else if(uMode==1){",
+"  vec3 alb=lin(mix(vec3(.42,.45,.14),vec3(.40,.28,.12),vUV.x));N=normalize(N+.12*(hash33(floor(vO*160.))-.5));",
+"  col=lightAll(alb,N,V,.6,.1,vec3(.5,.6,.1),vW.y);",
+" } else if(uMode==5){",
+"  vec3 alb=lin(mix(vec3(.30,.20,.08),vec3(.42,.5,.15),smoothstep(.1,.9,vUV.x)));",
+"  col=lightAll(alb,N,V,.7,.05,vec3(.5,.6,.1),vW.y);",
+" } else {",
+"  float x=abs(vUV.y-.5)*2.;float rib=1.-smoothstep(0.,.05,x);",
+"  float vein=pow(abs(sin((vUV.x*16.-x*5.)*1.)),24.)*(1.-x*.5)*.5;",
+"  vec3 alb=lin(mix(vec3(.05,.20,.04),vec3(.16,.38,.07),clamp(vein+rib*.8,0.,1.)*.8+.2*vUV.x));",
+"  col=lightAll(alb,N,V,.38,.35,vec3(.4,.8,.1),vW.y);",
+" }",
+" col=aces(col*.8);o=vec4(pow(col,vec3(1./2.2)),1.);",
+"}"].join("\n");
+
+var prog,U={},meshes={},dirtyGeo=true,info={};
+function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(s));}return s}
+if(gl){
+  prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS))console.error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+  ["uMode","uEyeW","uEyeO","uLight","uM","uVP","uPit","uScale","uRough","uRipe","uSSS","uCut","uSeed","uY0","uY1","uGround"].forEach(function(n){U[n]=gl.getUniformLocation(prog,n)});
+  U.uProf=gl.getUniformLocation(prog,"uProf[0]");
+}
+function upload(m,lines){
+  var vao=gl.createVertexArray();gl.bindVertexArray(vao);
+  function buf(arr,loc,sz){var b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,sz,gl.FLOAT,false,0,0)}
+  buf(m.pos,0,3);buf(m.nrm,1,3);buf(m.uv,2,2);
+  var ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(m.idx),gl.STATIC_DRAW);
+  m.vao=vao;m.n=m.idx.length;
+  if(lines){var lv=gl.createVertexArray();gl.bindVertexArray(lv);
+    buf(m.pos,0,3);buf(m.nrm,1,3);buf(m.uv,2,2);
+    var lb=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,lb);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(m.lines),gl.STATIC_DRAW);
+    m.lvao=lv;m.ln=m.lines.length}
+  gl.bindVertexArray(null);
+}
+var ground={pos:[-3,0,-3, 3,0,-3, 3,0,3, -3,0,3],nrm:[0,1,0,0,1,0,0,1,0,0,1,0],uv:[0,0,1,0,1,1,0,1],idx:[0,2,1,0,3,2]};
+if(gl)upload(ground,false);
+
+function rebuild(){
+  var m=build();meshes=m;
+  upload(m.lemon,true);if(m.stem)upload(m.stem);if(m.calyx)upload(m.calyx);if(m.leaf)upload(m.leaf);
+  var tris=m.lemon.idx.length/3+(m.stem?m.stem.idx.length/3+m.calyx.idx.length/3:0)+(m.leaf?m.leaf.idx.length/3:0);
+  var verts=m.lemon.pos.length/3+(m.stem?m.stem.pos.length/3+m.calyx.pos.length/3:0)+(m.leaf?m.leaf.pos.length/3:0);
+  info={tris:tris,verts:verts,len:(m.y1-m.y0)*UNIT_CM,wid:m.maxR*2*UNIT_CM};
+  dirtyGeo=false;updateReadout();
+}
+
+/* ---------- interaction ---------- */
+var lastT=performance.now(),idleUntil=0;
+function resize(){var d=Math.min(window.devicePixelRatio||1,2),w=stage.clientWidth,h=stage.clientHeight;
+  if(canvas.width!==Math.round(w*d)||canvas.height!==Math.round(h*d)){canvas.width=Math.round(w*d);canvas.height=Math.round(h*d)}}
+var ptrs={};
+stage.addEventListener('pointerdown',function(e){stage.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};stage.classList.add('drag');idleUntil=performance.now()+2500});
+stage.addEventListener('pointermove',function(e){
+  var p=ptrs[e.pointerId];if(!p)return;
+  var ids=Object.keys(ptrs);
+  if(ids.length===2){
+    var o=ids[0]==e.pointerId?ids[1]:ids[0],q=ptrs[o];
+    var d0=Math.hypot(p.x-q.x,p.y-q.y);p.x=e.clientX;p.y=e.clientY;var d1=Math.hypot(p.x-q.x,p.y-q.y);
+    if(d0>0)cam.dist=Math.min(5,Math.max(0.9,cam.dist*d0/d1));
+  }else{
+    cam.yaw-=(e.clientX-p.x)*0.0075;cam.pitch+=(e.clientY-p.y)*0.0075;
+    cam.pitch=Math.min(1.45,Math.max(-0.15,cam.pitch));
+    p.x=e.clientX;p.y=e.clientY;
+  }
+  updateReadout();
+});
+function up(e){delete ptrs[e.pointerId];if(!Object.keys(ptrs).length)stage.classList.remove('drag')}
+stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+stage.addEventListener('wheel',function(e){e.preventDefault();cam.dist=Math.min(5,Math.max(0.9,cam.dist*Math.exp(e.deltaY*0.0012)));updateReadout()},{passive:false});
+stage.addEventListener('dblclick',resetView);
+function resetView(){cam.yaw=CAM0.yaw;cam.pitch=CAM0.pitch;cam.dist=CAM0.dist;updateReadout()}
+document.getElementById('reset').onclick=resetView;
+
+/* ---------- controls ---------- */
+var geoKeys={ratio:1,nip:1,shoulder:1,irr:1,seed:1,stem:1,leaf:1};
+var sliders=[
+ ["g-form","ratio","Length / width",1.1,2.0,0.01,function(v){return v.toFixed(2)}],
+ ["g-form","nip","Blossom nipple",0,0.14,0.005,function(v){return (v*UNIT_CM*10).toFixed(1)+"mm"}],
+ ["g-form","shoulder","Shoulder",-0.1,0.2,0.005,function(v){return v.toFixed(2)}],
+ ["g-form","irr","Irregularity",0,2,0.05,function(v){return v.toFixed(2)}],
+ ["g-peel","pit","Pit depth",0,1,0.01,function(v){return v.toFixed(2)}],
+ ["g-peel","density","Gland density",25,110,1,function(v){return Math.round(v)+""}],
+ ["g-peel","rough","Roughness",0.08,0.9,0.01,function(v){return v.toFixed(2)}],
+ ["g-peel","ripe","Ripeness",0,1,0.01,function(v){return v<.33?"green":v<.7?"mixed":"ripe"}],
+ ["g-light","light","Key light angle",-180,180,1,function(v){return Math.round(v)+"°"}],
+ ["g-light","sss","Subsurface glow",0,1.5,0.01,function(v){return v.toFixed(2)}]
+];
+var sliderEls={};
+sliders.forEach(function(s){
+  var row=document.createElement('div');row.className='row';
+  var id='s-'+s[1];
+  row.innerHTML='<label for="'+id+'">'+s[2]+'</label><input id="'+id+'" type="range" min="'+s[3]+'" max="'+s[4]+'" step="'+s[5]+'"><output for="'+id+'"></output>';
+  document.getElementById(s[0]).appendChild(row);
+  var inp=row.querySelector('input'),out=row.querySelector('output');
+  sliderEls[s[1]]={inp:inp,out:out,fmt:s[6]};
+  inp.addEventListener('input',function(){P[s[1]]=parseFloat(inp.value);out.textContent=s[6](P[s[1]]);if(geoKeys[s[1]])dirtyGeo=true;updateReadout()});
+});
+function syncUI(){
+  Object.keys(sliderEls).forEach(function(k){var e=sliderEls[k];e.inp.value=P[k];e.out.textContent=e.fmt(P[k])});
+  togs.forEach(function(t){t.btn.classList.toggle('on',!!P[t.key]);t.btn.setAttribute('aria-pressed',!!P[t.key])});
+  updateReadout();
+}
+var togs=[];
+[["stem","Stem and calyx"],["leaf","Leaf"],["cut","Cut in half"],["wire","Wireframe"],["auto","Turntable"]].forEach(function(t){
+  var b=document.createElement('button');b.textContent=t[1];document.getElementById('toggles').appendChild(b);
+  togs.push({key:t[0],btn:b});
+  b.onclick=function(){P[t[0]]=!P[t[0]];if(geoKeys[t[0]])dirtyGeo=true;syncUI()};
+});
+var PRESETS={
+ "Photoreal":{ratio:1.45,nip:0.07,shoulder:0.08,irr:1,pit:0.65,density:55,rough:0.42,ripe:0.8,sss:0.6},
+ "Stylized":{ratio:1.28,nip:0.04,shoulder:0.03,irr:0,pit:0.12,density:30,rough:0.5,ripe:1,sss:0.3},
+ "Pointed":{ratio:1.8,nip:0.13,shoulder:0.14,irr:1.2,pit:0.8,density:70,rough:0.36,ripe:0.9,sss:0.7},
+ "Underripe":{ratio:1.4,nip:0.05,shoulder:0.06,irr:1.4,pit:0.5,density:50,rough:0.52,ripe:0.05,sss:0.4}
+};
+Object.keys(PRESETS).forEach(function(name){
+  var b=document.createElement('button');b.textContent=name;document.getElementById('presets').appendChild(b);
+  b.onclick=function(){var p=PRESETS[name];Object.keys(p).forEach(function(k){P[k]=p[k]});dirtyGeo=true;syncUI()};
+});
+document.getElementById('roll').onclick=function(){P.seed=Math.floor(Math.random()*1000)+1;dirtyGeo=true;updateReadout()};
+
+function updateReadout(){
+  var r=document.getElementById('read');
+  if(!info.tris)return;
+  r.innerHTML='length <b>'+info.len.toFixed(1)+' cm</b> &middot; width <b>'+info.wid.toFixed(1)+' cm</b> &middot; ratio <b>'+(info.len/info.wid).toFixed(2)+'</b><br>'+
+   Math.round(info.verts).toLocaleString()+' verts &middot; '+Math.round(info.tris).toLocaleString()+' tris &middot; fruit #'+P.seed+'<br>'+
+   (P.cut?'cut open &middot; ':'whole &middot; ')+(P.stem?'stem on':'stem off')+(P.leaf?' &middot; leaf':'')+(P.wire?' &middot; wire':'')+(P.auto?' &middot; turning':'');
+}
+
+/* ---------- OBJ export ---------- */
+document.getElementById('obj').onclick=function(){
+  var out=["# lemon, generated in the browser; 1 unit = "+UNIT_CM+" cm, long axis Y, blossom end +Y"],base=0;
+  [["lemon",meshes.lemon],["stem",meshes.stem],["calyx",meshes.calyx],["leaf",meshes.leaf]].forEach(function(e){
+    var m=e[1];if(!m)return;out.push("o "+e[0]);
+    for(var i=0;i<m.pos.length;i+=3)out.push("v "+m.pos[i].toFixed(5)+" "+m.pos[i+1].toFixed(5)+" "+m.pos[i+2].toFixed(5));
+    for(var j=0;j<m.uv.length;j+=2)out.push("vt "+m.uv[j].toFixed(5)+" "+m.uv[j+1].toFixed(5));
+    for(var k=0;k<m.nrm.length;k+=3)out.push("vn "+m.nrm[k].toFixed(4)+" "+m.nrm[k+1].toFixed(4)+" "+m.nrm[k+2].toFixed(4));
+    for(var f=0;f<m.idx.length;f+=3){var s="f";for(var q=0;q<3;q++){var n=m.idx[f+q]+1+base;s+=" "+n+"/"+n+"/"+n}out.push(s)}
+    base+=m.pos.length/3;
+  });
+  var blob=new Blob([out.join("\n")],{type:"text/plain"}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download="lemon.obj";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+  var b=document.getElementById('obj'),t=b.textContent;b.textContent="Saved lemon.obj";setTimeout(function(){b.textContent=t},1600);
+};
+
+/* ---------- draw ---------- */
+function draw(m,mode,vao,n,type){
+  gl.uniform1i(U.uMode,mode);gl.bindVertexArray(vao);gl.drawElements(type||gl.TRIANGLES,n,gl.UNSIGNED_INT,0);
+}
+function frame(now){
+  var dt=Math.min((now-lastT)/1000,0.1);lastT=now;
+  if(P.auto&&now>idleUntil&&!Object.keys(ptrs).length){cam.yaw+=dt*0.35}
+  if(dirtyGeo)rebuild();
+  resize();
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.enable(gl.BLEND);
+  gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+  var tgt=[0,-0.08,0],cp=Math.cos(cam.pitch);
+  var eye=[tgt[0]+cam.dist*cp*Math.sin(cam.yaw),tgt[1]+cam.dist*Math.sin(cam.pitch),tgt[2]+cam.dist*cp*Math.cos(cam.yaw)];
+  var asp=canvas.width/Math.max(canvas.height,1);
+  var fov=asp<1?0.62+0.35*(1-asp):0.56;
+  var vp=mul(persp(fov,asp,0.05,30),lookAt(eye,tgt,[0,1,0]));
+  var la=P.light*Math.PI/180,el=0.78,L=[Math.cos(el)*Math.sin(la),Math.sin(el),Math.cos(el)*Math.cos(la)];
+  var eo=toObj(eye);
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(U.uVP,false,vp);
+  gl.uniform3fv(U.uEyeW,eye);gl.uniform3fv(U.uEyeO,eo);gl.uniform3fv(U.uLight,L);
+  gl.uniform1f(U.uPit,P.pit);gl.uniform1f(U.uScale,P.density);gl.uniform1f(U.uRough,P.rough);gl.uniform1f(U.uRipe,P.ripe);
+  gl.uniform1f(U.uSSS,P.sss);gl.uniform1f(U.uCut,P.cut?1:0);gl.uniform1f(U.uSeed,P.seed);
+  gl.uniform1f(U.uY0,meshes.y0);gl.uniform1f(U.uY1,meshes.y1);gl.uniform1f(U.uGround,meshes.ground);
+  gl.uniform1fv(U.uProf,meshes.prof);
+  // ground shadow
+  var gm=new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,meshes.ground-0.002,0,1]);
+  gl.uniformMatrix4fv(U.uM,false,gm);
+  gl.depthMask(false);draw(null,3,ground.vao,ground.n);gl.depthMask(true);
+  gl.uniformMatrix4fv(U.uM,false,MODEL);
+  if(P.wire){gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1)}
+  draw(null,0,meshes.lemon.vao,meshes.lemon.n);
+  if(meshes.stem){draw(null,1,meshes.stem.vao,meshes.stem.n);draw(null,5,meshes.calyx.vao,meshes.calyx.n)}
+  if(meshes.leaf)draw(null,2,meshes.leaf.vao,meshes.leaf.n);
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  if(P.wire)draw(null,4,meshes.lemon.lvao,meshes.lemon.ln,gl.LINES);
+  requestAnimationFrame(frame);
+}
+if(gl){syncUI();requestAnimationFrame(frame)}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"basic": 5, "correctness": 8, "usability": 8, "craft": 7, "code": 5, "overall": 6, "note": "Nicest SVG marks and win highlight plus good a11y, but adds a computer opponent, scoreboard and loser-starts rule beyond 'basic', and the board rows visibly squash once marks appear."},
+"X": {"basic": 9, "correctness": 9, "usability": 6, "craft": 6, "code": 9, "overall": 7, "note": "Small, correct and clean with stable fixed-size cells, but screen-reader labels are just 'Cell n', there is no focus style, and the look is plain."},
+"Y": {"basic": 8, "correctness": 9, "usability": 6, "craft": 6, "code": 8, "overall": 6, "note": "Simple and correct with a nice thick-grid look and alternating starter, but rows squash when marks appear and labels are only 'Cell n'."},
+"Z": {"basic": 9, "correctness": 9, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Basic, correct, with descriptive row/column labels, aria-live status, dark mode, large touch targets, clear win highlight and stable layout."}
+}, "ranking": ["Z", "X", "W", "Y"]}

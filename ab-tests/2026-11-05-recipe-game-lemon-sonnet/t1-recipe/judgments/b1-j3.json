@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"imagination": 3, "recipe": 7, "specificity": 2, "voice": 5, "freshness": 3, "overall": 5, "note": "Competent generic bison steak with a one-line mammoth disclaimer and almost no mammoth world."},
+"X": {"imagination": 7, "recipe": 9, "specificity": 8, "voice": 7, "freshness": 7, "overall": 7, "note": "Rich, honest sourcing (Yuka, permits, dogs eating carcasses), carve-at-table showpiece and thorough method, though long and a bit heavy on caveats."},
+"Y": {"imagination": 8, "recipe": 8, "specificity": 8, "voice": 8, "freshness": 8, "overall": 8, "note": "Same strong research as X (lab-grown mammoth meatball, permafrost fry) plus a tundra-table serving scene, rye, lingonberry and a leftovers plan; tighter and more playful."},
+"Z": {"imagination": 4, "recipe": 8, "specificity": 4, "voice": 6, "freshness": 4, "overall": 6, "note": "Concise, clean recipe with a nice extinct-4000-years note and 'very ice age' juniper, but otherwise a standard game steak."}},
+"ranking": ["Y", "X", "Z", "W"]}

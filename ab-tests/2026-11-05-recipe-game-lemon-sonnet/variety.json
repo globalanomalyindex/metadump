@@ -1,0 +1,74 @@
+{
+ "t1-recipe": {
+  "A_mean": 2.17,
+  "B_mean": 1.67,
+  "A": [
+   3.0,
+   1.5,
+   2.0
+  ],
+  "B": [
+   1.0,
+   3.0,
+   1.0
+  ],
+  "more_varied": {
+   "A": 2,
+   "B": 1,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is four serves-2 pan-seared stand-in steaks with the same extinct-disclaimer, juniper and butter-baste, differing mainly in cut (ribeye, bison/elk, flat iron), reverse sear vs hot sear, and a pan sauce in one. Q is essentially one recipe four times: a bone-in bison tomahawk, reverse-seared and carved at the table for 4, with the same permafrost and 50 CFR framing and thaw instructions.",
+   "v2 (P=B): P is four bone-in bison tomahawk, low-and-slow reverse-sear recipes with the same note on permafrost and elephant permits, differing mainly in structure and sections (choose-the-meat menu, Buy section, lab-grown meatball angle, scaling), so only modestly varied. Q is the same small steak pan-seared with butter-baste, thyme, rosemary and juniper four times, with only Q3 (reverse sear) and Q1 (pan sauce) shifting slightly.",
+   "v3 (P=A): P is one pan-seared, butter-basted, juniper-and-thyme bison/ribeye steak four times, with small differences (P2 adds a wine pan sauce, P3 a marinade and a real-mammoth framing, P4 a reverse sear and elk or venison). Q is nearly identical in all four: bone-in bison tomahawk, reverse-seared, carved at the table, with the same permafrost and 50 CFR opening and the same thaw and dry-brine structure."
+  ]
+ },
+ "t2-tictactoe": {
+  "A_mean": 2.0,
+  "B_mean": 5.0,
+  "A": [
+   3.0,
+   2.0,
+   1.0
+  ],
+  "B": [
+   5.0,
+   6.0,
+   4.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is one cream-background centered 3x3 with X/Q-style dark New game button, differing only in board frame, border weight and small counter styling. Q has one saturated blue page with pill status, one feature-rich take (SVG marks, keyboard, computer opponent, stat columns), plus two cream near-siblings, so it is somewhat more varied but still partly repeated.",
+   "v2 (P=B): P ranges from a sky-blue pill-and-yellow-win design to a cream one with outlined O/X glyphs, win-count columns and a computer-opponent toggle, plus a spare minimal one; Q is the same cream centered page with title, status, 3x3 white cells, stats line and dark New game button four times, differing only in border weight, board frame and stat pills.",
+   "v3 (P=A): P is one design four times: same cream page, centered stack, white rounded cells, stats line and dark New game button, differing only by tiny tweaks (dark board frame, pill stats). Q repeats the cream/bordered-grid base in three of four, but adds real differences: a blue full-bleed page with pill status, a heavier black-border grid, and a feature-rich variant with colored X/O, keyboard play, computer toggle and a stat strip."
+  ]
+ },
+ "t3-lemon": {
+  "A_mean": 7.0,
+  "B_mean": 4.0,
+  "A": [
+   7.0,
+   7.0,
+   7.0
+  ],
+  "B": [
+   4.0,
+   4.0,
+   4.0
+  ],
+  "more_varied": {
+   "A": 3,
+   "B": 0,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P differs in surface (smooth with leaf, odd translucent segmented blob, dense glittery speckle, fine pores), backdrop (slate, green, teal) and panel placement (right, floating top-right, bottom-left dark and light). Q is mostly the same dark-slate page with a right sidebar and pitted yellow ovoid, with only the near-black tall one and the cream softbox one departing.",
+   "v2 (P=B): P is one template four times: a whole yellow lemon with a right-hand sidebar of sliders, three on dark backgrounds, differing mainly in tilt, cream versus dark backdrop and a stalk or no stalk. Q varies more: a glitter-pitted egg with a floating HUD, a teal-backdrop lemon with a bottom-left panel, a translucent whitish segmented-look render, and a pointed lemon with leaf and calyx under a different panel layout.",
+   "v3 (P=A): P differs in shape (plain ellipsoid, glittery egg, pointed lemon with stem and leaf, translucent segmented sphere), surface, palette (teal, dark green, charcoal) and panel layout (floating card vs sidebar vs corner panel), though P1 to P3 share a yellow-rind-on-dark-gradient look. Q repeats one template: a right sidebar with sliders for length, blossom tip and pit depth, a stats readout, and a similar procedural pitted rind on a fairly plain background, with only the cream backdrop and the lemon's proportions changing."
+  ]
+ }
+}

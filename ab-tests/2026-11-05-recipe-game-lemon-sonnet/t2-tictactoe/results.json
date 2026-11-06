@@ -1,0 +1,205 @@
+{
+ "scores": {
+  "A": {
+   "basic": 8.08,
+   "correctness": 8.58,
+   "usability": 5.83,
+   "craft": 5.83,
+   "code": 8.08,
+   "overall": 6.5,
+   "mean_rank": 3.08,
+   "per_run_overall": {
+    "A-r1": 6.67,
+    "A-r2": 6.0,
+    "A-r3": 6.0,
+    "A-r4": 7.33
+   }
+  },
+  "B": {
+   "basic": 7.42,
+   "correctness": 8.67,
+   "usability": 8.33,
+   "craft": 7.17,
+   "code": 7.08,
+   "overall": 7.67,
+   "mean_rank": 1.92,
+   "per_run_overall": {
+    "B-r1": 6.83,
+    "B-r2": 8.83,
+    "B-r3": 9.0,
+    "B-r4": 6.0
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 15,
+  "losses": 5,
+  "ties": 4,
+  "win_rate": 0.71
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "Player X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "Player X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "Player X wins!",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "board": "dom",
+   "end_text": "Player X wins",
+   "clicks": 5,
+   "marks_appear": true,
+   "end_announced": true,
+   "restart_found": true,
+   "restart_clears": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 74934,
+   "mean_seconds": 15.1
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 100024,
+   "mean_seconds": 39.8
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 201934,
+   "ms": 1648070,
+   "tool_uses": 36,
+   "agents_spawned": 18
+  }
+ },
+ "agreement_r": 0.9,
+ "permutation": {
+  "p": 0.257,
+  "extreme": 18,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Bold blue theme with pill status, dark mode and good row/column labels, but empty bottom row renders squashed on the end screen and cells stay focusable after the game ends.",
+  "b1/j1/A-r1": "Clean and correct, but cell aria-labels are static 'Cell n' so screen readers never hear the marks, and the bottom row is squashed in play.",
+  "b1/j1/B-r2": "Square stable board, dark mode, aria-labels that include the mark, a visible focus ring, clear win highlight and a sound alternating-first-player restart.",
+  "b1/j1/A-r2": "Correct logic, but static 'Cell n' labels hide marks from screen readers, there is no focus style or dark mode, and the bottom row is squashed.",
+  "b1/j2/B-r2": "Cells keep a fixed square size so the board never shifts, with row/column aria-labels, a live status, a win highlight, and alternating first player.",
+  "b1/j2/A-r2": "The logic is correct and compact, but the bottom row shrinks once the other rows fill in, and cell labels are just 'Cell n' with no focus styling.",
+  "b1/j2/A-r1": "The logic is correct and it has a focus ring and role=status, but the bottom row squishes during play, and the leftover starter='O' before reset() is a hack.",
+  "b1/j2/B-r1": "The blue palette and status pill look distinctive and it has good labels and dark mode, but the bottom row squishes during play and aria-disabled leaves finished cells focusable.",
+  "b1/j3/A-r2": "Correct and simple, but cells only say 'Cell n' to screen readers, there is no custom focus style, and the look is plain.",
+  "b1/j3/B-r2": "Correct and tidy, with row/column/state aria labels, a focus ring, dark mode and a 44px button; the draw message is a bit wordy.",
+  "b1/j3/B-r1": "Bold, friendly blue look, but the board rows visibly squash at the end state, and aria-disabled cells still take clicks and focus.",
+  "b1/j3/A-r1": "Correct and clean, but screen-reader labels are bare 'Cell n' and the starter-flip setup is awkward.",
+  "b2/j1/B-r3": "Plain, complete two-player game with row/column aria-labels, live status, clear win highlight, dark mode and a solid phone layout; no layout glitches.",
+  "b2/j1/A-r3": "Correct with scores and alternating starter, but the board rows squash unevenly once marks appear, labels are only 'Cell n', and there is no cell-state announcement.",
+  "b2/j1/B-r4": "Best-looking with SVG marks, arrow keys and focus handling, but it adds a computer opponent, scoreboard and mode toggle (overbuilt) and the board rows visibly squash at game end.",
+  "b2/j1/A-r4": "Smallest and cleanest working game with a fixed grid that stays stable, but only 'Cell n' labels, no focus styling, and a bare look.",
+  "b2/j2/B-r4": "Nicest SVG marks and win highlight plus good a11y, but adds a computer opponent, scoreboard and loser-starts rule beyond 'basic', and the board rows visibly squash once marks appear.",
+  "b2/j2/A-r4": "Small, correct and clean with stable fixed-size cells, but screen-reader labels are just 'Cell n', there is no focus style, and the look is plain.",
+  "b2/j2/A-r3": "Simple and correct with a nice thick-grid look and alternating starter, but rows squash when marks appear and labels are only 'Cell n'.",
+  "b2/j2/B-r3": "Basic, correct, with descriptive row/column labels, aria-live status, dark mode, large touch targets, clear win highlight and stable layout.",
+  "b2/j3/A-r4": "Clean, compact and correct with a score tally and clear win highlight, but cell labels do not announce marks and there is no focus style.",
+  "b2/j3/B-r4": "Nicest SVG marks, dark mode and arrow keys, but it adds an unrequested computer opponent and loser-starts rule, and the bottom row collapses once marks are placed.",
+  "b2/j3/B-r3": "Exactly a basic game with a stable board, strong contrast, dark mode, focus rings, descriptive labels and a live status, and no layout glitches.",
+  "b2/j3/A-r3": "Simple and tidy with a nice framed board, but the board rows distort after moves, cell labels are only Cell n, and there is no focus-visible polish for marks."
+ }
+}

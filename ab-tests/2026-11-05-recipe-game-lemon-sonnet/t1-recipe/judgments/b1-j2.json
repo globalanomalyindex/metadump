@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"imagination": 6, "recipe": 9, "specificity": 7, "voice": 6, "freshness": 6, "overall": 7, "note": "Very rigorous, honest reverse-sear with real mammoth facts, but long and padded with sourcing and safety sections."},
+"X": {"imagination": 2, "recipe": 6, "specificity": 2, "voice": 4, "freshness": 3, "overall": 4, "note": "Competent generic ribeye recipe with a one-line extinction caveat and almost no mammoth world."},
+"Y": {"imagination": 3, "recipe": 7, "specificity": 3, "voice": 5, "freshness": 4, "overall": 5, "note": "Clean, concise reverse sear with a tidy honest note and juniper, but little mammoth texture."},
+"Z": {"imagination": 7, "recipe": 9, "specificity": 7, "voice": 7, "freshness": 7, "overall": 8, "note": "Best blend of mammoth lore, tundra table staging and precise method, though somewhat long."}
+}, "ranking": ["Z", "W", "Y", "X"]}
