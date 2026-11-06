@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j1","scores":{
+"W":{"compact":9,"collapsible":8,"tracking":7,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Tiniest collapsed pill with ETA and count and a proper switch/tablist, but the opened timeline is clipped and multi-parcel tabs add clutter."},
+"X":{"compact":8,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":8,"overall":8,"note":"Clean two-line collapsed toast with progress bar, then a clear full timeline, carrier and number, with solid status roles and Esc support."},
+"Y":{"compact":6,"collapsible":8,"tracking":8,"dark":7,"usability":8,"craft":7,"overall":7,"note":"Segmented progress and ETA are neat and accessibility is thorough, but the opened panel is crowded with tiny demo buttons and a cut-off timeline."},
+"Z":{"compact":8,"collapsible":7,"tracking":8,"dark":8,"usability":6,"craft":8,"overall":7,"note":"Dense, polished teal-on-dark design with ETA, stops-away and tidy timeline, though it starts open and has less screen-reader support."}},
+"ranking":["X","W","Z","Y"]}

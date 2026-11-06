@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {"compact": 7, "collapsible": 8, "tracking": 8, "dark": 8, "usability": 9, "craft": 8, "overall": 8, "note": "Thorough and accessible (role=switch, labelled dismiss, sr-only state prefixes, Escape and focus return) with a clear five-step timeline and exception block, though the open panel carries dead space above the footer and the notice bar adds height."},
+    "X": {"compact": 5, "collapsible": 7, "tracking": 9, "dark": 8, "usability": 7, "craft": 7, "overall": 6, "note": "Richest tracking (multiple packages, ETA, carrier, tracking number, timeline, actions, add form) but the open state is tall and crowded, the footer shows an empty strip, and the region is unlabelled and has no dismiss control."},
+    "Y": {"compact": 6, "collapsible": 8, "tracking": 8, "dark": 8, "usability": 8, "craft": 8, "overall": 7, "note": "Very compact pill with clear up/down state, aria-expanded and Escape, and a multi-package list with ETA, masked tracking numbers and progress bars, though the open panel runs tall and next-step guidance is limited to two buttons per row."},
+    "Z": {"compact": 9, "collapsible": 8, "tracking": 8, "dark": 9, "usability": 8, "craft": 9, "overall": 9, "note": "The tightest footprint, with a clean checkmark timeline, mono tracking number, carrier, expected window and latest event, and green and amber accents that hold up on near-black; the label truncates and the exception path sits behind a sample button."}
+  },
+  "ranking": ["Z", "W", "Y", "X"]
+}

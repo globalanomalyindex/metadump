@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel status toast</title>
+<style>
+:root{
+  --page:#121212;
+  --card:#1F1B24;
+  --line:rgba(255,255,255,.1);
+  --text:#E5E5E5;
+  --muted:#9CA3AF;
+  --faint:#4A4B47;
+  --ok:#22C55E;
+  --warn:#F59E0B;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--page);color:var(--text);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh}
+:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+button{font:inherit;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 10px;min-height:28px;cursor:pointer;white-space:nowrap}
+button:hover{background:rgba(255,255,255,.06)}
+button:disabled{opacity:.4;cursor:default;background:transparent}
+
+/* demo page the toast sits over */
+.page{max-width:720px;margin:0 auto;padding:24px 16px 180px}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+.log{color:var(--muted);font-size:13px;margin:10px 0 20px;min-height:1.4em;font-variant-numeric:tabular-nums}
+.orders{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.orders li{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.orders small{display:block;color:var(--muted);font-size:12px}
+.orders .st{color:var(--muted);font-size:12px;white-space:nowrap;align-self:center}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* toast wrap, anchored bottom-right */
+.toast-wrap{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px)}
+.toast{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45);transition:opacity .18s ease-in,transform .18s ease-in,visibility 0s linear 0s}
+.toast[data-visible="false"]{opacity:0;transform:translateY(8px);visibility:hidden;pointer-events:none;transition:opacity .18s ease-in,transform .18s ease-in,visibility 0s linear .18s}
+
+/* closed row: the whole row is the toggle */
+.head{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:0 12px 0 14px;border:0;border-radius:0;background:transparent;text-align:left}
+.head:hover{background:rgba(255,255,255,.04)}
+.stage{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.count{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.unseen{min-width:18px;height:18px;border-radius:9px;background:var(--text);color:var(--page);font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.chev{width:12px;height:12px;flex:none;color:var(--muted);transition:transform .2s ease-out}
+.head[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--ok)}
+.dot.warn{background:var(--warn)}
+
+/* open panel: grid-row trick, opens ease-out, closes faster */
+.panel{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .18s ease-in,visibility 0s linear .18s}
+.panel[data-open="true"]{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .25s cubic-bezier(.22,1,.36,1),visibility 0s linear 0s}
+.panel>.inner{min-height:0;overflow:hidden;padding:0 14px}
+.panel[data-open="true"]>.inner{padding-bottom:12px}
+.ident{margin:0 0 10px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:10px}
+
+/* steps on one rail */
+.steps{list-style:none;margin:0;padding:0}
+.step{position:relative;padding:0 0 12px 24px;font-size:13px;line-height:1.35}
+.step::before{content:"";position:absolute;left:6px;top:16px;bottom:-2px;border-left:1.5px dashed var(--faint)}
+.step.seg::before{border-left:1.5px solid var(--muted)}
+.step[data-i="4"]::before{display:none}
+.mark{position:absolute;left:0;top:1px;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--faint);display:grid;place-items:center;box-sizing:border-box}
+.mark svg{width:9px;height:9px;display:none}
+.done .mark{background:var(--text);border-color:var(--text)}
+.done .mark svg{display:block;color:var(--card)}
+.current .mark{border:2px solid var(--text);background:var(--card)}
+.label{display:block}
+.todo .label{color:var(--muted)}
+.meta{display:block;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-right:4px;font-size:11px}
+
+/* exception: sits beside the current step, not as a step */
+.exc{margin:2px 0 12px;padding:9px 10px 9px 28px;border:1px solid rgba(245,158,11,.4);border-radius:10px;background:rgba(245,158,11,.07)}
+.exc::before{display:none}
+.exc .mark{left:9px;top:10px;background:var(--warn);border-color:var(--warn)}
+.exc .mark::after{content:"!";color:var(--page);font-size:10px;font-weight:700;line-height:1}
+.exc .detail{margin:2px 0 0;color:var(--muted);font-size:12px}
+.exc.quiet{border-color:var(--line);background:transparent}
+.exc.quiet .mark{background:var(--faint);border-color:var(--faint)}
+.exc.quiet .mark::after{color:var(--text)}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.acts button{font-size:12px;padding:3px 9px}
+
+.foot{border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
+.note{color:var(--muted);font-size:12px;margin:0 0 8px;min-height:1.2em}
+.row{display:flex;justify-content:space-between;gap:8px}
+.hist{list-style:none;margin:8px 0 0;padding:8px 0 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.hist li{display:flex;gap:10px;padding:3px 0}
+.hist .t{flex:none;width:112px;font-variant-numeric:tabular-nums}
+
+/* bar along the bottom edge: empties while a routine toast counts down */
+.bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--line)}
+.bar i{display:block;height:100%;background:var(--muted);transform-origin:left center;transform:scaleX(1)}
+
+/* compact pill when the toast is dismissed */
+.pill{position:absolute;right:0;bottom:0;display:flex;align-items:center;gap:8px;max-width:100%;height:36px;padding:0 14px 0 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--text);font-size:13px;transition:opacity .18s ease-out,transform .18s ease-out}
+.pill[data-visible="false"]{opacity:0;transform:translateY(8px);visibility:hidden;pointer-events:none}
+.ptext{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Orders</h1>
+  <p class="sub">Sample page. The status toast sits in the corner and leaves the page usable.</p>
+  <div class="controls" role="group" aria-label="Demo controls">
+    <button type="button" data-act="update">Carrier update</button>
+    <button type="button" data-act="raise">Raise exception</button>
+    <button type="button" data-act="clear">Clear exception</button>
+    <button type="button" data-act="show">Show toast</button>
+    <button type="button" data-act="reset">Reset demo</button>
+  </div>
+  <p class="log" id="log"></p>
+  <ul class="orders">
+    <li><span><strong>Walnut desk lamp</strong><small>Order 48213 · Kestrel Post KP 2291 7745 03</small></span><span class="st">In transit</span></li>
+    <li><span><strong>Linen throw, grey</strong><small>Order 48190 · Kestrel Post KP 2288 1102 47</small></span><span class="st">Delivered 28 Oct</span></li>
+    <li><span><strong>Ceramic pour-over set</strong><small>Order 48177 · Packing</small></span><span class="st">Processing</span></li>
+  </ul>
+</main>
+
+<p class="sr" id="live" aria-live="polite"></p>
+
+<div class="toast-wrap">
+  <section class="toast" id="toast" data-visible="true" aria-label="Parcel status">
+    <button class="head" id="toggle" type="button" aria-expanded="false" aria-controls="panel">
+      <span class="dot" id="dot" aria-hidden="true"></span>
+      <span class="stage" id="stage">Handed to the carrier</span>
+      <span class="count" id="count">3 of 5</span>
+      <span class="unseen" id="unseen" hidden>0</span>
+      <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="panel" id="panel" data-open="false">
+      <div class="inner">
+        <p class="ident">Walnut desk lamp · KP 2291 7745 03</p>
+        <ol class="steps" id="steps">
+          <li class="step todo" data-i="0"><span class="mark"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 6.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="label">Ordered</span><span class="meta"><span class="when"></span></span></li>
+          <li class="step todo" data-i="1"><span class="mark"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 6.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="label">Packed</span><span class="meta"><span class="when"></span></span></li>
+          <li class="step todo" data-i="2"><span class="mark"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 6.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="label">Handed to the carrier</span><span class="meta"><span class="when"></span></span></li>
+          <li class="step todo" data-i="3"><span class="mark"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 6.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="label">Out for delivery</span><span class="meta"><span class="tag">Expected</span><span class="when"></span></span></li>
+          <li class="step todo" data-i="4"><span class="mark"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 6.3l2.2 2.2 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="label">Delivered</span><span class="meta"><span class="tag">Expected</span><span class="when"></span></span></li>
+          <li class="step exc" id="exc" data-after="2" hidden>
+            <span class="mark"></span>
+            <span class="label" id="exc-label">Delivery exception</span>
+            <p class="detail">Held at depot: the address needs a unit number.</p>
+            <div class="acts">
+              <button type="button" data-x="open">Open carrier page</button>
+              <button type="button" data-x="contact">Contact carrier</button>
+              <button type="button" data-x="seen" id="exc-seen">Mark seen and keep watching</button>
+              <button type="button" data-x="snooze" id="exc-snooze">Snooze 1 hour</button>
+            </div>
+          </li>
+        </ol>
+        <div class="foot">
+          <p class="note" id="note"></p>
+          <div class="row">
+            <button type="button" id="hist-btn" aria-expanded="false" aria-controls="hist">Show history</button>
+            <button type="button" id="dismiss">Dismiss</button>
+          </div>
+          <ul class="hist" id="hist" hidden></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bar" id="bar"><i></i></div>
+  </section>
+
+  <button class="pill" id="pill" type="button" data-visible="false" aria-label="Show parcel status">
+    <span class="dot" id="pill-dot" aria-hidden="true"></span>
+    <span class="ptext" id="pill-text">Parcel status</span>
+  </button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STEPS = ['Ordered', 'Packed', 'Handed to the carrier', 'Out for delivery', 'Delivered'];
+  var EXPECT = { 3: 'Fri 6 Nov, 09:00 to 13:00', 4: 'Fri 6 Nov, by 18:00' };
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var ROUTINE_MS = 4000;
+  var SNOOZE_MS = 60 * 60 * 1000;
+
+  // Sample carrier events, in order. Each one may move the parcel to a later step.
+  var UPDATES = [
+    { at: new Date(2026, 10, 5, 16, 20), step: 2, text: 'In transit, Indianapolis IN hub' },
+    { at: new Date(2026, 10, 6, 7, 55), step: 3, text: 'Out for delivery, Columbus OH courier' },
+    { at: new Date(2026, 10, 6, 11, 40), step: 4, text: 'Delivered, left with front desk' }
+  ];
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function fmtDay(d) {
+    return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function fmtClock(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+  var S = {
+    now: new Date(2026, 10, 5, 14, 20),
+    step: 2,
+    times: [fmtDay(new Date(2026, 10, 2, 10, 12)), fmtDay(new Date(2026, 10, 3, 8, 40)), fmtDay(new Date(2026, 10, 3, 17, 5)), null, null],
+    events: [
+      { at: new Date(2026, 10, 2, 10, 12), text: 'Label created' },
+      { at: new Date(2026, 10, 3, 8, 40), text: 'Packed, Columbus OH warehouse' },
+      { at: new Date(2026, 10, 3, 17, 5), text: 'Handed to Kestrel Post, Columbus OH' }
+    ],
+    next: 0,
+    exc: null,          // { seen: bool, snoozedUntil: Date|null }
+    note: '',
+    open: false,
+    visible: true,
+    unseen: 0,
+    remaining: ROUTINE_MS,
+    historyOpen: false
+  };
+
+  function $(sel) { return document.querySelector(sel); }
+  var toast = $('#toast'), toggle = $('#toggle'), stageEl = $('#stage'), countEl = $('#count');
+  var unseenEl = $('#unseen'), dot = $('#dot'), bar = $('#bar'), barFill = $('#bar i');
+  var panel = $('#panel'), stepsEl = $('#steps'), exc = $('#exc'), excLabel = $('#exc-label');
+  var excSeen = $('#exc-seen'), excSnooze = $('#exc-snooze');
+  var noteEl = $('#note'), histBtn = $('#hist-btn'), hist = $('#hist');
+  var pill = $('#pill'), pillDot = $('#pill-dot'), pillText = $('#pill-text');
+  var logEl = $('#log'), live = $('#live');
+  var lis = Array.prototype.slice.call(stepsEl.querySelectorAll('li.step[data-i]'));
+
+  function excHeld() { return !!S.exc && !S.exc.seen; }
+  function snoozed() { return !!S.exc && !!S.exc.snoozedUntil && S.now < S.exc.snoozedUntil; }
+  function excActive() { return excHeld() && !snoozed(); }
+
+  function say(msg) { logEl.textContent = msg; live.textContent = msg; }
+  function showToast() { S.visible = true; S.remaining = ROUTINE_MS; }
+
+  function advance() {
+    if (S.next >= UPDATES.length) { say('No more carrier updates in this demo.'); render(); return; }
+    var u = UPDATES[S.next++];
+    S.now = u.at;
+    S.events.push({ at: u.at, text: u.text });
+    if (u.step > S.step) { S.step = u.step; S.times[u.step] = fmtDay(u.at); }
+    if (!S.open) S.unseen++;
+    showToast();
+    say('Carrier update: ' + u.text + '.');
+    render();
+  }
+
+  function raise() {
+    if (S.step >= 4) { say('Already delivered, so nothing to hold.'); return; }
+    if (S.exc) { say('An exception is already open.'); return; }
+    S.exc = { seen: false, snoozedUntil: null };
+    S.note = '';
+    S.events.push({ at: S.now, text: 'Held at depot, address needs a unit number' });
+    if (!S.open) S.unseen++;
+    showToast();
+    say('Delivery exception raised. It stays until you act on it.');
+    render();
+  }
+
+  function clearExc() {
+    if (!S.exc) { say('No exception to clear.'); return; }
+    S.exc = null;
+    S.note = '';
+    S.events.push({ at: S.now, text: 'Back on route' });
+    say('Exception cleared. Routine toast rules apply again.');
+    render();
+  }
+
+  var ACTIONS = {
+    open: function () {
+      S.note = 'Opened the Kestrel Post page for KP 2291 7745 03. This demo does not navigate.';
+    },
+    contact: function () {
+      S.note = 'Kestrel Post support: +1 (555) 010-4471, daily 8 to 20 ET.';
+    },
+    seen: function () {
+      S.exc.seen = true;
+      S.note = 'Marked seen. Still watching this parcel.';
+      S.remaining = ROUTINE_MS;
+    },
+    snooze: function () {
+      S.exc.snoozedUntil = new Date(S.now.getTime() + SNOOZE_MS);
+      S.note = 'Snoozed for an hour, to ' + fmtClock(S.exc.snoozedUntil) + '. Wake now brings it back.';
+    },
+    wake: function () {
+      S.exc.snoozedUntil = null;
+      S.note = 'Back on screen.';
+    }
+  };
+
+  function render() {
+    var cur = S.step, ex = excActive();
+
+    // closed row
+    stageEl.textContent = ex ? 'Delivery exception' : STEPS[cur];
+    countEl.textContent = ex ? 'Action needed' : (cur + 1) + ' of 5';
+    dot.className = 'dot' + (ex ? ' warn' : (cur === 4 ? ' ok' : ''));
+    unseenEl.hidden = !S.unseen || S.open;
+    unseenEl.textContent = String(S.unseen);
+
+    // open state and visibility
+    toggle.setAttribute('aria-expanded', String(S.open));
+    panel.setAttribute('data-open', String(S.open));
+    toast.setAttribute('data-visible', String(S.visible));
+    pill.setAttribute('data-visible', String(!S.visible));
+    pillDot.className = 'dot' + (ex ? ' warn' : (cur === 4 ? ' ok' : ''));
+    pillText.textContent = ex ? 'Delivery exception' : 'Parcel: ' + STEPS[cur];
+    bar.hidden = ex;
+
+    // steps
+    lis.forEach(function (li, i) {
+      li.className = 'step ' + (i < cur ? 'done seg' : (i === cur ? 'current' : 'todo'));
+      li.querySelector('.when').textContent = i <= cur ? (S.times[i] || '') : '';
+      var tag = li.querySelector('.tag');
+      if (tag) tag.hidden = i <= cur;
+      if (i > cur) li.querySelector('.when').textContent = EXPECT[i] || '';
+    });
+
+    // exception row follows the current step
+    if (S.exc) {
+      var after = String(cur);
+      if (exc.getAttribute('data-after') !== after) {
+        stepsEl.insertBefore(exc, lis[cur + 1] || null);
+        exc.setAttribute('data-after', after);
+      }
+      var sn = snoozed();
+      exc.className = 'step exc' + (excHeld() && !sn ? '' : ' quiet');
+      excLabel.textContent = !excHeld() ? 'Delivery exception, seen'
+        : (sn ? 'Snoozed until ' + fmtClock(S.exc.snoozedUntil) : 'Delivery exception');
+      excSeen.disabled = !excHeld();
+      excSnooze.textContent = sn ? 'Wake now' : 'Snooze 1 hour';
+      excSnooze.setAttribute('data-x', sn ? 'wake' : 'snooze');
+    }
+    exc.hidden = !S.exc;
+
+    // demo controls
+    $('[data-act="update"]').disabled = S.next >= UPDATES.length;
+    $('[data-act="raise"]').disabled = cur === 4 || !!S.exc;
+    $('[data-act="clear"]').disabled = !S.exc;
+
+    // note and history
+    noteEl.textContent = S.note;
+    histBtn.textContent = S.historyOpen ? 'Hide history' : 'Show history (' + S.events.length + ')';
+    histBtn.setAttribute('aria-expanded', String(S.historyOpen));
+    hist.hidden = !S.historyOpen;
+    var frag = document.createDocumentFragment();
+    S.events.slice().reverse().forEach(function (ev) {
+      var li = document.createElement('li');
+      var t = document.createElement('span');
+      t.className = 't';
+      t.textContent = fmtDay(ev.at);
+      var x = document.createElement('span');
+      x.textContent = ev.text;
+      li.appendChild(t);
+      li.appendChild(x);
+      frag.appendChild(li);
+    });
+    hist.textContent = '';
+    hist.appendChild(frag);
+  }
+
+  // toggle: the whole closed row
+  toggle.addEventListener('click', function () {
+    S.open = !S.open;
+    if (S.open) S.unseen = 0; else S.remaining = ROUTINE_MS;
+    render();
+  });
+  toast.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && S.open) {
+      S.open = false;
+      S.remaining = ROUTINE_MS;
+      render();
+      toggle.focus();
+    }
+  });
+
+  // exception next steps
+  exc.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-x]');
+    if (!b || !S.exc) return;
+    var k = b.getAttribute('data-x');
+    if (ACTIONS[k]) {
+      ACTIONS[k]();
+      say(S.note);
+      render();
+    }
+  });
+
+  histBtn.addEventListener('click', function () {
+    S.historyOpen = !S.historyOpen;
+    render();
+  });
+
+  $('#dismiss').addEventListener('click', function () {
+    S.visible = false;
+    S.open = false;
+    render();
+    pill.focus();
+    say('Toast dismissed. The status stays in the corner.');
+  });
+
+  pill.addEventListener('click', function () {
+    showToast();
+    say('Parcel status shown.');
+    render();
+  });
+
+  document.querySelectorAll('[data-act]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var a = b.getAttribute('data-act');
+      if (a === 'update') advance();
+      else if (a === 'raise') raise();
+      else if (a === 'clear') clearExc();
+      else if (a === 'show') { showToast(); say('Toast shown.'); render(); }
+      else if (a === 'reset') location.reload();
+    });
+  });
+
+  // routine toasts leave on their own after about four seconds.
+  // The countdown holds while the panel is open, the exception is active,
+  // the pointer is over the toast, focus is inside it, or the tab is hidden.
+  setInterval(function () {
+    if (!S.visible) return;
+    var hold = S.open || excActive() || toast.matches(':hover') || toast.matches(':focus-within') || document.hidden;
+    if (!hold) {
+      S.remaining -= 100;
+      if (S.remaining <= 0) {
+        S.visible = false;
+        S.open = false;
+        render();
+        return;
+      }
+    }
+    barFill.style.transform = 'scaleX(' + Math.max(0, S.remaining / ROUTINE_MS) + ')';
+  }, 100);
+
+  render();
+})();
+</script>
+</body>
+</html>

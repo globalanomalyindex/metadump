@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j2","scores":{
+"W":{"compact":6,"collapsible":6,"tracking":5,"dark":6,"usability":6,"craft":4,"overall":5,"note":"Nice small pill, but the opened timeline is misaligned (right-aligned text, orphaned times, dead space at bottom) and has no ETA in detail view."},
+"X":{"compact":8,"collapsible":8,"tracking":8,"dark":8,"usability":6,"craft":8,"overall":8,"note":"Tidy compact toast with progress bar, clear timeline, ETA and carrier tabs, but little aria-live support and no reduced-motion handling."},
+"Y":{"compact":8,"collapsible":8,"tracking":9,"dark":9,"usability":8,"craft":9,"overall":9,"note":"Dense and polished with stepper, scan log, masked tracking number, alerts toggle and pager dots; subtitle truncates slightly when open."},
+"Z":{"compact":6,"collapsible":7,"tracking":7,"dark":7,"usability":6,"craft":6,"overall":6,"note":"Good collapsed pill with count badge, but the opened state has truncated carrier tabs, wrapped tracking number and an orphan Dismiss row."}},
+"ranking":["Y","X","Z","W"]}

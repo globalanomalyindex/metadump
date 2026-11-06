@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Dreamy Button</title>
+<style>
+  :root {
+    --bg: #f4f2fb;
+    --surface: #ffffff;
+    --ink: #1d1b2e;
+    --muted: #5d5873;
+    --line: #e3dff2;
+    --violet: #6d4aff;
+    --violet-soft: rgba(109, 74, 255, 0.12);
+    --violet-ink: #4a2fd6;
+    --rose: #ff7ab6;
+    --sky: #5ec8ff;
+    --focus: #3b2bd9;
+
+    /* Custom bezier curves */
+    --ease-drift: cubic-bezier(0.22, 1, 0.36, 1);   /* long, soft glide for color and glow */
+    --ease-bloom: cubic-bezier(0.34, 1.56, 0.64, 1); /* small overshoot for lift */
+    --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);   /* quick, calm return on release */
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #120f1f;
+      --surface: #1b1730;
+      --ink: #f1eefc;
+      --muted: #a9a3c4;
+      --line: #2e2850;
+      --violet-soft: rgba(109, 74, 255, 0.22);
+      --violet-ink: #cbbfff;
+      --focus: #9d86ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #120f1f;
+    --surface: #1b1730;
+    --ink: #f1eefc;
+    --muted: #a9a3c4;
+    --line: #2e2850;
+    --violet-soft: rgba(109, 74, 255, 0.22);
+    --violet-ink: #cbbfff;
+    --focus: #9d86ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(60% 50% at 15% 10%, rgba(94, 200, 255, 0.18), transparent 70%),
+      radial-gradient(50% 45% at 90% 90%, rgba(255, 122, 182, 0.16), transparent 70%),
+      var(--bg);
+    color: var(--ink);
+    font: 400 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 24px 48px -28px rgba(29, 27, 46, 0.35);
+  }
+
+  .eyebrow {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--violet-ink);
+    font-weight: 700;
+  }
+  h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.15; letter-spacing: -0.01em; }
+  .lede { margin: 0 0 16px; color: var(--muted); }
+
+  .features { margin: 0 0 18px; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .features li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .features li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 8px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sky), var(--violet));
+  }
+
+  .price { margin: 0 0 18px; font-size: 14px; color: var(--muted); }
+  .price strong { color: var(--ink); font-size: 16px; }
+
+  .actions, .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .actions { margin-bottom: 12px; }
+  .actions .btn { flex: 1 1 180px; }
+  .row { margin-bottom: 14px; }
+
+  /* ---------- Button ---------- */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font: 600 15px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+    background-image: linear-gradient(120deg, #5b3bf0 0%, #7a4dff 45%, #c8407f 100%);
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+    box-shadow: 0 8px 20px -10px rgba(109, 74, 255, 0.7);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transform: translateZ(0);
+    transition:
+      transform 0.6s var(--ease-settle),
+      background-position 1.2s var(--ease-drift),
+      box-shadow 0.7s var(--ease-drift),
+      letter-spacing 0.6s var(--ease-drift),
+      color 0.5s var(--ease-drift),
+      border-color 0.5s var(--ease-drift);
+  }
+
+  /* Halo: a soft aurora bloom behind the button, drifts out on hover */
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: inherit;
+    background: radial-gradient(closest-side, rgba(94, 200, 255, 0.6), rgba(255, 122, 182, 0.2) 60%, transparent);
+    filter: blur(14px);
+    opacity: 0;
+    transform: scale(0.82);
+    transition:
+      opacity 0.8s var(--ease-drift),
+      transform 1.2s var(--ease-bloom);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Shimmer: a light sweep that passes across on hover */
+  .btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.42) 50%, transparent 65%);
+    transform: translateX(-120%);
+    transition: transform 1.4s var(--ease-drift);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .btn > * { position: relative; z-index: 1; }
+
+  .btn:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .btn:hover:not(:disabled):not([aria-disabled="true"]) {
+      transform: translateY(-2px);
+      background-position: 100% 50%;
+      box-shadow: 0 18px 36px -14px rgba(109, 74, 255, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+      letter-spacing: 0.012em;
+    }
+    .btn:hover:not(:disabled):not([aria-disabled="true"])::before {
+      opacity: 0.85;
+      transform: scale(1.04);
+    }
+    .btn:hover:not(:disabled):not([aria-disabled="true"])::after {
+      transform: translateX(120%);
+    }
+  }
+
+  .btn:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 0.18s;
+    box-shadow: 0 4px 12px -8px rgba(109, 74, 255, 0.8);
+  }
+
+  /* Ghost variant: quiet surface that wakes up on hover */
+  .btn--ghost {
+    background-image: none;
+    background-color: var(--surface);
+    color: var(--ink);
+    border-color: var(--line);
+    box-shadow: 0 1px 2px rgba(29, 27, 46, 0.06);
+  }
+  .btn--ghost::before {
+    background: radial-gradient(closest-side, rgba(109, 74, 255, 0.45), rgba(94, 200, 255, 0.15) 60%, transparent);
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .btn--ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+      border-color: rgba(109, 74, 255, 0.45);
+      background-color: var(--violet-soft);
+      box-shadow: 0 14px 30px -16px rgba(109, 74, 255, 0.6);
+    }
+  }
+  .btn--ghost[aria-pressed="true"] {
+    background-color: var(--violet-soft);
+    border-color: rgba(109, 74, 255, 0.55);
+    color: var(--violet-ink);
+  }
+
+  .btn--small { min-height: 38px; padding: 0 14px; font-size: 14px; }
+
+  .btn--text {
+    background: none;
+    box-shadow: none;
+    color: var(--muted);
+    min-height: 38px;
+    padding: 0 10px;
+  }
+  .btn--text::before, .btn--text::after { display: none; }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .btn--text:hover:not(:disabled) { color: var(--ink); transform: none; letter-spacing: 0; }
+  }
+
+  .btn:disabled, .btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Loading and done states */
+  .spinner {
+    display: none;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .btn.is-loading .spinner { display: inline-block; }
+  .btn.is-loading { background-position: 100% 50%; }
+  .btn.is-done {
+    background-image: linear-gradient(120deg, #138a68, #2a7fb8);
+    transform: translateY(-1px);
+  }
+  .btn.is-bumped { animation: bump 0.7s var(--ease-bloom); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes bump {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  .badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--violet);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    transition: transform 0.6s var(--ease-bloom);
+  }
+  .badge.is-pop { transform: scale(1.35); }
+
+  .status {
+    min-height: 1.5em;
+    margin: 4px 0 14px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .stats div { text-align: center; }
+  .stats dt { font-size: 12px; color: var(--muted); }
+  .stats dd { margin: 2px 0 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    .spinner { animation: none; border-top-color: transparent; }
+  }
+
+  @media (max-width: 360px) {
+    .card { padding: 22px 18px; }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<main class="card">
+  <p class="eyebrow">Focus journal</p>
+  <h1>Lumen</h1>
+  <p class="lede">One calm page for your week. Plans sync across your devices, and you can export everything as plain Markdown whenever you like.</p>
+
+  <ul class="features">
+    <li>Weekly planning with drag-to-reschedule</li>
+    <li>Offline notes that sync when you reconnect</li>
+    <li>Plain-text export, no lock-in</li>
+  </ul>
+
+  <p class="price"><strong id="price">$12 / month</strong> per seat, cancel anytime</p>
+
+  <div class="actions">
+    <button class="btn" id="trial" type="button"><span class="spinner" aria-hidden="true"></span><span class="label">Start free trial</span></button>
+    <button class="btn btn--ghost" id="save" type="button" aria-pressed="false"><span class="label">Save for later</span></button>
+  </div>
+
+  <div class="row">
+    <button class="btn btn--ghost btn--small" id="add" type="button">Add seat <span class="badge" id="seatBadge">1</span></button>
+    <button class="btn btn--ghost btn--small" id="share" type="button">Copy link</button>
+    <button class="btn btn--text btn--small" id="reset" type="button">Reset</button>
+  </div>
+
+  <p class="status" id="status" role="status" aria-live="polite">Ready.</p>
+
+  <dl class="stats">
+    <div><dt>Trials started</dt><dd id="statTrials">0</dd></div>
+    <div><dt>Saved</dt><dd id="statSaved">No</dd></div>
+    <div><dt>Seats</dt><dd id="statSeats">1</dd></div>
+  </dl>
+</main>
+
+<script>
+(function () {
+  var PRICE = 12;
+  var START_LABEL = 'Start free trial';
+  var SAVE_LABEL = 'Save for later';
+
+  var state = { trials: 0, saved: false, seats: 1, busy: false };
+  var timers = [];
+
+  var trialBtn = document.getElementById('trial');
+  var trialLabel = trialBtn.querySelector('.label');
+  var saveBtn = document.getElementById('save');
+  var addBtn = document.getElementById('add');
+  var shareBtn = document.getElementById('share');
+  var resetBtn = document.getElementById('reset');
+  var seatBadge = document.getElementById('seatBadge');
+  var priceEl = document.getElementById('price');
+  var statusEl = document.getElementById('status');
+  var statTrials = document.getElementById('statTrials');
+  var statSaved = document.getElementById('statSaved');
+  var statSeats = document.getElementById('statSeats');
+
+  function later(fn, ms) {
+    var id = setTimeout(fn, ms);
+    timers.push(id);
+    return id;
+  }
+
+  function clearTimers() {
+    timers.forEach(clearTimeout);
+    timers = [];
+  }
+
+  function say(msg) {
+    statusEl.textContent = msg;
+  }
+
+  function render() {
+    saveBtn.setAttribute('aria-pressed', String(state.saved));
+    saveBtn.querySelector('.label').textContent = state.saved ? 'Saved' : SAVE_LABEL;
+    seatBadge.textContent = state.seats;
+    priceEl.textContent = '$' + (state.seats * PRICE) + ' / month';
+    statTrials.textContent = state.trials;
+    statSaved.textContent = state.saved ? 'Yes' : 'No';
+    statSeats.textContent = state.seats;
+  }
+
+  function pulse(el, cls) {
+    el.classList.remove(cls);
+    void el.offsetWidth; // restart the CSS animation
+    el.classList.add(cls);
+  }
+
+  trialBtn.addEventListener('click', function () {
+    if (state.busy) return;
+    state.busy = true;
+    trialBtn.classList.add('is-loading');
+    trialBtn.setAttribute('aria-busy', 'true');
+    trialLabel.textContent = 'Starting trial';
+    say('Starting your trial...');
+
+    later(function () {
+      state.trials += 1;
+      state.busy = false;
+      trialBtn.classList.remove('is-loading');
+      trialBtn.removeAttribute('aria-busy');
+      trialBtn.classList.add('is-done');
+      trialLabel.textContent = "You're in";
+      say('Trial started. Check your inbox for the welcome note.');
+      render();
+
+      later(function () {
+        trialBtn.classList.remove('is-done');
+        trialLabel.textContent = START_LABEL;
+      }, 2200);
+    }, 1400);
+  });
+
+  saveBtn.addEventListener('click', function () {
+    state.saved = !state.saved;
+    render();
+    say(state.saved ? 'Saved to your reading list.' : 'Removed from your reading list.');
+  });
+
+  addBtn.addEventListener('click', function () {
+    state.seats += 1;
+    render();
+    pulse(addBtn, 'is-bumped');
+    pulse(seatBadge, 'is-pop');
+    say(state.seats + ' seats, $' + (state.seats * PRICE) + ' per month.');
+  });
+
+  shareBtn.addEventListener('click', function () {
+    var url = location.href;
+    var done = function () {
+      shareBtn.classList.add('is-done');
+      shareBtn.textContent = 'Link copied';
+      say('Link copied to your clipboard.');
+      later(function () {
+        shareBtn.classList.remove('is-done');
+        shareBtn.textContent = 'Copy link';
+      }, 1800);
+    };
+    var failed = function () {
+      say('Clipboard is blocked in this context, so nothing was copied.');
+    };
+    try {
+      navigator.clipboard.writeText(url).then(done, failed);
+    } catch (e) {
+      failed();
+    }
+  });
+
+  resetBtn.addEventListener('click', function () {
+    clearTimers();
+    state = { trials: 0, saved: false, seats: 1, busy: false };
+    trialBtn.classList.remove('is-loading', 'is-done');
+    trialBtn.removeAttribute('aria-busy');
+    trialLabel.textContent = START_LABEL;
+    shareBtn.classList.remove('is-done');
+    shareBtn.textContent = 'Copy link';
+    render();
+    say('Reset to defaults.');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

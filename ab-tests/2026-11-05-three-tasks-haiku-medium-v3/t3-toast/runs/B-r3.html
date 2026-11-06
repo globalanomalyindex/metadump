@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel toast</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --page:#121212;
+  --card:#1F1B24;
+  --tint:#2A2A2E;
+  --line:rgba(255,255,255,.08);
+  --text:#E5E5E5;
+  --muted:#9CA3AF;
+  --faint:#4A4B47;
+  --amber:#F59E0B;
+  --green:#22C55E;
+  --focus:#E5E5E5;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--page);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* demo page behind the toast */
+.page{max-width:680px;margin:0 auto;padding:16px 16px 220px}
+.kicker{margin:0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.page h1{font-size:20px;margin:4px 0 2px}
+.sub{margin:0;font-size:13px;color:var(--muted)}
+.card{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.card h2{font-size:13px;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.btn{min-height:28px;padding:0 10px;border:1px solid rgba(255,255,255,.16);background:transparent;color:var(--text);border-radius:6px;font-size:12px;cursor:pointer}
+.btn:disabled{color:var(--muted);border-color:var(--line);cursor:default}
+.btn[aria-pressed="true"]{background:var(--faint)}
+.btn.ghost{border-color:transparent;color:var(--muted)}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0 0;font-size:12px}
+.readout dt{color:var(--muted)}
+.readout dd{margin:0}
+.log{margin:10px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.log li{padding:2px 0}
+.orders div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.orders div:first-child{border-top:0}
+.orders span{color:var(--muted);white-space:nowrap}
+
+/* the toast dock, bottom right */
+.dock{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);z-index:10}
+.notices{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.notices:empty{display:none}
+.notice{display:flex;align-items:flex-start;gap:6px;background:var(--tint);border:1px solid var(--line);border-radius:8px;padding:8px 4px 8px 12px;font-size:12.5px;animation:rise .2s ease-out}
+.notice.exception{border-left:2px solid var(--amber)}
+.notice p{margin:0;flex:1;padding-top:3px}
+.x{width:28px;height:28px;padding:0;border:0;background:none;color:var(--muted);border-radius:6px;cursor:pointer;font-size:16px;line-height:1}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.restore{width:100%;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;min-height:28px;padding:0 12px;background:var(--card);border:1px solid var(--line);border-radius:999px;color:var(--text);font-size:12px;cursor:pointer}
+
+.track{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.head{display:flex;align-items:stretch}
+.toggle{flex:1;min-width:0;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 6px 0 14px;background:none;border:0;color:inherit;text-align:left;cursor:pointer}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text);flex:none}
+.dot.amber{background:var(--amber)}
+.dot.green{background:var(--green)}
+.dot.muted{background:var(--muted)}
+.title{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.count{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chev{width:16px;height:16px;flex:none;color:var(--muted);transition:transform .18s ease-out}
+.is-open .chev{transform:rotate(180deg)}
+.hide{width:28px;height:28px;align-self:center;margin-right:10px;padding:0;border:0;background:none;color:var(--muted);border-radius:6px;cursor:pointer;display:grid;place-items:center}
+
+.panel{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .16s ease-in,visibility 0s linear .16s}
+.is-open .panel{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .28s cubic-bezier(.22,1,.36,1),visibility 0s}
+.inner{overflow:hidden;min-height:0;padding:0 14px}
+.meta{margin:0;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+
+.steps{list-style:none;margin:6px 0 0;padding:0}
+.steps li{position:relative;display:grid;grid-template-columns:16px 1fr auto;column-gap:10px;align-items:start;padding:6px 0;min-height:36px}
+.steps li::after{content:"";position:absolute;left:7.5px;top:24px;bottom:-6px;width:0;border-left:1px solid var(--muted)}
+.steps li.dash::after{border-left:1px dashed var(--faint)}
+.steps li:last-child::after{display:none}
+.mk{position:relative;z-index:1;width:16px;height:16px;margin-top:1px;border-radius:50%;box-sizing:border-box;display:grid;place-items:center;font-size:10px;line-height:1}
+.mk.done{background:var(--text);color:var(--card)}
+.mk.current{border:2px solid var(--text);background:var(--card)}
+.mk.current::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--text)}
+.mk.pending{border:1px solid var(--faint)}
+.mk.exc{border:2px solid var(--amber);color:var(--amber);background:var(--card);font-weight:700}
+.sl{font-size:13px}
+.pending .sl{color:var(--muted)}
+.sub{margin-top:1px;font-size:12px;color:var(--muted)}
+.exp{display:inline-block;margin-right:5px;padding:0 4px;border:1px solid var(--faint);border-radius:4px;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.when{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.exc{margin-top:8px;padding:10px;background:var(--tint);border-left:2px solid var(--amber);border-radius:8px}
+.exc-h{margin:0;font-size:12px;color:var(--amber)}
+.exc-detail{margin:4px 0 0;font-size:12.5px}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+
+.foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding:6px 0 10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+
+@keyframes none{}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:0s!important;animation-duration:0s!important}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="kicker">Orders</p>
+  <h1>Oat &amp; Ember stoneware set</h1>
+  <p class="sub">Order #48213 · Northwind Express · NX 4471 0882 3319</p>
+
+  <section class="card" aria-labelledby="demo-h">
+    <h2 id="demo-h">Demo controls</h2>
+    <div class="row">
+      <button class="btn" type="button" data-demo="scan" id="scan">Next scan</button>
+      <button class="btn" type="button" data-demo="raise" id="raise">Raise exception</button>
+      <button class="btn ghost" type="button" data-demo="reset" id="reset">Reset</button>
+    </div>
+    <dl class="readout">
+      <dt>Stage</dt><dd id="r-stage"></dd>
+      <dt>Exception</dt><dd id="r-exc"></dd>
+      <dt>Keep open</dt><dd id="r-keep"></dd>
+      <dt>Hidden</dt><dd id="r-hidden"></dd>
+    </dl>
+    <ol class="log" id="log" aria-label="Recent changes"></ol>
+  </section>
+
+  <section class="card orders" aria-label="Other orders">
+    <div><strong>Field &amp; Fold linen throw</strong><span>#48190 · Delivered 28 Oct</span></div>
+    <div><strong>Lantern Works desk lamp</strong><span>#48077 · Delivered 14 Oct</span></div>
+    <div><strong>Hollow Pine shelf, two pack</strong><span>#48002 · Delivered 2 Oct</span></div>
+  </section>
+</main>
+
+<div class="dock">
+  <div class="notices" id="notices"></div>
+  <button class="restore" type="button" data-act="restore" id="restore" hidden></button>
+  <section class="track" id="track" aria-label="Package tracking, NX 4471 0882 3319">
+    <div class="head">
+      <button class="toggle" type="button" data-act="toggle" id="toggle" aria-expanded="false" aria-controls="panel">
+        <span class="dot" id="dot" aria-hidden="true"></span>
+        <span class="title" id="title"></span>
+        <span class="count" id="count"></span>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="hide" type="button" data-act="hide" aria-label="Hide tracking">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="panel" id="panel">
+      <div class="inner">
+        <p class="meta">Oat &amp; Ember stoneware set, 4 pieces · Northwind Express</p>
+        <ol class="steps" id="steps"></ol>
+        <div class="exc" id="excbox" hidden></div>
+        <div class="foot">
+          <span id="updated"></span>
+          <button class="btn ghost" type="button" data-act="keep" id="keep" aria-pressed="false">Keep open</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<p class="sr" id="announce" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+
+  const $ = s => document.querySelector(s);
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = m => pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60);
+  const CHECK = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.2l2 2 4-4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const STEPS = [
+    { key: 'ordered', label: 'Ordered' },
+    { key: 'packed', label: 'Packed' },
+    { key: 'handed', label: 'Handed to the carrier' },
+    { key: 'out', label: 'Out for delivery', window: 'Thu 5 Nov, 15:00 to 17:00' },
+    { key: 'delivered', label: 'Delivered', window: 'Thu 5 Nov, 16:00 to 19:00' }
+  ];
+
+  // Demo clock starts at 14:32 on Thursday 5 Nov. Scans advance it 47 minutes.
+  const initial = () => ({
+    stage: 2,
+    times: { ordered: 'Mon 16:05', packed: 'Tue 09:40', handed: 'Wed 18:22' },
+    clock: 14 * 60 + 32,
+    exception: null,
+    keepOpen: false,
+    hidden: false,
+    expanded: false,
+    log: [],
+    notices: []
+  });
+
+  let state = initial();
+  let seq = 0;
+  const timers = new Map();
+  let hovering = false;
+
+  /* ---------- notices (toast queue) ---------- */
+
+  function say(text) { $('#announce').textContent = text; }
+
+  function log(text) {
+    state.log.unshift(fmt(state.clock) + '  ' + text);
+    state.log = state.log.slice(0, 6);
+  }
+
+  function notify(kind, text) {
+    const n = { id: ++seq, kind, text };
+    state.notices.push(n);
+    while (state.notices.length > 3) dropTimer(state.notices.shift().id);
+    if (kind === 'routine') timers.set(n.id, { left: 4000, t0: 0, h: null });
+    renderNotices();
+    syncTimers();
+    say(text);
+  }
+
+  function dropTimer(id) {
+    const t = timers.get(id);
+    if (t) clearTimeout(t.h);
+    timers.delete(id);
+  }
+
+  function dismiss(id) {
+    dropTimer(id);
+    state.notices = state.notices.filter(n => n.id !== id);
+    renderNotices();
+  }
+
+  // Routine notices leave after 4 s. Hover, a hidden tab or "Keep open" hold them.
+  function syncTimers() {
+    const run = !hovering && !document.hidden && !state.keepOpen;
+    for (const [id, t] of timers) {
+      if (run && !t.h) {
+        t.t0 = Date.now();
+        t.h = setTimeout(() => dismiss(id), t.left);
+      } else if (!run && t.h) {
+        clearTimeout(t.h);
+        t.h = null;
+        t.left -= Date.now() - t.t0;
+      }
+    }
+  }
+
+  function renderNotices() {
+    $('#notices').innerHTML = state.notices.map(n =>
+      '<div class="notice' + (n.kind === 'exception' ? ' exception' : '') + '">' +
+        '<p>' + n.text + '</p>' +
+        '<button class="x" type="button" data-notice="' + n.id + '" aria-label="Dismiss notice">×</button>' +
+      '</div>').join('');
+  }
+
+  /* ---------- state changes ---------- */
+
+  function scan() {
+    if (state.exception || state.stage >= 4) return;
+    state.clock += 47;
+    state.stage += 1;
+    const s = STEPS[state.stage];
+    state.times[s.key] = 'Thu ' + fmt(state.clock);
+    log(s.label);
+    notify('routine', s.label + ', ' + fmt(state.clock) + (state.stage === 4 ? '. Delivered.' : ''));
+  }
+
+  function raise() {
+    if (state.exception) {
+      state.exception = null;
+      log('Exception cleared');
+      notify('routine', 'Exception cleared. Tracking continues.');
+      return;
+    }
+    if (state.stage >= 4) return;
+    state.exception = {
+      detail: 'Held at depot: the address needs a unit number. The carrier is waiting for a reply.',
+      at: state.clock, seen: null, snoozedUntil: null, opened: null, routeShown: false
+    };
+    state.expanded = true;
+    log('Exception raised: held at depot');
+    notify('exception', 'Delivery exception: held at depot. Action needed.');
+  }
+
+  function act(a) {
+    const ex = state.exception;
+    switch (a) {
+      case 'toggle': state.expanded = !state.expanded; break;
+      case 'hide': state.hidden = true; log('Tracking hidden'); break;
+      case 'restore': state.hidden = false; log('Tracking shown'); break;
+      case 'keep':
+        state.keepOpen = !state.keepOpen;
+        log(state.keepOpen ? 'Notices kept on screen' : 'Notices leave on their own');
+        syncTimers();
+        break;
+      case 'scan': scan(); break;
+      case 'raise': raise(); break;
+      case 'reset':
+        timers.forEach(t => clearTimeout(t.h));
+        timers.clear();
+        state = initial();
+        renderNotices();
+        break;
+      case 'open':
+        if (ex) { ex.opened = fmt(state.clock); log('Carrier page opened (demo)'); }
+        break;
+      case 'contact':
+        if (ex) { ex.routeShown = !ex.routeShown; log(ex.routeShown ? 'Carrier contact shown' : 'Carrier contact hidden'); }
+        break;
+      case 'seen':
+        if (ex) { ex.seen = fmt(state.clock); log('Exception marked seen; still watching'); }
+        break;
+      case 'snooze':
+        if (ex) { ex.snoozedUntil = fmt(state.clock + 60); log('Exception snoozed for 1 h'); }
+        break;
+      case 'wake':
+        if (ex) { ex.snoozedUntil = null; log('Exception back on screen'); }
+        break;
+    }
+  }
+
+  /* ---------- rendering (all output comes from state) ---------- */
+
+  function tone() {
+    const ex = state.exception;
+    if (ex) return ex.seen ? 'muted' : 'amber';
+    return state.stage === 4 ? 'green' : 'neutral';
+  }
+
+  function stepsHTML() {
+    const ex = state.exception;
+    const delivered = state.stage === 4;
+    let out = '';
+    STEPS.forEach((s, i) => {
+      const done = i < state.stage || (i === state.stage && delivered);
+      const cur = i === state.stage && !delivered;
+      const cls = done ? 'done' : cur ? 'current' : 'pending';
+      const mk = done ? '<span class="mk done">' + CHECK + '</span>'
+                      : cur ? '<span class="mk current"></span>'
+                      : '<span class="mk pending"></span>';
+      const sub = !done && !cur ? '<div class="sub"><span class="exp">Expected</span>' + s.window + '</div>' : '';
+      const when = done || cur ? state.times[s.key] : '';
+      out += '<li class="' + cls + (done ? '' : ' dash') + '">' + mk +
+             '<div><div class="sl">' + s.label + '</div>' + sub + '</div>' +
+             '<div class="when">' + when + '</div></li>';
+      if (ex && i === state.stage) {
+        out += '<li class="dash"><span class="mk exc">!</span>' +
+               '<div><div class="sl">Held at depot</div></div>' +
+               '<div class="when">Thu ' + fmt(ex.at) + '</div></li>';
+      }
+    });
+    return out;
+  }
+
+  function excHTML() {
+    const ex = state.exception;
+    const acts = [];
+    if (!ex.seen) acts.push('<button class="btn" type="button" data-act="open">Open carrier page</button>');
+    acts.push('<button class="btn" type="button" data-act="contact" aria-expanded="' + (ex.routeShown ? 'true' : 'false') + '">Contact carrier</button>');
+    if (!ex.seen) acts.push('<button class="btn" type="button" data-act="seen">Mark seen, keep watching</button>');
+    acts.push(ex.snoozedUntil
+      ? '<button class="btn" type="button" data-act="wake">Wake now</button>'
+      : '<button class="btn" type="button" data-act="snooze">Snooze 1 h</button>');
+    let notes = '';
+    if (ex.opened) notes += '<p class="note">Carrier page opened at ' + ex.opened + ' (demo: nothing left this page).</p>';
+    if (ex.routeShown) notes += '<p class="note">Call 0800 555 0134, Mon to Sat 08:00 to 20:00, or reply in the Northwind app.</p>';
+    if (ex.seen) notes += '<p class="note">Seen at ' + ex.seen + '. Still watching for the next scan.</p>';
+    if (ex.snoozedUntil) notes += '<p class="note">Snoozed until ' + ex.snoozedUntil + '. Wake now brings it back.</p>';
+    return '<p class="exc-h"><strong>Delivery exception</strong></p>' +
+           '<p class="exc-detail">' + ex.detail + '</p>' +
+           '<div class="actions">' + acts.join('') + '</div>' + notes;
+  }
+
+  function renderTrack() {
+    const ex = state.exception;
+    const delivered = state.stage === 4;
+    const title = ex ? 'Delivery exception' : STEPS[state.stage].label;
+    const count = ex
+      ? (ex.seen ? 'Seen' : ex.snoozedUntil ? 'Snoozed' : 'Action needed')
+      : (delivered ? '5 of 5' : (state.stage + 1) + ' of 5');
+
+    $('#dot').className = 'dot ' + tone();
+    $('#title').textContent = title;
+    $('#count').textContent = count;
+    $('#track').classList.toggle('is-open', state.expanded);
+    $('#toggle').setAttribute('aria-expanded', String(state.expanded));
+    $('#track').hidden = state.hidden;
+    $('#restore').hidden = !state.hidden;
+    $('#restore').innerHTML = '<span>Show tracking</span><span>' + title + '</span>';
+    $('#steps').innerHTML = stepsHTML();
+    $('#excbox').hidden = !ex;
+    if (ex) $('#excbox').innerHTML = excHTML();
+    $('#updated').textContent = 'Updated ' + fmt(state.clock);
+    $('#keep').setAttribute('aria-pressed', String(state.keepOpen));
+  }
+
+  function renderDemo() {
+    const ex = state.exception;
+    const delivered = state.stage === 4;
+    $('#r-stage').textContent = delivered ? 'Delivered' : STEPS[state.stage].label + ' (' + (state.stage + 1) + ' of 5)';
+    $('#r-exc').textContent = ex
+      ? (ex.snoozedUntil ? 'snoozed until ' + ex.snoozedUntil : ex.seen ? 'seen at ' + ex.seen : 'open, action needed')
+      : 'none';
+    $('#r-keep').textContent = state.keepOpen ? 'on' : 'off';
+    $('#r-hidden').textContent = state.hidden ? 'yes' : 'no';
+    $('#scan').textContent = delivered ? 'Delivered' : 'Next scan';
+    $('#scan').disabled = !!ex || delivered;
+    $('#raise').textContent = ex ? 'Clear exception' : 'Raise exception';
+    $('#raise').disabled = !ex && delivered;
+    $('#log').innerHTML = state.log.length
+      ? state.log.map(l => '<li>' + l + '</li>').join('')
+      : '<li>No changes yet.</li>';
+  }
+
+  function render() {
+    renderTrack();
+    renderDemo();
+  }
+
+  /* ---------- events ---------- */
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.notice) { dismiss(Number(b.dataset.notice)); return; }
+    const a = b.dataset.act || b.dataset.demo;
+    if (!a) return;
+    const demo = !!b.dataset.demo;
+    const name = demo ? a : a;
+    if (demo) act(a === 'scan' ? 'scan' : a === 'raise' ? 'raise' : 'reset');
+    else act(a);
+    render();
+    // Keep keyboard focus on the control that was used, after its markup was rebuilt.
+    if (!b.isConnected) {
+      const sel = demo ? '[data-demo="' + name + '"]' : '[data-act="' + a + '"]';
+      const n = document.querySelector(sel);
+      if (n) n.focus({ preventScroll: true });
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && state.expanded && $('#track').contains(document.activeElement)) {
+      state.expanded = false;
+      render();
+      $('#toggle').focus({ preventScroll: true });
+    }
+  });
+
+  const wrap = $('#notices');
+  wrap.addEventListener('pointerenter', () => { hovering = true; syncTimers(); });
+  wrap.addEventListener('pointerleave', () => { hovering = false; syncTimers(); });
+  document.addEventListener('visibilitychange', syncTimers);
+
+  render();
+})();
+</script>
+</body>
+</html>

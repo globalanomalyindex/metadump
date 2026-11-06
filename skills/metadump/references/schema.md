@@ -37,7 +37,7 @@ Spine first because it is what every consumer reads; lookups last because nobody
 
 - `prompt` is required and verbatim. It is the anchor every `user_stated` entry quotes.
 - `built` is a one-line process note (≤ ~300 tokens). Do not reproduce agent handshakes, receipts or per-claim contributor lists: a consumer cannot act on them.
-- `how_to_read`, `head_lines`, `stats` are written by finalize; don't hand-maintain them.
+- `deal`, `how_to_read`, `head_lines`, `stats` are written by finalize; don't hand-maintain them. `deal` comes first in the manifest, so a builder that opens the file before reading use mode still meets the deal (test 14).
 - `derived_from`: paths of earlier meta dumps this one builds on.
 
 ### `essence`
@@ -49,6 +49,9 @@ Spine first because it is what every consumer reads; lookups last because nobody
              "essential": "food photo over vivid bands",
              "roles": {"photo": "appetite", "bands": "nutrition at a glance", "panel": "order", "type": "brand voice"}},
  "signature": ["c-photo-over-bands", "c-pale-panel", "c-heavy-title"],
+ "angles": [{"angle": "steam close-up", "text": "The photo crops into the sauce; the bands read as a nutrition strip under it.", "draws_on": ["c-photo-over-bands"]},
+            {"angle": "shelf blink", "text": "Read from three metres: heavy title and one band colour carry the flavour.", "draws_on": ["c-heavy-title"]},
+            {"angle": "quiet panel", "text": "The pale panel does most of the work; the photo is smaller and calmer.", "draws_on": ["c-pale-panel"]}],
  "tensions": [{"text": "measured indulgence", "poles": ["macro labels and counts", "sauce-coated abundance"], "prov": "inferred"}],
  "task": {"is": "a frozen-meal carton front (packaging design)",
           "disciplines": ["packaging design", "graphic design", "typography", "food photography", "retail shelf design"],
@@ -58,7 +61,7 @@ Spine first because it is what every consumer reads; lookups last because nobody
               {"reading": "the whole flavor range as a system", "includes": ["variant rules", "shelf view"], "default": false}]}
 ```
 
-`one_sentence` is the thesis: the one idea that explains the rest. `summary` (optional) names the key qualities in one line. `formula` (optional) compresses the task into a recipe (`full`, `essential`) and says what job each element does (`roles`), the way the hand-made dumps this skill grew out of did. `signature` lists up to 8 ids of tier-1 entries: the fastest way to the defining set. `tensions` records the productive contradiction a generic output would flatten. `task` identifies the task: what it is, the disciplines it belongs to, the ladder from those disciplines down to this task's specifics, and the user's whole `job` end to end (the steps the people using the result go through). Sections follow the ladder and entries may carry a `rung`. The default reading covers the whole job. finalize warns when the ladder is missing (`no_task_ladder`) or the job is (`no_task_job`). `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
+`one_sentence` is the thesis: what's interesting about the subject, an insight and never how to make the deliverable. `summary` (optional) names the key qualities in one line. `formula` (optional) names the ingredients (`full`, `essential`) and what each contributes (`roles`), the way the hand-made dumps this skill grew out of did: one combination among several, never steps. `angles` lists 2 to 5 contrasting ways into the task, each `{"angle", "text", "draws_on"}`, none the default (finalize warns below two: `no_angles`). The head is material to play with, not orders (ADR 0012). `signature` lists up to 8 ids of tier-1 entries: the fastest way to what the task is most about. `tensions` records the productive contradiction a generic output would flatten. `task` identifies the task: what it is, the disciplines it belongs to, the ladder from those disciplines down to this task's specifics, and the user's whole `job` end to end (the steps the people using the result go through). Sections follow the ladder and entries may carry a `rung`. The default reading covers the whole job. finalize warns when the ladder is missing (`no_task_ladder`) or the job is (`no_task_job`). `readings` (optional) keeps every plausible reading of the request's scope side by side, with what each includes and which is the default, so the dump never narrows the request to one reading; consumers choose or combine.
 
 ### `routing`
 
@@ -72,7 +75,7 @@ The search interface. One route per consumer job:
 
 - `paths` are RFC 6901 JSON Pointers that must resolve. Finalize fills `jq` (a ready command fragment), `tokens` (≈ bytes/4 of the slice) and `lines` (line spans in the file).
 - Keep each route under ~8K tokens. If finalize warns `route_over_cap`, split the route or point at sub-paths.
-- Finalize adds an automatic first route, `always first: the defining tier-1 entries` (`"auto": true`), pointing at every tier-1 entry: what the task is most about, pulled first for relevance, not as rules. It is rebuilt on every build, so don't write it yourself.
+- Finalize adds an automatic first route, `start here: what the task is most about` (`"auto": true`), pointing at every tier-1 entry: the most relevant material, pulled first, not rules. It is rebuilt on every build, so don't write it yourself.
 - Every task section should be reachable from at least one route (the survival rule). An unrouted section is either unneeded or a missing route.
 - Name jobs by what a consumer is doing ("implement the parser", "pick colors for a dark-mode variant", "write subject lines"), not by section names.
 
@@ -86,7 +89,7 @@ See sections 6–8. `open_questions` holds what the prompt and evidence leave op
 
 Finalize gives open questions `prov: "unknown"` and `tier: 3` if absent. Use mode records answers as `user_stated` entries with `decided_in`, then deletes or keeps the question as resolved.
 
-An `open_questions` default settles a parameter the prompt left open and the work can't proceed without (currency, framework, a settle band). It never picks the deliverable ("use Set A"), a reading of a quality word, or a scope reading: those stay side by side as readings and candidate pools, and the consumer composes. Nor does it hold a contradiction against the user's words: a value that pulls against a tier-1 `user_stated` entry becomes a scoped `not_wanted` anti-keyword with an `instead` (§6), which consumers read with every slice.
+An `open_questions` default settles a technical parameter the prompt left open and the work can't proceed without (language, framework, currency). It never picks the deliverable ("use Set A"), a reading of a quality word, a scope reading, a form, a style or a subject (ADR 0013): those stay side by side as readings and candidate pools, and the consumer composes. Nor does it hold a contradiction against the user's words: a value that pulls against a tier-1 `user_stated` entry becomes a scoped `not_wanted` anti-keyword with an `instead` (§6), which consumers read with every slice.
 
 ## 3. Task sections and entries
 
@@ -121,7 +124,7 @@ Keys starting with `_` are section notes, not entries.
 | `behaviors` | How it acts, cause and effect, one sentence each ("thicker transparent material looks darker") |
 | `principle` | Why, in one sentence |
 | `signals` | How to recognize it in an output or an image. Indexed |
-| `tokens` | Numbers, with `status`: `measured`, `sourced` or `illustrative` |
+| `tokens` | Numbers, with `status`: `measured`, `sourced` or `illustrative`. Illustrative values are spreads: a range (`"250 to 400"`) or a list of several values far apart, never one curve or colour (`single_setting`) |
 | `contribution` | For influences: what each one brings |
 | `queries` | For search vocabulary: phrases people would type |
 | `readings` | For a `kind: "quality"` facet: the ways a quality word from the prompt can be read for this task, side by side, each `{"reading", "in_practice", "signals"}`. At least two (finalize warns: `quality_one_reading`), and none is the default |
@@ -250,10 +253,10 @@ The user's own don'ts go in verbatim as `user_stated` tier 1. A value verify fou
 
 ## 7. Checks (review prompts)
 
-Optional review prompts a consumer may run on its own output as a self-review. They are not gates: no forced revision, and a consumer may deviate and say why. Derived, so they carry `from` instead of `prov`:
+Optional review prompts, phrased as questions, that a consumer may ask of its own output as a self-review. They are not gates: no forced revision, and a consumer may deviate and say why. Derived, so they carry `from` instead of `prov`:
 
 ```json
-"k-no-gloss": {"text": "Packaging surfaces read matte, not glossy.", "from": ["ak-gloss"], "scope": ["image"],
+"k-no-gloss": {"text": "Do the packaging surfaces read matte, or glossy?", "from": ["ak-gloss"], "scope": ["image"],
                "severity": "must", "test": {"kind": "visual", "spec": "no specular hotspots on the carton faces"}}
 ```
 
@@ -267,7 +270,7 @@ Ready-to-paste payloads for declared consumers, each stamped with the dump versi
 "exports": {
   "image": {"generic": {"compiled_from_version": 1, "from": ["c-photo-over-bands", "ak-gloss"],
                         "positive": "...", "constraints": "...", "negative": "...", "params": {"aspect": "4:5"}}},
-  "llm_brief": {"compiled_from_version": 1, "from": [], "text": "Must: ... Should: ... Say instead: ... Unknowns: ..."},
+  "llm_brief": {"compiled_from_version": 1, "from": [], "text": "On the table: ... Ways in: ... Dials: ... Worn paths: ... Open: ..."},
   "briefs": {"palette-specialist": {"compiled_from_version": 1, "load": ["/palette", "/anti_keywords"], "question": "...", "returns": "..."}}
 }
 ```
@@ -337,7 +340,7 @@ Rejects (exit 1, dump not written): missing manifest fields or essence, bad tier
 
 Fixes (and reports): a task section left with no entries, only notes → dropped (`empty_section_dropped`); a `kind: "candidate"` entry that isn't collected → `status: "unverified"` at tier 4, whatever it claimed (`candidate_unverified`); prov above its evidence → `inferred`; `reference_observed` backed only by web-found video/image → `researched`; prov above its ticket's ceiling → capped; `user_stated` without a prompt anchor → `inferred`; tier 1 that isn't collected (`proposed`, `inferred`, `unknown`) or has no valid anchor → tier 2; signature ids that didn't stay tier 1 → dropped from the signature; replaces that try to raise prov → blocked.
 
-Warns: prose that should be lists (`wordy_entry`: a `text` over 40 words or an `instead` over 20), a facet over ~300 tokens (`oversized_entry`; `merge`, and a `build` that writes a dump from a work dir, also print one `oversized_entry by shard` line naming every one by the shard that wrote it), candidates with fewer than 5 verified among them (`candidate_pool_thin`: a floor, since finalize can't read N from the prompt), a source whose `quote` isn't in the page `webpages.py` cached for its `url` (`quote_not_in_page`), a `kind: "quality"` facet with fewer than two `readings` (`quality_one_reading`), a section whose 5+ entries all cite one single source (`undigested_source`: that source passed through, not digested), no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from, and none lists under `skipped` (`image_not_viewed`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
+Warns: prose that should be lists (`wordy_entry`: a `text` over 40 words or an `instead` over 20), a facet over ~300 tokens (`oversized_entry`; `merge`, and a `build` that writes a dump from a work dir, also print one `oversized_entry by shard` line naming every one by the shard that wrote it), candidates with fewer than 5 verified among them (`candidate_pool_thin`: a floor, since finalize can't read N from the prompt), a source whose `quote` isn't in the page `webpages.py` cached for its `url` (`quote_not_in_page`), a `kind: "quality"` facet with fewer than two `readings` (`quality_one_reading`), a section whose 5+ entries all cite one single source (`undigested_source`: that source passed through, not digested), no task ladder (`essence.task` without disciplines and at least two rungs), no job (`essence.task.job` with fewer than two steps), low grounding (20+ entries and under a fifth collected; `manifest.stats.grounding` gives the mix and `build` prints it), sources on fewer than three hosts (`narrow_sources`), the build's own entries other than constraint mechanisms (invariants with a `variable`, forbidden shortcuts, anti-keywords) using narrowing words ("must", "must not", "never", "always", "the only", "no other", "nothing else"; `narrowing_language`), collected images no `visual` entry describes by `image_id` or by the page, video and timecode, or url they came from, and none lists under `skipped` (`image_not_viewed`), rule words or the old `Core:`/`Must:`/`Should:` labels in the essence (thesis, summary, formula, angles), an export's text or a review prompt (`directive_voice`), fewer than two `essence.angles` (`no_angles`), a build-derived illustrative token holding one curve or one colour (`single_setting`), more than 12 tier-1 entries, unrouted sections, routes over ~8K tokens, stale exports, `not_meant` without `instead`, loose non-entry values, an unknown `method` token, layout drift after hand edits (`check`).
 
 ## 14. Media entries (pages, videos, images)
 

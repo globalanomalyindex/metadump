@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j1","scores":{
+"W":{"compact":9,"collapsible":8,"tracking":7,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Very tight collapsed pill with segmented progress and a clean timeline with tracking number, but no carrier name or next-action beyond Dismiss."},
+"X":{"compact":7,"collapsible":8,"tracking":9,"dark":9,"usability":8,"craft":9,"overall":9,"note":"Richest and most polished tracker (progress stepper, scan log, copy/refresh/alerts, multi-package dots) though the collapsed subtitle truncates and the opened state is a bit denser."},
+"Y":{"compact":8,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":7,"overall":7,"note":"Compact with carrier badge, ETA window and action buttons, but the Carrier page button wraps awkwardly and the collapsed state omits ETA."},
+"Z":{"compact":6,"collapsible":7,"tracking":6,"dark":8,"usability":6,"craft":6,"overall":6,"note":"Handsome collapsed row, but carrier tabs are confusing for one package, there is empty padding at the bottom, and it has less screen-reader support."}},
+"ranking":["X","W","Y","Z"]}

@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Tracker Toast</title>
+<style>
+:root{
+  --bg:#0b0d11;
+  --surface:#171a21;
+  --surface-2:#1f232c;
+  --border:#2a2f3a;
+  --text:#e6e9ef;
+  --muted:#8b93a3;
+  --faint:#6b7383;
+  --accent:#7aa2ff;
+  --ok:#4ade80;
+  --warn:#fbbf24;
+  --bad:#f87171;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text)}
+body{font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.page{max-width:640px;margin:0 auto;padding:40px 16px}
+.page h1{font-size:20px;margin:0 0 6px}
+.page p{color:var(--muted);margin:0 0 12px}
+.page ul{padding:0;margin:16px 0 0;list-style:none;color:var(--muted)}
+.page li{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+
+/* toast */
+.toast{
+  position:fixed;right:16px;bottom:16px;
+  width:min(340px,calc(100vw - 32px));
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 12px 32px rgba(0,0,0,.5);overflow:hidden;z-index:10;
+}
+.toast[hidden],.reopen[hidden],.panel[hidden]{display:none}
+.head{display:flex;align-items:stretch}
+.bar{
+  flex:1;min-width:0;display:flex;align-items:center;gap:8px;
+  background:none;border:0;color:inherit;padding:9px 10px;cursor:pointer;
+  font:inherit;text-align:left;
+}
+.sum{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.chev{color:var(--muted);transition:transform .15s ease;font-size:11px}
+.bar[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.dot.active{background:var(--accent)}
+.dot.live{background:var(--ok);box-shadow:0 0 0 3px rgba(74,222,128,.15)}
+.close{background:none;border:0;color:var(--muted);width:32px;cursor:pointer;font-size:16px;line-height:1}
+.close:hover{color:var(--text)}
+
+.panel{border-top:1px solid var(--border);max-height:min(60vh,420px);overflow:auto}
+.row{padding:9px 10px;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:0}
+.row-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.meta{color:var(--muted);font-size:11px;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{height:3px;background:var(--surface-2);border-radius:2px;margin:7px 0 6px;overflow:hidden}
+.track span{display:block;height:100%;background:var(--accent);transition:width .25s ease}
+.track span.done{background:var(--ok)}
+.tag{font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);white-space:nowrap;flex:none}
+.tag.out{color:var(--warn);border-color:rgba(251,191,36,.4)}
+.tag.done{color:var(--ok);border-color:rgba(74,222,128,.4)}
+.hist{margin:0;padding:0;list-style:none;color:var(--muted);font-size:11px}
+.hist li{display:flex;gap:6px}
+.hist time{color:var(--faint);flex:none;font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:6px;margin-top:7px}
+.sm{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:3px 9px;font:inherit;font-size:11px;cursor:pointer}
+.sm:hover:not(:disabled){border-color:var(--accent)}
+.sm:disabled{opacity:.4;cursor:default}
+.sm.danger:hover:not(:disabled){color:var(--bad);border-color:var(--bad)}
+.empty{padding:14px 10px;color:var(--muted);text-align:center;font-size:12px}
+
+.add{display:grid;grid-template-columns:1fr 84px;gap:6px;padding:9px 10px;border-top:1px solid var(--border);background:var(--bg)}
+.add .full{grid-column:1/-1}
+input,select{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 7px;font:inherit;font-size:12px;min-width:0;width:100%}
+input::placeholder{color:var(--faint)}
+.err{color:var(--bad);font-size:11px;margin:0;min-height:0}
+.err:empty{display:none}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;color:var(--muted);font-size:11px;border-top:1px solid var(--border)}
+.link{background:none;border:0;color:var(--accent);font:inherit;font-size:11px;cursor:pointer;padding:0}
+.link:hover{text-decoration:underline}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.reopen{
+  position:fixed;right:16px;bottom:16px;z-index:10;
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;
+}
+.reopen:hover{border-color:var(--accent)}
+
+@media (max-width:420px){
+  .toast{right:8px;bottom:8px;width:calc(100vw - 16px)}
+  .reopen{right:8px;bottom:8px}
+  .page{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <h1>Orders</h1>
+  <p>Your recent purchases. The package tracker sits in the corner: collapse it, expand it, add a tracking number, step a package through its scans, or dismiss it.</p>
+  <ul>
+    <li><span>Standing desk mat</span><span>Shipped</span></li>
+    <li><span>Field notebooks (3-pack)</span><span>Out for delivery</span></li>
+    <li><span>Replacement charger</span><span>Processing</span></li>
+    <li><span>Ceramic pour-over set</span><span>Delivered</span></li>
+  </ul>
+</main>
+
+<section class="toast" id="toast" aria-label="Package tracker">
+  <div class="head">
+    <button class="bar" id="bar" type="button" aria-expanded="false" aria-controls="panel">
+      <span class="dot" id="dot"></span>
+      <span class="sum" id="sum">Packages</span>
+      <span class="chev" aria-hidden="true">&#9650;</span>
+    </button>
+    <button class="close" id="close" type="button" aria-label="Dismiss package tracker">&times;</button>
+  </div>
+
+  <div class="panel" id="panel" hidden>
+    <ul class="list" id="list" style="list-style:none;margin:0;padding:0"></ul>
+
+    <form class="add" id="add" novalidate>
+      <input class="full" id="name" type="text" maxlength="60" placeholder="Label, e.g. Desk lamp" aria-label="Package label">
+      <input id="tracking" type="text" maxlength="30" placeholder="Tracking number" aria-label="Tracking number">
+      <select id="carrier" aria-label="Carrier">
+        <option>UPS</option><option>USPS</option><option>FedEx</option><option>DHL</option><option>Other</option>
+      </select>
+      <p class="err full" id="err" role="alert"></p>
+      <button class="sm full" type="submit" style="padding:6px">Add package</button>
+    </form>
+
+    <div class="foot">
+      <span id="count">0 tracked</span>
+      <button class="link" id="reset" type="button">Reset demo</button>
+    </div>
+  </div>
+</section>
+
+<button class="reopen" id="reopen" type="button" hidden>
+  <span class="dot" id="reopenDot"></span><span id="reopenText">Packages</span>
+</button>
+
+<script>
+(function () {
+  var STAGES = ['Label created', 'Picked up', 'In transit', 'Out for delivery', 'Delivered'];
+  var NEXT_TEXT = ['', 'Picked up by carrier', 'Arrived at sorting facility', 'Out for delivery', 'Delivered to front door'];
+  var KEY = 'pkg-toast.v1';
+  var MAX = 8;
+
+  var SAMPLE = {
+    packages: [
+      { id: 'p1', name: 'Standing desk mat', carrier: 'UPS', tracking: '1Z999AA10123456784', stage: 2, eta: 'Today, by 8 pm',
+        events: [['Nov 4, 09:12', 'Label created'], ['Nov 4, 18:40', 'Picked up by carrier'], ['Nov 5, 06:03', 'Departed Memphis hub']] },
+      { id: 'p2', name: 'Field notebooks (3-pack)', carrier: 'USPS', tracking: '9400111899223856427712', stage: 3, eta: 'Today, by 9 pm',
+        events: [['Nov 3, 11:05', 'Label created'], ['Nov 3, 16:22', 'Picked up by carrier'], ['Nov 4, 04:48', 'Arrived at sorting facility'], ['Nov 5, 07:30', 'Out for delivery']] },
+      { id: 'p3', name: 'Replacement charger', carrier: 'FedEx', tracking: '771234567890', stage: 1, eta: 'Nov 7',
+        events: [['Nov 5, 08:14', 'Label created'], ['Nov 5, 13:40', 'Picked up by carrier']] },
+      { id: 'p4', name: 'Ceramic pour-over set', carrier: 'DHL', tracking: 'JD014600006284938104', stage: 4, eta: 'Nov 4',
+        events: [['Nov 1, 10:00', 'Label created'], ['Nov 2, 09:15', 'Picked up by carrier'], ['Nov 3, 12:02', 'Arrived at sorting facility'], ['Nov 4, 14:31', 'Delivered to front door']] }
+    ],
+    collapsed: true,
+    dismissed: false
+  };
+
+  var state = load();
+
+  var el = {
+    toast: document.getElementById('toast'),
+    bar: document.getElementById('bar'),
+    dot: document.getElementById('dot'),
+    sum: document.getElementById('sum'),
+    close: document.getElementById('close'),
+    panel: document.getElementById('panel'),
+    list: document.getElementById('list'),
+    add: document.getElementById('add'),
+    name: document.getElementById('name'),
+    tracking: document.getElementById('tracking'),
+    carrier: document.getElementById('carrier'),
+    err: document.getElementById('err'),
+    count: document.getElementById('count'),
+    reset: document.getElementById('reset'),
+    reopen: document.getElementById('reopen'),
+    reopenDot: document.getElementById('reopenDot'),
+    reopenText: document.getElementById('reopenText')
+  };
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && Array.isArray(s.packages)) return s;
+      }
+    } catch (e) { /* storage blocked or corrupt: fall back to sample */ }
+    return clone(SAMPLE);
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function stamp() {
+    var d = new Date();
+    var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    var hh = String(d.getHours()).padStart(2, '0');
+    var mm = String(d.getMinutes()).padStart(2, '0');
+    return m + ' ' + d.getDate() + ', ' + hh + ':' + mm;
+  }
+
+  function mask(t) { return t.length > 6 ? '···' + t.slice(-6) : t; }
+
+  function active(p) { return p.stage < 4; }
+
+  function rowHTML(p) {
+    var done = p.stage === 4;
+    var pct = Math.round(p.stage / 4 * 100);
+    var tagCls = done ? 'done' : (p.stage === 3 ? 'out' : '');
+    var recent = p.events.slice(-3).reverse().map(function (e) {
+      return '<li><time>' + esc(e[0]) + '</time><span>' + esc(e[1]) + '</span></li>';
+    }).join('');
+    return '<li class="row" data-id="' + esc(p.id) + '">' +
+      '<div class="row-top"><span class="name" title="' + esc(p.name) + '">' + esc(p.name) + '</span>' +
+      '<span class="tag ' + tagCls + '">' + esc(STAGES[p.stage]) + '</span></div>' +
+      '<div class="meta">' + esc(p.carrier) + ' · ' + esc(mask(p.tracking)) + ' · ' +
+      (done ? 'Delivered ' : 'ETA ') + esc(p.eta) + '</div>' +
+      '<div class="track"><span class="' + (done ? 'done' : '') + '" style="width:' + pct + '%"></span></div>' +
+      '<ul class="hist">' + recent + '</ul>' +
+      '<div class="actions">' +
+        '<button class="sm" type="button" data-act="advance"' + (done ? ' disabled' : '') + '>Next scan</button>' +
+        '<button class="sm danger" type="button" data-act="remove">' + (done ? 'Archive' : 'Remove') + '</button>' +
+      '</div></li>';
+  }
+
+  function render() {
+    var pk = state.packages;
+    var act = pk.filter(active).length;
+    var out = pk.filter(function (p) { return p.stage === 3; }).length;
+
+    var summary;
+    if (pk.length === 0) summary = 'No packages tracked';
+    else if (act === 0) summary = 'All ' + pk.length + ' delivered';
+    else summary = act + ' on the way' + (out ? ' · ' + out + ' out for delivery' : '');
+
+    var dotCls = out ? 'live' : (act ? 'active' : '');
+    el.sum.textContent = summary;
+    el.dot.className = 'dot ' + dotCls;
+    el.reopenDot.className = 'dot ' + dotCls;
+    el.reopenText.textContent = 'Packages' + (act ? ' · ' + act : '');
+
+    el.bar.setAttribute('aria-expanded', String(!state.collapsed));
+    el.panel.hidden = state.collapsed;
+
+    el.toast.hidden = state.dismissed;
+    el.reopen.hidden = !state.dismissed;
+
+    el.list.innerHTML = pk.length
+      ? pk.map(rowHTML).join('')
+      : '<li class="empty">Nothing tracked yet. Add a tracking number below.</li>';
+
+    el.count.textContent = pk.length + ' of ' + MAX + ' tracked';
+    save();
+  }
+
+  el.bar.addEventListener('click', function () {
+    state.collapsed = !state.collapsed;
+    render();
+  });
+
+  el.close.addEventListener('click', function () {
+    state.dismissed = true;
+    render();
+    el.reopen.focus();
+  });
+
+  el.reopen.addEventListener('click', function () {
+    state.dismissed = false;
+    render();
+    el.bar.focus();
+  });
+
+  el.list.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('button[data-act]');
+    if (!btn) return;
+    var row = btn.closest('.row');
+    var id = row && row.getAttribute('data-id');
+    var idx = state.packages.findIndex(function (p) { return p.id === id; });
+    if (idx < 0) return;
+    var p = state.packages[idx];
+
+    if (btn.getAttribute('data-act') === 'advance' && active(p)) {
+      p.stage += 1;
+      p.events.push([stamp(), NEXT_TEXT[p.stage]]);
+      if (p.stage === 4) p.eta = stamp();
+    } else if (btn.getAttribute('data-act') === 'remove') {
+      state.packages.splice(idx, 1);
+    }
+    render();
+  });
+
+  el.add.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var name = el.name.value.trim();
+    var trk = el.tracking.value.replace(/[\s-]/g, '');
+    var msg = '';
+    if (!name) msg = 'Give the package a label.';
+    else if (!/^[A-Za-z0-9]{8,30}$/.test(trk)) msg = 'Tracking numbers are 8 to 30 letters or digits.';
+    else if (state.packages.length >= MAX) msg = 'Tracker is full (' + MAX + '). Remove one first.';
+    if (msg) { el.err.textContent = msg; return; }
+
+    state.packages.unshift({
+      id: 'p' + Date.now().toString(36),
+      name: name,
+      carrier: el.carrier.value,
+      tracking: trk.toUpperCase(),
+      stage: 0,
+      eta: 'Pending',
+      events: [[stamp(), 'Label created']]
+    });
+    state.collapsed = false;
+    el.name.value = '';
+    el.tracking.value = '';
+    el.err.textContent = '';
+    render();
+    el.name.focus();
+  });
+
+  el.reset.addEventListener('click', function () {
+    state = clone(SAMPLE);
+    state.collapsed = false;
+    el.err.textContent = '';
+    render();
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && !state.collapsed) {
+      state.collapsed = true;
+      render();
+      el.bar.focus();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

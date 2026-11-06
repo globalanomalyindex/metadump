@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"imagery": 8, "form": 9, "specificity": 7, "freshness": 7, "resonance": 7, "overall": 8, "note": "Counts 5-7-5 (cloud lens on the ridge / all the wind pours through it still / and the smell of snow); lenticular cloud evoked with a fresh smell-of-snow turn, though 'lens' is unnamed as rare."},
+"X": {"imagery": 7, "form": 9, "specificity": 9, "freshness": 5, "resonance": 6, "overall": 7, "note": "Counts 5-7-5 (na-cre-ous glow burns / in the long dark before dawn / mother-of-pearl sky); accurate polar stratospheric nacreous cloud, but mother-of-pearl is the stock descriptor and the ending just restates."},
+"Y": {"imagery": 8, "form": 9, "specificity": 7, "freshness": 7, "resonance": 7, "overall": 7, "note": "Counts 5-7-5 (cold cup on the sill / the lens cloud over the ridge / holds still, wind running); the domestic cup against the still lens cloud is a nice cut, though the link is loose."},
+"Z": {"imagery": 5, "form": 5, "specificity": 8, "freshness": 4, "resonance": 4, "overall": 4, "note": "Counts 6-7-5 (moth-er-of-pearl sheets is 6), so form slips; mother-of-pearl and nacreous together are redundant and the last line is vague."}
+},
+"ranking": ["W", "Y", "X", "Z"]}

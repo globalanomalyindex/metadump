@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {"physics": 7, "interaction": 7, "stability": 8, "clarity": 4, "craft": 6, "overall": 6, "note": "Solid sequential-impulse solver with sleeping and Coulomb friction and a direct, throwable drag, but the only control is Reset and there is no hint text, so the task is not obvious."},
+    "X": {"physics": 6, "interaction": 8, "stability": 7, "clarity": 8, "craft": 7, "overall": 7, "note": "Spring-driven drag with throw, click-to-add, gravity toggle and HUD text make it the most usable, though boxes are axis-aligned with no rotation and the HUD overlaps boxes on phone width."},
+    "Y": {"physics": 9, "interaction": 8, "stability": 7, "clarity": 3, "craft": 6, "overall": 7, "note": "Most believable physics (SAT oriented boxes with rotation, friction, restitution, sleeping, spring grab with a visible tether and throw), but it offers only Reset and no hint, so it is hard to discover."},
+    "Z": {"physics": 7, "interaction": 7, "stability": 7, "clarity": 8, "craft": 6, "overall": 7, "note": "Substepped 1/240 solver with friction, a kinematic drag that throws, and Add/Reset/Clear with a count and hint, though the hint overlaps the stack on phone width and boxes do not rotate."}
+  },
+  "ranking": ["X", "Y", "Z", "W"]
+}

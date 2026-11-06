@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"dreamlike": 8, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "Vivid pink-cyan aurora blooms behind a white label pill with long tail curves, floating drift, focus and reduced-motion handled, though the saturated glow is a bit loud for a calm card."},
+"X": {"dreamlike": 6, "practical": 6, "motion": 7, "craft": 7, "overall": 6, "note": "Gentle pastel gradient shift with a spinning blurred halo and ripple, but the rest button is pale on a pale page so the affordance is weak and the hover is subtle."},
+"Y": {"dreamlike": 7, "practical": 7, "motion": 7, "craft": 8, "overall": 7, "note": "Strong solid gradient button with a clear affordance and nice bloom with overshoot, but the white glow washes out the white label mid-hover."},
+"Z": {"dreamlike": 9, "practical": 8, "motion": 9, "craft": 9, "overall": 9, "note": "Dark scene with a slow lagging pointer-following light and rose-peach bloom, seven purposeful curves, hover-gated, strong focus ring, and legible label throughout, the most ethereal and polished."}
+}, "ranking": ["Z", "W", "Y", "X"]}

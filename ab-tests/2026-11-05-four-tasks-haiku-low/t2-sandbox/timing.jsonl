@@ -1,0 +1,9 @@
+{"run": "A-r3", "tokens": 83860, "ms": 48550, "tool_uses": 3}
+{"run": "A-r1", "tokens": 86827, "ms": 58537, "tool_uses": 3}
+{"run": "A-r2", "tokens": 85646, "ms": 51875, "tool_uses": 4}
+{"run": "A-r4", "tokens": 87384, "ms": 60725, "tool_uses": 3}
+{"run": "dump", "tokens": 170227, "ms": 680889, "tool_uses": 30, "note": "main loop only; stopped before the widening round"}
+{"run": "B-r1", "tokens": 126851, "ms": 168943, "tool_uses": 11}
+{"run": "B-r3", "tokens": 144309, "ms": 188077, "tool_uses": 9}
+{"run": "B-r2", "tokens": 158317, "ms": 232771, "tool_uses": 11}
+{"run": "B-r4", "tokens": 147004, "ms": 1993070, "tool_uses": 16, "note": "wall time includes a Playwright self-check that hung; the file was final at 14:01, before capture", "exclude_from_time_mean": true}

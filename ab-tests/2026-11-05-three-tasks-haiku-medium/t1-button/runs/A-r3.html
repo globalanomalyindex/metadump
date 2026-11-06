@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Notes</title>
+<style>
+:root {
+  --ink: #1d1b2e;
+  --muted: #5f5b78;
+  --paper: #f7f6fb;
+  --card: #ffffff;
+  --line: #e5e2f0;
+  --violet: #5d4fdb;
+  --sky: #2d7aa3;
+  --glow: 124, 108, 240;
+  /* custom curves: drift = long soft settle, veil = gentle fade-through, bloom = small overshoot, exhale = quick neutral */
+  --ease-drift: cubic-bezier(.16, 1, .3, 1);
+  --ease-veil: cubic-bezier(.45, 0, .2, 1);
+  --ease-bloom: cubic-bezier(.34, 1.56, .64, 1);
+  --ease-exhale: cubic-bezier(.22, .61, .36, 1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1100px 560px at 8% -12%, #ebe7ff 0%, transparent 60%),
+    radial-gradient(900px 480px at 108% 8%, #dff3fb 0%, transparent 60%),
+    var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+/* ---------- header ---------- */
+.top {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0; gap: 12px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; }
+.orb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, var(--sky) 40%, var(--violet) 92%);
+  box-shadow: 0 0 18px rgba(var(--glow), .6);
+}
+.navlink {
+  color: var(--muted); text-decoration: none; font-size: .95rem;
+  padding: 6px 4px; transition: color 500ms var(--ease-exhale);
+}
+.navlink:hover { color: var(--ink); }
+.navlink:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
+
+/* ---------- hero ---------- */
+.hero { padding: 48px 0 36px; }
+.eyebrow {
+  display: inline-block; margin: 0; font-size: .8rem; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; color: #4b3fc4;
+  background: rgba(var(--glow), .10); padding: 5px 10px; border-radius: 99px;
+}
+h1 {
+  font-size: clamp(2.1rem, 5.6vw, 3.6rem); line-height: 1.04; letter-spacing: -.025em;
+  margin: 16px 0 14px; max-width: 14ch;
+}
+.lede { color: var(--muted); max-width: 56ch; font-size: 1.08rem; margin: 0; }
+.actions {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 28px 0 14px;
+}
+.live { color: var(--muted); font-size: .94rem; margin: 0; min-height: 1.5em; }
+.live strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ---------- the dream button ---------- */
+.dream {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 46px; padding: .75rem 1.4rem; border: 0; border-radius: 999px;
+  font-family: inherit; font-size: .98rem; font-weight: 600; line-height: 1;
+  color: #fff; cursor: pointer; text-decoration: none; white-space: nowrap;
+  background: linear-gradient(120deg, var(--violet) 0%, #6f5ee6 45%, var(--sky) 100%);
+  background-size: 180% 100%;
+  background-position: 0% 50%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .35),
+    0 10px 30px -12px rgba(var(--glow), .7),
+    0 0 0 0 rgba(var(--glow), 0);
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 700ms var(--ease-drift),
+    box-shadow 900ms var(--ease-veil),
+    background-position 1200ms var(--ease-veil),
+    filter 600ms var(--ease-veil),
+    color 400ms var(--ease-exhale);
+  -webkit-tap-highlight-color: transparent;
+}
+/* sheen that drifts across the surface on hover */
+.dream::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 50%; z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, .5) 50%, transparent 100%);
+  transform: translateX(-110%) skewX(-12deg);
+  transition: transform 1100ms var(--ease-veil);
+}
+/* done layer fades in under the label */
+.dream::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(120deg, #17795c, var(--sky));
+  opacity: 0; transition: opacity 900ms var(--ease-veil);
+}
+.dream .label { position: relative; transition: letter-spacing 900ms var(--ease-drift); }
+
+.dream:hover:not(:disabled),
+.dream:focus-visible:not(:disabled) {
+  transform: translate3d(0, -2px, 0) scale(1.02);
+  background-position: 100% 50%;
+  filter: saturate(1.12) brightness(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .35),
+    0 22px 44px -14px rgba(var(--glow), .8),
+    0 0 0 6px rgba(var(--glow), .10);
+}
+.dream:hover:not(:disabled)::after { transform: translateX(230%) skewX(-12deg); }
+.dream:hover:not(:disabled) .label { letter-spacing: .015em; }
+
+.dream:active:not(:disabled) {
+  transform: translate3d(0, 0, 0) scale(.98);
+  transition-duration: 160ms, 160ms, 160ms, 160ms, 160ms;
+}
+.dream:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+.dream.is-blooming { animation: bloom 900ms var(--ease-bloom); }
+@keyframes bloom {
+  0%   { transform: scale(.97); }
+  40%  { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+
+.dream[aria-busy="true"] { cursor: progress; background-position: 100% 50%; }
+.dream[aria-busy="true"] .label { animation: breathe 1.2s var(--ease-veil) infinite alternate; }
+@keyframes breathe { from { opacity: .55; } to { opacity: 1; } }
+
+.dream.is-done { cursor: default; }
+.dream.is-done::before { opacity: 1; }
+.dream:disabled { cursor: default; filter: saturate(.85); }
+
+/* ghost variant */
+.dream--ghost {
+  background: transparent; color: var(--ink);
+  background-size: auto;
+  box-shadow:
+    inset 0 0 0 1.5px var(--line),
+    0 14px 34px -16px rgba(var(--glow), 0);
+}
+.dream--ghost::after { background: linear-gradient(100deg, transparent 0%, rgba(var(--glow), .14) 50%, transparent 100%); }
+.dream--ghost:hover:not(:disabled),
+.dream--ghost:focus-visible:not(:disabled) {
+  background: rgba(var(--glow), .07);
+  color: #3d33a8;
+  filter: none;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(var(--glow), .55),
+    0 14px 34px -16px rgba(var(--glow), .8);
+}
+.dream--ghost[aria-pressed="true"] {
+  background: var(--ink); color: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--ink), 0 14px 30px -16px rgba(29, 27, 46, .6);
+}
+.dream--sm { min-height: 36px; padding: .55rem 1rem; font-size: .9rem; }
+
+/* like button */
+.like { gap: .45rem; }
+.like svg { width: 18px; height: 18px; flex: none; }
+.like svg path {
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round;
+  transition: fill 600ms var(--ease-bloom);
+}
+.like[aria-pressed="true"] { color: #c03a5c; background: rgba(192, 58, 92, .08); box-shadow: inset 0 0 0 1.5px rgba(192, 58, 92, .45); }
+.like[aria-pressed="true"] svg path { fill: currentColor; }
+.like[aria-pressed="true"] svg { animation: heartbeat 700ms var(--ease-bloom); }
+@keyframes heartbeat {
+  0% { transform: scale(.8); }
+  50% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- billing segmented control ---------- */
+.billing {
+  display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px;
+  background: #fff; border: 1px solid var(--line);
+}
+.seg {
+  border: 0; background: transparent; font: inherit; font-size: .95rem; color: var(--muted);
+  padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  transition: background 500ms var(--ease-veil), color 400ms var(--ease-exhale), box-shadow 700ms var(--ease-drift);
+}
+.seg:hover { color: var(--ink); }
+.seg:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.seg[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: 0 6px 18px -8px rgba(29, 27, 46, .6); }
+.save {
+  font-size: .72rem; font-weight: 600; margin-left: 4px; padding: 2px 6px; border-radius: 99px;
+  background: rgba(var(--glow), .14); color: #4b3fc4;
+}
+.seg[aria-pressed="true"] .save { background: rgba(255, 255, 255, .18); color: #fff; }
+
+/* ---------- plans ---------- */
+.plans { padding: 8px 0 40px; }
+.plans-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  flex-wrap: wrap; margin-bottom: 18px;
+}
+.plans-head h2 { font-size: 1.35rem; letter-spacing: -.015em; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+.card {
+  position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+  padding: 22px; display: flex; flex-direction: column; gap: 12px;
+  transition: transform 800ms var(--ease-drift), box-shadow 800ms var(--ease-veil), border-color 600ms var(--ease-veil);
+}
+.card h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--muted); }
+.price { font-size: 2.3rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin: 0; }
+.price small { font-size: .92rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.card p { margin: 0; color: var(--muted); font-size: .95rem; }
+.card .dream { margin-top: auto; width: 100%; }
+.card.is-selected {
+  border-color: rgba(var(--glow), .55);
+  box-shadow: 0 0 0 3px rgba(var(--glow), .12), 0 22px 40px -26px rgba(var(--glow), .75);
+}
+.card.is-selected h3 { color: #4b3fc4; }
+.card:hover { transform: translateY(-3px); }
+.plan-summary { margin: 16px 0 0; color: var(--muted); font-size: .95rem; }
+
+/* ---------- note + waitlist ---------- */
+.panel {
+  background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+  padding: 26px; margin-bottom: 40px;
+}
+.panel h2 { margin: 0 0 6px; font-size: 1.3rem; letter-spacing: -.015em; }
+.panel > p { margin: 0 0 18px; color: var(--muted); }
+
+.note {
+  display: flex; gap: 16px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;
+  padding: 18px; border-radius: 16px; border: 1px solid var(--line); background: #fcfcfe; margin-bottom: 24px;
+}
+.note h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.note p { margin: 0; color: var(--muted); font-size: .94rem; max-width: 60ch; }
+
+.tour-toggle { margin-bottom: 4px; }
+.tour {
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  transition: grid-template-rows 900ms var(--ease-drift), opacity 700ms var(--ease-veil);
+}
+.tour[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
+.tour > div { min-height: 0; overflow: hidden; }
+.tour ol { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.tour li {
+  display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start;
+  padding: 12px 14px; border-radius: 14px; background: rgba(var(--glow), .05);
+}
+.tour b {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font-size: .8rem; color: #fff; background: linear-gradient(120deg, var(--violet), var(--sky));
+}
+.tour span { color: var(--muted); font-size: .95rem; }
+
+.wl-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.wl-form input {
+  flex: 1 1 240px; min-width: 0; font: inherit; padding: .8rem 1.1rem; border-radius: 999px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  transition: box-shadow 700ms var(--ease-drift), border-color 500ms var(--ease-veil);
+}
+.wl-form input:focus { outline: none; border-color: rgba(var(--glow), .7); box-shadow: 0 0 0 4px rgba(var(--glow), .15); }
+.wl-form input[aria-invalid="true"] { border-color: #d9466b; box-shadow: 0 0 0 4px rgba(217, 70, 107, .12); }
+.wl-msg { margin: 12px 0 0; min-height: 1.5em; font-size: .94rem; color: var(--muted); }
+.wl-msg.is-error { color: #b83258; }
+.wl-msg.is-ok { color: #1f8a6a; }
+
+footer { color: var(--muted); font-size: .88rem; padding: 0 0 36px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .actions .dream { flex: 1 1 100%; }
+  .panel { padding: 20px; }
+}
+
+/* hover-only lift on pointer devices; touch gets press feedback only */
+@media (hover: none) {
+  .card:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .dream:hover:not(:disabled), .dream:focus-visible:not(:disabled) { transform: none; }
+  .card:hover { transform: none; }
+  .dream::after { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="orb" aria-hidden="true"></span>Lumen Notes</div>
+    <nav aria-label="Primary">
+      <a class="navlink" href="#plans">Pricing</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">Now in public beta</p>
+      <h1 id="hero-title">A quieter place for your research.</h1>
+      <p class="lede">Lumen Notes gathers sources, highlights and half-formed ideas into one calm workspace, then helps you find the thread between them. Your notes stay yours, offline included.</p>
+
+      <div class="actions">
+        <button class="dream" id="trial" type="button"><span class="label">Start free trial</span></button>
+        <button class="dream dream--ghost" id="tour" type="button" aria-expanded="false" aria-controls="tour-panel"><span class="label">See how it works</span></button>
+      </div>
+
+      <div class="tour" id="tour-panel" data-open="false" inert>
+        <div>
+          <ol>
+            <li><b>1</b><span>Clip a passage, a PDF page or a video timestamp. Lumen keeps the source attached.</span></li>
+            <li><b>2</b><span>Write loose thoughts beside the clips. Nothing needs a title or a folder.</span></li>
+            <li><b>3</b><span>Ask for the threads. Lumen shows which notes point the same way, with links back to each source.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <p class="live" id="live" role="status" aria-live="polite">Trials take about a minute to start. Cancel anytime.</p>
+    </section>
+
+    <section class="plans" id="plans" aria-labelledby="plans-title">
+      <div class="plans-head">
+        <h2 id="plans-title">Pick a plan</h2>
+        <div class="billing" role="group" aria-label="Billing period">
+          <button class="seg" type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
+          <button class="seg" type="button" data-billing="yearly" aria-pressed="false">Yearly <span class="save">save 25%</span></button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="card" data-plan="personal">
+          <h3>Personal</h3>
+          <p class="price" data-price="personal">$0</p>
+          <p>For reading and writing on your own, with up to 200 sources.</p>
+          <button class="dream dream--ghost dream--sm" type="button" data-choose aria-pressed="false"><span class="label">Choose Personal</span></button>
+        </article>
+        <article class="card is-selected" data-plan="studio">
+          <h3>Studio</h3>
+          <p class="price"><span data-price="studio">$9</span><small> /mo</small></p>
+          <p>Unlimited sources, shared threads and version history for 90 days.</p>
+          <button class="dream dream--sm" type="button" data-choose aria-pressed="true"><span class="label">Selected</span></button>
+        </article>
+        <article class="card" data-plan="team">
+          <h3>Team</h3>
+          <p class="price"><span data-price="team">$19</span><small> /mo</small></p>
+          <p>Shared libraries, admin controls and single sign-on for groups of up to 50.</p>
+          <button class="dream dream--ghost dream--sm" type="button" data-choose aria-pressed="false"><span class="label">Choose Team</span></button>
+        </article>
+      </div>
+      <p class="plan-summary" id="planSummary" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="note-title">
+      <h2 id="note-title">From the workspace</h2>
+      <p>A sample note, as it appears to people who read your shared library.</p>
+      <div class="note">
+        <div>
+          <h3>Why slow reading beats fast skimming</h3>
+          <p>Three passages from Ada Ng's essay on attention, with my margin notes about pacing and the examples I want to reuse in the spring workshop.</p>
+        </div>
+        <button class="dream dream--ghost dream--sm like" id="like" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.1C1.1 8.6 3.2 5 6.8 5c2 0 3.4 1.1 4.2 2.4C11.8 6.1 13.2 5 15.2 5c3.6 0 5.7 3.6 4.3 6.9C19.5 16.4 12 21 12 21z"/></svg>
+          <span class="label"><span id="likeCount">312</span> likes</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="wl-title">
+      <h2 id="wl-title">Join the Studio waitlist</h2>
+      <p><strong id="wlCount">1,042</strong> people are already waiting for shared threads. We send invites in order.</p>
+      <form class="wl-form" id="wlForm" novalidate>
+        <label class="sr-only" for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" aria-describedby="wlMsg">
+        <button class="dream" id="wlSubmit" type="submit"><span class="label">Join the waitlist</span></button>
+      </form>
+      <p class="wl-msg" id="wlMsg" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer>Lumen Notes is a sample page for a button study. No data leaves this file.</footer>
+</div>
+
+<script>
+(() => {
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const fmt = (n) => n.toLocaleString('en-US');
+
+  const prices = {
+    studio: { monthly: 12, yearly: 9 },
+    team: { monthly: 24, yearly: 19 }
+  };
+  const planNames = { personal: 'Personal', studio: 'Studio', team: 'Team' };
+
+  const state = {
+    billing: 'monthly',
+    plan: 'studio',
+    trials: 1284,
+    trialStarted: false,
+    liked: false,
+    likes: 312,
+    tourOpen: false,
+    waitlist: 1042,
+    joined: new Set()
+  };
+
+  const el = {
+    live: $('#live'),
+    trial: $('#trial'),
+    tour: $('#tour'),
+    tourPanel: $('#tour-panel'),
+    like: $('#like'),
+    likeCount: $('#likeCount'),
+    wlForm: $('#wlForm'),
+    wlEmail: $('#email'),
+    wlSubmit: $('#wlSubmit'),
+    wlMsg: $('#wlMsg'),
+    wlCount: $('#wlCount'),
+    planSummary: $('#planSummary')
+  };
+
+  function setLabel(btn, text) {
+    const label = btn.querySelector('.label');
+    if (label) label.textContent = text;
+  }
+
+  function announce(text) {
+    el.live.textContent = text;
+  }
+
+  function render() {
+    $$('[data-billing]').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.billing === state.billing));
+    });
+
+    $$('[data-price]').forEach((node) => {
+      const plan = node.dataset.price;
+      node.textContent = plan === 'personal' ? '$0' : `$${prices[plan][state.billing]}`;
+    });
+
+    $$('[data-plan]').forEach((card) => {
+      const plan = card.dataset.plan;
+      const selected = plan === state.plan;
+      card.classList.toggle('is-selected', selected);
+      const btn = $('[data-choose]', card);
+      btn.setAttribute('aria-pressed', String(selected));
+      setLabel(btn, selected ? 'Selected' : `Choose ${planNames[plan]}`);
+    });
+
+    if (state.plan === 'personal') {
+      el.planSummary.textContent = 'Personal is free and stays free. You can upgrade at any time.';
+    } else {
+      const cycle = state.billing === 'monthly' ? 'billed monthly' : 'billed yearly, $' + (prices[state.plan].yearly * 12) + ' a year';
+      el.planSummary.textContent = `${planNames[state.plan]} at $${prices[state.plan][state.billing]} a month, ${cycle}.`;
+    }
+
+    el.tour.setAttribute('aria-expanded', String(state.tourOpen));
+    setLabel(el.tour, state.tourOpen ? 'Hide the steps' : 'See how it works');
+    el.tourPanel.dataset.open = String(state.tourOpen);
+    if (state.tourOpen) el.tourPanel.removeAttribute('inert');
+    else el.tourPanel.setAttribute('inert', '');
+
+    el.like.setAttribute('aria-pressed', String(state.liked));
+    el.likeCount.textContent = fmt(state.likes);
+
+    el.wlCount.textContent = fmt(state.waitlist);
+  }
+
+  // Start trial: busy state, simulated request, then a done state that cannot repeat.
+  async function startTrial() {
+    if (state.trialStarted) return;
+    el.trial.setAttribute('aria-busy', 'true');
+    setLabel(el.trial, 'Starting your trial...');
+    announce('Starting your trial.');
+    await wait(1400);
+
+    state.trialStarted = true;
+    state.trials += 1;
+    el.trial.removeAttribute('aria-busy');
+    el.trial.classList.add('is-done');
+    el.trial.disabled = true;
+    setLabel(el.trial, 'Trial started');
+    announce(`Your 14-day ${planNames[state.plan]} trial has started. ${fmt(state.trials)} trials started so far.`);
+  }
+
+  el.trial.addEventListener('click', startTrial);
+
+  el.tour.addEventListener('click', () => {
+    state.tourOpen = !state.tourOpen;
+    render();
+    announce(state.tourOpen ? 'Showing the three steps.' : 'Steps hidden.');
+  });
+
+  el.like.addEventListener('click', () => {
+    state.liked = !state.liked;
+    state.likes += state.liked ? 1 : -1;
+    render();
+    announce(state.liked ? 'Liked. Thanks for the signal.' : 'Like removed.');
+  });
+
+  $$('[data-billing]').forEach((b) => {
+    b.addEventListener('click', () => {
+      state.billing = b.dataset.billing;
+      render();
+      announce(state.billing === 'yearly' ? 'Yearly billing selected. Prices drop to the yearly rate.' : 'Monthly billing selected.');
+    });
+  });
+
+  $$('[data-choose]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const plan = btn.closest('[data-plan]').dataset.plan;
+      state.plan = plan;
+      render();
+      announce(`${planNames[plan]} selected.`);
+    });
+  });
+
+  el.wlForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = el.wlEmail.value.trim().toLowerCase();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+
+    el.wlEmail.setAttribute('aria-invalid', String(!valid));
+    if (!valid) {
+      el.wlMsg.className = 'wl-msg is-error';
+      el.wlMsg.textContent = 'That address does not look quite right. Check it and try again.';
+      el.wlEmail.focus();
+      return;
+    }
+
+    if (state.joined.has(email)) {
+      el.wlMsg.className = 'wl-msg is-ok';
+      el.wlMsg.textContent = 'You are already on the list. Thanks for your patience.';
+      return;
+    }
+
+    el.wlMsg.className = 'wl-msg';
+    el.wlMsg.textContent = '';
+    el.wlSubmit.setAttribute('aria-busy', 'true');
+    setLabel(el.wlSubmit, 'Joining...');
+    await wait(900);
+
+    state.joined.add(email);
+    state.waitlist += 1;
+    el.wlEmail.value = '';
+    el.wlEmail.removeAttribute('aria-invalid');
+    el.wlSubmit.removeAttribute('aria-busy');
+    setLabel(el.wlSubmit, 'Join the waitlist');
+    el.wlMsg.className = 'wl-msg is-ok';
+    el.wlMsg.textContent = `You are number ${fmt(state.waitlist)} in line. We will write when your invite is ready.`;
+    render();
+  });
+
+  // Press feedback: restart the bloom keyframes on every click of any dream button.
+  document.addEventListener('click', (event) => {
+    const btn = event.target.closest('.dream');
+    if (!btn || btn.disabled) return;
+    btn.classList.remove('is-blooming');
+    void btn.offsetWidth;
+    btn.classList.add('is-blooming');
+  });
+  document.addEventListener('animationend', (event) => {
+    if (event.target.classList && event.target.classList.contains('is-blooming')) {
+      event.target.classList.remove('is-blooming');
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

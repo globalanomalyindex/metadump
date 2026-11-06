@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parcel toast</title>
+<style>
+:root{
+  --page:#0e0e11; --card:#1f1b24; --card2:#27222e; --line:rgba(255,255,255,.1);
+  --text:#e5e5e5; --muted:#9ca3af; --ok:#22c55e; --warn:#f59e0b; --accent:var(--ok);
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.stage{min-height:100%;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;gap:10px}
+.page-note{position:fixed;left:20px;top:18px;color:var(--muted);font-size:12px;max-width:300px}
+.page-note b{color:var(--text);font-weight:600;display:block;margin-bottom:6px}
+.demo{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.demo button{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:inherit;font-size:11px;cursor:pointer}
+.demo button:hover{color:var(--text);border-color:rgba(255,255,255,.25)}
+
+.toast{width:292px;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  transition:opacity .2s var(--ease),transform .2s var(--ease)}
+.toast[data-state=exception]{--accent:var(--warn)}
+.toast.gone{opacity:0;transform:translateY(8px);pointer-events:none;position:absolute;visibility:hidden}
+.head{all:unset;box-sizing:border-box;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px;
+  width:100%;min-height:40px;padding:8px 10px 4px 12px;cursor:pointer}
+.head:focus-visible,.btn:focus-visible,.x:focus-visible,.pill:focus-visible,.copy:focus-visible{outline:2px solid #93c5fd;outline-offset:-2px;border-radius:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.stage-word{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage-word small{font-weight:400;color:var(--muted);margin-left:6px}
+.count{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.chev{width:14px;height:14px;color:var(--muted);transition:transform .22s var(--ease)}
+.toast.open .chev{transform:rotate(180deg)}
+.bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:0 12px 9px}
+.bar i{height:3px;border-radius:2px;background:#3a3542;position:relative}
+.bar i.done{background:var(--accent)}
+.bar i.now{background:var(--accent);box-shadow:0 0 0 2px var(--card),0 0 0 3px var(--accent)}
+.bar i.now::after{content:"";position:absolute;inset:0;border-radius:2px;background:var(--accent)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .24s var(--ease)}
+.toast.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden;min-height:0}
+.inner{border-top:1px solid var(--line);padding:10px 12px 10px}
+.exc{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:7px 9px;margin-bottom:10px;display:none}
+.toast[data-state=exception] .exc{display:block}
+.exc p{margin:0 0 6px;color:var(--text);font-size:12px}
+.exc p b{color:var(--warn);font-weight:600}
+.acts{display:flex;flex-wrap:wrap;gap:5px}
+.btn{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:6px;min-height:24px;padding:3px 8px;font:inherit;font-size:12px;cursor:pointer}
+.btn:hover{border-color:rgba(255,255,255,.3)}
+.btn[disabled]{color:var(--muted);cursor:default}
+ol{list-style:none;margin:0;padding:0}
+li{position:relative;display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:start;padding-bottom:9px;color:var(--muted)}
+li:last-child{padding-bottom:0}
+li::before{content:"";position:absolute;left:7px;top:15px;bottom:-1px;width:0;border-left:2px solid var(--accent)}
+li.todo::before,li.now::before{border-left:2px dashed #4a4455}
+li:last-child::before{display:none}
+.mk{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--card);position:relative;z-index:1;border:2px solid #4a4455}
+li.done .mk{background:var(--accent);border-color:var(--accent);color:#111}
+li.now .mk{border-color:var(--accent);box-shadow:inset 0 0 0 3px var(--card),inset 0 0 0 8px var(--accent)}
+.mk svg{width:9px;height:9px;display:none}
+li.done .mk svg{display:block}
+li .t{color:var(--muted)}
+li.done .t,li.now .t{color:var(--text)}
+li.now .t{font-weight:600}
+li .t small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+li time{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:1px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
+.copy{all:unset;cursor:pointer;color:var(--muted);font:11.5px ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 4px;border-radius:4px;box-sizing:border-box}
+.copy:hover{color:var(--text)}
+.x{all:unset;cursor:pointer;color:var(--muted);padding:3px 6px;border-radius:6px;font-size:11.5px;box-sizing:border-box}
+.x:hover{color:var(--text)}
+.timer{height:2px;background:var(--accent);transform-origin:left;transform:scaleX(0);opacity:.7}
+.pill{all:unset;box-sizing:border-box;cursor:pointer;display:none;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px 5px 9px;color:var(--text);font-size:12px}
+.pill.show{display:inline-flex}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:480px){.page-note{display:none}.stage{padding:12px}.toast{width:100%}}
+</style>
+</head>
+<body>
+<div class="page-note"><b>Parcel toast demo</b>Tap the row to open. Use the buttons to simulate carrier updates.
+  <div class="demo">
+    <button id="adv">Next update</button>
+    <button id="exc">Simulate delay</button>
+    <button id="rst">Reset</button>
+  </div>
+</div>
+
+<div class="stage">
+  <button class="pill" id="pill" aria-label="Show package tracker"><span class="dot" id="pdot" style="background:var(--ok)"></span><span id="ptxt">In transit</span></button>
+
+  <section class="toast" id="toast" data-state="ok" aria-label="Package tracking">
+    <button class="head" id="head" aria-expanded="false" aria-controls="body">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="stage-word"><span id="stage">In transit</span><small id="eta">Thu</small></span>
+      <span class="count" id="count">3 of 5</span>
+      <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
+    </button>
+    <div class="bar" id="bar" aria-hidden="true"></div>
+
+    <div class="body" id="body" role="region" aria-label="Delivery steps">
+      <div><div class="inner">
+        <div class="exc" id="exc-box">
+          <p><b id="exc-title">Delayed</b> <span id="exc-text">Weather at the Memphis hub. New estimate Fri.</span></p>
+          <div class="acts">
+            <button class="btn" id="a-open">Carrier page</button>
+            <button class="btn" id="a-call">Contact</button>
+            <button class="btn" id="a-seen">Mark seen</button>
+            <button class="btn" id="a-snooze">Snooze 1h</button>
+          </div>
+        </div>
+        <ol id="steps"></ol>
+        <div class="foot">
+          <button class="copy" id="copy" title="Copy tracking number">1Z 999 AA1 01 2345 6784</button>
+          <button class="x" id="dismiss">Dismiss</button>
+        </div>
+      </div></div>
+    </div>
+    <div class="timer" id="timer"></div>
+  </section>
+  <div class="sr" id="live" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+(function(){
+  var STEPS=[
+    {name:"Label created",note:"Portland, OR",time:"Mon 9:12"},
+    {name:"Picked up",note:"Portland, OR",time:"Mon 4:40p"},
+    {name:"In transit",note:"Boise, ID sort facility",time:"Tue 6:05"},
+    {name:"Out for delivery",note:"Local depot",time:"Thu"},
+    {name:"Delivered",note:"Front door",time:"Thu"}
+  ];
+  var CHECK='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2L8 3"/></svg>';
+  var S={cur:2,open:false,exc:false,seen:false,snoozed:false,gone:false,snoozeT:null};
+  var $=function(id){return document.getElementById(id)};
+  var toast=$("toast"),head=$("head"),live=$("live");
+
+  function say(m){live.textContent="";setTimeout(function(){live.textContent=m},30)}
+
+  function render(){
+    var st=STEPS[S.cur], exc=S.exc&&!S.snoozed&&!S.seen;
+    toast.dataset.state=exc?"exception":"ok";
+    $("stage").textContent=exc?"Delayed":st.name;
+    $("eta").textContent=exc?"new ETA Fri":(S.cur===4?"today":"ETA "+STEPS[3].time);
+    $("count").textContent=(S.cur+1)+" of 5";
+    $("bar").innerHTML=STEPS.map(function(_,i){return '<i class="'+(i<S.cur?"done":i===S.cur?"now":"")+'"></i>'}).join("");
+    $("steps").innerHTML=STEPS.map(function(s,i){
+      var c=i<S.cur?"done":i===S.cur?"now":"todo";
+      var cur=i===S.cur;
+      return '<li class="'+c+'"'+(cur?' aria-current="step"':'')+'><span class="mk">'+CHECK+'</span><span class="t">'+s.name+(i<=S.cur?'<small>'+s.note+'</small>':'')+'</span><time>'+(i<=S.cur||i>=3?s.time:'')+'</time></li>';
+    }).join("");
+    head.setAttribute("aria-expanded",S.open);
+    toast.classList.toggle("open",S.open);
+    toast.classList.toggle("gone",S.gone);
+    var p=$("pill");p.classList.toggle("show",S.gone);
+    $("ptxt").textContent=(exc?"Delayed":st.name)+" · "+(S.cur+1)+"/5";
+    $("pdot").style.background=exc?"var(--warn)":"var(--ok)";
+    $("a-seen").textContent=S.seen?"Seen":"Mark seen";
+    $("a-seen").disabled=S.seen;
+    $("a-snooze").textContent=S.snoozed?"Snoozed":"Snooze 1h";
+    $("a-snooze").disabled=S.snoozed;
+    $("exc-box").style.display=(S.exc&&!S.seen)?"block":"";
+    if(S.exc&&!S.seen){toast.dataset.state=S.snoozed?"ok":"exception"}
+    // exception box shows while exception exists and isn't seen
+    $("exc-box").style.display=(S.exc&&!S.seen)?"block":"none";
+    $("exc-text").textContent=S.snoozed?"Snoozed. It will come back in an hour.":"Weather at the Memphis hub. New estimate Fri.";
+  }
+
+  function setOpen(v){S.open=v;render()}
+  head.addEventListener("click",function(){setOpen(!S.open)});
+  $("dismiss").addEventListener("click",function(){S.gone=true;S.open=false;render();$("pill").focus()});
+  $("pill").addEventListener("click",function(){S.gone=false;render();head.focus()});
+
+  $("adv").addEventListener("click",function(){
+    if(S.cur<4){S.cur++;S.exc=false;S.seen=false;S.snoozed=false;S.gone=false;render();
+      say(STEPS[S.cur].name+", step "+(S.cur+1)+" of 5.");flash();}
+  });
+  $("exc").addEventListener("click",function(){
+    S.exc=true;S.seen=false;S.snoozed=false;S.gone=false;S.open=true;render();
+    say("Delivery delayed. New estimate Friday. Actions available.");
+  });
+  $("rst").addEventListener("click",function(){
+    clearTimeout(S.snoozeT);S.cur=2;S.open=false;S.exc=false;S.seen=false;S.snoozed=false;S.gone=false;render();say("Tracker reset.");
+  });
+
+  $("a-open").addEventListener("click",function(){say("Opening carrier page in a new tab.");window.open("about:blank","_blank","noopener")});
+  $("a-call").addEventListener("click",function(){
+    var b=$("a-call");b.textContent="1-800-742-5877";say("Carrier phone 1-800-742-5877")});
+  $("a-seen").addEventListener("click",function(){S.seen=true;render();say("Marked seen. Still tracking.")});
+  $("a-snooze").addEventListener("click",function(){
+    S.snoozed=true;render();say("Snoozed for one hour.");
+    clearTimeout(S.snoozeT);
+    S.snoozeT=setTimeout(function(){S.snoozed=false;S.gone=false;render();say("Delay alert is back.")},8000); // demo: 8s stands in for 1h
+  });
+  $("copy").addEventListener("click",function(){
+    var el=$("copy"),t="1Z999AA10123456784",old=el.textContent;
+    function done(){el.textContent="Copied";say("Tracking number copied.");setTimeout(function(){el.textContent=old},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,done)}else done();
+  });
+
+  // routine update: toast surfaces, auto-leaves after ~4s unless opened or an exception is active
+  var autoT;
+  function flash(){
+    clearTimeout(autoT);var tm=$("timer");
+    tm.style.transition="none";tm.style.transform="scaleX(1)";
+    requestAnimationFrame(function(){requestAnimationFrame(function(){tm.style.transition="transform 4s linear";tm.style.transform="scaleX(0)"})});
+    autoT=setTimeout(function(){if(!S.open&&!S.exc){S.gone=true;render()}},4000);
+  }
+  head.addEventListener("click",function(){clearTimeout(autoT);$("timer").style.transition="none";$("timer").style.transform="scaleX(0)"});
+
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.open){setOpen(false);head.focus()}});
+  render();
+})();
+</script>
+</body>
+</html>

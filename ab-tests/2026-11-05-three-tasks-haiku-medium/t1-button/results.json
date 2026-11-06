@@ -1,0 +1,179 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 7.42,
+   "practical": 6.17,
+   "motion": 6.33,
+   "craft": 7.08,
+   "overall": 6.58,
+   "mean_rank": 3.08,
+   "per_run_overall": {
+    "A-r1": 5.33,
+    "A-r2": 7.33,
+    "A-r3": 7.33,
+    "A-r4": 6.33
+   }
+  },
+  "B": {
+   "dreamlike": 6.58,
+   "practical": 8.42,
+   "motion": 7.92,
+   "craft": 7.5,
+   "overall": 7.33,
+   "mean_rank": 1.92,
+   "per_run_overall": {
+    "B-r1": 7.33,
+    "B-r2": 7.0,
+    "B-r3": 7.33,
+    "B-r4": 7.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 14,
+  "losses": 4,
+  "ties": 6,
+  "win_rate": 0.71
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 100222,
+   "mean_seconds": 105.1
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 145538,
+   "mean_seconds": 190.7
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 200822,
+   "ms": 1611726,
+   "tool_uses": 37,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.25,
+ "permutation": {
+  "p": 0.286,
+  "extreme": 20,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "A quiet lavender halo blooms and fades on sensible curves with a clear white pill label and a focus reveal, though it reads less dreamlike than Y or Z.",
+  "b1/j1/A-r1": "The violet-to-teal-to-pink aurora shift is the most vivid hover, but the phone layout overflows and clips the card and lede at the right edge, the gradient animates background-position (repaints), and focus has no lift or glow reveal.",
+  "b1/j1/B-r2": "Clean on desktop and phone, with an asymmetric enter (360 ms) and leave (180 ms), a small-overshoot float preset, a violet-mint halo, and keyboard focus that mirrors hover.",
+  "b1/j1/A-r2": "The most atmospheric result, with a sheen and halo ring on a dark product card, but a 700 ms enter and leave is slow for a real button and the reduced-motion path still jumps the sheen.",
+  "b1/j2/B-r2": "Pastel violet, teal and pink halo blooms behind the pill on a 360ms enter and a fast 180ms leave, with a separate 460ms glow curve, and it animates only opacity and transform with focus and reduced-motion handled.",
+  "b1/j2/A-r2": "The strongest visual polish on dark, with a gradient sheen and glow on a 700ms ease-dream, but it animates filter and box-shadow, runs a decorative infinite orb float, and uses backdrop-filter, so it costs more to render.",
+  "b1/j2/A-r1": "The teal-to-pink gradient drifts dreamily, but it animates background-position with a symmetric 620ms curve that lags on leave, and the mobile Dreamline card overflows the 390px width so text and the Check-out tile are clipped.",
+  "b1/j2/B-r1": "The most disciplined build, with asymmetric 170ms leave and preset enter curves, opacity and transform only, gated hover, focus-visible parity and reduced-motion handling, but the blue glow is subtler and less ethereal than W.",
+  "b1/j3/A-r2": "An aurora gradient with a sheen that sweeps across and a glow that blooms on hover reads dreamy, but the 700 ms enter and the equally slow 700 ms leave make the button feel sluggish and the box-shadow and filter transitions are heavier than needed.",
+  "b1/j3/B-r2": "The enter (360 ms) and leave (180 ms) curves are well split and the glow is opacity-only and cheap, but the glow is faint and the primary is a pale pill that looks like the ghost button, and its purple-on-near-white label becomes illegible in dark mode per the source.",
+  "b1/j3/B-r1": "A translucent face lets a violet and mint haze rise after a small lift, with a 170 ms leave and a clear curve plot and reduced-motion path, giving the most usable and polished result even though the dreaminess is restrained.",
+  "b1/j3/A-r1": "The halo swell and the drifting gradient are the most ethereal of the four, but the 620 ms leave is sluggish, white text washes out over the teal end of the gradient, and the phone view clips the booking card and lede off the right edge.",
+  "b2/j1/B-r3": "Restrained lavender halo and a pale sheen with a crisp 170ms leave, well-tuned custom curves and reduced motion, but the hero leaves the right half empty and the dial panel dominates the page.",
+  "b2/j1/A-r3": "The most complete website: a violet-to-sky gradient that shifts and sheens on hover, a bloom on press and a real pricing layout, though the 700ms lift and 1200ms background shift are slow and the buttons rely on heavy box-shadow and background-position transitions.",
+  "b2/j1/B-r4": "Pastel mint, peach and lavender glow that blooms after a 60ms delay, with a live contrast readout, a curve plotter, a focus ring and reduced motion that keeps the glow, all in an editorial serif layout.",
+  "b2/j1/A-r4": "The dark violet glow and light sweep feel atmospheric, but both transitions run a slow 560ms, reduced motion strips all hover feedback, press feedback is missing on touch, and the music-player framing is off-brief for a website button.",
+  "b2/j2/B-r4": "A pastel mint, lavender and peach halo blooms behind the button over about 480 ms after a 60 ms delay and clears in 180 ms, the most ethereal hover of the four, with a focus state, reduced-motion path and contrast readout.",
+  "b2/j2/A-r4": "The dark lavender halo, sweep and lift feel atmospheric, but enter and leave share one 560 ms curve, focus gets only an outline with no hover parity, and the page is an off-brief music player.",
+  "b2/j2/A-r3": "The most polished product page with a sheen and focus parity, but 700 to 1200 ms transitions on background, filter and shadow make the button feel laggy and the saturated fill is less ethereal.",
+  "b2/j2/B-r3": "Asymmetric 300 ms arrival and 170 ms leave curves, a delayed glow and a transform and opacity build make it the most practical and crisp, but the solid indigo face and faint halo read as tidy rather than dreamlike.",
+  "b2/j3/A-r4": "The violet aura and light sweep bloom most vividly of the four on a dark ground, but the 560ms curve is symmetric so hover-out lags, letter-spacing animates layout, and the music-player framing is a loose fit for a button study.",
+  "b2/j3/B-r4": "Asymmetric enter (360ms) and leave (180ms) curves, a separate glow curve with delay, full reduced-motion fallback, a visible focus ring and a contrast readout make it the most practical, though the halo is quieter and less ethereal.",
+  "b2/j3/B-r3": "A pale blurred halo that fades on its own curve, a single sheen pass and a small lift feel airy, and it stays cheap (transform and opacity only) with a clear focus state, reduced-motion handling and a curve plot that makes the easing legible.",
+  "b2/j3/A-r3": "The richest curve vocabulary (drift, bloom keyframe, breathing busy state) and polished phone layout, but the hover glow is faint in the frames, the saturated violet reads as generic SaaS, and it animates box-shadow, filter and letter-spacing, which costs more to render."
+ }
+}

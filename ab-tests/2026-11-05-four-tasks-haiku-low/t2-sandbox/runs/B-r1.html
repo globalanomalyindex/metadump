@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Box Sandbox</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #f3f1ec;
+  }
+  canvas {
+    display: block;
+    touch-action: none;
+    cursor: default;
+  }
+  canvas.hover { cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+  #reset {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    font: 13px system-ui, sans-serif;
+    padding: 6px 12px;
+    border: 1px solid #cfcac0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #222222;
+    cursor: pointer;
+  }
+  #reset:focus-visible { outline: 2px solid #3d85c6; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<button id="reset" type="button">Reset</button>
+<script>
+(() => {
+  'use strict';
+
+  // ---- World constants (CSS px, seconds) -------------------------------
+  const GRAVITY = 2400;          // px/s^2
+  const STEP = 1 / 60;           // fixed simulation step
+  const SUBSTEPS = 4;            // sub-steps per step (no tunneling at MAX_SPEED)
+  const ITERATIONS = 8;          // sequential-impulse iterations per sub-step
+  const MAX_SPEED = 3000;        // px/s clamp
+  const SLOP = 0.5;              // allowed penetration, px
+  const BAUMGARTE = 0.2;         // penetration push-out factor
+  const RESTITUTION = 0.15;      // bounce for fast impacts
+  const BOUNCE_MIN = 60;         // px/s approach speed before bounce applies
+  const FRICTION = 0.5;
+  const DAMPING = 0.15;          // per second, light air drag
+  const SLEEP_SPEED = 5;         // px/s
+  const SLEEP_TIME = 0.6;        // s below SLEEP_SPEED before sleeping
+  const WAKE_SPEED = 15;         // px/s impact that wakes a sleeping box
+  const FLOOR_INSET = 28;        // floor surface sits this far above the bottom edge
+  const WALL_T = 200;
+  const FLOOR_T = 200;
+  const BOX_COUNT = 6;
+  const RELEASE_WINDOW = 0.1;    // s of pointer history used for release velocity
+  const SAMPLE_KEEP = 0.25;      // s of pointer history kept while dragging
+
+  const COLORS = ['#e07a5f', '#3d85c6', '#81b29a', '#f2cc8f', '#9b72aa', '#577590'];
+  const BG = '#f3f1ec';
+  const FLOOR_COLOR = '#3a3a3a';
+
+  // ---- DOM -------------------------------------------------------------
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const resetBtn = document.getElementById('reset');
+
+  // ---- State -----------------------------------------------------------
+  let W = 0, H = 0;
+  let statics = [];   // floor and walls, never move
+  let bodies = [];    // dynamic boxes, drawn in array order
+  let spawns = [];    // spawn poses restored by Reset
+  let grab = null;    // {id, body, offX, offY, samples}
+  const pointer = { x: 0, y: 0 };
+
+  // ---- Helpers ---------------------------------------------------------
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const speed = b => Math.hypot(b.vx, b.vy);
+  const floorY = () => H - FLOOR_INSET;
+  const invMass = b => (b.isStatic || b.asleep || b.grabbed) ? 0 : 1;
+  const immobile = b => invMass(b) === 0;
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function makeBody(s) {
+    return {
+      x: s.x, y: s.y, w: s.w, h: s.h, color: s.color,
+      vx: 0, vy: 0,
+      asleep: false, still: 0, grabbed: false, isStatic: false
+    };
+  }
+
+  function wake(b) {
+    if (b.isStatic) return;
+    b.asleep = false;
+    b.still = 0;
+  }
+
+  function fast(b) {
+    return !b.isStatic && !b.asleep && speed(b) > WAKE_SPEED;
+  }
+
+  // Axis-aligned overlap. n points from a to b.
+  function overlap(a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const ox = (a.w + b.w) / 2 - Math.abs(dx);
+    const oy = (a.h + b.h) / 2 - Math.abs(dy);
+    if (ox <= 0 || oy <= 0) return null;
+    if (ox < oy) return { nx: dx < 0 ? -1 : 1, ny: 0, pen: ox };
+    return { nx: 0, ny: dy < 0 ? -1 : 1, pen: oy };
+  }
+
+  // ---- Layout and spawning ---------------------------------------------
+  function layout() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const fy = floorY();
+    statics = [
+      { isStatic: true, vx: 0, vy: 0, asleep: false, grabbed: false, x: W / 2, y: fy + FLOOR_T / 2, w: W + 2 * WALL_T, h: FLOOR_T },
+      { isStatic: true, vx: 0, vy: 0, asleep: false, grabbed: false, x: -WALL_T / 2, y: H / 2, w: WALL_T, h: 4 * H + 4 * WALL_T },
+      { isStatic: true, vx: 0, vy: 0, asleep: false, grabbed: false, x: W + WALL_T / 2, y: H / 2, w: WALL_T, h: 4 * H + 4 * WALL_T }
+    ];
+
+    for (const b of bodies) {
+      b.x = clamp(b.x, b.w / 2, W - b.w / 2);
+      b.y = Math.min(b.y, fy - b.h / 2);
+      wake(b);
+    }
+  }
+
+  function buildSpawns() {
+    const rnd = mulberry32(7);
+    const out = [];
+    const fy = floorY();
+    for (let i = 0; i < BOX_COUNT; i++) {
+      const w = 56 + Math.round(rnd() * 44);
+      const h = 40 + Math.round(rnd() * 36);
+      const x = W * (0.3 + 0.4 * rnd());
+      const y = Math.min(90 + i * 70, fy - h / 2 - 10);
+      out.push({ x, y, w, h, color: COLORS[i % COLORS.length] });
+    }
+    return out;
+  }
+
+  function reset() {
+    spawns = buildSpawns();
+    bodies = spawns.map(makeBody);
+    grab = null;
+    canvas.classList.remove('dragging');
+  }
+
+  // ---- Pointer ---------------------------------------------------------
+  function hitTest(x, y) {
+    for (let i = bodies.length - 1; i >= 0; i--) {
+      const b = bodies[i];
+      if (Math.abs(x - b.x) <= b.w / 2 && Math.abs(y - b.y) <= b.h / 2) return b;
+    }
+    return null;
+  }
+
+  function grabTarget() {
+    const b = grab.body;
+    return {
+      x: clamp(pointer.x - grab.offX, b.w / 2, W - b.w / 2),
+      y: clamp(pointer.y - grab.offY, b.h / 2, floorY() - b.h / 2)
+    };
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || grab) return;
+    const b = hitTest(e.clientX, e.clientY);
+    if (!b) return;
+    canvas.setPointerCapture(e.pointerId);
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    b.grabbed = true;
+    wake(b);
+    // Draw the held box last so it sits on top.
+    bodies.splice(bodies.indexOf(b), 1);
+    bodies.push(b);
+    grab = {
+      id: e.pointerId,
+      body: b,
+      offX: e.clientX - b.x,
+      offY: e.clientY - b.y,
+      samples: []
+    };
+    grab.samples.push({ t: performance.now(), ...grabTarget() });
+    canvas.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    if (!grab || e.pointerId !== grab.id) {
+      canvas.classList.toggle('hover', !grab && !!hitTest(e.clientX, e.clientY));
+      return;
+    }
+    const now = performance.now();
+    grab.samples.push({ t: now, ...grabTarget() });
+    grab.samples = grab.samples.filter(s => now - s.t <= SAMPLE_KEEP * 1000);
+  });
+
+  function release(e) {
+    if (!grab || (e && e.pointerId !== grab.id)) return;
+    const b = grab.body;
+    const now = performance.now();
+    const recent = grab.samples.filter(s => now - s.t <= RELEASE_WINDOW * 1000);
+    let vx = 0, vy = 0;
+    if (recent.length >= 2) {
+      const first = recent[0], last = recent[recent.length - 1];
+      const dt = (last.t - first.t) / 1000;
+      if (dt > 0) {
+        vx = (last.x - first.x) / dt;
+        vy = (last.y - first.y) / dt;
+      }
+    }
+    b.vx = clamp(vx, -MAX_SPEED, MAX_SPEED);
+    b.vy = clamp(vy, -MAX_SPEED, MAX_SPEED);
+    b.grabbed = false;
+    wake(b);
+    grab = null;
+    canvas.classList.remove('dragging');
+  }
+
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('lostpointercapture', release);
+
+  resetBtn.addEventListener('click', () => reset());
+  window.addEventListener('resize', layout);
+
+  // ---- Physics ---------------------------------------------------------
+  function projectPairs(all) {
+    for (let i = 0; i < all.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        const a = all[i], b = all[j];
+        const ia = invMass(a), ib = invMass(b);
+        const k = ia + ib;
+        if (k === 0) continue;
+        const ov = overlap(a, b);
+        if (!ov || ov.pen <= SLOP) continue;
+        const corr = (ov.pen - SLOP) * 0.8;
+        a.x -= ov.nx * corr * ia / k;
+        a.y -= ov.ny * corr * ia / k;
+        b.x += ov.nx * corr * ib / k;
+        b.y += ov.ny * corr * ib / k;
+      }
+    }
+  }
+
+  function substep(h) {
+    // 1. A held box is driven toward the pointer as a kinematic body.
+    if (grab) {
+      const b = grab.body;
+      const t = grabTarget();
+      b.vx = clamp((t.x - b.x) / h, -MAX_SPEED, MAX_SPEED);
+      b.vy = clamp((t.y - b.y) / h, -MAX_SPEED, MAX_SPEED);
+    }
+
+    // 2. Gravity and light damping on free boxes.
+    const damp = Math.exp(-DAMPING * h);
+    for (const b of bodies) {
+      if (b.asleep || b.grabbed) continue;
+      b.vy += GRAVITY * h;
+      b.vx *= damp;
+      b.vy *= damp;
+    }
+
+    // 3. Find contacts, waking sleepers that are hit or held.
+    const all = bodies.concat(statics);
+    const contacts = [];
+    for (let i = 0; i < all.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        const a = all[i], b = all[j];
+        if (a.isStatic && b.isStatic) continue;
+        const ov = overlap(a, b);
+        if (!ov) continue;
+        if (a.grabbed) wake(b);
+        if (b.grabbed) wake(a);
+        if (fast(a)) wake(b);
+        if (fast(b)) wake(a);
+        if (immobile(a) && immobile(b)) continue;
+        const vn0 = (b.vx - a.vx) * ov.nx + (b.vy - a.vy) * ov.ny;
+        let target = BAUMGARTE * Math.max(ov.pen - SLOP, 0) / h;
+        if (vn0 < -BOUNCE_MIN) target = Math.max(target, -RESTITUTION * vn0);
+        contacts.push({ a, b, nx: ov.nx, ny: ov.ny, target, jn: 0, jt: 0 });
+      }
+    }
+
+    // 4. Sequential impulses with accumulated, clamped normal and friction impulses.
+    for (let it = 0; it < ITERATIONS; it++) {
+      for (const c of contacts) {
+        const a = c.a, b = c.b, nx = c.nx, ny = c.ny;
+        const ia = invMass(a), ib = invMass(b);
+        const k = ia + ib;
+        if (k === 0) continue;
+
+        const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        const newJn = Math.max(c.jn + (c.target - vn) / k, 0);
+        const dn = newJn - c.jn;
+        c.jn = newJn;
+        a.vx -= dn * nx * ia; a.vy -= dn * ny * ia;
+        b.vx += dn * nx * ib; b.vy += dn * ny * ib;
+
+        const tx = -ny, ty = nx;
+        const vt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
+        const maxF = FRICTION * c.jn;
+        const newJt = clamp(c.jt - vt / k, -maxF, maxF);
+        const dtj = newJt - c.jt;
+        c.jt = newJt;
+        a.vx -= dtj * tx * ia; a.vy -= dtj * ty * ia;
+        b.vx += dtj * tx * ib; b.vy += dtj * ty * ib;
+      }
+    }
+
+    // 5. Integrate positions.
+    for (const b of bodies) {
+      if (b.asleep) continue;
+      b.x += b.vx * h;
+      b.y += b.vy * h;
+    }
+
+    // 6. Remove leftover overlap without touching velocities.
+    projectPairs(all);
+    projectPairs(all);
+
+    // 7. Sleep boxes that have been still long enough.
+    for (const b of bodies) {
+      if (b.asleep) continue;
+      if (b.grabbed) { b.still = 0; continue; }
+      if (speed(b) < SLEEP_SPEED) {
+        b.still += h;
+        if (b.still >= SLEEP_TIME) {
+          b.asleep = true;
+          b.vx = 0;
+          b.vy = 0;
+        }
+      } else {
+        b.still = 0;
+      }
+    }
+  }
+
+  // ---- Render ----------------------------------------------------------
+  function draw() {
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+
+    const fy = floorY();
+    ctx.fillStyle = FLOOR_COLOR;
+    ctx.fillRect(0, fy, W, H - fy);
+
+    for (const b of bodies) {
+      const x = b.x - b.w / 2, y = b.y - b.h / 2;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(x, y, b.w, b.h);
+      ctx.lineWidth = b.grabbed ? 3 : 1.5;
+      ctx.strokeStyle = b.grabbed ? '#1d1d1d' : 'rgba(0,0,0,0.35)';
+      ctx.strokeRect(x + 0.5, y + 0.5, b.w - 1, b.h - 1);
+    }
+  }
+
+  // ---- Loop ------------------------------------------------------------
+  let last = performance.now();
+  let acc = 0;
+
+  function frame(now) {
+    acc += Math.min((now - last) / 1000, 0.1);
+    last = now;
+    while (acc >= STEP) {
+      for (let s = 0; s < SUBSTEPS; s++) substep(STEP / SUBSTEPS);
+      acc -= STEP;
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Test hook -------------------------------------------------------
+  window.boxes = () => bodies.map(b => ({ x: b.x, y: b.y, w: b.w, h: b.h }));
+
+  layout();
+  reset();
+  requestAnimationFrame(t => { last = t; frame(t); });
+})();
+</script>
+</body>
+</html>

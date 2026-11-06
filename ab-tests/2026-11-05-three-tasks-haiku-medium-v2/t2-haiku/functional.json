@@ -1,0 +1,90 @@
+{
+ "A-r1": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "clouds no one expects",
+  "words_total": 12,
+  "syllables_per_line": [
+   4,
+   7,
+   5
+  ]
+ },
+ "A-r2": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "winter's rarest sky",
+  "words_total": 11,
+  "syllables_per_line": [
+   5,
+   6,
+   5
+  ]
+ },
+ "A-r3": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "gone before the name.",
+  "words_total": 14,
+  "syllables_per_line": [
+   5,
+   7,
+   5
+  ]
+ },
+ "A-r4": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "seen by no one else",
+  "words_total": 15,
+  "syllables_per_line": [
+   5,
+   7,
+   5
+  ]
+ },
+ "B-r1": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "its cold edge sharp on blue",
+  "words_total": 16,
+  "syllables_per_line": [
+   5,
+   7,
+   6
+  ]
+ },
+ "B-r2": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "holds while air runs through",
+  "words_total": 14,
+  "syllables_per_line": [
+   5,
+   8,
+   6
+  ]
+ },
+ "B-r3": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "above the ridge crest",
+  "words_total": 14,
+  "syllables_per_line": [
+   5,
+   7,
+   5
+  ]
+ },
+ "B-r4": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "the sheen of a shell",
+  "words_total": 16,
+  "syllables_per_line": [
+   5,
+   7,
+   5
+  ]
+ }
+}

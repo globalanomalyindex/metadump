@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physics sandbox</title>
+<style>
+  :root {
+    --bg: #f3f0e9;
+    --wall: #3a3d44;
+    --box: #d98b5f;
+    --box-asleep: #e5b89c;
+    --box-edge: #7a4426;
+    --hold: #2f7a9c;
+    --panel: #fffdf8;
+    --ink: #2a2a2a;
+    --line: #cfc7b8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181b;
+      --wall: #5b6069;
+      --box: #c97a50;
+      --box-asleep: #8d6a58;
+      --box-edge: #3a2418;
+      --hold: #6fb6d8;
+      --panel: #23252a;
+      --ink: #e9e6df;
+      --line: #3a3d44;
+    }
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+  }
+  #reset {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    font: 500 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 11px;
+    cursor: pointer;
+  }
+  #reset:focus-visible {
+    outline: 2px solid var(--hold);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="Physics sandbox. Drag the boxes."></canvas>
+<button id="reset" type="button">Reset</button>
+<script>
+(function () {
+  'use strict';
+
+  // Fixed step, sub-steps and solver settings. Units: px and seconds.
+  var DT = 1 / 60;            // fixed simulation step
+  var SUBSTEPS = 4;           // sub-steps per step
+  var ITERATIONS = 10;        // velocity solver passes per sub-step
+  var POS_ITERATIONS = 2;     // position correction passes per sub-step
+  var GRAVITY = 1400;         // px/s^2, +y is down
+  var LIN_DAMP = 0.02;
+  var ANG_DAMP = 0.05;
+  var FRICTION = 0.5;
+  var RESTITUTION = 0.15;
+  var REST_APPROACH = 60;     // px/s; faster impacts bounce a little
+  var SLOP = 0.5;             // px of overlap tolerated before correction
+  var POS_PERCENT = 0.6;
+  var MAX_SPEED = 3000;
+
+  // Sleeping: a body still for SLEEP_TIME seconds stops being simulated
+  // until a moving body touches it or it is grabbed.
+  var SLEEP_SPEED2 = 25;      // (px/s)^2
+  var SLEEP_ANG = 0.05;       // rad/s
+  var SLEEP_TIME = 0.5;
+  var WAKE_SPEED2 = 100;      // (px/s)^2 of the mover that wakes a sleeper
+
+  // Grab: a spring-damper pulls the grab point toward the pointer.
+  var SPRING_HZ = 8;
+  var SPRING_ZETA = 0.9;
+  var MAX_GRAB_ACCEL = 6000;  // px/s^2
+
+  // Throw: release velocity is the pointer velocity over this window (ms).
+  var THROW_WINDOW = 100;
+  var THROW_MAX_IDLE = 50;
+
+  var FLOOR_T = 50;
+  var WALL_T = 50;
+  var EPS = 1e-6;
+
+  // Spawn plan. fx: x as a fraction of width. lift: bottom edge height above
+  // the floor (px). a: angle (rad).
+  var PLAN = [
+    { fx: 0.30, lift: 0,   w: 96,  h: 56, a: 0 },
+    { fx: 0.30, lift: 56,  w: 90,  h: 50, a: 0 },
+    { fx: 0.30, lift: 106, w: 84,  h: 48, a: 0 },
+    { fx: 0.50, lift: 0,   w: 64,  h: 64, a: 0 },
+    { fx: 0.64, lift: 0,   w: 120, h: 44, a: 0 },
+    { fx: 0.74, lift: 0,   w: 50,  h: 50, a: 0.5 },
+    { fx: 0.44, lift: 260, w: 58,  h: 58, a: 0.2 },
+    { fx: 0.82, lift: 200, w: 72,  h: 40, a: -0.3 }
+  ];
+
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var resetBtn = document.getElementById('reset');
+  var styles = getComputedStyle(document.documentElement);
+  function token(name) { return styles.getPropertyValue(name).trim(); }
+  var COL = {
+    bg: token('--bg'),
+    wall: token('--wall'),
+    box: token('--box'),
+    boxAsleep: token('--box-asleep'),
+    edge: token('--box-edge'),
+    hold: token('--hold')
+  };
+
+  var W = 0, H = 0, dpr = 1;
+  var statics = [];   // floor, walls, ceiling
+  var dyn = [];       // boxes
+  var grab = null;    // { body, la, px, py, id, samples }
+  var acc = 0;
+  var last = performance.now();
+
+  function now() { return performance.now(); }
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+  function makeBox(x, y, w, h, angle) {
+    var m = (w * h) / 400;
+    var I = m * (w * w + h * h) / 12;
+    return {
+      x: x, y: y, w: w, h: h, angle: angle,
+      vx: 0, vy: 0, av: 0,
+      m: m, I: I, invM: 1 / m, invI: 1 / I,
+      isStatic: false, asleep: false, sleepT: 0
+    };
+  }
+
+  function makeStatic(x, y, w, h) {
+    return {
+      x: x, y: y, w: w, h: h, angle: 0,
+      vx: 0, vy: 0, av: 0,
+      m: 0, I: 0, invM: 0, invI: 0,
+      isStatic: true, asleep: false, sleepT: 0
+    };
+  }
+
+  function buildStatics() {
+    statics = [
+      makeStatic(W / 2, H + FLOOR_T / 2, W + 2 * WALL_T, FLOOR_T),   // floor, top at y = H
+      makeStatic(-WALL_T / 2, H / 2, WALL_T, 4 * H),                 // left wall
+      makeStatic(W + WALL_T / 2, H / 2, WALL_T, 4 * H),              // right wall
+      makeStatic(W / 2, -WALL_T / 2, W + 2 * WALL_T, WALL_T)         // ceiling
+    ];
+  }
+
+  function reset() {
+    grab = null;
+    dyn = PLAN.map(function (p) {
+      var clearance = (Math.abs(Math.sin(p.a)) * p.w + Math.abs(Math.cos(p.a)) * p.h) / 2;
+      return makeBox(p.fx * W, H - p.lift - clearance - 0.5, p.w, p.h, p.a);
+    });
+  }
+
+  function frozen(b) { return b.isStatic || b.asleep; }
+  function isHeld(b) { return grab !== null && grab.body === b; }
+  function speed2(b) { return b.vx * b.vx + b.vy * b.vy; }
+  function wake(b) { b.asleep = false; b.sleepT = 0; }
+
+  function inside(b, px, py) {
+    var c = Math.cos(b.angle), s = Math.sin(b.angle);
+    var dx = px - b.x, dy = py - b.y;
+    var lx = c * dx + s * dy;
+    var ly = -s * dx + c * dy;
+    return Math.abs(lx) <= b.w / 2 + EPS && Math.abs(ly) <= b.h / 2 + EPS;
+  }
+
+  function corners(b) {
+    var c = Math.cos(b.angle), s = Math.sin(b.angle);
+    var hw = b.w / 2, hh = b.h / 2;
+    var local = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]];
+    return local.map(function (p) {
+      return [b.x + c * p[0] - s * p[1], b.y + s * p[0] + c * p[1]];
+    });
+  }
+
+  // Box-box contact by separating axes. Returns contacts (normal from a to b)
+  // or null. Contact points are vertices of one box inside the other.
+  function collide(a, b) {
+    var ca = corners(a), cb = corners(b);
+    var axes = [
+      [Math.cos(a.angle), Math.sin(a.angle)],
+      [-Math.sin(a.angle), Math.cos(a.angle)],
+      [Math.cos(b.angle), Math.sin(b.angle)],
+      [-Math.sin(b.angle), Math.cos(b.angle)]
+    ];
+    var bestOv = Infinity, N = null;
+    var i, k, d;
+    for (i = 0; i < 4; i++) {
+      var nx = axes[i][0], ny = axes[i][1];
+      var a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
+      for (k = 0; k < 4; k++) {
+        d = ca[k][0] * nx + ca[k][1] * ny;
+        if (d < a0) a0 = d;
+        if (d > a1) a1 = d;
+        d = cb[k][0] * nx + cb[k][1] * ny;
+        if (d < b0) b0 = d;
+        if (d > b1) b1 = d;
+      }
+      var o1 = a1 - b0, o2 = b1 - a0;
+      var ov = Math.min(o1, o2);
+      if (ov <= 0) return null;
+      if (ov < bestOv) {
+        bestOv = ov;
+        N = o1 <= o2 ? [nx, ny] : [-nx, -ny];
+      }
+    }
+
+    var aMax = -Infinity, bMin = Infinity;
+    for (k = 0; k < 4; k++) {
+      d = ca[k][0] * N[0] + ca[k][1] * N[1];
+      if (d > aMax) aMax = d;
+      d = cb[k][0] * N[0] + cb[k][1] * N[1];
+      if (d < bMin) bMin = d;
+    }
+
+    var out = [];
+    for (k = 0; k < 4; k++) {
+      // vertices of b inside a
+      if (inside(a, cb[k][0], cb[k][1])) {
+        var depB = aMax - (cb[k][0] * N[0] + cb[k][1] * N[1]);
+        if (depB > 0) out.push(makeContact(a, b, cb[k], N, depB));
+      }
+      // vertices of a inside b
+      if (inside(b, ca[k][0], ca[k][1])) {
+        var depA = (ca[k][0] * N[0] + ca[k][1] * N[1]) - bMin;
+        if (depA > 0) out.push(makeContact(a, b, ca[k], N, depA));
+      }
+    }
+    return out.length ? out : null;
+  }
+
+  function makeContact(a, b, p, N, depth) {
+    return { a: a, b: b, px: p[0], py: p[1], nx: N[0], ny: N[1], depth: depth, jn: 0, jt: 0, vn0: 0 };
+  }
+
+  // Velocity of the contact point on b minus the one on a.
+  function relVel(c) {
+    var a = c.a, b = c.b;
+    var rax = c.px - a.x, ray = c.py - a.y;
+    var rbx = c.px - b.x, rby = c.py - b.y;
+    var vax = a.vx - a.av * ray, vay = a.vy + a.av * rax;
+    var vbx = b.vx - b.av * rby, vby = b.vy + b.av * rbx;
+    return { x: vbx - vax, y: vby - vay };
+  }
+
+  function applyImpulse(c, px, py) {
+    var a = c.a, b = c.b;
+    var rax = c.px - a.x, ray = c.py - a.y;
+    var rbx = c.px - b.x, rby = c.py - b.y;
+    a.vx -= px * a.invM;
+    a.vy -= py * a.invM;
+    a.av -= (rax * py - ray * px) * a.invI;
+    b.vx += px * b.invM;
+    b.vy += py * b.invM;
+    b.av += (rbx * py - rby * px) * b.invI;
+  }
+
+  // Impulse with restitution (only for real impacts) and Coulomb friction.
+  function solve(c) {
+    var a = c.a, b = c.b, nx = c.nx, ny = c.ny;
+    var rax = c.px - a.x, ray = c.py - a.y;
+    var rbx = c.px - b.x, rby = c.py - b.y;
+
+    var rv = relVel(c);
+    var vn = rv.x * nx + rv.y * ny;
+    var rnA = rax * ny - ray * nx, rnB = rbx * ny - rby * nx;
+    var kn = a.invM + b.invM + rnA * rnA * a.invI + rnB * rnB * b.invI;
+    if (kn > 0) {
+      var target = c.vn0 < -REST_APPROACH ? -RESTITUTION * c.vn0 : 0;
+      var lambda = (target - vn) / kn;
+      var oldN = c.jn;
+      c.jn = Math.max(oldN + lambda, 0);
+      lambda = c.jn - oldN;
+      applyImpulse(c, lambda * nx, lambda * ny);
+    }
+
+    rv = relVel(c);
+    var tx = -ny, ty = nx;
+    var vt = rv.x * tx + rv.y * ty;
+    var rtA = rax * ty - ray * tx, rtB = rbx * ty - rby * tx;
+    var kt = a.invM + b.invM + rtA * rtA * a.invI + rtB * rtB * b.invI;
+    if (kt > 0) {
+      var lt = -vt / kt;
+      var maxF = FRICTION * c.jn;
+      var oldT = c.jt;
+      c.jt = clamp(oldT + lt, -maxF, maxF);
+      lt = c.jt - oldT;
+      applyImpulse(c, lt * tx, lt * ty);
+    }
+  }
+
+  function correct(c) {
+    var corr = Math.max(c.depth - SLOP, 0) * POS_PERCENT;
+    var wa = c.a.invM, wb = c.b.invM, s = wa + wb;
+    if (corr <= 0 || s <= 0) return;
+    c.a.x -= c.nx * corr * wa / s;
+    c.a.y -= c.ny * corr * wa / s;
+    c.b.x += c.nx * corr * wb / s;
+    c.b.y += c.ny * corr * wb / s;
+  }
+
+  // All contacts this sub-step. A sleeping body is skipped unless a moving
+  // body touches it, and then it wakes.
+  function collideAll() {
+    var all = statics.concat(dyn);
+    var out = [];
+    for (var i = 0; i < all.length; i++) {
+      for (var j = i + 1; j < all.length; j++) {
+        var a = all[i], b = all[j];
+        if (a.isStatic && b.isStatic) continue;
+        var fa = frozen(a), fb = frozen(b);
+        if (fa && fb) continue;
+        if (fa !== fb) {
+          var frozenOne = fa ? a : b, awake = fa ? b : a;
+          if (frozenOne.asleep && !(isHeld(awake) || speed2(awake) > WAKE_SPEED2)) continue;
+        }
+        var cs = collide(a, b);
+        if (!cs) continue;
+        if (fa !== fb) {
+          var fo = fa ? a : b;
+          if (fo.asleep) wake(fo);
+        }
+        for (var k = 0; k < cs.length; k++) {
+          var rv = relVel(cs[k]);
+          cs[k].vn0 = rv.x * cs[k].nx + rv.y * cs[k].ny;
+          out.push(cs[k]);
+        }
+      }
+    }
+    return out;
+  }
+
+  // Spring-damper from the grab point to the pointer, as an acceleration
+  // (mass cancels), applied at the grab point so it also turns the box.
+  function applySpring(g, h) {
+    var b = g.body;
+    var c = Math.cos(b.angle), s = Math.sin(b.angle);
+    var rx = c * g.la[0] - s * g.la[1];
+    var ry = s * g.la[0] + c * g.la[1];
+    var ex = (b.x + rx) - g.px, ey = (b.y + ry) - g.py;
+    var vax = b.vx - b.av * ry, vay = b.vy + b.av * rx;
+    var w = 2 * Math.PI * SPRING_HZ;
+    var ww = w * w, cz = 2 * SPRING_ZETA * w;
+    var ax = -(ww * ex + cz * vax);
+    var ay = -(ww * ey + cz * vay);
+    var mag = Math.hypot(ax, ay);
+    if (mag > MAX_GRAB_ACCEL) {
+      var k = MAX_GRAB_ACCEL / mag;
+      ax *= k;
+      ay *= k;
+    }
+    b.vx += ax * h;
+    b.vy += ay * h;
+    b.av += (rx * ay - ry * ax) * (b.m / b.I) * h;
+  }
+
+  function substep(h) {
+    var i, b;
+    for (i = 0; i < dyn.length; i++) {
+      b = dyn[i];
+      if (b.asleep) continue;
+      b.vy += GRAVITY * h;
+      b.vx /= 1 + LIN_DAMP * h;
+      b.vy /= 1 + LIN_DAMP * h;
+      b.av /= 1 + ANG_DAMP * h;
+    }
+    if (grab) applySpring(grab, h);
+
+    var contacts = collideAll();
+    var it, c;
+    for (it = 0; it < ITERATIONS; it++) {
+      for (c = 0; c < contacts.length; c++) solve(contacts[c]);
+    }
+
+    for (i = 0; i < dyn.length; i++) {
+      b = dyn[i];
+      if (b.asleep) continue;
+      var sp = Math.sqrt(speed2(b));
+      if (sp > MAX_SPEED) {
+        var f = MAX_SPEED / sp;
+        b.vx *= f;
+        b.vy *= f;
+      }
+      b.x += b.vx * h;
+      b.y += b.vy * h;
+      b.angle += b.av * h;
+    }
+
+    for (it = 0; it < POS_ITERATIONS; it++) {
+      var cs = collideAll();
+      for (c = 0; c < cs.length; c++) correct(cs[c]);
+    }
+  }
+
+  function step(dt) {
+    var h = dt / SUBSTEPS;
+    for (var s = 0; s < SUBSTEPS; s++) substep(h);
+
+    for (var j = 0; j < dyn.length; j++) {
+      var b = dyn[j];
+      if (b.asleep) continue;
+      if (isHeld(b)) { b.sleepT = 0; continue; }
+      var still = speed2(b) < SLEEP_SPEED2 && Math.abs(b.av) < SLEEP_ANG;
+      b.sleepT = still ? b.sleepT + dt : 0;
+      if (b.sleepT >= SLEEP_TIME) {
+        b.asleep = true;
+        b.vx = 0;
+        b.vy = 0;
+        b.av = 0;
+      }
+    }
+  }
+
+  // Pointer handling. Coordinates are CSS px; the canvas sits at (0, 0).
+  function pointerPos(e) {
+    var r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function pick(px, py) {
+    for (var i = dyn.length - 1; i >= 0; i--) {
+      if (inside(dyn[i], px, py)) return i;
+    }
+    return -1;
+  }
+
+  function throwVelocity(samples) {
+    var t = now();
+    var lastS = samples[samples.length - 1];
+    if (t - lastS.t > THROW_MAX_IDLE) return { x: 0, y: 0 };
+    var firstS = lastS;
+    for (var i = samples.length - 1; i >= 0; i--) {
+      if (lastS.t - samples[i].t <= THROW_WINDOW) firstS = samples[i];
+      else break;
+    }
+    var dt = (lastS.t - firstS.t) / 1000;
+    if (dt < 0.008) return { x: 0, y: 0 };
+    return {
+      x: clamp((lastS.x - firstS.x) / dt, -MAX_SPEED, MAX_SPEED),
+      y: clamp((lastS.y - firstS.y) / dt, -MAX_SPEED, MAX_SPEED)
+    };
+  }
+
+  function endGrab(pointerId) {
+    if (!grab || grab.id !== pointerId) return;
+    var b = grab.body;
+    var v = throwVelocity(grab.samples);
+    b.vx = v.x;
+    b.vy = v.y;
+    grab = null;
+    canvas.style.cursor = 'default';
+  }
+
+  function onPointerDown(e) {
+    if (grab || (e.button !== undefined && e.button !== 0)) return;
+    var p = pointerPos(e);
+    var i = pick(p.x, p.y);
+    if (i < 0) return;
+    var b = dyn[i];
+    dyn.splice(i, 1);
+    dyn.push(b);                       // grabbed box draws on top
+    var c = Math.cos(b.angle), s = Math.sin(b.angle);
+    var dx = p.x - b.x, dy = p.y - b.y;
+    grab = {
+      body: b,
+      la: [c * dx + s * dy, -s * dx + c * dy],
+      px: p.x,
+      py: p.y,
+      id: e.pointerId,
+      samples: [{ t: now(), x: p.x, y: p.y }]
+    };
+    wake(b);
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    canvas.style.cursor = 'grabbing';
+  }
+
+  function onPointerMove(e) {
+    if (!grab) {
+      var q = pointerPos(e);
+      canvas.style.cursor = pick(q.x, q.y) >= 0 ? 'grab' : 'default';
+      return;
+    }
+    if (e.pointerId !== grab.id) return;
+    var p = pointerPos(e);
+    grab.px = clamp(p.x, 0, W);
+    grab.py = clamp(p.y, 0, H);
+    var t = now();
+    grab.samples.push({ t: t, x: grab.px, y: grab.py });
+    while (grab.samples.length > 2 && t - grab.samples[0].t > THROW_WINDOW * 3) {
+      grab.samples.shift();
+    }
+  }
+
+  function onPointerUp(e) { endGrab(e.pointerId); }
+
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    buildStatics();
+    // keep boxes inside the new walls
+    for (var i = 0; i < dyn.length; i++) {
+      var b = dyn[i];
+      var hw = b.w / 2, hh = b.h / 2;
+      b.x = clamp(b.x, hw, Math.max(hw, W - hw));
+      b.y = Math.min(b.y, H - hh);
+    }
+  }
+
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = COL.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = COL.wall;
+    for (var i = 0; i < statics.length; i++) {
+      var s = statics[i];
+      ctx.fillRect(s.x - s.w / 2, s.y - s.h / 2, s.w, s.h);
+    }
+
+    ctx.lineWidth = 1.5;
+    for (var j = 0; j < dyn.length; j++) {
+      var b = dyn[j];
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.angle);
+      ctx.fillStyle = b.asleep ? COL.boxAsleep : COL.box;
+      ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      ctx.strokeStyle = isHeld(b) ? COL.hold : COL.edge;
+      ctx.lineWidth = isHeld(b) ? 3 : 1.5;
+      ctx.strokeRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      ctx.restore();
+    }
+
+    if (grab) {
+      var g = grab, gb = g.body;
+      var gc = Math.cos(gb.angle), gs = Math.sin(gb.angle);
+      var ax = gb.x + gc * g.la[0] - gs * g.la[1];
+      var ay = gb.y + gs * g.la[0] + gc * g.la[1];
+      ctx.strokeStyle = COL.hold;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(g.px, g.py);
+      ctx.stroke();
+      ctx.fillStyle = COL.hold;
+      ctx.beginPath();
+      ctx.arc(g.px, g.py, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function frame(t) {
+    var dtFrame = Math.min((t - last) / 1000, 0.1);
+    last = t;
+    acc += dtFrame;
+    while (acc >= DT) {
+      step(DT);
+      acc -= DT;
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  // Test-harness hook: box centers and sizes in CSS px.
+  window.boxes = function () {
+    return dyn.map(function (b) {
+      return { x: b.x, y: b.y, w: b.w, h: b.h };
+    });
+  };
+
+  canvas.addEventListener('pointerdown', onPointerDown);
+  canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerup', onPointerUp);
+  canvas.addEventListener('pointercancel', onPointerUp);
+  canvas.addEventListener('lostpointercapture', onPointerUp);
+  resetBtn.addEventListener('click', function () { reset(); });
+  window.addEventListener('resize', resize);
+
+  resize();
+  reset();
+  requestAnimationFrame(function (t) {
+    last = t;
+    requestAnimationFrame(frame);
+  });
+})();
+</script>
+</body>
+</html>

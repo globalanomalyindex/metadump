@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package toast</title>
+<style>
+:root{
+  --page:#0b0b0d; --surface:#1a1b1f; --surface2:#23252a; --hair:rgba(255,255,255,.09);
+  --text:#e6e8ec; --muted:#9aa0aa; --accent:#6fb1ff; --done:#5fcf96; --warn:#f0b64a;
+  --st:#6fb1ff;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.page{max-width:560px;margin:0 auto;padding:40px 20px;color:var(--muted)}
+.page h1{font-size:16px;color:var(--text);margin:0 0 6px;font-weight:600}
+.page p{margin:0 0 10px}
+.page .row{height:54px;border:1px solid var(--hair);border-radius:8px;margin:10px 0;background:#121316}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+#toast{position:fixed;right:16px;bottom:16px;width:264px;background:var(--surface);border:1px solid var(--hair);border-radius:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45);overflow:hidden;transform-origin:bottom right;
+  transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s,width .22s cubic-bezier(.2,.8,.2,1)}
+#toast[data-state="collapsed"]{width:auto;min-width:176px;max-width:264px;border-radius:20px}
+#toast.hidden{transform:translateY(24px) scale(.96);opacity:0;pointer-events:none;visibility:hidden;transition:transform .2s,opacity .15s,visibility 0s .2s}
+.head{display:flex;align-items:center;min-height:40px}
+.face{flex:1;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;min-height:40px;text-align:left;min-width:0;border-radius:20px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--st);flex:none}
+.word{font-weight:600;white-space:nowrap}
+.eta{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.chev{width:28px;height:28px;display:grid;place-items:center;color:var(--muted);flex:none;margin-left:auto;transition:transform .2s}
+#toast[data-state="expanded"] .chev{transform:rotate(180deg)}
+.x{width:28px;height:28px;margin-right:6px;display:grid;place-items:center;border-radius:50%;color:var(--muted);flex:none}
+.x:hover,.face:hover{background:rgba(255,255,255,.05)}
+.x:hover{color:var(--text)}
+svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.word.pulse{animation:pulse .5s ease-out 1}
+@keyframes pulse{0%{opacity:.3;transform:translateY(2px)}100%{opacity:1;transform:none}}
+
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s cubic-bezier(.2,.8,.2,1)}
+#toast[data-state="expanded"] .body{grid-template-rows:1fr}
+.body>div{overflow:hidden;min-height:0}
+.inner{padding:2px 12px 10px;border-top:1px solid var(--hair);margin-top:0}
+.meta{display:flex;justify-content:space-between;gap:8px;padding:8px 0 6px;color:var(--muted);font-size:12px}
+.meta b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{position:relative;display:grid;grid-template-columns:14px 1fr auto;gap:8px;padding:4px 0;font-size:12px;color:var(--muted)}
+.steps li::before{content:"";position:absolute;left:4.5px;top:16px;bottom:-6px;width:1px;background:var(--hair)}
+.steps li:last-child::before{display:none}
+.steps i{width:10px;height:10px;border-radius:50%;margin-top:3px;border:1.5px solid #5b606b;background:transparent}
+.steps li.done{color:var(--text)}
+.steps li.done i{background:var(--done);border-color:var(--done)}
+.steps li.cur{color:var(--text)}
+.steps li.cur i{border-color:var(--st);background:var(--st);box-shadow:0 0 0 3px rgba(111,177,255,.16)}
+.steps li small{color:var(--muted);font-size:11px;white-space:nowrap}
+.steps li .pl{display:block;color:var(--muted);font-size:11px}
+.next{margin:6px 0 8px;padding:6px 8px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted)}
+.acts{display:flex;gap:6px}
+.acts button,.acts a{flex:1;min-height:32px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;background:var(--surface2);border:1px solid var(--hair);font-size:12px;color:var(--text);text-decoration:none;cursor:pointer}
+.acts button:hover,.acts a:hover{background:#2c2f35}
+.acts .sim{flex:none;padding:0 10px;color:var(--muted)}
+
+#tab{position:fixed;right:0;bottom:24px;height:44px;width:24px;padding:0;border-radius:12px 0 0 12px;background:var(--surface);border:1px solid var(--hair);border-right:0;
+  display:none;place-items:center;color:var(--muted)}
+#tab.show{display:grid}
+#tab .dot{position:absolute;top:6px;left:6px;width:6px;height:6px}
+#tab svg{transform:rotate(90deg)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}}
+@media (max-width:420px){#toast{right:10px;bottom:10px}}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Order #48213 &middot; Studio Lamp</h1>
+  <p>The tracking toast floats at the lower right. Click it to open the checkpoints, close it with the x, and bring it back from the edge tab.</p>
+  <div class="row"></div><div class="row"></div><div class="row"></div>
+</main>
+
+<section id="toast" role="region" aria-label="Package tracking" data-state="collapsed">
+  <div class="head">
+    <button class="face" id="toggle" aria-expanded="false" aria-controls="body">
+      <span class="dot" id="dot"></span>
+      <span class="word" id="word">In transit</span>
+      <span class="eta" id="eta">Thu</span>
+      <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg></span>
+    </button>
+    <button class="x" id="dismiss" aria-label="Dismiss package tracking"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+  </div>
+  <div class="body" id="body"><div><div class="inner">
+    <div class="meta"><span id="carrier">UPS</span><b id="num">1Z 999 AA1 01 2345 6784</b></div>
+    <ol class="steps" id="steps"></ol>
+    <div class="next" id="next"></div>
+    <div class="acts">
+      <button id="copy" type="button"><svg viewBox="0 0 16 16"><rect x="5" y="5" width="8" height="8" rx="1.5"/><path d="M3 10V4a1 1 0 011-1h6"/></svg><span id="copyl">Copy number</span></button>
+      <a id="open" href="https://www.ups.com/track?tracknum=1Z999AA10123456784" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 16 16"><path d="M9 3h4v4M13 3L7 9M12 9v3a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1h3"/></svg>Carrier</a>
+      <button class="sim" id="sim" type="button" title="Demo: advance to the next status">Next &rsaquo;</button>
+    </div>
+  </div></div></div>
+  <div class="sr" role="status" aria-live="polite" id="live"></div>
+</section>
+
+<button id="tab" aria-label="Show package tracking"><span class="dot" id="tdot"></span><svg viewBox="0 0 16 16"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg></button>
+
+<script>
+(function(){
+  var pkg = {
+    carrier:"UPS", number:"1Z 999 AA1 01 2345 6784",
+    stages:[
+      {word:"Label created", hue:"#9aa0aa", eta:"Fri, Nov 7", next:"The carrier has your label but not the parcel yet."},
+      {word:"Picked up", hue:"#6fb1ff", eta:"Fri, Nov 7", next:"Your parcel is moving to the first hub."},
+      {word:"In transit", hue:"#6fb1ff", eta:"Thu", next:"No action needed. Next scan at the Louisville hub."},
+      {word:"Out for delivery", hue:"#f0b64a", eta:"Today, by 8 pm", next:"Check delivery instructions and who is home."},
+      {word:"Delivered", hue:"#5fcf96", eta:"Today, 2:14 pm", next:"Left at the front door. Photo available at the carrier."}
+    ],
+    scans:[
+      {label:"Label created", place:"Portland, OR", time:"Mon 4:02 pm"},
+      {label:"Picked up", place:"Portland, OR", time:"Mon 7:40 pm"},
+      {label:"Departed facility", place:"Salem, OR", time:"Tue 1:15 am"},
+      {label:"Arrived at hub", place:"Louisville, KY", time:"Wed 5:48 am"},
+      {label:"Out for delivery", place:"Brooklyn, NY", time:"Thu 7:05 am"},
+      {label:"Delivered", place:"Brooklyn, NY", time:"Thu 2:14 pm"}
+    ],
+    stage:2, scan:3
+  };
+  var $=function(id){return document.getElementById(id)};
+  var toast=$("toast"), toggle=$("toggle"), tab=$("tab"), live=$("live");
+  var stageScan=[0,1,3,4,5];
+
+  function render(announce){
+    var s=pkg.stages[pkg.stage];
+    toast.style.setProperty("--st",s.hue); $("dot").style.background=s.hue; $("tdot").style.background=s.hue;
+    $("word").textContent=s.word; $("eta").textContent=s.eta;
+    $("next").textContent=s.next;
+    $("carrier").textContent=pkg.carrier; $("num").textContent=pkg.number;
+    var cur=pkg.scan, html="";
+    pkg.scans.forEach(function(c,i){
+      var cls=i<cur?"done":(i===cur?"cur":"");
+      html+='<li class="'+cls+'"'+(i===cur?' aria-current="step"':'')+'><i></i><span>'+c.label+'<span class="pl">'+c.place+'</span></span><small>'+c.time+'</small></li>';
+    });
+    $("steps").innerHTML=html;
+    $("sim").disabled=pkg.stage>=pkg.stages.length-1;
+    $("sim").style.opacity=$("sim").disabled?.4:1;
+    if(announce){
+      var w=$("word"); w.classList.remove("pulse"); void w.offsetWidth; w.classList.add("pulse");
+      live.textContent=""; setTimeout(function(){live.textContent="Package update: "+s.word+", "+s.eta},30);
+      if(toast.classList.contains("hidden")) tab.classList.add("show"), tab.setAttribute("aria-label","Show package tracking, new status: "+s.word);
+    }
+  }
+  function setOpen(o){
+    toast.dataset.state=o?"expanded":"collapsed";
+    toggle.setAttribute("aria-expanded",o);
+  }
+  toggle.addEventListener("click",function(){setOpen(toggle.getAttribute("aria-expanded")!=="true")});
+  $("dismiss").addEventListener("click",function(){
+    toast.classList.add("hidden"); tab.classList.add("show"); tab.focus();
+  });
+  tab.addEventListener("click",function(){
+    toast.classList.remove("hidden"); tab.classList.remove("show"); tab.setAttribute("aria-label","Show package tracking"); toggle.focus();
+  });
+  toast.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&toggle.getAttribute("aria-expanded")==="true"){setOpen(false);toggle.focus()}
+  });
+  $("copy").addEventListener("click",function(){
+    var n=pkg.number.replace(/\s/g,""), l=$("copyl");
+    function ok(){l.textContent="Copied"; live.textContent="Tracking number copied"; setTimeout(function(){l.textContent="Copy number"},1600)}
+    function fb(){var t=document.createElement("textarea");t.value=n;document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}t.remove();ok()}
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(n).then(ok,fb)}else fb();
+  });
+  $("sim").addEventListener("click",function(){
+    if(pkg.stage>=pkg.stages.length-1) return;
+    pkg.stage++; pkg.scan=stageScan[pkg.stage];
+    render(true);
+  });
+  render(false);
+})();
+</script>
+</body>
+</html>

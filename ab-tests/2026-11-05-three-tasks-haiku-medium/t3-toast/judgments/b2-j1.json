@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j1",
+  "scores": {
+    "W": {"compact": 8, "collapsible": 9, "tracking": 9, "dark": 9, "usability": 9, "craft": 8, "overall": 8, "note": "A tidy pill that opens into a card with status, ETA, carrier, tracking number, a four-step timeline and clear actions, with aria-expanded, inert body when closed and Escape to collapse; the two-line wrapping of step labels and the odd scale-in frame keep it from top marks."},
+    "X": {"compact": 7, "collapsible": 6, "tracking": 5, "dark": 8, "usability": 7, "craft": 7, "overall": 6, "note": "A clean package list with labeled remove buttons and aria-expanded, but it starts expanded, collapses to a bare header, and gives no timeline, ETA, tracking number or next-step guidance."},
+    "Y": {"compact": 8, "collapsible": 9, "tracking": 9, "dark": 9, "usability": 9, "craft": 9, "overall": 9, "note": "The strongest response: a compact status pill that expands into a monospaced UPS tracking number, a dated timeline with locations, ETA and next-step actions, plus a labeled Track button to reopen after dismissal, aria-live and Escape handling."},
+    "Z": {"compact": 5, "collapsible": 3, "tracking": 3, "dark": 6, "usability": 4, "craft": 3, "overall": 2, "note": "The collapsed bar shows only a dot and a count with no status text, the expanded body shows skeleton placeholders and a literal 'Northwind Post · undefined', and the open frames render blank, so the state is hard to read and the carrier data is broken."}
+  },
+  "ranking": ["Y", "W", "X", "Z"]
+}

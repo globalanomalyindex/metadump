@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ethereal Button: hover curves</title>
+<style>
+  :root {
+    --ink: #1d1b2e;
+    --muted: #5f5a75;
+    --paper: #f6f4fb;
+    --card: #ffffff;
+    --line: #e2deee;
+    --accent: #3d3fa8;
+    --fill: #3d3fa8;
+    --accent-tint: rgba(91, 91, 214, 0.08);
+    --glow-rgb: 124, 118, 255;
+    --ring: #2b2a6b;
+
+    /* default hover curves (overridden per curve below) */
+    --ease-release: cubic-bezier(0.33, 1, 0.68, 1);
+    --ease-settle: cubic-bezier(0.87, 0, 0.13, 1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ece9f7;
+      --muted: #aaa4c4;
+      --paper: #121120;
+      --card: #1c1a2e;
+      --line: #2e2b48;
+      --accent: #8d8fff;
+      --fill: #4b4dc4;
+      --accent-tint: rgba(141, 143, 255, 0.12);
+      --glow-rgb: 141, 143, 255;
+      --ring: #c9c9ff;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  main { max-width: 760px; margin: 0 auto; padding-top: 32px; }
+
+  .eyebrow { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-size: clamp(26px, 5vw, 36px); line-height: 1.15; margin: 0 0 8px; font-weight: 700; }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 58ch; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 { font-size: 20px; margin: 0 0 6px; }
+  .meta { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .body { margin: 0 0 20px; max-width: 60ch; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+  .seats { font-size: 14px; color: var(--muted); margin-left: auto; }
+  .seats strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Button base ---------- */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 999px;
+    font: 600 15px/1 inherit, system-ui, sans-serif;
+    font-family: inherit;
+    color: #fff;
+    background: var(--fill);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 420ms var(--ease-release), background-color 300ms var(--ease-release);
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+    transition: transform 120ms cubic-bezier(0.3, 0, 0.2, 1);
+  }
+
+  .btn:focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 4px;
+  }
+
+  /* ---------- Ethereal halo: a pre-drawn blurred layer that only fades ---------- */
+  .btn--glow { --curve-lift: cubic-bezier(0.34, 1.56, 0.64, 1); --curve-glow: cubic-bezier(0.87, 0, 0.13, 1); }
+
+  .btn--glow::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    border-radius: inherit;
+    background: radial-gradient(closest-side, rgba(var(--glow-rgb), 0.55), rgba(var(--glow-rgb), 0) 100%);
+    filter: blur(10px);
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+    transition: opacity 480ms var(--ease-release);
+  }
+
+  /* Curve picker: swaps the hover curves through custom properties */
+  .btn--glow[data-curve="drift"] { --curve-lift: cubic-bezier(0.19, 1, 0.22, 1); --curve-glow: cubic-bezier(0.19, 1, 0.22, 1); }
+  .btn--glow[data-curve="calm"]  { --curve-lift: cubic-bezier(0.87, 0, 0.13, 1); --curve-glow: cubic-bezier(0.87, 0, 0.13, 1); }
+  .btn--glow[data-curve="dip"]   { --curve-lift: cubic-bezier(0.68, -0.6, 0.32, 1.6); --curve-glow: cubic-bezier(0.87, 0, 0.13, 1); }
+
+  /* Hover states only where a pointer can hover. Touch gets :active and focus instead. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn--glow:not(:disabled):hover {
+      transform: translate3d(0, -2px, 0) scale(1.02);
+      transition: transform 340ms var(--curve-lift), background-color 300ms var(--ease-release);
+    }
+    .btn--glow:not(:disabled):hover::before {
+      opacity: 1;
+      transition: opacity 720ms var(--curve-glow) 90ms;
+    }
+    .btn--ghost:not(:disabled):hover {
+      background-color: var(--accent-tint);
+      color: var(--accent);
+    }
+  }
+
+  .btn--glow:focus-visible::before,
+  .btn--glow[aria-busy="true"]::before,
+  .btn--glow:active::before {
+    opacity: 1;
+  }
+
+  /* Primary: fill stays solid so the label keeps contrast; glow lives outside the edge */
+  .btn--primary { background: var(--fill); color: #fff; }
+
+  /* Secondary: quiet outline, no halo, so one call to action carries the light */
+  .btn--ghost {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+  }
+  .btn--ghost[aria-pressed="true"] {
+    background: var(--fill);
+    color: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn:disabled::before { opacity: 0; }
+
+  .btn[aria-busy="true"] { cursor: progress; }
+
+  .dots::after {
+    content: "";
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+    animation: spin 900ms linear infinite;
+  }
+  .btn:not([aria-busy="true"]) .dots { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Curve picker ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font: 500 14px/1 inherit, system-ui, sans-serif;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 260ms var(--ease-release), border-color 260ms var(--ease-release);
+  }
+  .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent); }
+  .chip:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+  .readout {
+    margin-top: 16px;
+    font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--muted);
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 12px 14px;
+    overflow-wrap: anywhere;
+  }
+  .readout b { color: var(--ink); font-weight: 600; }
+
+  .status { min-height: 1.5em; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+
+  .sold-card { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; }
+  .sold-card p { margin: 0; color: var(--muted); }
+
+  /* ---------- Reduced motion: colour and opacity survive, travel and drift go ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .btn::before,
+    .btn:hover,
+    .btn:hover::before,
+    .btn--glow:not(:disabled):hover::before,
+    .btn--glow:focus-visible::before {
+      transition: background-color 200ms linear 0s, opacity 200ms linear 0s, color 200ms linear 0s;
+    }
+    .btn,
+    .btn:hover,
+    .btn:active,
+    .btn--glow:not(:disabled):hover {
+      transform: none;
+    }
+    .dots::after { animation-duration: 2400ms; }
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 20px; }
+    .seats { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Northwind Live · Autumn season</p>
+  <h1>Ethereal button, hover curves</h1>
+  <p class="lede">A primary call to action that stays still at rest. On hover, light arrives first on a slow custom cubic-bezier, then the button lifts a few pixels. Only transform and opacity move; focus, touch and reduced motion each have their own path.</p>
+
+  <section class="card" aria-labelledby="event-title">
+    <p class="meta">Thursday 14 November · 7:00 pm · Glasshouse Hall, Level 2</p>
+    <h2 id="event-title">Lantern Hour: an evening of ambient sets</h2>
+    <p class="body">Two sets of slow ambient music and a string quartet interlude, in the glasshouse after closing. Doors open at 6:30. Seats are held for 15 minutes once reserved.</p>
+
+    <div class="row">
+      <button type="button" class="btn btn--primary btn--glow" id="reserve" data-curve="drift">
+        <span class="dots" aria-hidden="true"></span>
+        <span class="label">Reserve my seat</span>
+      </button>
+
+      <button type="button" class="btn btn--ghost" id="save" aria-pressed="false">
+        <span class="label">Save</span>
+      </button>
+
+      <p class="seats"><strong id="seats">12</strong> seats left</p>
+    </div>
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    <div class="readout" id="readout" aria-live="off"></div>
+  </section>
+
+  <section class="card" aria-labelledby="curve-title">
+    <h2 id="curve-title">Hover curve</h2>
+    <p class="meta">Pick a curve, then hover the primary button above. Changes apply through a custom property, so no CSS is rewritten.</p>
+    <div class="chips" role="group" aria-label="Hover curve">
+      <button type="button" class="chip" data-set-curve="drift" aria-pressed="true">Drift</button>
+      <button type="button" class="chip" data-set-curve="calm" aria-pressed="false">Calm</button>
+      <button type="button" class="chip" data-set-curve="dip" aria-pressed="false">Dip (strong)</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="sold-title">
+    <h2 id="sold-title">Sold-out session</h2>
+    <div class="sold-card">
+      <p>Tuesday 12 November is full. Disabled buttons drop hover, glow and lift entirely.</p>
+      <button type="button" class="btn btn--primary btn--glow" data-curve="drift" disabled>Sold out</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var CURVES = {
+    drift: { lift: "cubic-bezier(0.34, 1.56, 0.64, 1)", glow: "cubic-bezier(0.19, 1, 0.22, 1)", label: "Drift" },
+    calm:  { lift: "cubic-bezier(0.87, 0, 0.13, 1)",   glow: "cubic-bezier(0.87, 0, 0.13, 1)",   label: "Calm" },
+    dip:   { lift: "cubic-bezier(0.68, -0.6, 0.32, 1.6)", glow: "cubic-bezier(0.87, 0, 0.13, 1)", label: "Dip (strong)" }
+  };
+
+  var state = { seats: 12, reserved: false, saved: false, busy: false, curve: "drift" };
+
+  var reserveBtn = document.getElementById("reserve");
+  var reserveLabel = reserveBtn.querySelector(".label");
+  var saveBtn = document.getElementById("save");
+  var seatsEl = document.getElementById("seats");
+  var statusEl = document.getElementById("status");
+  var readoutEl = document.getElementById("readout");
+  var chips = Array.prototype.slice.call(document.querySelectorAll("[data-set-curve]"));
+
+  var reduceMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var hoverMq = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+  function render() {
+    seatsEl.textContent = state.seats;
+
+    reserveLabel.textContent = state.busy ? "Reserving" : state.reserved ? "Release seat" : "Reserve my seat";
+    reserveBtn.setAttribute("aria-busy", state.busy ? "true" : "false");
+    reserveBtn.disabled = state.busy;
+
+    saveBtn.setAttribute("aria-pressed", state.saved ? "true" : "false");
+    saveBtn.querySelector(".label").textContent = state.saved ? "Saved" : "Save";
+
+    chips.forEach(function (c) {
+      c.setAttribute("aria-pressed", c.getAttribute("data-set-curve") === state.curve ? "true" : "false");
+    });
+    reserveBtn.setAttribute("data-curve", state.curve);
+    var c = CURVES[state.curve];
+    reserveBtn.style.setProperty("--curve-lift", c.lift);
+    reserveBtn.style.setProperty("--curve-glow", c.glow);
+
+    readoutEl.innerHTML =
+      "<b>curve</b> " + c.label + "<br>" +
+      "<b>lift</b> " + c.lift + "<br>" +
+      "<b>glow</b> " + c.glow + "<br>" +
+      "<b>hover motion</b> " + (hoverMq.matches ? "on (pointer device)" : "off (touch or no hover)") + "<br>" +
+      "<b>reduced motion</b> " + (reduceMq.matches ? "on, travel removed" : "off");
+  }
+
+  reserveBtn.addEventListener("click", function () {
+    if (state.busy) return;
+    if (state.reserved) {
+      state.reserved = false;
+      state.seats += 1;
+      statusEl.textContent = "Seat released. It is back in the pool.";
+      render();
+      return;
+    }
+    if (state.seats === 0) {
+      statusEl.textContent = "Sold out. Save this event to hear when seats return.";
+      return;
+    }
+    state.busy = true;
+    statusEl.textContent = "Holding your seat";
+    render();
+    window.setTimeout(function () {
+      state.busy = false;
+      state.reserved = true;
+      state.seats -= 1;
+      statusEl.textContent = "Seat held for 15 minutes. Doors at 6:30 pm.";
+      render();
+    }, 900);
+  });
+
+  saveBtn.addEventListener("click", function () {
+    state.saved = !state.saved;
+    statusEl.textContent = state.saved ? "Saved to your list." : "Removed from your list.";
+    render();
+  });
+
+  chips.forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      state.curve = chip.getAttribute("data-set-curve");
+      render();
+    });
+  });
+
+  reduceMq.addEventListener && reduceMq.addEventListener("change", render);
+  hoverMq.addEventListener && hoverMq.addEventListener("change", render);
+
+  render();
+})();
+</script>
+</body>
+</html>

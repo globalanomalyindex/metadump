@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"compact": 6, "collapsible": 6, "tracking": 6, "dark": 7, "usability": 5, "craft": 5, "overall": 5, "note": "Clean dark look but the carrier tabs are confusing for one package, there is dead space at the bottom of the open toast, and there is no live region or reduced-motion handling."},
+"X": {"compact": 8, "collapsible": 8, "tracking": 7, "dark": 8, "usability": 8, "craft": 7, "overall": 8, "note": "Very slim collapsed row with a status dot, a clear timeline with ETA and tracking number, and good ARIA, though the wrapped Carrier page button is a little cramped."},
+"Y": {"compact": 9, "collapsible": 8, "tracking": 7, "dark": 8, "usability": 8, "craft": 8, "overall": 8, "note": "Tiniest collapsed state with a segmented progress bar and a rich location timeline, but the carrier name and next-step actions are thin."},
+"Z": {"compact": 6, "collapsible": 8, "tracking": 9, "dark": 9, "usability": 8, "craft": 9, "overall": 8, "note": "Most complete and polished tracker with a stepper, scan log, copy, refresh and alerts, but it is larger and the subtitle ETA truncates when open."}
+}, "ranking": ["Z", "Y", "X", "W"]}

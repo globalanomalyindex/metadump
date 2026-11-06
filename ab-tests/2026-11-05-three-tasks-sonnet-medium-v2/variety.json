@@ -1,0 +1,74 @@
+{
+ "t1-button": {
+  "A_mean": 3.0,
+  "B_mean": 4.33,
+  "A": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "B": [
+   5.0,
+   3.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 2,
+   "tie": 1
+  },
+  "notes": [
+   "v1 (P=A): P is mostly one design: three lavender-to-blue gradient pill buttons on pale lilac pages with the same serif headline and wellness copy (P1 and P2 are near-identical cards), with only P4 going dark. Q is all dark navy and three pages are waitlist signups, but the layouts differ (editorial nav page, plum left-aligned detail page, split hero with side card, minimal form) and the buttons differ (ringed glass, ghost glass, glowing ring, dim pill).",
+   "v2 (P=B): P is four dark navy/indigo pages (three of them sleep-themed waitlists) with near-identical ease-out curves and glow-bloom hovers, differing mainly in button treatment (glass pill, plain pill, arrow pill, moon-icon ring) and layout (split, centered column, editorial). Q mixes light and dark and card vs bare layouts, but three of four use a purple-to-blue gradient pill with an arrow and the same overshoot-style curves in a sleep/retreat context, so it is only slightly more varied in palette.",
+   "v3 (P=A): P is one design four times: sleep/retreat booking page, serif headline, purple-to-blue gradient pill, lavender or dark-violet glow, and near-identical curve families (.16,.84,.24,1 / .34,1.56,.5,1). Q shares a dark navy palette and expo-out curves, but differs in page context (email waitlist form, SaaS split hero with stats card, editorial journal with feature cards, event listing) and in button treatment (dark ringed pill, glass pill with moon icon, frosted translucent pill)."
+  ]
+ },
+ "t2-haiku": {
+  "A_mean": 1.33,
+  "B_mean": 6.33,
+  "A": [
+   2.0,
+   1.0,
+   1.0
+  ],
+  "B": [
+   7.0,
+   6.0,
+   6.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is one poem four times: every piece leans on 'nacreous' and 'mother-of-pearl', twilight/dawn light, the sky 'holding' something, with near-identical phrasing. Q varies subject and moment (cold hands catching colour, a palm shading the sun, post-storm sky held in hands, dusk fading to grey), though Q1 and Q4 share the draining-colour ending and Q3 is not clearly about rare clouds.",
+   "v2 (P=B): P varies in angle and moment (post-storm wave sky held in hands, dusk pearl draining, a palm shading the sun with edge iridescence, cold hands catching colour), though P2 and P4 share the pearl-draining-colour idea. Q is essentially one poem four times: nacreous/mother-of-pearl light on cold air at dusk or dawn, with the sky holding its breath, all in near-identical wording.",
+   "v3 (P=A): P is one poem four times: nacreous/mother-of-pearl light at dusk or dawn on cold air, near-identical wording and the sky holding something. Q shares some motifs (draining colour, held-out hands, pearl) but differs in moment (post-storm, shading the sun, dusk) and endings."
+  ]
+ },
+ "t3-toast": {
+  "A_mean": 2.33,
+  "B_mean": 3.83,
+  "A": [
+   3.0,
+   2.0,
+   2.0
+  ],
+  "B": [
+   4.0,
+   4.0,
+   3.5
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is largely one design: all four are bottom-right dark rounded cards with a green accent, and P2 and P3 are near duplicates (icon or dot, green progress bar under the header, chevron, vertical step list), with P1's step dots and P4's open-by-default card the only departures. Q is also all bottom-right dark, but it changes the collapsed form (pill with count, pill with days, pill with weekday), the palette (amber, green, blue, mixed) and the open content (carrier tabs, vertical timeline, segmented progress), though the vertical timeline repeats in three of them.",
+   "v2 (P=B): P shares the bottom-right dark pill but varies the collapsed content (status plus ETA, count badge, days number), the accent (blue, green, orange) and the expanded structure (segmented progress, timeline with NOW tag, carrier tabs, vertical timeline with demo-state chips). Q is close to one design four times: green icon-tile or dot with a bottom progress bar, the same bottom-right card and a near-identical timeline, with only small differences (carrier tabs, dot pager, stepper row).",
+   "v3 (P=A): P is one design four times: bottom-right ~300px card, green accent, header with chevron, progress bar, vertical or dot stepper, three buttons. Q is also all bottom-right cards in dark, but varies accent (blue, amber, green), progress as segmented bars, carrier tabs, reversed timeline order and extra states, so slightly more varied."
+  ]
+ }
+}

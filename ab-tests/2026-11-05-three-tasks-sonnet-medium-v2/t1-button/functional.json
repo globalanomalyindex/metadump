@@ -1,0 +1,90 @@
+{
+ "A-r1": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 5,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r2": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 3,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r3": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 6,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r4": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 4,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r1": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 6,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r2": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 5,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r3": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 4,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r4": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "custom_beziers": 6,
+  "reduced_motion": true,
+  "button_found": true,
+  "hover_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ }
+}

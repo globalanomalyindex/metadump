@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j1","scores":{
+"W":{"compact":7,"collapsible":6,"tracking":6,"dark":7,"usability":6,"craft":5,"overall":5,"note":"Very small and toggle works with aria-expanded, but the collapsed ETA is truncated, the action buttons wrap awkwardly, and there is no progress or ETA once opened."},
+"X":{"compact":8,"collapsible":8,"tracking":9,"dark":9,"usability":8,"craft":8,"overall":9,"note":"Clean teal-on-dark card with the ETA right in the collapsed state, progress bar, six-step timeline, and tidy buttons, with only a little dead space at the bottom."},
+"Y":{"compact":6,"collapsible":6,"tracking":7,"dark":7,"usability":7,"craft":5,"overall":6,"note":"Good next-step note and timeline with a dismiss and restore tab, but the carrier and tracking number collide and wrap, and the ETA is truncated when collapsed."},
+"Z":{"compact":7,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":8,"overall":8,"note":"Polished multi-package toast with progress bar, notify toggle and a select, but it has no explicit ETA when collapsed and a full-width select uses space."}},
+"ranking":["X","Z","Y","W"]}

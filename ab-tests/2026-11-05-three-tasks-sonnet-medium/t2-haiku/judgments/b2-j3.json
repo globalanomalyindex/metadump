@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"imagery": 6, "form": 8, "specificity": 8, "freshness": 5, "resonance": 5, "overall": 6, "note": "Counts 5-7-5 (Mother-of-pearl sheets 5; na-cre-ous light on cold air 7; dawn the sky holds, brief 5); accurate nacreous clouds but stock 'mother-of-pearl' and a slightly muddled last line."},
+"X": {"imagery": 6, "form": 8, "specificity": 5, "freshness": 7, "resonance": 4, "overall": 5, "note": "Counts 5-7-5 (Cold cup on the sill 5; the lens cloud over the ridge 7; holds still, wind running 5); lenticular cloud is evoked but the cup image is disconnected and the ending is cryptic."},
+"Y": {"imagery": 8, "form": 9, "specificity": 8, "freshness": 7, "resonance": 7, "overall": 8, "note": "Counts 5-7-5 (Cloud lens on the ridge 5; all the wind pours through it, still 7; and the smell of snow 5); the lenticular cloud holding still while wind pours through it is true and the smell of snow is a fresh turn."},
+"Z": {"imagery": 6, "form": 8, "specificity": 8, "freshness": 4, "resonance": 4, "overall": 5, "note": "Counts 5-7-5 (Nacreous glow burns 5; in the long dark before dawn 7; mother-of-pearl sky 5); accurate to polar stratospheric clouds but 'glow burns' is imprecise and the close is stock phrasing."}
+}, "ranking": ["Y", "W", "Z", "X"]}

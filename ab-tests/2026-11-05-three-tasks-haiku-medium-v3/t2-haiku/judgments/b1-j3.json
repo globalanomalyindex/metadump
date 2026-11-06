@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j3",
+  "scores": {
+    "W": {
+      "imagery": 6,
+      "form": 9,
+      "specificity": 8,
+      "freshness": 5,
+      "resonance": 5,
+      "overall": 5,
+      "note": "Exact 5-7-5 (Pearl-lit, high, unseen = 5; nacreous clouds bloom at dusk = 7; winter's rarest sky = 5) with an accurate nacreous/polar-stratospheric evocation, but \"unseen\" and \"winter's rarest sky\" are stock phrasing that tells the rarity instead of showing it."
+    },
+    "X": {
+      "imagery": 8,
+      "form": 9,
+      "specificity": 9,
+      "freshness": 8,
+      "resonance": 8,
+      "overall": 8,
+      "note": "Exact 5-7-5 (Late in autumn wind = 5; a lens above the ridge stands = 7; while the air runs through = 5) and a lenticular cloud that holds still while the wind passes through it, which is the real physics and a quietly strong turn."
+    },
+    "Y": {
+      "imagery": 7,
+      "form": 6,
+      "specificity": 7,
+      "freshness": 7,
+      "resonance": 8,
+      "overall": 7,
+      "note": "Shape is 4-7-4 (midwinter dusk = 4; a thin veil above the ridge = 7; turns pearl, then gray = 4), a deliberate tight short-long-short that makes the pearl-to-gray fading land, though the veil is less clearly identified as a specific cloud type."
+    },
+    "Z": {
+      "imagery": 5,
+      "form": 9,
+      "specificity": 8,
+      "freshness": 5,
+      "resonance": 6,
+      "overall": 6,
+      "note": "Exact 5-7-5 (Nacreous glow spreads = 5; across the winter dusk sky = 7; clouds no one expects = 5) with the correct nacreous name, but the imagery stays general and the closing \"no one expects\" turn is cute rather than earned."
+    }
+  },
+  "ranking": ["X", "Y", "Z", "W"]
+}

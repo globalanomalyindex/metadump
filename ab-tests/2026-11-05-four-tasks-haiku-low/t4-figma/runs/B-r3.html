@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figma-style 5 second loop</title>
+<style>
+  :root {
+    --page: #ffffff;
+    --ground-a: #f6f1ff;
+    --ground-b: #e6f6ff;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--page);
+    min-height: 100%;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  .stage {
+    width: 100%;
+    max-width: 960px;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: #141218;
+      --ground-a: #1e1a2b;
+      --ground-b: #172330;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #141218;
+    --ground-a: #1e1a2b;
+    --ground-b: #172330;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <svg id="loop" viewBox="0 0 800 450" role="img" aria-label="Flat geometric shapes in bright spectrum colors move on a soft gradient and return to their start every 5 seconds">
+    <defs>
+      <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="var(--ground-a)"/>
+        <stop offset="1" stop-color="var(--ground-b)"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="800" height="450" fill="url(#ground)"/>
+    <g id="shapes">
+      <ellipse id="s-purple" cx="0" cy="0" rx="72" ry="72" fill="#A259FF"/>
+      <rect id="s-blue" x="-60" y="-60" width="120" height="120" rx="26" fill="#1ABCFE"/>
+      <path id="s-green" d="M0,-70 C48,-70 70,-30 70,0 C70,40 40,70 0,70 C-40,70 -70,40 -70,0 C-70,-40 -40,-70 0,-70 Z" fill="#0ACF83"/>
+      <circle id="s-yellow" cx="0" cy="0" r="26" fill="#FFCD29"/>
+      <rect id="s-red" x="-90" y="-22" width="180" height="44" rx="22" fill="#FF7262"/>
+    </g>
+  </svg>
+</div>
+<script>
+(function () {
+  var DURATION = 5000; // ms, one loop
+  var TWO_PI = Math.PI * 2;
+  var svg = document.getElementById('loop');
+  var el = {
+    purple: document.getElementById('s-purple'),
+    blue: document.getElementById('s-blue'),
+    green: document.getElementById('s-green'),
+    yellow: document.getElementById('s-yellow'),
+    red: document.getElementById('s-red')
+  };
+  var reduce = false;
+  try {
+    reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (e) { reduce = false; }
+
+  // Every function of t (0..1) is periodic with period 1, and every
+  // eased bump has zero velocity at t=0 and t=1, so frame 0 and the
+  // frame at 5 s are the same state for every property.
+  function bump(t) { return (1 - Math.cos(TWO_PI * t)) / 2; }      // 0 -> 1 -> 0, eased
+  function bump2(t) { return (1 - Math.cos(2 * TWO_PI * t)) / 2; }  // two pulses per loop
+
+  function setT(t) {
+    var a = TWO_PI * t;
+
+    // Purple circle: closed elliptical orbit, starts at the right.
+    el.purple.setAttribute('cx', (400 + 170 * Math.cos(a)).toFixed(2));
+    el.purple.setAttribute('cy', (225 + 70 * Math.sin(a)).toFixed(2));
+
+    // Blue rounded square: drifts left-right and turns 90 degrees out and back.
+    var bx = 210 + 34 * Math.sin(a);
+    var brot = 90 * bump(t);
+    el.blue.setAttribute('transform',
+      'translate(' + bx.toFixed(2) + ' 225) rotate(' + brot.toFixed(2) + ')');
+
+    // Green blob: bobs vertically and breathes in scale (two pulses per loop).
+    var gy = 300 + 16 * Math.sin(a);
+    var gs = 1 + 0.10 * bump2(t);
+    el.green.setAttribute('transform',
+      'translate(620 ' + gy.toFixed(2) + ') scale(' + gs.toFixed(4) + ')');
+
+    // Yellow dot: figure-eight path through the top band.
+    el.yellow.setAttribute('cx', (400 + 200 * Math.sin(a)).toFixed(2));
+    el.yellow.setAttribute('cy', (120 + 46 * Math.sin(2 * a)).toFixed(2));
+
+    // Red-orange pill: stretches width once per loop along the bottom edge.
+    var rw = 1 + 0.25 * bump(t);
+    el.red.setAttribute('transform',
+      'translate(400 380) scale(' + rw.toFixed(4) + ' 1)');
+  }
+
+  if (reduce) {
+    // Reduced motion: hold the first frame, no travel or scale.
+    setT(0);
+    return;
+  }
+
+  var start = null;
+  function frame(now) {
+    if (start === null) start = now;
+    var t = ((now - start) % DURATION) / DURATION;
+    setT(t);
+    requestAnimationFrame(frame);
+  }
+  setT(0);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

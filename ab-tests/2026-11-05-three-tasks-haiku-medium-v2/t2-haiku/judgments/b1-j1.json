@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {"imagery": 6, "form": 5, "specificity": 7, "freshness": 6, "resonance": 5, "overall": 5, "note": "Lenticular cloud over a ridge with a sharp, accurate edge, but the lines count 5-7-6 (\"its cold edge sharp on blue\" is 6), and the close on \"on blue\" lands flat with no turn."},
+    "X": {"imagery": 6, "form": 9, "specificity": 9, "freshness": 5, "resonance": 6, "overall": 6, "note": "Clean 5-7-5 (\"Nacreous\" 3 syllables, \"across the winter dusk sky\" 7, \"clouds no one expects\" 5) naming nacreous clouds at winter dusk accurately, though \"spreads across\" is generic and the final line's surprise is more stated than shown."},
+    "Y": {"imagery": 7, "form": 9, "specificity": 9, "freshness": 7, "resonance": 8, "overall": 8, "note": "Exact 5-7-5 (\"Midwinter ridge wind\" 5, \"one lens over the pale peak\" 7, \"holds while air runs through\" 5) that renders lenticular cloud physics faithfully, and the stillness-against-moving-air paradox gives the poem a real turn."},
+    "Z": {"imagery": 7, "form": 9, "specificity": 9, "freshness": 5, "resonance": 7, "overall": 7, "note": "Exact 5-7-5 (\"Pearl-lit, high, unseen\" 5, \"nacreous clouds bloom at dusk\" 7, \"winter's rarest sky\" 5) with accurate nacreous detail and a strong \"pearl-lit\" image, but \"bloom\" and \"rarest\" are stock, and the last line tells the rarity rather than showing it."}
+  },
+  "ranking": ["Y", "Z", "X", "W"]
+}

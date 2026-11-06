@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"dreamlike": 9, "practical": 7, "motion": 9, "craft": 8, "overall": 8, "note": "Pastel aurora gradient drifts across the pill over 1.6s with a bloom halo and letter-spacing breath, genuinely ethereal, though the small dark label on pale gradient is a little soft and durations are long."},
+"X": {"dreamlike": 5, "practical": 9, "motion": 6, "craft": 7, "overall": 6, "note": "Clean, accessible dark UI with a nice lavender fill and glow in 180-480ms, but it reads as a polished glow button more than dreamlike."},
+"Y": {"dreamlike": 6, "practical": 9, "motion": 7, "craft": 8, "overall": 7, "note": "Strong contrast, proper focus mirroring and reduced-motion handling, with a pale light sweep that is pretty but brief and fairly subtle."},
+"Z": {"dreamlike": 8, "practical": 6, "motion": 8, "craft": 7, "overall": 7, "note": "Source has blurred breathing halo, pointer-following mist and 1.2-1.9s eased sweeps, very ethereal, but the hover capture missed the button, the label is small and the curve-picker demo clutters the page."}
+}, "ranking": ["W", "Z", "Y", "X"]}

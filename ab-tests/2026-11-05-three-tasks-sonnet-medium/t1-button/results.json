@@ -1,0 +1,179 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 8.25,
+   "practical": 7.08,
+   "motion": 7.83,
+   "craft": 7.92,
+   "overall": 7.83,
+   "mean_rank": 1.75,
+   "per_run_overall": {
+    "A-r1": 7.33,
+    "A-r2": 8.0,
+    "A-r3": 8.0,
+    "A-r4": 8.0
+   }
+  },
+  "B": {
+   "dreamlike": 6.17,
+   "practical": 7.83,
+   "motion": 7.08,
+   "craft": 7.0,
+   "overall": 6.42,
+   "mean_rank": 3.25,
+   "per_run_overall": {
+    "B-r1": 5.67,
+    "B-r2": 7.33,
+    "B-r3": 6.0,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 1,
+  "losses": 21,
+  "ties": 2,
+  "win_rate": 0.08
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 76250,
+   "mean_seconds": 36.6
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 104670,
+   "mean_seconds": 61.1
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 206192,
+   "ms": 1776129,
+   "tool_uses": 46,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.87,
+ "permutation": {
+  "p": 0.057,
+  "extreme": 4,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Careful opacity/transform-only glow with staggered curves and good focus/reduced-motion, but the demo button is a small secondary one and the effect is a modest blue smudge.",
+  "b1/j1/A-r1": "Lovely full-width gradient button with slow lilac wash and drifting arrow, but 'transition: all', 1s+ timings and a whitened label at peak hurt legibility and snappiness.",
+  "b1/j1/B-r2": "Glass pill on a dark glow field with a fast clear hover-in, lingering soft glow on exit, strong focus and reduced-motion handling, cheap pre-blurred layers.",
+  "b1/j1/A-r2": "Most ethereal: blooming blurred halo with overshoot bezier, appearing arrow and slow exhale release, though infinite float/spin loops and blur filter transitions cost more to render.",
+  "b1/j2/B-r2": "Glass pill with a pre-blurred glow that arrives fast and lingers on release via custom curves; very safe, legible, and cheap (opacity/transform only), but the effect is modest and the CTA is a ghost button.",
+  "b1/j2/A-r2": "Gradient hero pill with blurred bloom, orbiting halo, overshoot and slow exhale curves feels the most ethereal, with reduced-motion and focus handled, though long filter transitions and infinite loops cost a bit.",
+  "b1/j2/A-r1": "Full-width light-theme CTA with drifting gradient wash, arrow slide and long soft settle looks lovely, but the white label loses contrast mid-hover as the surface washes pale.",
+  "b1/j2/B-r1": "Careful layered timing with delayed glow tail and good focus/reduced-motion, but the showcased hover is a small secondary button with a faint blue smudge that reads more tidy than dreamlike.",
+  "b1/j3/A-r2": "Three distinct beziers with long 1-2s blurred aura, drifting halo and arrow reveal on a dark cohesive page, with focus ring and reduced-motion handled; slightly heavy with animated blur layers.",
+  "b1/j3/B-r2": "Glassy button with lingering pre-blurred glow (opacity/transform only) and good focus and reduced-motion, but the fast 190ms face response makes the effect read as a glow-up more than ethereal.",
+  "b1/j3/B-r1": "Technically careful (pre-blurred glow, settle bezier, fine-pointer gating) but the subtle blue glow on a flat lavender page is modest and the secondary buttons look cluttered.",
+  "b1/j3/A-r1": "Pastel gradient wash with overshoot and spinning aura feels airy and the full-width button is clear on phone, but the label washes out mid-hover and transition:all plus a light page are less disciplined.",
+  "b2/j1/B-r3": "Frosted glass pill with a drifting light and nice halo, but the small label and low-contrast resting button feel weak, and the effect stays fairly subtle.",
+  "b2/j1/A-r3": "Gradient shift with a drifting light blob, overshoot bezier and arrow nudge reads clearly dreamy, with strong label contrast and a polished card, though 1s transitions run long.",
+  "b2/j1/B-r4": "Careful bezier set, clean focus ring and reduced-motion handling, but the glow is subtle and the stacked buttons including Sold out clutter the demo.",
+  "b2/j1/A-r4": "Pastel iridescent pill with a blurred bloom and gentle arrow drift feels airy and legible, with good focus outline and reduced-motion override.",
+  "b2/j2/B-r4": "Disciplined cyan halo and light sweep on a solid indigo button with strong focus ring, active state and reduced-motion handling, but the effect is subtle rather than truly ethereal.",
+  "b2/j2/A-r4": "Pastel iridescent pill with a blurred spinning bloom, long exhale easings and drifting arrow feels genuinely dreamlike, though the pale rest state has a soft affordance and the bloom is the heaviest to render.",
+  "b2/j2/A-r3": "Saturated gradient button with an overshoot lift, light-band sweep and halo reads clearly at rest and gets ethereal on hover, with good focus and reduced-motion support.",
+  "b2/j2/B-r3": "Glass button with a halo and sheen looks nice in motion but the translucent rest state with a small label has weak contrast and affordance on the dark blurred backdrop.",
+  "b2/j3/A-r4": "Pastel pearl pill with blurred rotating aurora and slow exhale curves feels truly ethereal with good reduced-motion and focus handling, though the pale button has soft rest affordance.",
+  "b2/j3/B-r4": "Polished, accessible dark card with tidy glow and sheen and strong focus ring, but the hover is restrained and reads more refined than dreamy.",
+  "b2/j3/B-r3": "Glassy button gets a pleasant luminous bloom on hover, but the small label and dull rest state weaken affordance and hierarchy.",
+  "b2/j3/A-r3": "Clear gradient CTA with a slow drifting light bloom and long soft settle that feels dreamy yet obvious, with focus and reduced motion covered."
+ }
+}

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en" data-recipe="settle">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiet Hours: dreamlike button</title>
+<style>
+/* ---------- tokens ---------- */
+:root {
+  --ink: #1d1b2e;
+  --muted: #4d4962;
+  --paper: #f6f4fa;
+  --card: #ffffff;
+  --line: #e4dfef;
+  --accent: #6a4cff;
+  --accent-deep: #5a3cf0;
+  --accent-tint: #ece7ff;
+  --glow: #b9a6ff;
+
+  /* custom cubic-bezier spreads (see recipes in the lab) */
+  --ease-land: cubic-bezier(0.33, 1, 0.68, 1);   /* quick landing on the face */
+  --ease-float: cubic-bezier(0.34, 1.2, 0.64, 1); /* small return past rest, about 1 percent */
+  --ease-tail: cubic-bezier(0.22, 1, 0.36, 1);    /* long soft tail on the glow */
+
+  --lift: -2px;
+  --face-ms: 240ms;
+  --tail-ms: 680ms;
+  --glow-opacity: 0.55;
+  --halo-opacity: 0.45;
+  --face-ease: var(--ease-land);
+}
+[data-recipe="float"] {
+  --lift: -3px;
+  --face-ease: var(--ease-float);
+  --glow-opacity: 0.22;
+  --halo-opacity: 0.6;
+  --tail-ms: 420ms;
+}
+[data-recipe="glass"] {
+  --lift: -2px;
+  --glow-opacity: 0.4;
+  --halo-opacity: 0.35;
+}
+
+/* ---------- page ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; flex-wrap: wrap; gap: 8px; }
+.brand { font-weight: 700; letter-spacing: 0.02em; }
+nav a { color: var(--muted); text-decoration: none; margin-left: 18px; font-size: 14px; }
+nav a:hover { color: var(--ink); }
+
+.hero {
+  background:
+    radial-gradient(60% 80% at 15% 0%, #5b3fd6 0%, transparent 60%),
+    radial-gradient(50% 70% at 92% 100%, #6e3592 0%, transparent 62%),
+    #1c1640;
+  color: #fff;
+  border-radius: 24px;
+  padding: 56px 40px;
+  margin: 8px 0 28px;
+}
+.hero h1 { font-size: clamp(28px, 4.5vw, 44px); line-height: 1.1; margin: 0 0 14px; max-width: 18ch; font-weight: 700; }
+.hero p { max-width: 52ch; color: #d9d4ef; margin: 0 0 28px; }
+.eyebrow { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #e6e0ff; margin: 0 0 10px; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.hero .btn--ghost { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+.hero .btn--ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
+.hero .btn:focus-visible { outline-color: #fff; }
+
+.grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
+@media (max-width: 820px) {
+  .grid { grid-template-columns: 1fr; }
+  .hero { padding: 40px 22px; }
+}
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+h2 { font-size: 20px; margin: 0 0 14px; }
+h2:focus { outline: none; }
+.sessions { display: grid; gap: 12px; }
+.session {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; flex-wrap: wrap;
+}
+.session strong { display: block; font-size: 16px; }
+.session .meta, .seats { font-size: 14px; color: var(--muted); }
+.list { list-style: none; padding: 0; margin: 0; }
+.list li {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px;
+}
+.empty { color: var(--muted); font-size: 14px; margin: 0; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); margin: 16px 0 0; }
+.status { font-size: 14px; color: var(--muted); min-height: 1.4em; margin: 12px 0 0; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* lab */
+.seg { display: inline-flex; background: var(--accent-tint); border-radius: 999px; padding: 4px; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
+.chip {
+  border: 0; border-radius: 999px; padding: 8px 14px; background: transparent;
+  font: inherit; font-size: 14px; color: var(--accent-deep); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.lab dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; margin: 0 0 16px; }
+.lab dt { color: var(--muted); }
+.lab dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.note { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+
+/* ---------- the button ---------- */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(29, 27, 46, 0.08);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--face-ms) var(--face-ease), background-color 180ms ease;
+}
+/* glow: a pre-blurred layer, drawn once, moved and faded by opacity/transform only */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: -10px -8px -4px;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(closest-side, var(--glow), transparent 72%);
+  filter: blur(12px);
+  opacity: 0;
+  transform: translateY(4px) scale(0.94);
+  pointer-events: none;
+  transition: opacity var(--tail-ms) var(--ease-tail), transform var(--tail-ms) var(--ease-tail);
+}
+/* edge halo: a thin ring of light at the rim, faded by opacity */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(185, 166, 255, 0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--face-ms) var(--ease-land);
+}
+.btn--primary { background: var(--accent); color: #fff; }
+.btn--primary:hover:not(:disabled) { background: var(--accent-deep); }
+.btn--ghost { background: transparent; border-color: var(--line); box-shadow: none; }
+.btn--ghost:hover:not(:disabled) { background: var(--accent-tint); }
+.btn--small { min-height: 38px; padding: 0 16px; font-size: 14px; }
+.btn:disabled {
+  background: #efedf5;
+  color: #55526a;
+  box-shadow: none;
+  border-color: transparent;
+  cursor: not-allowed;
+}
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* glass: only the focal hero button, and only in the glass recipe */
+[data-recipe="glass"] .btn--focal,
+[data-recipe="glass"] .btn--focal:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #fff;
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+}
+[data-recipe="glass"] .btn--focal:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+
+/* motion: only when the user has not asked for less, and the lab has not paused it */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.is-still) .btn:focus-visible:not(:disabled) {
+    /* keyboard parity: about half the lift and glow */
+    transform: translateY(calc(var(--lift) / 2));
+  }
+  html:not(.is-still) .btn:focus-visible:not(:disabled)::before {
+    opacity: calc(var(--glow-opacity) * 0.5);
+    transform: translateY(0) scale(1);
+  }
+
+  @media (hover: hover) {
+    /* hover is a pointer state: gated so touch screens do not stick on a lift */
+    html:not(.is-still) .btn:hover:not(:disabled) { transform: translateY(var(--lift)); }
+    html:not(.is-still) .btn:hover:not(:disabled)::before {
+      opacity: var(--glow-opacity);
+      transform: translateY(0) scale(1);
+    }
+    html:not(.is-still) .btn:hover:not(:disabled)::after { opacity: var(--halo-opacity); }
+    /* the way back is quicker than the way in; retargets from the current value, so no jump */
+    html:not(.is-still) .btn:not(:hover)::before { transition-duration: calc(var(--tail-ms) * 0.6); }
+  }
+
+  /* press: answers the click at once, transform only, no overshoot */
+  html:not(.is-still) .btn:active:not(:disabled) {
+    transform: translateY(1px) scale(0.98);
+    transition-duration: 90ms;
+  }
+}
+
+/* reduced motion: no drift, no lift, no glow; colour and opacity remain as the response */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn::before, .btn::after { transition: background-color 150ms linear; }
+  .btn:hover:not(:disabled) { background: var(--accent-tint); }
+  .btn--primary:hover:not(:disabled) { background: var(--accent-deep); }
+  .btn:active:not(:disabled) { background: #dcd3ff; }
+  .btn--primary:active:not(:disabled) { background: #4a2fd6; }
+  .btn::before { opacity: 0 !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">Quiet Hours</div>
+    <nav aria-label="Site">
+      <a href="#sessions">Schedule</a>
+      <a href="#lab">Button lab</a>
+      <a href="#booking">Booking</a>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Evening listening sessions</p>
+    <h1 id="hero-title">Slow music in a converted tram depot.</h1>
+    <p>Four small listening rooms, one hour each, no phones, no screens. Seats are limited to eight per session so the room stays quiet.</p>
+    <div class="cta-row">
+      <button class="btn btn--primary btn--focal" id="hero-reserve" type="button">Reserve the next seat</button>
+      <a class="btn btn--ghost" href="#sessions">See the schedule</a>
+    </div>
+  </section>
+
+  <div class="grid">
+
+    <section class="panel" id="sessions" aria-labelledby="sessions-title">
+      <h2 id="sessions-title">This week</h2>
+      <div class="sessions" id="session-list"></div>
+    </section>
+
+    <aside class="panel" id="booking" aria-labelledby="booking-title">
+      <h2 id="booking-title" tabindex="-1" id="held-heading">Your seats</h2>
+      <ul class="list" id="held-list"></ul>
+      <label class="check">
+        <input type="checkbox" id="agree"> I have read the house rules: arrive ten minutes early, stay until the end.
+      </label>
+      <div class="row" style="margin-top:16px">
+        <button class="btn btn--primary" id="confirm" type="button" disabled>Confirm booking</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </aside>
+
+  </div>
+
+  <section class="panel" id="lab" style="margin-top:24px" aria-labelledby="lab-title">
+    <h2 id="lab-title">Button lab</h2>
+    <p class="note">Pick a hover recipe, then hover, tab or press the buttons above. The readout shows what the current recipe is doing.</p>
+    <div class="seg" role="group" aria-label="Hover recipe">
+      <button class="chip" type="button" data-recipe-pick="settle" aria-pressed="true">Settle with a light tail</button>
+      <button class="chip" type="button" data-recipe-pick="float" aria-pressed="false">Float that settles</button>
+      <button class="chip" type="button" data-recipe-pick="glass" aria-pressed="false">Glass on the focal button</button>
+    </div>
+    <p class="note" id="recipe-note"></p>
+    <div class="row" style="margin-bottom:18px">
+      <button class="btn btn--ghost btn--small" id="motion" type="button" aria-pressed="false">Dreamlike motion: on</button>
+      <button class="btn btn--primary btn--small" type="button">Primary</button>
+      <button class="btn btn--ghost btn--small" type="button">Ghost</button>
+      <button class="btn btn--primary btn--small" type="button" disabled>Disabled</button>
+    </div>
+    <dl class="lab" aria-live="polite">
+      <dt>Recipe</dt><dd id="r-name"></dd>
+      <dt>Lift on hover</dt><dd id="r-lift"></dd>
+      <dt>Face curve</dt><dd id="r-face"></dd>
+      <dt>Glow tail</dt><dd id="r-tail"></dd>
+      <dt>Motion</dt><dd id="r-motion"></dd>
+      <dt>System reduced motion</dt><dd id="r-rm"></dd>
+      <dt>Last input</dt><dd id="r-input"></dd>
+    </dl>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var RECIPES = {
+    settle: {
+      name: "Settle with a light tail",
+      lift: "-2px",
+      face: "cubic-bezier(0.33, 1, 0.68, 1), 240 ms",
+      tail: "680 ms cubic-bezier(0.22, 1, 0.36, 1), glow layer only",
+      note: "The face lands quickly and stays put; a glow drifts on behind it, so the click is answered and the light lingers."
+    },
+    float: {
+      name: "Float that settles",
+      lift: "-3px",
+      face: "cubic-bezier(0.34, 1.2, 0.64, 1), 240 ms (returns about 1 percent past rest)",
+      tail: "420 ms, faint glow, halo fades in",
+      note: "A three pixel lift with a return under two percent: it settles at rest, and a rim of light fades in."
+    },
+    glass: {
+      name: "Glass on the focal button",
+      lift: "-2px",
+      face: "cubic-bezier(0.33, 1, 0.68, 1), 240 ms",
+      tail: "680 ms, translucent fill over the dark hero",
+      note: "Only the hero button is translucent, so the blur is paid for once, over a backdrop with something behind it."
+    }
+  };
+
+  var state = {
+    recipe: "settle",
+    still: false,
+    sessions: [
+      { id: "rain",   title: "Rain on tin roofs",      time: "Thu 19 Nov, 8:00 pm", seats: 4 },
+      { id: "tide",   title: "Low tide, slow strings", time: "Fri 20 Nov, 9:30 pm", seats: 0 },
+      { id: "train",  title: "Night train harmonics",  time: "Sat 21 Nov, 7:00 pm", seats: 6 },
+      { id: "candle", title: "Candle room, no lights", time: "Sun 22 Nov, 6:30 pm", seats: 2 }
+    ],
+    held: [],
+    agreed: false,
+    bookings: 0,
+    lastBooking: null,
+    lastInput: "none"
+  };
+
+  var rm = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+  function $(id) { return document.getElementById(id); }
+  function byId(id) {
+    for (var i = 0; i < state.sessions.length; i++) if (state.sessions[i].id === id) return state.sessions[i];
+    return null;
+  }
+  function isHeld(id) { return state.held.indexOf(id) !== -1; }
+  function nextOpen() {
+    for (var i = 0; i < state.sessions.length; i++) {
+      var s = state.sessions[i];
+      if (s.seats > 0 && !isHeld(s.id)) return s;
+    }
+    return null;
+  }
+
+  function reserve(id) {
+    var s = byId(id);
+    if (!s || s.seats < 1 || isHeld(id)) return false;
+    s.seats -= 1;
+    state.held.push(id);
+    return true;
+  }
+  function release(id) {
+    var s = byId(id);
+    if (!s || !isHeld(id)) return false;
+    s.seats += 1;
+    state.held = state.held.filter(function (x) { return x !== id; });
+    return true;
+  }
+  function confirmBooking() {
+    if (!state.agreed || state.held.length === 0) return false;
+    state.bookings += 1;
+    state.lastBooking = { seats: state.held.length, ref: "QH-" + (4000 + state.bookings * 37) };
+    state.held = [];
+    state.agreed = false;
+    return true;
+  }
+
+  function renderHero() {
+    var n = nextOpen();
+    var b = $("hero-reserve");
+    b.disabled = !n;
+    b.textContent = n ? "Reserve the next seat" : "Fully booked";
+  }
+
+  function renderSessions() {
+    var html = state.sessions.map(function (s) {
+      var held = isHeld(s.id);
+      var disabled = held || s.seats === 0;
+      var label = held ? "Held for you" : s.seats === 0 ? "Sold out" : "Reserve";
+      var seats = held ? "You hold one seat" : s.seats === 0 ? "No seats left" : s.seats + " seats left";
+      return (
+        '<article class="session">' +
+          '<div><strong>' + s.title + '</strong><span class="meta">' + s.time + '</span></div>' +
+          '<div class="row"><span class="seats">' + seats + '</span>' +
+          '<button class="btn btn--ghost btn--small" type="button" data-reserve="' + s.id + '"' +
+          (disabled ? ' disabled' : '') + '>' + label + '</button></div>' +
+        '</article>'
+      );
+    }).join("");
+    $("session-list").innerHTML = html;
+  }
+
+  function renderHeld() {
+    var list = $("held-list");
+    if (state.held.length === 0) {
+      list.innerHTML = '<li class="empty">No seats held yet. Reserve a session to start.</li>';
+      return;
+    }
+    list.innerHTML = state.held.map(function (id) {
+      var s = byId(id);
+      return (
+        '<li><span>' + s.title + ' <span class="meta">' + s.time + '</span></span>' +
+        '<button class="btn btn--ghost btn--small" type="button" data-release="' + id + '">Remove</button></li>'
+      );
+    }).join("");
+  }
+
+  function renderConfirm() {
+    $("agree").checked = state.agreed;
+    $("confirm").disabled = !(state.agreed && state.held.length > 0);
+    var msg = "";
+    if (state.lastBooking) {
+      msg = "Booked " + state.lastBooking.seats + (state.lastBooking.seats === 1 ? " seat" : " seats") +
+            ". Reference " + state.lastBooking.ref + ", keep it for check-in.";
+    } else if (state.held.length > 0 && !state.agreed) {
+      msg = "Tick the house rules to confirm.";
+    } else if (state.held.length === 0) {
+      msg = "";
+    }
+    $("status").textContent = msg;
+  }
+
+  function renderLab() {
+    var R = RECIPES[state.recipe];
+    $("recipe-note").textContent = R.note;
+    $("r-name").textContent = R.name;
+    $("r-lift").textContent = R.lift;
+    $("r-face").textContent = R.face;
+    $("r-tail").textContent = R.tail;
+    $("r-motion").textContent = state.still ? "paused (static hover)" : "on";
+    $("r-rm").textContent = rm && rm.matches ? "requested, drift and lift removed" : "not requested";
+    $("r-input").textContent = state.lastInput;
+
+    var chips = document.querySelectorAll("[data-recipe-pick]");
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].setAttribute("aria-pressed", String(chips[i].dataset.recipePick === state.recipe));
+    }
+    var motion = $("motion");
+    motion.textContent = state.still ? "Dreamlike motion: paused" : "Dreamlike motion: on";
+    motion.setAttribute("aria-pressed", String(state.still));
+  }
+
+  function applyRoot() {
+    document.documentElement.setAttribute("data-recipe", state.recipe);
+    document.documentElement.classList.toggle("is-still", state.still);
+  }
+
+  function render() {
+    applyRoot();
+    renderHero();
+    renderSessions();
+    renderHeld();
+    renderConfirm();
+    renderLab();
+  }
+
+  function focusHeld() {
+    var h = $("booking-title");
+    if (h && h.focus) h.focus();
+  }
+
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var el;
+
+    if ((el = t.closest("[data-reserve]"))) {
+      reserve(el.getAttribute("data-reserve"));
+      render();
+      focusHeld();
+      return;
+    }
+    if ((el = t.closest("[data-release]"))) {
+      release(el.getAttribute("data-release"));
+      render();
+      focusHeld();
+      return;
+    }
+    if ((el = t.closest("[data-recipe-pick]"))) {
+      state.recipe = el.getAttribute("data-recipe-pick");
+      render();
+      return;
+    }
+    if (t.closest("#hero-reserve")) {
+      var n = nextOpen();
+      if (n) reserve(n.id);
+      render();
+      focusHeld();
+      return;
+    }
+    if (t.closest("#motion")) {
+      state.still = !state.still;
+      render();
+      return;
+    }
+    if (t.closest("#confirm")) {
+      confirmBooking();
+      render();
+      return;
+    }
+  });
+
+  $("agree").addEventListener("change", function (e) {
+    state.agreed = e.target.checked;
+    render();
+  });
+
+  document.addEventListener("pointerdown", function () {
+    state.lastInput = "pointer";
+    renderLab();
+  }, true);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Tab" || e.key === "Enter" || e.key === " ") {
+      state.lastInput = "keyboard";
+      renderLab();
+    }
+  }, true);
+  if (rm && rm.addEventListener) rm.addEventListener("change", renderLab);
+
+  render();
+})();
+</script>
+</body>
+</html>

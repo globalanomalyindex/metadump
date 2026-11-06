@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package Tracker Toast</title>
+<style>
+  :root {
+    --bg: #0c0e12;
+    --surface: #161920;
+    --surface-2: #1d212a;
+    --line: #2a2f3b;
+    --text: #e6e9ef;
+    --muted: #8a93a4;
+    --accent: #7aa7ff;
+    --warn: #f5b84b;
+    --ok: #4ccf8a;
+    --bad: #ff6b6b;
+    --radius: 12px;
+    --shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Sample page behind the toast */
+  .page { max-width: 720px; margin: 0 auto; padding: 24px 16px 140px; color: var(--muted); }
+  .page h1 { font-size: 18px; color: var(--text); margin: 0 0 6px; }
+  .page ul { padding-left: 18px; margin: 12px 0 0; }
+  .page li { margin: 4px 0; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: min(340px, calc(100vw - 32px));
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+  }
+  .head:hover { background: var(--surface-2); }
+  .chev { display: inline-flex; color: var(--muted); transition: transform .18s ease; }
+  .is-collapsed .chev { transform: rotate(-90deg); }
+  .title { font-weight: 600; white-space: nowrap; }
+  .badge {
+    min-width: 20px; height: 18px; padding: 0 6px;
+    border-radius: 9px; background: var(--accent); color: #0b1220;
+    font-size: 11px; font-weight: 700;
+    display: inline-grid; place-items: center;
+  }
+  .summary {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .body { border-top: 1px solid var(--line); }
+  .list { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow-y: auto; }
+  .item { border-bottom: 1px solid var(--line); }
+  .item:last-child { border-bottom: 0; }
+  .row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+  }
+  .row:hover { background: var(--surface-2); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--muted); }
+  .s-transit .dot { background: var(--accent); }
+  .s-out .dot { background: var(--warn); }
+  .s-done .dot { background: var(--ok); }
+  .meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub {
+    color: var(--muted); font-size: 11.5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .eta { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+  .s-out .eta { color: var(--warn); }
+  .is-done .name { color: var(--muted); }
+
+  .detail { padding: 2px 12px 12px 28px; }
+  .detail .status-line { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .timeline { list-style: none; margin: 0 0 10px; padding: 0 0 0 12px; border-left: 1px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 7px 6px; font-size: 12px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -17px; top: 4px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--muted);
+  }
+  .timeline li:first-child::before { background: var(--accent); border-color: var(--accent); }
+  .timeline time { display: block; color: var(--muted); font-size: 11px; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 4px 9px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: #3c4456; }
+  .btn.danger { color: var(--bad); }
+
+  .add {
+    display: grid;
+    grid-template-columns: 1fr 96px;
+    gap: 6px;
+    padding: 10px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+  .add input, .add select {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 5px 8px;
+    min-width: 0;
+    width: 100%;
+  }
+  .add .wide { grid-column: 1 / -1; }
+  .add button {
+    grid-column: 1 / -1;
+    background: var(--accent);
+    color: #0b1220;
+    border: 0;
+    border-radius: 7px;
+    padding: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 6px 10px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .foot #msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .foot #undo {
+    background: none; border: 0; color: var(--accent);
+    font-weight: 600; cursor: pointer; padding: 2px 4px;
+  }
+  .empty { padding: 14px 10px; color: var(--muted); text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chev { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+  <h1>Orders</h1>
+  <p>Your recent orders. The package tracker sits in the corner and can be collapsed to a single line.</p>
+  <ul>
+    <li>Fernhill pour-over kit, shipped</li>
+    <li>Lumen desk lamp, shipped</li>
+    <li>Replacement USB-C charger, shipped</li>
+    <li>Wool throw, blue, delivered</li>
+  </ul>
+</main>
+
+<section class="toast" id="toast" aria-label="Package tracker">
+  <button class="head" id="head" aria-expanded="true" aria-controls="body">
+    <span class="chev" aria-hidden="true">
+      <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span class="title">Packages</span>
+    <span class="badge" id="badge" aria-label="packages in transit">0</span>
+    <span class="summary" id="summary"></span>
+  </button>
+
+  <div class="body" id="body">
+    <ul class="list" id="list"></ul>
+
+    <form class="add" id="add-form" autocomplete="off">
+      <input class="wide" name="label" placeholder="Label, e.g. Birthday gift" maxlength="40" required aria-label="Package label">
+      <input name="tracking" placeholder="Tracking number" maxlength="30" required aria-label="Tracking number">
+      <select name="carrier" aria-label="Carrier">
+        <option>UPS</option>
+        <option>USPS</option>
+        <option>FedEx</option>
+        <option>DHL</option>
+      </select>
+      <button type="submit">Add package</button>
+    </form>
+
+    <div class="foot">
+      <span id="msg" role="status" aria-live="polite"></span>
+      <button id="undo" hidden>Undo</button>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY = "pkgtoast.v1";
+  var STATUS = {
+    label:     { text: "Label created",     cls: "s-label" },
+    transit:   { text: "In transit",        cls: "s-transit" },
+    out:       { text: "Out for delivery",  cls: "s-out" },
+    delivered: { text: "Delivered",         cls: "s-done" }
+  };
+
+  var SAMPLE = {
+    collapsed: false,
+    openId: "p1",
+    packages: [
+      {
+        id: "p1", label: "Fernhill pour-over kit", carrier: "UPS",
+        tracking: "1Z 84A 0W3 42 1957 310", status: "out", eta: "Today by 8 pm",
+        events: [
+          { at: "Nov 3 · 16:22", text: "Label created, not yet in UPS possession" },
+          { at: "Nov 4 · 10:12", text: "Departed facility, Reno NV" },
+          { at: "Nov 5 · 06:40", text: "Out for delivery, Sacramento CA" }
+        ]
+      },
+      {
+        id: "p2", label: "Lumen desk lamp", carrier: "USPS",
+        tracking: "9405 5036 9930 0246 1187 42", status: "transit", eta: "Mon, Nov 9",
+        events: [
+          { at: "Nov 2 · 09:05", text: "Label created" },
+          { at: "Nov 3 · 19:48", text: "Accepted at USPS facility, Oakland CA" },
+          { at: "Nov 4 · 22:31", text: "Arrived at regional facility, Salt Lake City UT" }
+        ]
+      },
+      {
+        id: "p3", label: "Replacement USB-C charger", carrier: "FedEx",
+        tracking: "7812 4490 1123", status: "transit", eta: "Fri, Nov 6",
+        events: [
+          { at: "Nov 4 · 08:15", text: "Picked up" },
+          { at: "Nov 5 · 03:02", text: "In transit, Memphis TN" }
+        ]
+      },
+      {
+        id: "p4", label: "Wool throw, blue", carrier: "DHL",
+        tracking: "JD014622947700", status: "delivered", eta: "Nov 2",
+        events: [
+          { at: "Oct 28 · 12:00", text: "Label created" },
+          { at: "Nov 2 · 14:20", text: "Delivered, front porch" }
+        ]
+      }
+    ]
+  };
+
+  var $ = function (s) { return document.querySelector(s); };
+  var el = {
+    toast: $("#toast"), head: $("#head"), body: $("#body"),
+    badge: $("#badge"), summary: $("#summary"), list: $("#list"),
+    form: $("#add-form"), msg: $("#msg"), undo: $("#undo")
+  };
+
+  var state = load();
+  var flashTimer = null;
+  var lastRemoved = null;
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && Array.isArray(s.packages)) return s;
+      }
+    } catch (e) { /* storage unavailable: fall back to sample */ }
+    return JSON.parse(JSON.stringify(SAMPLE));
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function stamp() {
+    var d = new Date();
+    return d.toLocaleString("en-US", { month: "short", day: "numeric" }) + " · " +
+      d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+
+  function uid() {
+    return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  function itemHTML(p) {
+    var st = STATUS[p.status] || STATUS.label;
+    var open = state.openId === p.id;
+    var done = p.status === "delivered";
+    var id = esc(p.id);
+    var events = p.events.slice().reverse().map(function (e) {
+      return "<li><time>" + esc(e.at) + "</time>" + esc(e.text) + "</li>";
+    }).join("");
+    return '' +
+      '<li class="item ' + st.cls + (done ? " is-done" : "") + '" data-id="' + id + '">' +
+        '<button class="row" data-act="open" aria-expanded="' + open + '" aria-controls="d-' + id + '">' +
+          '<span class="dot" aria-hidden="true"></span>' +
+          '<span class="meta">' +
+            '<span class="name">' + esc(p.label) + '</span>' +
+            '<span class="sub">' + esc(p.carrier) + " · " + esc(p.tracking) + '</span>' +
+          '</span>' +
+          '<span class="eta">' + esc(done ? "Delivered" : p.eta) + '</span>' +
+        '</button>' +
+        '<div class="detail" id="d-' + id + '"' + (open ? "" : " hidden") + '>' +
+          '<div class="status-line">' + esc(st.text) + " · " + esc(p.eta) + '</div>' +
+          '<ol class="timeline">' + events + '</ol>' +
+          '<div class="actions">' +
+            '<button class="btn" data-act="copy">Copy tracking #</button>' +
+            '<button class="btn" data-act="toggle-done">' + (done ? "Mark in transit" : "Mark delivered") + '</button>' +
+            '<button class="btn danger" data-act="remove">Remove</button>' +
+          '</div>' +
+        '</div>' +
+      '</li>';
+  }
+
+  function render() {
+    var active = state.packages.filter(function (p) { return p.status !== "delivered"; });
+    var next = active.filter(function (p) { return p.status === "out"; })[0] || active[0];
+
+    el.toast.classList.toggle("is-collapsed", state.collapsed);
+    el.head.setAttribute("aria-expanded", String(!state.collapsed));
+    el.body.hidden = state.collapsed;
+    el.badge.textContent = String(active.length);
+    el.summary.textContent = next ? next.label + ": " + next.eta : "Nothing in transit";
+
+    el.list.innerHTML = state.packages.length
+      ? state.packages.map(itemHTML).join("")
+      : '<li class="empty">No packages yet. Add one below.</li>';
+
+    save();
+  }
+
+  function flash(text, canUndo) {
+    el.msg.textContent = text;
+    el.undo.hidden = !canUndo;
+    if (!canUndo) lastRemoved = null;
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () {
+      el.msg.textContent = "";
+      el.undo.hidden = true;
+      lastRemoved = null;
+    }, 5000);
+  }
+
+  function copy(text) {
+    var done = function () { flash("Tracking number copied"); };
+    var fail = function () { flash("Copy blocked. Number: " + text); };
+    try {
+      navigator.clipboard.writeText(text).then(done, fail);
+    } catch (e) {
+      fail();
+    }
+  }
+
+  // Collapse / expand the toast
+  el.head.addEventListener("click", function () {
+    state.collapsed = !state.collapsed;
+    render();
+  });
+
+  // Escape collapses the toast when focus is not in a form field
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || state.collapsed) return;
+    if (e.target.closest && e.target.closest("input, select, textarea")) return;
+    state.collapsed = true;
+    render();
+  });
+
+  // Row actions (event delegation)
+  el.list.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    var li = btn.closest(".item");
+    if (!li) return;
+    var p = state.packages.filter(function (x) { return x.id === li.dataset.id; })[0];
+    if (!p) return;
+
+    var act = btn.dataset.act;
+    if (act === "open") {
+      state.openId = state.openId === p.id ? null : p.id;
+      render();
+    } else if (act === "copy") {
+      copy(p.tracking);
+    } else if (act === "toggle-done") {
+      if (p.status === "delivered") {
+        p.status = "transit";
+        p.events.push({ at: stamp(), text: "Marked in transit" });
+        flash(p.label + " is back in transit");
+      } else {
+        p.status = "delivered";
+        p.events.push({ at: stamp(), text: "Marked delivered" });
+        flash(p.label + " marked delivered");
+      }
+      render();
+    } else if (act === "remove") {
+      var i = state.packages.indexOf(p);
+      state.packages.splice(i, 1);
+      if (state.openId === p.id) state.openId = null;
+      lastRemoved = { p: p, i: i };
+      flash("Removed " + p.label, true);
+      render();
+    }
+  });
+
+  // Undo a removal
+  el.undo.addEventListener("click", function () {
+    if (!lastRemoved) return;
+    var r = lastRemoved;
+    lastRemoved = null;
+    state.packages.splice(Math.min(r.i, state.packages.length), 0, r.p);
+    flash("Restored " + r.p.label);
+    render();
+  });
+
+  // Add a package
+  el.form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var f = new FormData(el.form);
+    var label = String(f.get("label") || "").trim();
+    var tracking = String(f.get("tracking") || "").trim().toUpperCase();
+    var carrier = String(f.get("carrier") || "UPS");
+    if (!label || !tracking) return;
+
+    var bare = tracking.replace(/\s/g, "");
+    var dupe = state.packages.some(function (p) {
+      return p.tracking.replace(/\s/g, "").toUpperCase() === bare;
+    });
+    if (dupe) {
+      flash("That tracking number is already in the list");
+      return;
+    }
+
+    var p = {
+      id: uid(), label: label, carrier: carrier, tracking: tracking,
+      status: "label", eta: "Awaiting scan",
+      events: [{ at: stamp(), text: "Added by you, awaiting carrier scan" }]
+    };
+    state.packages.unshift(p);
+    state.openId = p.id;
+    state.collapsed = false;
+    el.form.reset();
+    flash("Added " + label);
+    render();
+    el.form.querySelector("input[name=label]").focus();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

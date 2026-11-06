@@ -1,0 +1,181 @@
+{
+ "scores": {
+  "A": {
+   "imagery": 5.92,
+   "form": 6.67,
+   "specificity": 7.67,
+   "freshness": 4.58,
+   "resonance": 5.0,
+   "overall": 5.42,
+   "mean_rank": 3.33,
+   "per_run_overall": {
+    "A-r1": 6.33,
+    "A-r2": 4.0,
+    "A-r3": 6.0,
+    "A-r4": 5.33
+   }
+  },
+  "B": {
+   "imagery": 7.75,
+   "form": 9.08,
+   "specificity": 7.42,
+   "freshness": 7.42,
+   "resonance": 7.08,
+   "overall": 7.75,
+   "mean_rank": 1.67,
+   "per_run_overall": {
+    "B-r1": 8.33,
+    "B-r2": 8.33,
+    "B-r3": 8.0,
+    "B-r4": 6.33
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 21,
+  "losses": 1,
+  "ties": 2,
+  "win_rate": 0.92
+ },
+ "functional": {
+  "A-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "fire on frozen air",
+   "words_total": 11,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "A-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "the sky holds its breath.",
+   "words_total": 11,
+   "syllables_per_line": [
+    3,
+    7,
+    5
+   ]
+  },
+  "A-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "mother-of-pearl sky",
+   "words_total": 11,
+   "syllables_per_line": [
+    4,
+    7,
+    5
+   ]
+  },
+  "A-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "dawn the sky holds, brief.",
+   "words_total": 12,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "B-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "burning pearl and rose",
+   "words_total": 16,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "holds mother-of-pearl",
+   "words_total": 13,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "and the smell of snow.",
+   "words_total": 17,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "holds still, wind running",
+   "words_total": 15,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 71341,
+   "mean_seconds": 8.0
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 95349,
+   "mean_seconds": 29.5
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 187177,
+   "ms": 1159322,
+   "tool_uses": 35,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.76,
+ "permutation": {
+  "p": 0.057,
+  "extreme": 4,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Counts 5-7-5 (sun gone from the street / a veil of ice up there still / burning pearl and rose); the street-to-sky cut is strong and nacreous clouds are evoked without being named, though 'veil' and 'pearl' are slightly familiar.",
+  "b1/j1/A-r1": "Counts 5-7-5 (Mother-of-pearl veils / nacreous light at dusk, slow / fire on frozen air); accurately names nacreous clouds and the ice-fire contrast, but mother-of-pearl is the stock phrase and the middle line is padded.",
+  "b1/j1/B-r2": "Counts 5-7-5 (Winter dusk, sun gone / a veil too high for the dark / holds mother-of-pearl); the idea of a cloud too high for the darkness is accurate to polar stratospheric clouds and gives the poem its turn.",
+  "b1/j1/A-r2": "Counts 4-7-5 (Nacreous glow = 4), so the opening line misses the form, and 'the sky holds its breath' is a stock closer.",
+  "b1/j2/B-r2": "Syllables 5-7-5 (Win-ter dusk sun gone / a veil too high for the dark / holds moth-er-of-pearl); the veil too high for the dark accurately evokes nacreous clouds lit after sunset, though the last line is a stock term.",
+  "b1/j2/A-r2": "Syllables 4-7-5 (Na-cre-ous glow = 4), so the first line is short; names nacreous and mother-of-pearl but the sky holds its breath is cliche and the images stay abstract.",
+  "b1/j2/A-r1": "Syllables 5-7-5 (fire may count as 2, making line 3 a 6); fire on frozen air is a strong image, but nacreous light at dusk, slow is clotted and repeats the mother-of-pearl idea.",
+  "b1/j2/B-r1": "Syllables 5-7-5 (sun gone from the street / a veil of ice up there still / burning pearl and rose); street-level vantage, ice crystals and still burning color evoke polar stratospheric clouds without naming them.",
+  "b1/j3/A-r2": "Counts 4-7-5 (Na-cre-ous glow = 4), so line one is short, and 'holds its breath' is stock.",
+  "b1/j3/B-r2": "5-7-5 (Win-ter dusk sun gone / a veil too high for the dark / holds moth-er-of-pearl); the high veil against the dark is a real turn and evokes polar stratospheric clouds accurately.",
+  "b1/j3/B-r1": "5-7-5 (sun gone from the street / a veil of ice up there still / burning pearl and rose); concrete street-to-sky contrast and ice-crystal accuracy, slightly less of a closing turn.",
+  "b1/j3/A-r1": "5-7-5 or 5-7-6 depending on 'fire' (Moth-er-of-pearl veils / na-cre-ous light at dusk slow / fire on fro-zen air); names nacreous and the frozen air but the lines are stacked and the break at 'slow' is awkward.",
+  "b2/j1/B-r3": "Counts 5-7-5 (cloud lens on the ridge / all the wind pours through it still / and the smell of snow); lenticular cloud evoked with a fresh smell-of-snow turn, though 'lens' is unnamed as rare.",
+  "b2/j1/A-r3": "Counts 5-7-5 (na-cre-ous glow burns / in the long dark before dawn / mother-of-pearl sky); accurate polar stratospheric nacreous cloud, but mother-of-pearl is the stock descriptor and the ending just restates.",
+  "b2/j1/B-r4": "Counts 5-7-5 (cold cup on the sill / the lens cloud over the ridge / holds still, wind running); the domestic cup against the still lens cloud is a nice cut, though the link is loose.",
+  "b2/j1/A-r4": "Counts 6-7-5 (moth-er-of-pearl sheets is 6), so form slips; mother-of-pearl and nacreous together are redundant and the last line is vague.",
+  "b2/j2/B-r4": "5-7-5 (Cold cup on the sill=5; the lens cloud over the ridge=7; holds still, wind running=5); the cup on the sill is a surprising cut and the stillness-with-wind paradox is true to lenticulars, though the link between cup and cloud is loose.",
+  "b2/j2/A-r4": "5-7-5 (Mother-of-pearl sheets=5; nacreous light on cold air=7 with nacreous as 3; dawn the sky holds, brief=5); accurate to nacreous clouds but the last line is clumsy and the phrasing is stock.",
+  "b2/j2/A-r3": "5-7-5 (Nacreous glow burns=5; in the long dark before dawn=7; mother-of-pearl sky=5); evocative of polar stratospheric clouds glowing before dawn, but nacreous and mother-of-pearl say the same thing twice.",
+  "b2/j2/B-r3": "5-7-5 (Cloud lens on the ridge=5; all the wind pours through it, still=7; and the smell of snow=5); lenticular is accurately evoked, and the closing smell of snow adds a new sense and a quiet turn.",
+  "b2/j3/A-r4": "Counts 5-7-5 (Mother-of-pearl sheets 5; na-cre-ous light on cold air 7; dawn the sky holds, brief 5); accurate nacreous clouds but stock 'mother-of-pearl' and a slightly muddled last line.",
+  "b2/j3/B-r4": "Counts 5-7-5 (Cold cup on the sill 5; the lens cloud over the ridge 7; holds still, wind running 5); lenticular cloud is evoked but the cup image is disconnected and the ending is cryptic.",
+  "b2/j3/B-r3": "Counts 5-7-5 (Cloud lens on the ridge 5; all the wind pours through it, still 7; and the smell of snow 5); the lenticular cloud holding still while wind pours through it is true and the smell of snow is a fresh turn.",
+  "b2/j3/A-r3": "Counts 5-7-5 (Nacreous glow burns 5; in the long dark before dawn 7; mother-of-pearl sky 5); accurate to polar stratospheric clouds but 'glow burns' is imprecise and the close is stock phrasing."
+ }
+}

@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"dreamlike": 8, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "Blurred halo visibly blooms and fades on the dark ground, with separate in (320ms lift, 700ms glow curve) and out (380ms release, 500ms glow) timings, a clear focus ring, a reduced-motion switch, and a disabled state."},
+"X": {"dreamlike": 6, "practical": 6, "motion": 6, "craft": 7, "overall": 6, "note": "The overshoot lift and drifting veil are pleasant, but the hover animates letter-spacing and background-position and the overflow:hidden clips the aura, so the glow reads mostly as a colour wash."},
+"Y": {"dreamlike": 5, "practical": 5, "motion": 5, "craft": 6, "overall": 5, "note": "The cyan sheen sweep is a nice touch but reads as a flat wash, the white label on the pink Atelier button has weak contrast, and hover animates filter and letter-spacing."},
+"Z": {"dreamlike": 6, "practical": 9, "motion": 7, "craft": 8, "overall": 7, "note": "The most complete system: 3px focus ring, reduced-motion preview, validated waitlist form with live region, and a responsive states table, though the halo is subtler and the bloom curve is a fairly ordinary ease-in-out."}
+},
+"ranking": ["W", "Z", "X", "Y"]}

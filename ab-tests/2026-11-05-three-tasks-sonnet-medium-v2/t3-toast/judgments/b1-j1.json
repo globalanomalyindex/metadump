@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j1","scores":{
+"W":{"compact":8,"collapsible":7,"tracking":8,"dark":7,"usability":8,"craft":7,"overall":7,"note":"Very small pill collapsed and a full timeline with ETA, carrier and number when open, with good ARIA, but dead space under the buttons and an odd wrapped Notify button."},
+"X":{"compact":8,"collapsible":8,"tracking":8,"dark":8,"usability":6,"craft":8,"overall":8,"note":"Compact two-line collapsed toast with progress bar, clean open state with carrier, number, timeline and actions, though it lacks reduced-motion and dismiss is just Hide."},
+"Y":{"compact":6,"collapsible":6,"tracking":8,"dark":7,"usability":6,"craft":5,"overall":6,"note":"Richest tracking with segmented progress and a NOW marker, but the dismiss X collides with the chevron, the timeline is clipped mid-row, and the actions wrap awkwardly."},
+"Z":{"compact":8,"collapsible":6,"tracking":7,"dark":8,"usability":6,"craft":7,"overall":7,"note":"Tight, tidy and readable with a clear ETA and bar, but it ships expanded, has no reduced-motion handling, and its timeline gives little detail."}},
+"ranking":["X","W","Z","Y"]}

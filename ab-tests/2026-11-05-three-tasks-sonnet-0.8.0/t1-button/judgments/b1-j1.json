@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j1","scores":{
+"W":{"dreamlike":3,"practical":9,"motion":6,"craft":7,"overall":5,"note":"Clean, cheap, accessible dark pill with a faint sheen and glow, but the hover is quick and subtle so it reads as polite rather than dreamlike."},
+"X":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Pastel iridescent gradient drifting with a rotating sparkle and soft glow feels ethereal, with legible dark label, focus ring and reduced-motion fallback."},
+"Y":{"dreamlike":4,"practical":9,"motion":7,"craft":7,"overall":6,"note":"Solid, performant button with a light pass and glow arriving on a lingering tail, but visually a conventional purple CTA with limited ethereal quality."},
+"Z":{"dreamlike":9,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Colour-shifting aurora, rising motes and slow overshoot-and-fade exhale are the most dreamlike, though the white resting button has weaker affordance and the 1.4s timings are long."}},
+"ranking":["Z","X","Y","W"]}

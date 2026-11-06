@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen · Join the waitlist</title>
+<style>
+  :root {
+    --ink: #eaf3ff;
+    --ink-dim: #b0c2de;
+    --night: #070b18;
+    --night-2: #0d1630;
+    --moon: 150, 205, 255;      /* cool edge light */
+    --lilac: 176, 160, 255;     /* second, fainter hue in the cloud */
+    --plate: rgba(8, 13, 30, .74);
+
+    /* Hand-written curves, one per job */
+    --settle:  cubic-bezier(.16, .92, .24, 1);      /* fast front, long low tail */
+    --arrive:  cubic-bezier(.45, .1, .25, 1);       /* slow start, late soft landing */
+    --release: cubic-bezier(.3, 0, .15, 1);         /* unhurried exit */
+    --breathe: cubic-bezier(.37, 0, .63, 1);        /* even rise and fall */
+    --press:   cubic-bezier(.2, .8, .3, 1);
+    --bloom:   cubic-bezier(.25, 1.18, .5, 1);      /* tiny overshoot for the success flash */
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    margin: 0; min-height: 100vh;
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(900px 520px at 78% -8%, rgba(120, 140, 255, .20), transparent 60%),
+      radial-gradient(700px 480px at 8% 108%, rgba(90, 190, 255, .14), transparent 60%),
+      linear-gradient(180deg, var(--night-2), var(--night));
+    background-attachment: fixed;
+  }
+  header, main, footer { width: min(1040px, 100% - 32px); margin-inline: auto; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { font-weight: 650; letter-spacing: .04em; display: flex; gap: 10px; align-items: center; }
+  .brand i { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, rgb(var(--moon)) 55%, transparent 72%); box-shadow: 0 0 14px rgba(var(--moon), .8); }
+  nav { display: flex; gap: 22px; font-size: 15px; }
+  nav a { color: var(--ink-dim); text-decoration: none; padding: 10px 2px; transition: color .3s var(--settle); }
+  nav a:hover { color: var(--ink); }
+  a:focus-visible, input:focus-visible, .link:focus-visible { outline: 2px solid #cfe8ff; outline-offset: 3px; border-radius: 6px; }
+
+  main { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 56px 0 72px; }
+  .eyebrow { font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: rgb(var(--moon)); margin: 0 0 14px; }
+  h1 { font-size: clamp(34px, 5.4vw, 58px); line-height: 1.04; margin: 0 0 18px; font-weight: 600; letter-spacing: -.02em; }
+  .lede { color: var(--ink-dim); font-size: 18px; max-width: 46ch; margin: 0 0 30px; }
+
+  form { display: grid; gap: 14px; max-width: 460px; }
+  label.field { display: grid; gap: 6px; font-size: 14px; color: var(--ink-dim); }
+  input[type=email] {
+    font: inherit; color: var(--ink); background: rgba(255,255,255,.05);
+    border: 1px solid rgba(var(--moon), .28); border-radius: 12px; padding: 13px 16px; min-height: 48px;
+    transition: border-color .35s var(--settle), background .35s var(--settle);
+  }
+  input[type=email]::placeholder { color: #8ea2c4; }
+  input[type=email]:hover { border-color: rgba(var(--moon), .5); }
+  input[type=email][aria-invalid=true] { border-color: #ffb4a8; }
+  .msg { min-height: 1.5em; margin: 0; font-size: 14px; color: var(--ink-dim); }
+  .msg.err { color: #ffb4a8; }
+
+  /* ---------- the button ---------- */
+  .dream {
+    --lift: 0px; --glow: .34; --cloud-scale: .94; --rim: 0;
+    position: relative; isolation: isolate; cursor: pointer;
+    display: inline-grid; place-items: center;
+    min-height: 56px; min-width: 220px; padding: 0; border: 0; border-radius: 999px;
+    font: inherit; font-weight: 600; letter-spacing: .01em; color: #fff;
+    background: transparent; -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    justify-self: start;
+  }
+  /* the floating wrapper keeps drift separate from the hover transform */
+  .dream .float { display: grid; place-items: center; position: relative; width: 100%; min-height: inherit; border-radius: inherit;
+    transform: translate3d(0, var(--lift), 0);
+    transition: transform 700ms var(--settle);
+  }
+  /* wide cloud: pre-blurred once, only opacity and transform ever change */
+  .dream .cloud {
+    position: absolute; inset: -14px; border-radius: inherit; z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(60% 90% at 28% 50%, rgba(var(--moon), .85), transparent 70%),
+      radial-gradient(55% 90% at 78% 50%, rgba(var(--lilac), .7), transparent 72%);
+    filter: blur(12px);
+    opacity: var(--glow); transform: scale(var(--cloud-scale));
+    transition: opacity 1300ms var(--arrive), transform 1500ms var(--arrive);
+    will-change: opacity, transform;
+    animation: breathe 6.4s var(--breathe) infinite;
+  }
+  /* tight rim */
+  .dream .rimlight {
+    position: absolute; inset: -2px; border-radius: inherit; z-index: -1; pointer-events: none;
+    background: linear-gradient(115deg, rgba(var(--moon), .95), rgba(var(--lilac), .55) 55%, rgba(var(--moon), .9));
+    -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    padding: 2px;
+    opacity: var(--rim);
+    transition: opacity 900ms var(--arrive) 120ms;
+  }
+  /* translucent glass fill */
+  .dream .glass {
+    position: absolute; inset: 0; border-radius: inherit; z-index: -1; overflow: hidden;
+    background: linear-gradient(180deg, rgba(var(--moon), .22), rgba(var(--moon), .10));
+    border: 1px solid rgba(var(--moon), .42);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
+  }
+  /* light that follows the pointer, inside the glass */
+  .dream .sheen {
+    position: absolute; inset: 0; opacity: 0;
+    background: radial-gradient(120px 70px at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.36), transparent 70%);
+    transition: opacity 800ms var(--arrive);
+  }
+  /* solid plate holds the label at contrast while the glow is at its peak */
+  .dream .plate {
+    position: relative; display: inline-flex; align-items: center; gap: 10px;
+    padding: 9px 26px; border-radius: 999px; background: var(--plate);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06);
+    transition: transform 900ms var(--settle), background-color 600ms var(--settle);
+  }
+  .dream .label { display: inline-block; transition: letter-spacing 1100ms var(--settle); white-space: nowrap; }
+  .dream .arrow { display: inline-block; width: 18px; height: 18px; transition: transform 900ms var(--settle), opacity 500ms var(--settle); opacity: .8; }
+  .dream .spin { display: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); border-top-color: #fff; animation: spin 900ms linear infinite; }
+  .dream .check { display: none; width: 18px; height: 18px; }
+
+  @keyframes breathe { 50% { opacity: calc(var(--glow) * .72); } }
+  @keyframes drift { 0%, 100% { transform: translate3d(0, -3px, 0); } 50% { transform: translate3d(0, -6px, 0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes bloom { 0% { transform: scale(.94); opacity: .3; } 40% { opacity: 1; } 100% { transform: scale(1.12); opacity: var(--glow); } }
+
+  /* hover: only where hover exists, so touch never gets stuck in a hover state */
+  @media (hover: hover) {
+    .dream:hover:not(:disabled) { --glow: .85; --cloud-scale: 1.06; --rim: 1; --lift: -4px; }
+    .dream:hover:not(:disabled) .float { animation: drift 5.2s var(--breathe) 900ms infinite; }
+    .dream:hover:not(:disabled) .sheen { opacity: 1; }
+    .dream:hover:not(:disabled) .label { letter-spacing: .035em; }
+    .dream:hover:not(:disabled) .arrow { transform: translateX(5px); opacity: 1; }
+    .dream:hover:not(:disabled) .plate { transform: scale(1.015); }
+    /* exit is slower than the instant answer, and reverses from wherever it got to */
+    .dream:not(:hover) .cloud { transition-duration: 1000ms, 1100ms; transition-timing-function: var(--release); }
+    .dream:not(:hover) .float { transition-duration: 800ms; transition-timing-function: var(--release); }
+  }
+  /* keyboard focus gets the lit state plus a hard ring that does not depend on the glow */
+  .dream:focus-visible { outline: 2px solid #d9edff; outline-offset: 6px; --glow: .8; --cloud-scale: 1.05; --rim: 1; --lift: -2px; }
+  /* press: lands flat, glow tightens, answers inside 150ms */
+  .dream:active:not(:disabled) { --glow: .55; --cloud-scale: .98; --rim: 1; --lift: 1px; }
+  .dream:active:not(:disabled) .float { animation: none; transition: transform 140ms var(--press); }
+  .dream:active:not(:disabled) .cloud { transition: opacity 140ms var(--press), transform 180ms var(--press); }
+  .dream:active:not(:disabled) .plate { transform: scale(.985); transition-duration: 140ms; }
+
+  /* states */
+  .dream[data-state="loading"] { cursor: progress; --glow: .6; --cloud-scale: 1; --rim: .6; }
+  .dream[data-state="loading"] .arrow { display: none; }
+  .dream[data-state="loading"] .spin { display: inline-block; }
+  .dream[data-state="done"] { --glow: .7; --cloud-scale: 1.04; --rim: 1; }
+  .dream[data-state="done"] .cloud { animation: bloom 1400ms var(--bloom) 1 both, breathe 6.4s var(--breathe) 1400ms infinite; }
+  .dream[data-state="done"] .arrow { display: none; }
+  .dream[data-state="done"] .check { display: inline-block; }
+  .dream[data-state="done"] .glass { background: linear-gradient(180deg, rgba(150, 255, 214, .22), rgba(150, 255, 214, .08)); border-color: rgba(150,255,214,.5); }
+
+  /* secondary link-style control */
+  .link { background: none; border: 0; color: rgb(var(--moon)); font: inherit; padding: 10px 4px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; }
+  .row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+
+  /* right column */
+  aside { background: rgba(255,255,255,.04); border: 1px solid rgba(var(--moon), .18); border-radius: 22px; padding: 28px; backdrop-filter: blur(6px); }
+  .count { font-size: 44px; font-weight: 600; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .count-label { color: var(--ink-dim); font-size: 14px; margin: 6px 0 22px; }
+  ul.recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  ul.recent li { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.07); font-size: 15px; animation: rise 800ms var(--settle) both; }
+  ul.recent li span:last-child { color: var(--ink-dim); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .toggle { display: flex; gap: 10px; align-items: center; margin-top: 22px; font-size: 14px; color: var(--ink-dim); min-height: 44px; }
+  .toggle input { width: 20px; height: 20px; accent-color: #8fc8ff; }
+  footer { padding: 24px 0 48px; color: #8ea2c4; font-size: 13px; }
+
+  /* reduced motion: travel, drift and breath go; colour and glow still answer, quickly */
+  @media (prefers-reduced-motion: reduce) { :root { --calm: 1; } }
+  html[data-calm="1"] .dream .float, html[data-calm="1"] .dream .float { animation: none !important; transform: none; transition: none; }
+  html[data-calm="1"] .dream .cloud { animation: none !important; transform: none; transition: opacity 200ms linear; }
+  html[data-calm="1"] .dream .label { letter-spacing: .01em; transition: none; }
+  html[data-calm="1"] .dream .arrow, html[data-calm="1"] .dream .plate { transform: none !important; }
+  html[data-calm="1"] .dream .rimlight, html[data-calm="1"] .dream .sheen { transition: opacity 200ms linear; }
+  html[data-calm="1"] ul.recent li { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .dream .float, .dream .float { animation: none !important; transform: none !important; transition: none !important; }
+    .dream .cloud { animation: none !important; transform: none !important; transition: opacity 200ms linear !important; }
+    .dream .label, .dream .arrow, .dream .plate { transition: none !important; transform: none !important; letter-spacing: .01em !important; }
+    .dream .rimlight, .dream .sheen { transition: opacity 200ms linear !important; }
+    ul.recent li { animation: none; }
+  }
+
+  @media (max-width: 820px) {
+    main { grid-template-columns: 1fr; gap: 36px; padding-top: 28px; }
+    nav { display: none; }
+    .dream { justify-self: stretch; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i aria-hidden="true"></i> Lumen</div>
+  <nav aria-label="Primary"><a href="#about">About</a><a href="#pricing">Pricing</a><a href="#journal">Journal</a></nav>
+</header>
+
+<main>
+  <section>
+    <p class="eyebrow">Early access · Autumn cohort</p>
+    <h1>Sleep software that dims with you.</h1>
+    <p class="lede">Lumen eases your screens, lights and notifications into night over the last hour of your day. Join the waitlist and we'll send an invite when your cohort opens.</p>
+
+    <form id="form" novalidate>
+      <label class="field" for="email">Email address
+        <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-describedby="msg">
+      </label>
+      <div class="row">
+        <button class="dream" id="cta" type="submit" data-state="idle">
+          <span class="float">
+            <span class="cloud" aria-hidden="true"></span>
+            <span class="rimlight" aria-hidden="true"></span>
+            <span class="glass" aria-hidden="true"><span class="sheen"></span></span>
+            <span class="plate">
+              <span class="label" id="cta-label">Join the waitlist</span>
+              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              <span class="spin" aria-hidden="true"></span>
+              <svg class="check" viewBox="0 0 24 24" fill="none" stroke="#9ff0cf" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </span>
+          </span>
+        </button>
+        <button class="link" id="undo" type="button" hidden>Not me, start over</button>
+      </div>
+      <p class="msg" id="msg" role="status" aria-live="polite">No spam. One invite, one reminder.</p>
+    </form>
+  </section>
+
+  <aside aria-label="Waitlist status">
+    <div class="count" id="count">2,418</div>
+    <p class="count-label">people waiting for the autumn cohort</p>
+    <ul class="recent" id="recent">
+      <li><span>Mara T.</span><span>2 min ago</span></li>
+      <li><span>Jonas K.</span><span>9 min ago</span></li>
+      <li><span>Priya S.</span><span>21 min ago</span></li>
+    </ul>
+    <label class="toggle"><input type="checkbox" id="calm"> Calm mode: stop the drifting and breathing</label>
+  </aside>
+</main>
+<footer>© 2026 Lumen Labs. Shown with sample content.</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('form'), email = document.getElementById('email');
+  var cta = document.getElementById('cta'), labelEl = document.getElementById('cta-label');
+  var msg = document.getElementById('msg'), undo = document.getElementById('undo');
+  var countEl = document.getElementById('count'), recent = document.getElementById('recent');
+  var calm = document.getElementById('calm');
+  var count = 2418, timer = null, joined = null;
+
+  function fmt(n) { return n.toLocaleString('en-US'); }
+  function say(text, err) { msg.textContent = text; msg.className = 'msg' + (err ? ' err' : ''); }
+  function setState(s, text) { cta.dataset.state = s; labelEl.textContent = text; cta.setAttribute('aria-busy', s === 'loading'); }
+
+  // Calm mode: honours the OS setting, and the user can also switch it here
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  try { var saved = localStorage.getItem('lumen-calm'); if (saved !== null) calm.checked = saved === '1'; else calm.checked = mq.matches; } catch (e) { calm.checked = mq.matches; }
+  function applyCalm() {
+    document.documentElement.dataset.calm = calm.checked ? '1' : '0';
+    try { localStorage.setItem('lumen-calm', calm.checked ? '1' : '0'); } catch (e) {}
+  }
+  calm.addEventListener('change', applyCalm); applyCalm();
+
+  // Pointer light inside the glass (only while hovering with a mouse or pen)
+  var raf = 0;
+  cta.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') return;
+    var r = cta.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function () { cta.style.setProperty('--mx', x + 'px'); cta.style.setProperty('--my', y + 'px'); });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (cta.dataset.state !== 'idle') return;
+    var v = email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+      email.setAttribute('aria-invalid', 'true'); say('That email looks incomplete. Try name@domain.com.', true); email.focus(); return;
+    }
+    email.removeAttribute('aria-invalid');
+    setState('loading', 'Saving your place'); say('Saving your place…');
+    cta.setAttribute('aria-disabled', 'true');
+    timer = setTimeout(function () {
+      joined = v; count += 1; countEl.textContent = fmt(count);
+      var li = document.createElement('li'); li.innerHTML = '<span></span><span>just now</span>';
+      li.firstChild.textContent = v.split('@')[0].slice(0, 14);
+      recent.insertBefore(li, recent.firstChild); if (recent.children.length > 4) recent.removeChild(recent.lastChild);
+      setState('done', "You're on the list");
+      cta.removeAttribute('aria-disabled');
+      say('Done. Invite goes to ' + v + ' when your cohort opens.');
+      undo.hidden = false; email.readOnly = true;
+    }, 1400);
+  });
+
+  // keep a second click during loading or after success from re-submitting
+  cta.addEventListener('click', function (e) { if (cta.dataset.state !== 'idle') e.preventDefault(); });
+
+  undo.addEventListener('click', function () {
+    clearTimeout(timer);
+    if (joined) { count -= 1; countEl.textContent = fmt(count); if (recent.firstChild) recent.removeChild(recent.firstChild); }
+    joined = null; email.readOnly = false; email.value = ''; undo.hidden = true;
+    setState('idle', 'Join the waitlist'); say('No spam. One invite, one reminder.'); email.focus();
+  });
+})();
+</script>
+</body>
+</html>

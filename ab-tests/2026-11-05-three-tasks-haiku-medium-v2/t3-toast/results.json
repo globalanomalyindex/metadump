@@ -1,0 +1,199 @@
+{
+ "scores": {
+  "A": {
+   "compact": 5.75,
+   "collapsible": 5.5,
+   "tracking": 7.83,
+   "dark": 8.0,
+   "usability": 6.42,
+   "craft": 6.42,
+   "overall": 6.08,
+   "mean_rank": 3.42,
+   "per_run_overall": {
+    "A-r1": 6.67,
+    "A-r2": 6.0,
+    "A-r3": 5.67,
+    "A-r4": 6.0
+   }
+  },
+  "B": {
+   "compact": 8.08,
+   "collapsible": 8.75,
+   "tracking": 7.75,
+   "dark": 8.0,
+   "usability": 8.17,
+   "craft": 8.25,
+   "overall": 8.08,
+   "mean_rank": 1.58,
+   "per_run_overall": {
+    "B-r1": 7.33,
+    "B-r2": 8.67,
+    "B-r3": 8.67,
+    "B-r4": 7.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 21,
+  "losses": 0,
+  "ties": 3,
+  "win_rate": 0.94
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 38,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 458,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 491,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 36,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 462,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 0,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 32,
+   "surface_luminance": 0.004,
+   "dark_surface": true,
+   "expanded_height_px": 478,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 54,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 340,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 54,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 383,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 54,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 399,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 46,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 315,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 88836,
+   "mean_seconds": 65.2
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 152131,
+   "mean_seconds": 174.2
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 216776,
+   "ms": 1425519,
+   "tool_uses": 49,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.76,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Smooth grid-row expand with a clear chevron and aria-expanded, a five-step timeline with an expected window, and a thorough exception flow, but the toast never shows the carrier or tracking number and the open panel overlaps the demo hint on mobile.",
+  "b1/j1/A-r1": "The richest tracker (carrier, masked tracking number, ETA, progress bar, scan history, next-scan action, add form with validation), but the open panel is tall, toggling is an instant display swap with no transition, and the summary is not in a live region.",
+  "b1/j1/B-r2": "A tight 52px row that opens into a well-spaced panel with steps, expected windows, carrier and tracking number, an exception block, a live region, Escape and focus return, and a smooth transition with reduced-motion handling.",
+  "b1/j1/A-r2": "The collapse works and is labelled, but the toast opens by default so it has a large resting footprint, collapse is an instant hide, the badge's aria-label on a plain span is weak, and no clear next step is offered.",
+  "b1/j2/B-r2": "Compact 52px row that expands through an animated grid transition into a clear step rail with times, expected windows, carrier and tracking number, with exception actions and proper aria-expanded, inert panel and live region.",
+  "b1/j2/A-r2": "Starts fully expanded with a multi-package list and add form, so it is not compact at rest, and the collapse uses the hidden attribute so it snaps with no transition; the tracking detail itself is strong.",
+  "b1/j2/A-r1": "Starts as a one-line summary with a useful count, and the expanded multi-package list has status tags, progress bars and ETAs, but the panel appears and disappears instantly, the 10 to 11px text is dense, and the repeated Next scan and Remove buttons lack package context for screen readers.",
+  "b1/j2/B-r1": "The most compact and cleanly animated single-parcel toast with a pulsing status dot and a keep-open control, but the open panel never shows the carrier or tracking number and its footer note stays on the stale Ready text.",
+  "b1/j3/A-r2": "Full-featured tracker with copy, mark delivered and an add form, but the open state is very tall at rest and the panel snaps open and shut with no height transition.",
+  "b1/j3/B-r2": "A tight 52px collapsed row and a smooth grid-row expand with an inert panel, Escape-to-collapse, live status and an exception flow with clear next steps.",
+  "b1/j3/B-r1": "Polished collapse and exception block, but the toast never shows the package name, carrier or tracking number, so its tracking job is thin.",
+  "b1/j3/A-r1": "A compact multi-package bar, but the panel pops open with no transition and the tracking number is masked with no copy action.",
+  "b2/j1/B-r3": "A single-row toast that expands into a clean timeline with expected dates, carrier and tracking line, Show history and Dismiss; the whole row is the toggle, the chevron rotates, aria-expanded and aria-live are wired, and reduced motion is respected.",
+  "b2/j1/A-r3": "The richest tracker (filters, per-package progress, carrier, tracking number, stage labels, Next scan, Remove, Add form), but it opens at rest as a large panel and the tiny chevron glyphs are hard to see and hit.",
+  "b2/j1/B-r4": "The smallest footprint and a tidy timeline with expected ETA and carrier, but it tracks only one parcel, has no next-step action, and the small grey labels and open panel covering the list on mobile weaken it.",
+  "b2/j1/A-r4": "A compact pill that opens to a multi-package list with ETA, overdue flags, carrier, progress, next step and mark delivered, plus a labeled add form; the open panel is taller and denser than it needs to be.",
+  "b2/j2/B-r4": "A 280px single-row toggle with a clean timeline panel, aria-expanded, a labelled region, Escape that returns focus, and a sticky exception with next actions; the open state is smooth but the collapsed row shows no tracking number.",
+  "b2/j2/A-r4": "The collapsed pill is tidy, but the open panel is large (about 316 by 440) and simply appears with no transition, and it has no timeline, only a progress bar, chip and Next step button.",
+  "b2/j2/A-r3": "The richest tracking content (filters, 5-step timeline, ETA, tracking number, next scan) on a good dark surface, but every click re-renders the whole innerHTML so keyboard focus is lost, the live region wraps the whole panel, and it ships open so the at-rest state is not collapsed.",
+  "b2/j2/B-r3": "A 52px status row with an unseen count, a smooth ease-out rail timeline with expected windows, an exception that sits on its step, history, a live region and focus restore on Escape and Dismiss, and auto-collapse to a pill.",
+  "b2/j3/A-r4": "A tidy 32px pill collapses to a 316px-wide, roughly 440px-tall package list that opens and closes instantly with no transition, and it tracks status, ETA, carrier and last four digits but has no per-step timeline and its Next step buttons are not labelled with the package name.",
+  "b2/j3/B-r4": "A compact top-right pill opens to a clean five-step timeline with dates, expected windows, carrier and tracking number, animated with a grid-rows transition, labelled controls, Escape returning focus, and reduced-motion handling, though it shows only one parcel and has no in-panel actions outside an exception.",
+  "b2/j3/B-r3": "The toast opens smoothly to a five-step timeline with expected tags, exception actions, history and Dismiss, auto-collapses to a restorable pill, and keeps a polite live region and Escape-to-focus-return, making it the most complete and robust of the four.",
+  "b2/j3/A-r3": "The teal-on-dark multi-package panel with filters and a per-package track is the most feature-rich, but it is the largest when open, uses a tiny text chevron and no open transition, and re-renders the whole toast on every click so keyboard focus is lost after each interaction."
+ }
+}

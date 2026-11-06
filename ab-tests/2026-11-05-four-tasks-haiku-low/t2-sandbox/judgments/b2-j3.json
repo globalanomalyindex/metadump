@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"physics": 5, "interaction": 6, "stability": 7, "clarity": 6, "craft": 4, "overall": 5, "note": "Axis-aligned boxes only, so nothing rotates or tips and stacks look flat; the throw just keeps the lagging chase velocity and the HUD text is the only guidance."},
+"X": {"physics": 8, "interaction": 8, "stability": 7, "clarity": 7, "craft": 8, "overall": 8, "note": "Rotated SAT boxes with sequential impulses, substeps, a spring grab and release velocity give believable tipping piles and throws, with a clean dark grid look and a clear hint, though the mobile hint text clips into a box."},
+"Y": {"physics": 8, "interaction": 8, "stability": 7, "clarity": 7, "craft": 7, "overall": 7, "note": "Same solid rotated-box approach with contact manifolds and a spring grab, settling into convincing stacks, but the only control is Reset and the visuals are plainer."},
+"Z": {"physics": 6, "interaction": 7, "stability": 6, "clarity": 8, "craft": 6, "overall": 6, "note": "Direct pointer tracking and clear Add box, Gravity and Reset controls, but upright AABB-only physics and a dragged body that shoves neighbours hard make the piles less believable."}
+},
+"ranking": ["X", "Y", "Z", "W"]}

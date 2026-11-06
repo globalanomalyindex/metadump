@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Box Sandbox</title>
+<style>
+:root{color-scheme:light dark;--bg:#f4f1ea;--ink:#222;--btn:#ffffff;--btnb:#9a958a}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#1b1d22;--ink:#eee;--btn:#2a2d35;--btnb:#555}
+}
+:root[data-theme="dark"]{--bg:#1b1d22;--ink:#eee;--btn:#2a2d35;--btnb:#555}
+html,body{margin:0;height:100%;overflow:hidden;background:#f4f1ea;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,sans-serif}
+canvas{display:block;position:fixed;inset:0;width:100vw;height:100vh;touch-action:none;cursor:default}
+#bar{position:fixed;top:12px;left:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:2}
+button{font:inherit;padding:6px 12px;border:1px solid var(--btnb);background:var(--btn);color:var(--ink);border-radius:6px;cursor:pointer}
+button:hover{filter:brightness(0.97)}
+#count{opacity:.7;padding:0 4px;font-variant-numeric:tabular-nums}
+#hint{position:fixed;bottom:12px;left:12px;opacity:.6;font-size:12px;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div id="bar">
+  <button id="add" type="button">Add box</button>
+  <button id="reset" type="button">Reset</button>
+  <button id="clear" type="button">Clear</button>
+  <span id="count">0 boxes</span>
+</div>
+<div id="hint">Drag a box and let go to throw it. Boxes collide and stack.</div>
+<script>
+(() => {
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const countEl = document.getElementById('count');
+
+  const GRAVITY = 1400;      // px/s^2
+  const RESTITUTION = 0.25;  // bounciness
+  const MU = 0.5;            // friction coefficient
+  const WALL_FRICTION = 0.97;
+  const ITER = 4;            // solver iterations per fixed step
+  const FIXED = 1 / 240;     // fixed physics step (s)
+  const MAX_BOXES = 60;
+  const DRAG_RATE = 40;      // how fast a dragged box follows the pointer
+  const MAX_THROW = 3000;    // px/s
+
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  let dpr = 1;
+  let boxes = [];
+  let drag = null;           // {box, ox, oy, tx, ty, hist}
+  let hue = 0;
+
+  function resize() {
+    dpr = Math.max(1, window.devicePixelRatio || 1);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const b of boxes) clampBox(b);
+  }
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  function clampBox(b) {
+    const hw = b.w / 2, hh = b.h / 2;
+    b.x = clamp(b.x, hw, Math.max(hw, W - hw));
+    b.y = clamp(b.y, hh, Math.max(hh, H - hh));
+  }
+
+  function makeBox(x, y) {
+    const w = 40 + Math.random() * 60;
+    const h = 40 + Math.random() * 60;
+    hue = (hue + 47) % 360;
+    return {
+      x, y, w, h, vx: 0, vy: 0, hue,
+      invMass: 1 / ((w * h) / 1000)
+    };
+  }
+
+  function inv(b) {
+    return drag && drag.box === b ? 0 : b.invMass;
+  }
+
+  // Floor, ceiling and side walls.
+  function collideWalls(b) {
+    const hw = b.w / 2, hh = b.h / 2;
+    if (b.y + hh > H) {
+      b.y = H - hh;
+      if (b.vy > 0) b.vy = -b.vy * RESTITUTION;
+      b.vx *= WALL_FRICTION;
+    }
+    if (b.y - hh < 0) {
+      b.y = hh;
+      if (b.vy < 0) b.vy = -b.vy * RESTITUTION;
+    }
+    if (b.x - hw < 0) {
+      b.x = hw;
+      if (b.vx < 0) b.vx = -b.vx * RESTITUTION;
+    }
+    if (b.x + hw > W) {
+      b.x = W - hw;
+      if (b.vx > 0) b.vx = -b.vx * RESTITUTION;
+    }
+  }
+
+  // Axis-aligned box-box contact: separate along the minimum-penetration
+  // axis, apply a restitution impulse and a Coulomb-limited friction impulse.
+  function collidePair(a, b) {
+    const ia = inv(a), ib = inv(b);
+    const tot = ia + ib;
+    if (tot === 0) return;
+
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const ox = (a.w + b.w) / 2 - Math.abs(dx);
+    const oy = (a.h + b.h) / 2 - Math.abs(dy);
+    if (ox <= 0 || oy <= 0) return;
+
+    let nx = 0, ny = 0, pen;
+    if (ox < oy) {
+      nx = dx < 0 ? -1 : 1;
+      pen = ox;
+    } else {
+      ny = dy < 0 ? -1 : 1;
+      pen = oy;
+    }
+
+    a.x -= nx * pen * (ia / tot);
+    a.y -= ny * pen * (ia / tot);
+    b.x += nx * pen * (ib / tot);
+    b.y += ny * pen * (ib / tot);
+
+    let jn = 0;
+    const rvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    if (rvn < 0) {
+      jn = -(1 + RESTITUTION) * rvn / tot;
+      a.vx -= jn * ia * nx;
+      a.vy -= jn * ia * ny;
+      b.vx += jn * ib * nx;
+      b.vy += jn * ib * ny;
+    }
+
+    const tx = -ny, ty = nx;
+    const rvt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
+    const limit = MU * jn;
+    const jt = clamp(-rvt / tot, -limit, limit);
+    a.vx -= jt * ia * tx;
+    a.vy -= jt * ia * ty;
+    b.vx += jt * ib * tx;
+    b.vy += jt * ib * ty;
+  }
+
+  function step(dt) {
+    // Dragged box follows the pointer and acts as an immovable body.
+    if (drag) {
+      const b = drag.box;
+      const k = 1 - Math.exp(-DRAG_RATE * dt);
+      const nx = b.x + (drag.tx - b.x) * k;
+      const ny = b.y + (drag.ty - b.y) * k;
+      b.vx = (nx - b.x) / dt;
+      b.vy = (ny - b.y) / dt;
+      b.x = nx;
+      b.y = ny;
+    }
+
+    for (const b of boxes) {
+      if (drag && drag.box === b) continue;
+      b.vy += GRAVITY * dt;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+    }
+
+    for (let it = 0; it < ITER; it++) {
+      for (let i = 0; i < boxes.length; i++) {
+        collideWalls(boxes[i]);
+        for (let j = i + 1; j < boxes.length; j++) {
+          collidePair(boxes[i], boxes[j]);
+        }
+      }
+    }
+
+    for (const b of boxes) clampBox(b);
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(x, y, w, h, r);
+    } else {
+      ctx.rect(x, y, w, h);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Floor line.
+    ctx.strokeStyle = 'rgba(128,128,128,0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, H - 1);
+    ctx.lineTo(W, H - 1);
+    ctx.stroke();
+
+    for (const b of boxes) {
+      const isDrag = drag && drag.box === b;
+      const x = b.x - b.w / 2, y = b.y - b.h / 2;
+      roundRect(x, y, b.w, b.h, 6);
+      ctx.fillStyle = `hsl(${b.hue} 65% ${isDrag ? 62 : 55}%)`;
+      ctx.fill();
+      ctx.lineWidth = isDrag ? 3 : 1.5;
+      ctx.strokeStyle = isDrag ? '#ffffff' : 'rgba(0,0,0,0.35)';
+      ctx.stroke();
+    }
+
+    countEl.textContent = boxes.length + (boxes.length === 1 ? ' box' : ' boxes');
+  }
+
+  function pointerPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function boxAt(p) {
+    for (let i = boxes.length - 1; i >= 0; i--) {
+      const b = boxes[i];
+      if (Math.abs(p.x - b.x) <= b.w / 2 && Math.abs(p.y - b.y) <= b.h / 2) return i;
+    }
+    return -1;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const p = pointerPos(e);
+    const i = boxAt(p);
+    if (i < 0) return;
+    const b = boxes[i];
+    // Bring the grabbed box to the front of the draw and solve order.
+    boxes.splice(i, 1);
+    boxes.push(b);
+    drag = {
+      box: b,
+      ox: p.x - b.x,
+      oy: p.y - b.y,
+      tx: b.x,
+      ty: b.y,
+      hist: [{ x: b.x, y: b.y, t: performance.now() }]
+    };
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = 'grabbing';
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    const p = pointerPos(e);
+    if (!drag) {
+      canvas.style.cursor = boxAt(p) >= 0 ? 'grab' : 'default';
+      return;
+    }
+    const b = drag.box;
+    const hw = b.w / 2, hh = b.h / 2;
+    drag.tx = clamp(p.x - drag.ox, hw, Math.max(hw, W - hw));
+    drag.ty = clamp(p.y - drag.oy, hh, Math.max(hh, H - hh));
+    const now = performance.now();
+    drag.hist.push({ x: drag.tx, y: drag.ty, t: now });
+    while (drag.hist.length > 2 && now - drag.hist[0].t > 100) drag.hist.shift();
+  });
+
+  function endDrag(e) {
+    if (!drag) return;
+    const b = drag.box;
+    const now = performance.now();
+    const first = drag.hist[0];
+    const last = drag.hist[drag.hist.length - 1];
+    const dt = (now - first.t) / 1000;
+    // Throw: average velocity over the recent window, but only if the pointer
+    // was still moving when it was released.
+    if (dt > 0 && now - last.t < 80) {
+      b.vx = clamp((last.x - first.x) / dt, -MAX_THROW, MAX_THROW);
+      b.vy = clamp((last.y - first.y) / dt, -MAX_THROW, MAX_THROW);
+    } else {
+      b.vx = 0;
+      b.vy = 0;
+    }
+    drag = null;
+    canvas.style.cursor = 'default';
+    if (e && e.pointerId !== undefined && canvas.hasPointerCapture(e.pointerId)) {
+      canvas.releasePointerCapture(e.pointerId);
+    }
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  function spawn(x, y) {
+    if (boxes.length >= MAX_BOXES) return;
+    const b = makeBox(x, y);
+    clampBox(b);
+    boxes.push(b);
+  }
+
+  function reset() {
+    drag = null;
+    canvas.style.cursor = 'default';
+    boxes = [];
+    for (let i = 0; i < 8; i++) {
+      const x = W * (0.2 + 0.6 * Math.random());
+      const y = 40 + Math.random() * Math.min(H * 0.4, 300);
+      spawn(x, y);
+    }
+  }
+
+  document.getElementById('add').addEventListener('click', () => {
+    spawn(W * (0.2 + 0.6 * Math.random()), 40);
+  });
+  document.getElementById('reset').addEventListener('click', reset);
+  document.getElementById('clear').addEventListener('click', () => {
+    drag = null;
+    canvas.style.cursor = 'default';
+    boxes = [];
+  });
+
+  window.addEventListener('resize', resize);
+
+  // Public test hook: box centers and sizes in CSS pixels.
+  window.boxes = () => boxes.map((b) => ({ x: b.x, y: b.y, w: b.w, h: b.h }));
+
+  resize();
+  reset();
+
+  let last = performance.now();
+  let acc = 0;
+  function frame(now) {
+    const frameDt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    acc += frameDt;
+    while (acc >= FIXED) {
+      step(FIXED);
+      acc -= FIXED;
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

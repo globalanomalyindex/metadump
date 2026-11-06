@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j3","scores":{
+"W":{"dreamlike":8,"practical":8,"motion":8,"craft":8,"overall":8,"note":"Three distinct beziers with long 1-2s blurred aura, drifting halo and arrow reveal on a dark cohesive page, with focus ring and reduced-motion handled; slightly heavy with animated blur layers."},
+"X":{"dreamlike":7,"practical":8,"motion":7,"craft":8,"overall":7,"note":"Glassy button with lingering pre-blurred glow (opacity/transform only) and good focus and reduced-motion, but the fast 190ms face response makes the effect read as a glow-up more than ethereal."},
+"Y":{"dreamlike":5,"practical":8,"motion":6,"craft":6,"overall":5,"note":"Technically careful (pre-blurred glow, settle bezier, fine-pointer gating) but the subtle blue glow on a flat lavender page is modest and the secondary buttons look cluttered."},
+"Z":{"dreamlike":7,"practical":7,"motion":7,"craft":7,"overall":7,"note":"Pastel gradient wash with overshoot and spinning aura feels airy and the full-width button is clear on phone, but the label washes out mid-hover and transition:all plus a light page are less disciplined."}},
+"ranking":["W","X","Z","Y"]}

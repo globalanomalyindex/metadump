@@ -1,0 +1,32 @@
+{
+ "tasks": [
+  "t1-button",
+  "t2-haiku",
+  "t3-toast"
+ ],
+ "per_task": {
+  "t1-button": {
+   "A_mean": 6.5,
+   "B_mean": 8.25,
+   "diff": 1.75
+  },
+  "t2-haiku": {
+   "A_mean": 5.08,
+   "B_mean": 8.0,
+   "diff": 2.92
+  },
+  "t3-toast": {
+   "A_mean": 6.83,
+   "B_mean": 7.5,
+   "diff": 0.67
+  }
+ },
+ "pooled_mean_diff": 1.778,
+ "p_two_sided": 0.0002,
+ "p_one_sided_B_better": 0.0001,
+ "splits": 343000,
+ "pooled_wins": 57,
+ "pooled_losses": 8,
+ "pooled_ties": 7,
+ "pooled_win_rate": 0.84
+}

@@ -1,0 +1,47 @@
+{
+ "arrow": {
+  "w": 28.0,
+  "h": 40.0,
+  "hotx": 5.0,
+  "hoty": 5.0,
+  "blur": 2.0,
+  "shadow": [
+   0.0,
+   0.0,
+   0.0,
+   0.45
+  ],
+  "shadowy": -1.0,
+  "source": "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/contextualmenu/cursor.pdf"
+ },
+ "pointinghand": {
+  "w": 32.0,
+  "h": 32.0,
+  "hotx": 13.0,
+  "hoty": 8.0,
+  "blur": 2.0,
+  "shadow": [
+   0.0,
+   0.0,
+   0.0,
+   0.45
+  ],
+  "shadowy": -1.0,
+  "source": "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/pointinghand/cursor.pdf"
+ },
+ "ibeam": {
+  "w": 23.0,
+  "h": 22.0,
+  "hotx": 12.0,
+  "hoty": 11.0,
+  "blur": 0.0,
+  "shadow": [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "shadowy": 0.0,
+  "source": "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/ibeamhorizontal/cursor.pdf"
+ }
+}

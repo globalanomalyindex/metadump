@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j3",
+  "scores": {
+    "W": {"imagery": 6, "specificity": 7, "question": 5, "freshness": 4, "resonance": 5, "overall": 5, "note": "Names four real rare clouds, but the lines lean on stock phrasing ('without a fuss', 'rare and bright') and the closing question is a generic appended prompt."},
+    "X": {"imagery": 9, "specificity": 9, "question": 8, "freshness": 8, "resonance": 8, "overall": 9, "note": "Accurate polar nacreous detail (fifteen miles up, lit after sunset, pearl-rose-green edge) with an opening line that avoids the expected cloud picture, and the closing question grows from the no-one-looking image."},
+    "Y": {"imagery": 8, "specificity": 8, "question": 9, "freshness": 8, "resonance": 8, "overall": 8, "note": "Tight, concrete, and true to nacreous fading from the rim first, and the final question 'Which band went out last?' turns the observation back on the reader with economy."},
+    "Z": {"imagery": 5, "specificity": 5, "question": 5, "freshness": 3, "resonance": 4, "overall": 4, "note": "Rhymed quatrains lean on abstractions ('winter's hush', 'faint and clean') and a 'fire-bright halo' that is not a cloud phenomenon, and the final question is convoluted."}
+  },
+  "ranking": ["X", "Y", "W", "Z"]
+}

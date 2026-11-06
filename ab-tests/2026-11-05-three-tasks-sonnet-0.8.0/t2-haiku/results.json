@@ -1,0 +1,181 @@
+{
+ "scores": {
+  "A": {
+   "imagery": 5.83,
+   "form": 6.58,
+   "specificity": 7.83,
+   "freshness": 4.58,
+   "resonance": 5.5,
+   "overall": 5.25,
+   "mean_rank": 3.17,
+   "per_run_overall": {
+    "A-r1": 4.33,
+    "A-r2": 5.33,
+    "A-r3": 4.33,
+    "A-r4": 7.0
+   }
+  },
+  "B": {
+   "imagery": 7.83,
+   "form": 9.0,
+   "specificity": 7.25,
+   "freshness": 7.42,
+   "resonance": 7.0,
+   "overall": 7.5,
+   "mean_rank": 1.83,
+   "per_run_overall": {
+    "B-r1": 8.67,
+    "B-r2": 6.67,
+    "B-r3": 8.0,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 20,
+  "losses": 2,
+  "ties": 2,
+  "win_rate": 0.88
+ },
+ "functional": {
+  "A-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "long after the sun.",
+   "words_total": 12,
+   "syllables_per_line": [
+    4,
+    6,
+    5
+   ]
+  },
+  "A-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "long after sunset",
+   "words_total": 10,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "A-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "ice dreams in the dark.",
+   "words_total": 12,
+   "syllables_per_line": [
+    6,
+    6,
+    5
+   ]
+  },
+  "A-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "long after it sets",
+   "words_total": 11,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "B-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "green, then pink, then gone",
+   "words_total": 17,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "over creaking ice",
+   "words_total": 15,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "the lake ice holds it",
+   "words_total": 14,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "ice cracks underfoot",
+   "words_total": 16,
+   "syllables_per_line": [
+    5,
+    9,
+    5
+   ]
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 71542,
+   "mean_seconds": 6.2
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 87373,
+   "mean_seconds": 17.3
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 213673,
+   "ms": 1585760,
+   "tool_uses": 35,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.76,
+ "permutation": {
+  "p": 0.086,
+  "extreme": 6,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Counts 5-7-5 (Sun be-low the ridge / a lens cloud's edge still holds pearl / green then pink then gone); the colour sequence and fading cut land, though lens cloud and pearl colours blur two cloud types.",
+  "b1/j1/A-r1": "Counts 4-7-5 (Pearl-lit they glow / na-cre-ous clouds hold the dusk / long after the sun), so the first line is short; accurately names nacreous clouds and has a nice dusk-holding idea.",
+  "b1/j1/B-r2": "Counts 5-7-5 (Pearl a-long one edge / the sun gone the cloud holds on / o-ver creak-ing ice); the creaking ice grounds a polar nacreous scene with a surprising sound image, though the cloud is only implied.",
+  "b1/j1/A-r2": "Counts 5-7-4 (Moth-er of pearl sky / na-cre-ous clouds hold the dusk / long af-ter sun-set), ending a syllable short; mother-of-pearl is stock and it is mostly a weaker twin of X.",
+  "b1/j2/B-r2": "5-7-5 (Pearl a-long one edge=5; the sun gone the cloud holds on=7; o-ver creak-ing ice=5) but the cloud is never identified as rare and the ice is a loose add-on.",
+  "b1/j2/A-r2": "5-7-5 (Moth-er-of-pearl sky=5; na-cre-ous clouds hold the dusk=7; long af-ter sun-set=5), names nacreous clouds accurately but 'hold the dusk' and the mother-of-pearl label are stock.",
+  "b1/j2/A-r1": "Counts 4-7-5 (Pearl-lit they glow=4), so the first line misses the form, and it largely repeats X's middle line.",
+  "b1/j2/B-r1": "5-7-5 (Sun be-low the ridge=5; a lens cloud's edge still holds pearl=7; green then pink then gone=5), a lenticular cloud with iridescent colour shifts and a fading turn in the last line.",
+  "b1/j3/A-r2": "Mo-ther-of-pearl sky 5, na-cre-ous clouds hold the dusk 7, long af-ter sun-set 5; clean, accurate nacreous clouds but the image is stock-ish.",
+  "b1/j3/B-r2": "Pearl a-long one edge 5, the sun gone the cloud holds on 7, o-ver creak-ing ice 5; fresh creaking-ice sound and a turn, though the cloud type is only implied.",
+  "b1/j3/B-r1": "Sun be-low the ridge 5, a lens cloud's edge still holds pearl 7, green then pink then gone 5; lenticular iridescence colors are accurate and the fading sequence lands.",
+  "b1/j3/A-r1": "Pearl-lit they glow 4, nacreous clouds hold the dusk 7, long af-ter the sun 5; first line is a syllable short and the text is near-duplicate of W's.",
+  "b2/j1/B-r3": "5-7-5 (Win-ter dusk sun gone; moth-er-of-pearl on thin cloud; the lake ice holds it), nacreous glow at winter dusk caught in lake ice is a quiet, earned turn though 'thin cloud' is a bit vague.",
+  "b2/j1/A-r3": "Line 1 is 6 syllables (pearl-lit moth-er-of-pearl) so 6-7-5, redundant 'pearl' phrasing, and 'ice dreams in the dark' is stock-poetic.",
+  "b2/j1/B-r4": "5-7-5 (Lens cloud on the ridge; the whole gale runs through its shape; ice cracks underfoot), accurate lenticular standing-wave insight but the final line's cut feels abrupt and loosely connected.",
+  "b2/j1/A-r4": "5-7-5 (Moth-er-of-pearl sky; na-cre-ous clouds hold the sun; long af-ter it sets), accurate and clean but fairly plain with 'mother-of-pearl' a stock phrase.",
+  "b2/j2/B-r4": "5-7-5 (Lens cloud on the ridge=5; the whole gale runs through its shape=7; ice cracks underfoot=5); lenticular cloud is accurate and the stillness-in-wind idea is good, but the ice line is disconnected and 'rare' is only implied.",
+  "b2/j2/A-r4": "5-7-5 (Mother-of-pearl sky=5; nacreous clouds hold the sun=7; long after it sets=5); names nacreous clouds and their real after-sunset glow, with a clean turn in the last line, though 'mother-of-pearl' is a stock descriptor.",
+  "b2/j2/A-r3": "6-7-5 (Pearl-lit mother-of-pearl=6; nacreous clouds blaze at dusk=7; ice dreams in the dark=5), so line one is long; 'pearl-lit mother-of-pearl' is redundant and 'ice dreams' is vague.",
+  "b2/j2/B-r3": "5-7-5 (Winter dusk, sun gone=5; mother-of-pearl on thin cloud=7; the lake ice holds it=5); the lake ice reflecting nacreous colour is a fresh, seen image, though the cloud is evoked rather than named.",
+  "b2/j3/A-r4": "Counts 5-7-5 (Moth-er-of-pearl sky=5; na-cre-ous clouds hold the sun=7; long after it sets=5); nacreous clouds holding light after sunset is accurate and the last line turns well, though 'mother-of-pearl' is a stock phrase.",
+  "b2/j3/B-r4": "Counts 5-7-5 (Lens cloud on the ridge=5; the whole gale runs through its shape=7; ice cracks underfoot=5); lenticular wind-shape insight is fresh, but the ice-underfoot ending jumps away and clouds are not ice cracking.",
+  "b2/j3/B-r3": "Counts 5-7-5 (Winter dusk, sun gone=5; mother-of-pearl on thin cloud=7; the lake ice holds it=5); the lake ice reflecting the nacreous cloud gives a coherent seen scene and a quiet turn.",
+  "b2/j3/A-r3": "Counts 6-7-5 (Pearl-lit mother-of-pearl=6, a miss); repetitive pearl/mother-of-pearl and vague 'ice dreams in the dark' feel padded and cliche."
+ }
+}

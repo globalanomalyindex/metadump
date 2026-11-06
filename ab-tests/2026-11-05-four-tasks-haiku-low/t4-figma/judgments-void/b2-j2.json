@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"style": 6, "motion": 5, "loop": 9, "craft": 4, "originality": 5, "overall": 4, "note": "Figma palette and selection-handle motif are a nice nod, but the starburst's CSS transform overrides its SVG translate so it sits clipped in the top-left corner, and the composition is otherwise a generic shape set."},
+"X": {"style": 5, "motion": 7, "loop": 8, "craft": 8, "originality": 3, "overall": 5, "note": "Polished staggered assemble-and-scatter with overshoot, glow, and both themes, but the resting state reproduces the Figma logo's five-shape arrangement and colors almost exactly, which the brief rules out."},
+"Y": {"style": 8, "motion": 8, "loop": 9, "craft": 7, "originality": 8, "overall": 8, "note": "Half-circle, quarter-wedge and rounded-square pieces with Figma hues, a staggered cubic in-out assemble-burst-return, and periodic colour blooms make it read as Figma's brand language without its logo; the full-viewport canvas gradients are a mild performance cost."},
+"Z": {"style": 6, "motion": 5, "loop": 9, "craft": 6, "originality": 3, "overall": 5, "note": "Periodic sine-driven orbits and bounces loop cleanly and respect reduced motion, but five pastel primitives drifting on a gradient is a generic shape screensaver with little Figma energy."}
+},
+"ranking": ["Y", "X", "Z", "W"]}

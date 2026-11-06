@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j2", "scores": {
+"W": {"imagery": 7, "form": 10, "specificity": 8, "freshness": 7, "resonance": 7, "overall": 8, "note": "Syllables 5-7-5 (Win-ter dusk sun gone / a veil too high for the dark / holds moth-er-of-pearl); the veil too high for the dark accurately evokes nacreous clouds lit after sunset, though the last line is a stock term."},
+"X": {"imagery": 4, "form": 4, "specificity": 6, "freshness": 3, "resonance": 4, "overall": 4, "note": "Syllables 4-7-5 (Na-cre-ous glow = 4), so the first line is short; names nacreous and mother-of-pearl but the sky holds its breath is cliche and the images stay abstract."},
+"Y": {"imagery": 6, "form": 7, "specificity": 7, "freshness": 6, "resonance": 6, "overall": 6, "note": "Syllables 5-7-5 (fire may count as 2, making line 3 a 6); fire on frozen air is a strong image, but nacreous light at dusk, slow is clotted and repeats the mother-of-pearl idea."},
+"Z": {"imagery": 9, "form": 10, "specificity": 8, "freshness": 8, "resonance": 8, "overall": 9, "note": "Syllables 5-7-5 (sun gone from the street / a veil of ice up there still / burning pearl and rose); street-level vantage, ice crystals and still burning color evoke polar stratospheric clouds without naming them."}
+}, "ranking": ["Z", "W", "Y", "X"]}

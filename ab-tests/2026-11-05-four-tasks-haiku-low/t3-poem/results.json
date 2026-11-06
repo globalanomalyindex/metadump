@@ -1,0 +1,141 @@
+{
+ "scores": {
+  "A": {
+   "imagery": 5.83,
+   "specificity": 7.0,
+   "question": 4.92,
+   "freshness": 4.33,
+   "resonance": 4.92,
+   "overall": 5.17,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "A-r1": 5.33,
+    "A-r2": 6.33,
+    "A-r3": 4.67,
+    "A-r4": 4.33
+   }
+  },
+  "B": {
+   "imagery": 7.67,
+   "specificity": 8.42,
+   "question": 8.17,
+   "freshness": 7.5,
+   "resonance": 7.42,
+   "overall": 7.92,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "B-r1": 7.33,
+    "B-r2": 7.67,
+    "B-r3": 8.0,
+    "B-r4": 8.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 23,
+  "losses": 0,
+  "ties": 1,
+  "win_rate": 0.98
+ },
+ "functional": {
+  "A-r1": {
+   "poem_lines": 15,
+   "ends_with_question": true,
+   "last_line": "and felt the sky, for one bright moment, stop?",
+   "words_total": 107
+  },
+  "A-r2": {
+   "poem_lines": 11,
+   "ends_with_question": true,
+   "last_line": "will you stop to watch it fade?",
+   "words_total": 66
+  },
+  "A-r3": {
+   "poem_lines": 8,
+   "ends_with_question": true,
+   "last_line": "for only one bright minute, then fails to name it?",
+   "words_total": 58
+  },
+  "A-r4": {
+   "poem_lines": 10,
+   "ends_with_question": true,
+   "last_line": "will you stop to name it, or let it slip from sight?",
+   "words_total": 85
+  },
+  "B-r1": {
+   "poem_lines": 9,
+   "ends_with_question": true,
+   "last_line": "before it faded, or only the grey?",
+   "words_total": 59
+  },
+  "B-r2": {
+   "poem_lines": 8,
+   "ends_with_question": true,
+   "last_line": "How long can you hold that green before the sun lets go?",
+   "words_total": 72
+  },
+  "B-r3": {
+   "poem_lines": 8,
+   "ends_with_question": true,
+   "last_line": "Which band went out last?",
+   "words_total": 60
+  },
+  "B-r4": {
+   "poem_lines": 10,
+   "ends_with_question": true,
+   "last_line": "Who is watching, when a cloud is this rare?",
+   "words_total": 73
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 69230,
+   "mean_seconds": 7.8
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 91394,
+   "mean_seconds": 21.1
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 177846,
+   "ms": 723720,
+   "tool_uses": 32,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.88,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "A tight, accurate nacreous poem with a pink-then-green rim and a question that follows directly from the sighting, though the middle turn is fairly plain.",
+  "b1/j1/A-r1": "Names the most cloud types accurately, but the rhymed stanzas lean on stock phrases like 'silver fire' and 'felt the sky stop', and the closing question is generic and tacked on.",
+  "b1/j1/B-r2": "The thumb-width patch held at arm's length is a seen, true detail, and the closing question about how long to hold the green lands as the poem's turn.",
+  "b1/j1/A-r2": "Vivid lines like 'colors pooled like oil on glass' and accurate lenticular and noctilucent references, but it reads as a catalogue of three clouds and the question is a generic restatement of 'fade'.",
+  "b1/j2/B-r2": "Polar-winter nacreous cloud with a pearl rim and a thumb-sized patch of green, closing on a question that grows directly from the fading colour.",
+  "b1/j2/A-r2": "Covers several real rare clouds (nacreous, noctilucent, lenticular) but leans on stock lines like rare and bright, and the closing question is generic and only loosely tied to the poem.",
+  "b1/j2/A-r1": "Forced rhymed quatrains with cliches like where few have looked and paint their colors out of day, and a closing question about a cloud you could not name that feels tacked on and is longer than needed.",
+  "b1/j2/B-r1": "Short and accurate to nacreous clouds (polar stratosphere, pink then green edge, minutes before dark), ending on a precise question about catching the green edge or only the grey.",
+  "b1/j3/A-r2": "Names nacreous, noctilucent and lenticular accurately with a few vivid images (oil on glass, silver-thin veils), but the closing question is a generic invitation that only loosely grows from the poem.",
+  "b1/j3/B-r2": "Tight, accurate polar-stratospheric portrait with a concrete thumb-at-arm's-length image, and the closing question about holding the green edge grows directly from the poem.",
+  "b1/j3/B-r1": "Most scientifically faithful (stratospheric cold, pink then green rim, brief window before dark) and ends on a sharp question about catching the colour or only the grey, though one line tells rather than shows.",
+  "b1/j3/A-r1": "Rhymed quatrains lean on stock phrases (ordinary blue, silver fire, felt the sky stop) and forced rhymes, and the closing question is a generic tacked-on prompt, though it covers four cloud types.",
+  "b2/j1/B-r3": "A quiet ice-shelf dawn with the bands clearing from the rim, and the closing question about which colour fades last grows directly from that image.",
+  "b2/j1/A-r3": "Names real cloud types (lenticular, nacreous) but leans on stock phrases like rainbow sheen and winter's hush, forces its rhymes, and the final question feels bolted on.",
+  "b2/j1/B-r4": "Accurately evokes polar stratospheric clouds at about fifteen miles after sunset, with vivid colour and a closing question about who watches that earns its place.",
+  "b2/j1/A-r4": "A rhymed catalogue of named cloud types with clichés like without a fuss, adds a title and a generic closing question, and mammatus are not really rare.",
+  "b2/j2/B-r4": "A vivid polar nacreous cloud, true to its dry, post-sunset formation, whose closing question about who is watching lands on the poem's own solitude.",
+  "b2/j2/A-r4": "A rhymed catalogue of cloud names with stock phrasing and a moralizing question tacked on at the end, with no real turn.",
+  "b2/j2/A-r3": "Accurately names lenticular and nacreous clouds, but generic diction like winter's hush and a muddled final question ('fails to name it') weaken it.",
+  "b2/j2/B-r3": "Iridescent polar cloud observed as the sun climbs, with the colour leaving the rim first, so the closing question 'Which band went out last?' grows directly out of the observation.",
+  "b2/j3/A-r4": "Names four real rare clouds, but the lines lean on stock phrasing ('without a fuss', 'rare and bright') and the closing question is a generic appended prompt.",
+  "b2/j3/B-r4": "Accurate polar nacreous detail (fifteen miles up, lit after sunset, pearl-rose-green edge) with an opening line that avoids the expected cloud picture, and the closing question grows from the no-one-looking image.",
+  "b2/j3/B-r3": "Tight, concrete, and true to nacreous fading from the rim first, and the final question 'Which band went out last?' turns the observation back on the reader with economy.",
+  "b2/j3/A-r3": "Rhymed quatrains lean on abstractions ('winter's hush', 'faint and clean') and a 'fire-bright halo' that is not a cloud phenomenon, and the final question is convoluted."
+ }
+}

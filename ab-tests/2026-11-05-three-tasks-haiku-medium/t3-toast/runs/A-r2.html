@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Tracker</title>
+<style>
+:root{
+  --bg:#0c0e12; --panel:#161922; --panel2:#1d212c; --input:#11141b;
+  --line:#2a3040; --text:#e7e9ef; --muted:#8b93a5;
+  --accent:#7aa2ff; --ok:#4cc38a; --err:#ff6b6b;
+  --radius:12px; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font:13.5px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{padding:28px 24px;color:var(--muted)}
+main h1{font-size:16px;color:var(--text);margin:0 0 6px}
+
+#trk{position:fixed;right:16px;bottom:16px;width:min(330px,calc(100vw - 32px));z-index:50}
+#toasts{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.toast{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:7px 10px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);cursor:pointer;animation:rise .18s ease-out}
+.toast.ok{border-left-color:var(--ok)}
+.toast.err{border-left-color:var(--err)}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 14px 36px rgba(0,0,0,.5);overflow:hidden}
+.head{width:100%;display:flex;align-items:center;gap:8px;padding:9px 12px;background:none;border:0;color:inherit;cursor:pointer;text-align:left;font:inherit}
+.head:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.dot.live{background:var(--accent);box-shadow:0 0 0 3px rgba(122,162,255,.2)}
+.title{font-weight:600}
+.count{color:var(--muted);font-size:12px}
+.chev{margin-left:auto;color:var(--muted);transition:transform .2s}
+.collapsed .chev{transform:rotate(-90deg)}
+.collapsed .body{display:none}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-top:1px solid var(--line)}
+.seg{display:flex;background:var(--input);border:1px solid var(--line);border-radius:8px;padding:2px}
+.seg button{background:none;border:0;color:var(--muted);padding:4px 8px;border-radius:6px;font:inherit;font-size:12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--text)}
+.btn{background:var(--accent);color:#0b1020;border:0;border-radius:8px;padding:6px 10px;font:inherit;font-weight:600;font-size:12.5px;cursor:pointer}
+.btn.ghost{background:none;color:var(--accent);border:1px solid var(--line);font-weight:500}
+.btn.danger{background:none;color:var(--err);border:1px solid var(--line);font-weight:500}
+
+.list{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto}
+.item{border-top:1px solid var(--line);padding:8px 12px 9px}
+.row{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;color:inherit;padding:0;text-align:left;font:inherit;cursor:pointer}
+.carrier{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 6px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);min-width:44px;text-align:center}
+.c-UPS{color:#d9a86c}.c-USPS{color:#7aa2ff}.c-FedEx{color:#b98cff}.c-DHL{color:#f2d34b}
+.meta{display:flex;flex-direction:column;min-width:0;flex:1}
+.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.status{font-size:12px;color:var(--muted)}
+.status.ok{color:var(--ok)}
+.chevs{color:var(--muted);transition:transform .2s;font-size:11px}
+.item.open .chevs{transform:rotate(180deg)}
+.bar{height:3px;background:var(--line);border-radius:2px;margin-top:7px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);transition:width .3s ease}
+.bar span.ok{background:var(--ok)}
+.detail{display:none;padding-top:8px}
+.item.open .detail{display:block}
+.timeline{list-style:none;margin:0 0 8px;padding:0 0 0 10px;border-left:1px solid var(--line)}
+.timeline li{position:relative;font-size:12.5px;margin:0 0 7px}
+.timeline li::before{content:"";position:absolute;left:-14px;top:5px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.timeline li:first-child::before{background:var(--ok)}
+.timeline time{display:block;font-size:11px;color:var(--muted)}
+.actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted);margin-right:auto;overflow:hidden;text-overflow:ellipsis;max-width:150px;white-space:nowrap}
+.empty{padding:14px 12px;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
+
+.add{border-top:1px solid var(--line);padding:9px 10px;display:grid;gap:6px}
+.add .r{display:flex;gap:6px}
+input,select{background:var(--input);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 8px;font:inherit;min-width:0}
+input{flex:1}
+input::placeholder{color:#7d8699}
+input[aria-invalid="true"]{border-color:var(--err)}
+.err{color:var(--err);font-size:12px;min-height:0}
+.err:empty{display:none}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Your orders</h1>
+  <p>Sample page content behind the tracker. The tracker floats in the bottom-right corner.</p>
+</main>
+
+<aside id="trk" aria-label="Package tracker">
+  <div id="toasts" aria-live="polite"></div>
+  <section class="card">
+    <button id="toggle" class="head" aria-expanded="true" aria-controls="body">
+      <span id="dot" class="dot"></span>
+      <span class="title">Packages</span>
+      <span id="count" class="count"></span>
+      <span class="chev" aria-hidden="true">&#9662;</span>
+    </button>
+    <div id="body" class="body">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Filter packages">
+          <button type="button" data-filter="all">All</button>
+          <button type="button" data-filter="active">Active</button>
+          <button type="button" data-filter="delivered">Delivered</button>
+        </div>
+        <button id="refreshAll" type="button" class="btn ghost">Refresh all</button>
+      </div>
+      <ul id="list" class="list"></ul>
+      <form id="add" class="add" novalidate>
+        <div class="r">
+          <input id="num" placeholder="Tracking number" autocomplete="off" spellcheck="false" aria-describedby="err">
+          <select id="car" aria-label="Carrier">
+            <option>UPS</option><option>USPS</option><option>FedEx</option><option>DHL</option><option>Other</option>
+          </select>
+        </div>
+        <div class="r">
+          <input id="lbl" placeholder="Label (optional)" maxlength="40">
+          <button class="btn" type="submit">Track</button>
+        </div>
+        <div id="err" class="err" role="alert"></div>
+      </form>
+    </div>
+  </section>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+var STAGES = ['Label created','Picked up','In transit','Out for delivery','Delivered'];
+var KEY = 'pkgtrk.v1';
+var $ = function(s){ return document.querySelector(s); };
+var root = $('#trk'), list = $('#list'), toasts = $('#toasts'), countEl = $('#count'), dot = $('#dot');
+
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function fmt(d){ return d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
+function stageOf(p){ return p.scans[p.shown-1].stage; }
+function find(id){ for (var i=0;i<data.pkgs.length;i++) if (data.pkgs[i].id===id) return data.pkgs[i]; return null; }
+
+// Sample content. Each package has scans; `shown` scans are visible, the rest arrive on Refresh.
+var SEED = {
+  ui: { filter: 'all', open: 'p1', collapsed: false },
+  pkgs: [
+    { id:'p1', label:'Standing desk converter', carrier:'UPS', tracking:'1Z999AA10123456784', eta:'Today by 6:40 PM', shown:4,
+      scans:[
+        {t:'Nov 3, 4:12 PM', stage:0, text:'Shipping label created'},
+        {t:'Nov 3, 9:48 PM', stage:1, text:'Picked up by UPS driver'},
+        {t:'Nov 4, 5:30 AM', stage:2, text:'Departed facility, Columbus OH'},
+        {t:'Nov 5, 5:02 AM', stage:3, text:'Out for delivery, Chicago IL'},
+        {t:'', stage:4, text:'Delivered, front door'}
+      ]},
+    { id:'p2', label:'Keycap set', carrier:'USPS', tracking:'9400111899223856473211', eta:'Sat, Nov 8', shown:3,
+      scans:[
+        {t:'Nov 4, 11:20 AM', stage:0, text:'Label created, awaiting item'},
+        {t:'Nov 4, 3:05 PM', stage:1, text:'Accepted at post office'},
+        {t:'Nov 5, 1:40 AM', stage:2, text:'Arrived at USPS facility, Portland OR'},
+        {t:'', stage:2, text:'Processed through sort facility'},
+        {t:'', stage:3, text:'Out for delivery'},
+        {t:'', stage:4, text:'Delivered, mailbox'}
+      ]},
+    { id:'p3', label:'Camera strap', carrier:'FedEx', tracking:'748910325511', eta:'Delivered Nov 3', shown:5,
+      scans:[
+        {t:'Oct 30, 8:00 AM', stage:0, text:'Shipment information sent to FedEx'},
+        {t:'Oct 30, 6:15 PM', stage:1, text:'Picked up'},
+        {t:'Nov 1, 9:30 AM', stage:2, text:'In transit, Memphis TN'},
+        {t:'Nov 3, 7:10 AM', stage:3, text:'On FedEx vehicle for delivery'},
+        {t:'Nov 3, 12:44 PM', stage:4, text:'Delivered, signed for by R. Okafor'}
+      ]},
+    { id:'p4', label:'Sourdough starter kit', carrier:'DHL', tracking:'JD014600006284948572', eta:'Nov 12', shown:2,
+      scans:[
+        {t:'Nov 4, 9:00 AM', stage:0, text:'Shipment data received'},
+        {t:'Nov 4, 4:45 PM', stage:1, text:'Picked up, Leipzig DE'},
+        {t:'', stage:2, text:'Departed Leipzig hub'},
+        {t:'', stage:2, text:'Arrived Frankfurt hub'},
+        {t:'', stage:3, text:'Out for delivery'},
+        {t:'', stage:4, text:'Delivered'}
+      ]}
+  ]
+};
+
+function load(){
+  try { var raw = JSON.parse(localStorage.getItem(KEY)); if (raw && Array.isArray(raw.pkgs)) return raw; } catch(e) {}
+  return null;
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+var data = load() || JSON.parse(JSON.stringify(SEED));
+
+function toast(msg, kind){
+  var el = document.createElement('div');
+  el.className = 'toast' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  toasts.appendChild(el);
+  while (toasts.children.length > 3) toasts.removeChild(toasts.firstChild);
+  setTimeout(function(){ el.remove(); }, 3600);
+}
+
+function revealNext(p){
+  if (p.shown >= p.scans.length) return null;
+  p.shown++;
+  var s = p.scans[p.shown-1];
+  s.t = fmt(new Date());
+  if (s.stage === 4) p.eta = 'Delivered ' + s.t;
+  return s;
+}
+
+function itemHTML(p){
+  var st = stageOf(p), done = st === 4, open = data.ui.open === p.id;
+  var pct = ((st + 1) / STAGES.length) * 100;
+  var visible = p.scans.slice(0, p.shown).slice().reverse();
+  return '<li class="item' + (open ? ' open' : '') + '" data-id="' + esc(p.id) + '">' +
+    '<button type="button" class="row" data-action="toggle" data-id="' + esc(p.id) + '" aria-expanded="' + open + '">' +
+      '<span class="carrier c-' + esc(p.carrier) + '">' + esc(p.carrier) + '</span>' +
+      '<span class="meta"><span class="name">' + esc(p.label) + '</span>' +
+      '<span class="status' + (done ? ' ok' : '') + '">' + esc(STAGES[st]) + ' &middot; ' + esc(p.eta) + '</span></span>' +
+      '<span class="chevs" aria-hidden="true">&#9662;</span>' +
+    '</button>' +
+    '<div class="bar"><span class="' + (done ? 'ok' : '') + '" style="width:' + pct + '%"></span></div>' +
+    '<div class="detail">' +
+      '<ol class="timeline">' + visible.map(function(s){
+        return '<li><time>' + esc(s.t) + '</time>' + esc(s.text) + '</li>';
+      }).join('') + '</ol>' +
+      '<div class="actions">' +
+        '<span class="num" title="' + esc(p.tracking) + '">' + esc(p.tracking) + '</span>' +
+        (done ? '' : '<button type="button" class="btn ghost" data-action="refresh" data-id="' + esc(p.id) + '">Refresh</button>') +
+        '<button type="button" class="btn danger" data-action="remove" data-id="' + esc(p.id) + '">Remove</button>' +
+      '</div>' +
+    '</div>' +
+  '</li>';
+}
+
+function render(){
+  var active = data.pkgs.filter(function(p){ return stageOf(p) < 4; }).length;
+  var delivered = data.pkgs.length - active;
+  countEl.textContent = active + ' in transit · ' + delivered + ' delivered';
+  dot.className = 'dot' + (active ? ' live' : '');
+  root.classList.toggle('collapsed', !!data.ui.collapsed);
+  $('#toggle').setAttribute('aria-expanded', String(!data.ui.collapsed));
+  document.querySelectorAll('[data-filter]').forEach(function(b){
+    b.setAttribute('aria-pressed', String(b.getAttribute('data-filter') === data.ui.filter));
+  });
+  var shown = data.pkgs.filter(function(p){
+    if (data.ui.filter === 'active') return stageOf(p) < 4;
+    if (data.ui.filter === 'delivered') return stageOf(p) === 4;
+    return true;
+  });
+  list.innerHTML = shown.length ? shown.map(itemHTML).join('')
+    : '<li class="empty">' + (data.pkgs.length ? 'No packages match this filter.' : 'No packages yet. Add a tracking number below.') + '</li>';
+}
+
+function commit(){ save(); render(); }
+
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-action],[data-filter],#toggle,#refreshAll,.toast');
+  if (!t) return;
+  if (t.classList.contains('toast')) { t.remove(); return; }
+  if (t.id === 'toggle') { data.ui.collapsed = !data.ui.collapsed; commit(); return; }
+  if (t.id === 'refreshAll') {
+    var n = 0;
+    data.pkgs.forEach(function(p){ if (revealNext(p)) n++; });
+    commit();
+    toast(n ? 'Updated ' + n + ' package' + (n > 1 ? 's' : '') : 'Everything is up to date', n ? 'ok' : '');
+    return;
+  }
+  if (t.hasAttribute('data-filter')) { data.ui.filter = t.getAttribute('data-filter'); commit(); return; }
+
+  var id = t.getAttribute('data-id'), p = find(id), action = t.getAttribute('data-action');
+  if (!p) return;
+  if (action === 'toggle') { data.ui.open = data.ui.open === id ? null : id; commit(); }
+  if (action === 'refresh') {
+    var s = revealNext(p);
+    if (!s) { toast(p.label + ': no new scans'); return; }
+    commit();
+    toast(p.label + ': ' + s.text, s.stage === 4 ? 'ok' : '');
+  }
+  if (action === 'remove') {
+    data.pkgs = data.pkgs.filter(function(x){ return x.id !== id; });
+    if (data.ui.open === id) data.ui.open = null;
+    commit();
+    toast('Removed ' + p.label);
+  }
+});
+
+var form = $('#add'), num = $('#num'), lbl = $('#lbl'), err = $('#err');
+num.addEventListener('input', function(){ err.textContent = ''; num.removeAttribute('aria-invalid'); });
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  var norm = num.value.replace(/[\s-]/g, '').toUpperCase();
+  if (!/^[A-Z0-9]{8,34}$/.test(norm)) {
+    err.textContent = 'Enter 8 to 34 letters or digits.';
+    num.setAttribute('aria-invalid', 'true');
+    num.focus();
+    return;
+  }
+  if (data.pkgs.some(function(p){ return p.tracking === norm; })) {
+    err.textContent = 'Already tracking that number.';
+    num.focus();
+    return;
+  }
+  var now = new Date();
+  var p = {
+    id: 'p' + Date.now().toString(36),
+    label: lbl.value.trim() || 'Package',
+    carrier: $('#car').value,
+    tracking: norm,
+    eta: 'Est. 3 days',
+    shown: 1,
+    scans: [
+      {t: fmt(now), stage:0, text:'Label created'},
+      {t:'', stage:1, text:'Picked up by carrier'},
+      {t:'', stage:2, text:'Arrived at sorting hub'},
+      {t:'', stage:3, text:'Out for delivery'},
+      {t:'', stage:4, text:'Delivered'}
+    ]
+  };
+  data.pkgs.unshift(p);
+  data.ui.open = p.id;
+  data.ui.filter = 'all';
+  data.ui.collapsed = false;
+  num.value = ''; lbl.value = ''; err.textContent = '';
+  commit();
+  toast('Now tracking ' + p.label, 'ok');
+});
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && !data.ui.collapsed && document.activeElement && document.activeElement.tagName !== 'INPUT') {
+    data.ui.collapsed = true; commit();
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>

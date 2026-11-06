@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halcyon Lamp - Dreamlike Button Demo</title>
+<style>
+  :root {
+    --ink: #1d1b2e;
+    --ink-soft: #5b5873;
+    --paper: #f7f5ff;
+    --card: #ffffff;
+    --line: #e4e0f2;
+    --violet: #7b5cf5;
+    --rose: #f08bb4;
+    --sky: #7fd3ff;
+    --mint: #8ff0c8;
+    --focus: #3b2fd6;
+
+    /* Custom easing curves */
+    --ease-drift: cubic-bezier(0.22, 1, 0.36, 1);      /* long glide out, for glow and veil */
+    --ease-bloom: cubic-bezier(0.34, 1.45, 0.64, 1);   /* soft overshoot, for lift */
+    --ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);      /* quick, settled press */
+    --ease-fade:  cubic-bezier(0.45, 0, 0.2, 1);       /* calm color and border changes */
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #efeaff;
+      --ink-soft: #aaa4c7;
+      --paper: #13121c;
+      --card: #1c1a29;
+      --line: #2e2b42;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #efeaff;
+    --ink-soft: #aaa4c7;
+    --paper: #13121c;
+    --card: #1c1a29;
+    --line: #2e2b42;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding: 0 16px;
+  }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 0 64px;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    line-height: 1.15;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .lede { color: var(--ink-soft); margin: 0 0 32px; max-width: 56ch; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card h2 {
+    font-size: 1rem;
+    margin: 0 0 4px;
+  }
+
+  .card p.hint {
+    margin: 0 0 18px;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  .product {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .product-name { font-weight: 600; font-size: 1.1rem; }
+  .product-price { color: var(--ink-soft); }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 16px;
+    align-items: center;
+    margin-top: 18px;
+  }
+
+  /* ---------- Dreamlike button ---------- */
+  .dream {
+    --glow: 123, 92, 245;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 0 22px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    color: #fff;
+    background: linear-gradient(120deg, #5a3bcc 0%, #6a4bdb 50%, #9c4a85 100%);
+    background-size: 160% 160%;
+    background-position: 0% 50%;
+    cursor: pointer;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 6px 16px -8px rgba(var(--glow), 0.55);
+    transform: translate3d(0, 0, 0) scale(1);
+    transition:
+      transform 620ms var(--ease-bloom),
+      box-shadow 900ms var(--ease-drift),
+      background-position 1100ms var(--ease-drift),
+      filter 700ms var(--ease-drift),
+      color 400ms var(--ease-fade),
+      border-color 400ms var(--ease-fade);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Soft aura that breathes out behind the button on hover */
+  .dream::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: -40%;
+    background: radial-gradient(closest-side,
+      rgba(var(--glow), 0.55),
+      rgba(127, 211, 255, 0.25) 45%,
+      transparent 72%);
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 1000ms var(--ease-drift),
+      transform 1400ms var(--ease-drift);
+    pointer-events: none;
+  }
+
+  /* Light veil that drifts across the surface */
+  .dream::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 55%;
+    background: linear-gradient(100deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.0) 20%,
+      rgba(255, 255, 255, 0.45) 50%,
+      rgba(255, 255, 255, 0.0) 80%,
+      transparent 100%);
+    transform: translate3d(-120%, 0, 0);
+    opacity: 0.9;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+  }
+
+  .dream-label,
+  .dream-icon {
+    position: relative;
+    transition: transform 700ms var(--ease-bloom), letter-spacing 700ms var(--ease-drift);
+  }
+
+  .dream-icon { display: inline-block; width: 1em; height: 1em; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .dream:hover:not(:disabled) {
+      transform: translate3d(0, -3px, 0) scale(1.03);
+      background-position: 100% 50%;
+      filter: saturate(1.15) brightness(1.04);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.45) inset,
+        0 18px 40px -14px rgba(var(--glow), 0.7),
+        0 0 0 6px rgba(var(--glow), 0.08);
+    }
+    .dream:hover:not(:disabled)::before {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .dream:hover:not(:disabled)::after {
+      transform: translate3d(230%, 0, 0);
+      transition: transform 1600ms var(--ease-drift);
+    }
+    .dream:hover:not(:disabled) .dream-label {
+      letter-spacing: 0.04em;
+    }
+    .dream:hover:not(:disabled) .dream-icon {
+      transform: translate3d(2px, 0, 0) rotate(-8deg);
+    }
+  }
+
+  .dream:active:not(:disabled) {
+    transform: translate3d(0, 0, 0) scale(0.97);
+    transition-duration: 120ms, 300ms, 600ms, 400ms, 300ms, 300ms;
+    transition-timing-function: var(--ease-press);
+  }
+
+  .dream:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+
+  .dream:disabled {
+    cursor: progress;
+    filter: saturate(0.6) brightness(1.02);
+    box-shadow: 0 6px 16px -10px rgba(var(--glow), 0.4);
+  }
+
+  /* Variants */
+  .dream--ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+    box-shadow: none;
+    background-size: 100% 100%;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .dream--ghost:hover:not(:disabled) {
+      background-position: 0% 50%;
+      background-image: linear-gradient(120deg, rgba(123,92,245,0.14), rgba(240,139,180,0.18));
+      border-color: rgba(123, 92, 245, 0.45);
+      color: var(--ink);
+      filter: none;
+      box-shadow: 0 16px 36px -18px rgba(var(--glow), 0.6);
+    }
+  }
+
+  .dream--saved[aria-pressed="true"] {
+    background: linear-gradient(120deg, #8ff0c8 0%, #7fd3ff 100%);
+    color: #0d2a25;
+    background-size: 160% 160%;
+  }
+
+  .dream--saved[aria-pressed="true"] .dream-icon {
+    transform: scale(1.15);
+  }
+
+  .dream--sm { min-height: 38px; padding: 0 16px; font-size: 0.875rem; }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    animation: spin 900ms linear infinite;
+    display: none;
+  }
+  .dream.is-loading .spinner { display: inline-block; }
+  .dream.is-loading .dream-icon { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .dream.is-done {
+    background: linear-gradient(120deg, #8ff0c8, #7fd3ff);
+    color: #0d2a25;
+    background-size: 160% 160%;
+  }
+
+  .badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    transition: transform 500ms var(--ease-bloom);
+  }
+  .badge.bump { transform: scale(1.35); }
+
+  /* Stats / state readout */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .stat {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .stat dt { color: var(--ink-soft); font-size: 0.8rem; margin: 0; }
+  .stat dd {
+    margin: 2px 0 0;
+    font-size: 1.4rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .log {
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    max-height: 150px;
+    overflow: auto;
+  }
+  .log li { padding: 4px 0; border-top: 1px dashed var(--line); }
+  .log li:first-child { border-top: 0; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  .toggle-row input { accent-color: var(--violet); width: 18px; height: 18px; }
+
+  .plan {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .plan .card { margin: 0; }
+  .plan .price { font-size: 1.8rem; font-weight: 700; margin: 6px 0; }
+  .plan ul { padding-left: 18px; color: var(--ink-soft); margin: 10px 0 0; font-size: 0.9rem; }
+
+  .note {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin-top: 28px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dream,
+    .dream::before,
+    .dream::after,
+    .dream-label,
+    .dream-icon,
+    .badge,
+    .spinner {
+      transition-duration: 1ms !important;
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    .dream:hover:not(:disabled) { transform: none; }
+    .dream:hover:not(:disabled)::before { transform: none; }
+    .spinner { animation: none; border-top-color: transparent; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Halcyon Desk Lamp</h1>
+  <p class="lede">A warm, dimmable lamp with a soft diffuser. Hover the buttons to see the glow, press them to see the settle. Every action below updates the readout.</p>
+
+  <section class="card" aria-labelledby="product-title">
+    <div class="product">
+      <div class="product-name" id="product-title">Halcyon Desk Lamp, Dusk Violet</div>
+      <div class="product-price">$89.00 &middot; Free shipping on orders over $60</div>
+    </div>
+
+    <div class="row">
+      <button type="button" class="dream" id="add-cart">
+        <svg class="dream-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="dream-label" id="add-label">Add to cart</span>
+        <span class="badge" id="cart-badge" aria-label="Items in cart">0</span>
+      </button>
+
+      <button type="button" class="dream dream--saved" id="save" aria-pressed="false">
+        <svg class="dream-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0 1 12 6.6 5.2 5.2 0 0 1 21.3 12c-2.3 4.6-9.3 9-9.3 9z"/></svg>
+        <span class="dream-label" id="save-label">Save for later</span>
+      </button>
+
+      <button type="button" class="dream dream--ghost" id="notify">
+        <span class="dream-label">Notify me when restocked</span>
+      </button>
+    </div>
+
+    <label class="toggle-row">
+      <input type="checkbox" id="gift">
+      This is a gift (adds a card with a handwritten note)
+    </label>
+  </section>
+
+  <section class="card" aria-labelledby="plans-title">
+    <h2 id="plans-title">Choose a plan for your studio</h2>
+    <p class="hint">Plan buttons respond to clicks with a loading state, then confirm.</p>
+    <div class="plan">
+      <div class="card">
+        <div class="product-name">Solo</div>
+        <div class="price">$0</div>
+        <ul><li>Up to 3 projects</li><li>Community support</li></ul>
+        <div class="row">
+          <button type="button" class="dream dream--sm dream--ghost" data-plan="Solo"><span class="dream-label">Choose Solo</span></button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="product-name">Studio</div>
+        <div class="price">$12</div>
+        <ul><li>Unlimited projects</li><li>Shared libraries</li></ul>
+        <div class="row">
+          <button type="button" class="dream dream--sm" data-plan="Studio"><span class="dream-label">Start free trial</span></button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="product-name">Atelier</div>
+        <div class="price">$29</div>
+        <ul><li>Everything in Studio</li><li>SSO and audit log</li></ul>
+        <div class="row">
+          <button type="button" class="dream dream--sm dream--ghost" data-plan="Atelier"><span class="dream-label">Talk to sales</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="state-title">
+    <h2 id="state-title">Live state</h2>
+    <p class="hint">Updated by the buttons above.</p>
+    <dl class="stats">
+      <div class="stat"><dt>In cart</dt><dd id="s-cart">0</dd></div>
+      <div class="stat"><dt>Saved</dt><dd id="s-saved">No</dd></div>
+      <div class="stat"><dt>Gift</dt><dd id="s-gift">No</dd></div>
+      <div class="stat"><dt>Plan</dt><dd id="s-plan">None</dd></div>
+    </dl>
+    <ul class="log" id="log" aria-live="polite">
+      <li>Ready. Hover or press any button.</li>
+    </ul>
+    <div class="row">
+      <button type="button" class="dream dream--sm dream--ghost" id="reset"><span class="dream-label">Reset demo</span></button>
+    </div>
+  </section>
+
+  <p class="note">Motion respects the reduced-motion setting, hover effects only apply on fine pointers, and every button works with the keyboard. Runs fully offline.</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var state = { cart: 0, saved: false, gift: false, plan: null, notify: false };
+
+  var els = {
+    addCart: document.getElementById("add-cart"),
+    addLabel: document.getElementById("add-label"),
+    badge: document.getElementById("cart-badge"),
+    save: document.getElementById("save"),
+    saveLabel: document.getElementById("save-label"),
+    notify: document.getElementById("notify"),
+    gift: document.getElementById("gift"),
+    log: document.getElementById("log"),
+    sCart: document.getElementById("s-cart"),
+    sSaved: document.getElementById("s-saved"),
+    sGift: document.getElementById("s-gift"),
+    sPlan: document.getElementById("s-plan"),
+    reset: document.getElementById("reset"),
+    planButtons: document.querySelectorAll("[data-plan]")
+  };
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function later(ms, fn) { return window.setTimeout(fn, reduceMotion ? 0 : ms); }
+
+  function log(text) {
+    var li = document.createElement("li");
+    li.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) + "  " + text;
+    els.log.insertBefore(li, els.log.firstChild);
+    while (els.log.children.length > 30) els.log.removeChild(els.log.lastChild);
+  }
+
+  function bump(el) {
+    el.classList.remove("bump");
+    void el.offsetWidth;
+    el.classList.add("bump");
+    later(500, function () { el.classList.remove("bump"); });
+  }
+
+  function render() {
+    els.badge.textContent = String(state.cart);
+    els.sCart.textContent = String(state.cart);
+    els.sSaved.textContent = state.saved ? "Yes" : "No";
+    els.sGift.textContent = state.gift ? "Yes" : "No";
+    els.sPlan.textContent = state.plan || "None";
+    els.save.setAttribute("aria-pressed", String(state.saved));
+    els.saveLabel.textContent = state.saved ? "Saved" : "Save for later";
+    els.addLabel.textContent = state.cart > 0 ? "Add another" : "Add to cart";
+  }
+
+  // Add to cart: loading state, then a confirmed state, then back to normal
+  els.addCart.addEventListener("click", function () {
+    if (els.addCart.disabled) return;
+    els.addCart.disabled = true;
+    els.addCart.classList.add("is-loading");
+    els.addLabel.textContent = "Adding";
+    later(900, function () {
+      state.cart += 1;
+      els.addCart.classList.remove("is-loading");
+      els.addCart.classList.add("is-done");
+      els.addLabel.textContent = "Added";
+      bump(els.badge);
+      log("Added one lamp to cart (" + state.cart + " total, $" + (state.cart * 89) + ")");
+      later(900, function () {
+        els.addCart.classList.remove("is-done");
+        els.addCart.disabled = false;
+        render();
+      });
+      render();
+      els.addLabel.textContent = "Added";
+    });
+  });
+
+  // Save for later: a true toggle with aria-pressed
+  els.save.addEventListener("click", function () {
+    state.saved = !state.saved;
+    render();
+    log(state.saved ? "Saved the lamp for later" : "Removed the lamp from saved items");
+  });
+
+  // Notify me: one-way action, disables after success
+  els.notify.addEventListener("click", function () {
+    if (state.notify) return;
+    state.notify = true;
+    els.notify.querySelector(".dream-label").textContent = "You're on the list";
+    els.notify.disabled = true;
+    log("Restock alert turned on");
+  });
+
+  // Gift checkbox
+  els.gift.addEventListener("change", function () {
+    state.gift = els.gift.checked;
+    render();
+    log(state.gift ? "Marked as a gift" : "Gift option turned off");
+  });
+
+  // Plan buttons: loading, then confirmed plan
+  els.planButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (btn.disabled) return;
+      var plan = btn.getAttribute("data-plan");
+      var label = btn.querySelector(".dream-label");
+      var original = label.textContent;
+      btn.disabled = true;
+      btn.classList.add("is-loading");
+      label.textContent = "Setting up";
+      later(900, function () {
+        btn.classList.remove("is-loading");
+        btn.classList.add("is-done");
+        label.textContent = "Chosen";
+        state.plan = plan;
+        render();
+        log("Selected the " + plan + " plan");
+        later(1200, function () {
+          btn.classList.remove("is-done");
+          btn.disabled = false;
+          label.textContent = original;
+        });
+      });
+    });
+  });
+
+  // Reset the demo state
+  els.reset.addEventListener("click", function () {
+    state = { cart: 0, saved: false, gift: false, plan: null, notify: false };
+    els.gift.checked = false;
+    els.notify.disabled = false;
+    els.notify.querySelector(".dream-label").textContent = "Notify me when restocked";
+    render();
+    log("Demo reset");
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

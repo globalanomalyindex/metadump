@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {
+      "imagery": 7,
+      "form": 3,
+      "specificity": 7,
+      "freshness": 6,
+      "resonance": 6,
+      "overall": 5,
+      "note": "Syllables are 6-8-6 (sun gone be-hind the ridge = 6; one cloud keeps its moth-er-of-pearl = 8; un-til the grey comes in = 6), so the 5-7-5 form is missed, though the sunset ridge and the grey closing in give a real turn and a plausible nacreous-twilight evocation."
+    },
+    "X": {
+      "imagery": 5,
+      "form": 9,
+      "specificity": 5,
+      "freshness": 4,
+      "resonance": 5,
+      "overall": 5,
+      "note": "Exact 5-7-5 (moth-er-of-pearl sky = 5; a cloud no one has named yet = 7; drifts past the moun-tain = 5), but \"mother-of-pearl sky\" is a stock phrase and \"no one has named yet\" tells rather than shows, and it is loosely accurate since nacreous clouds are a named phenomenon."
+    },
+    "Y": {
+      "imagery": 8,
+      "form": 4,
+      "specificity": 7,
+      "freshness": 8,
+      "resonance": 7,
+      "overall": 7,
+      "note": "Syllables are 5-5-6 (the am-ber band fades = 5; a thin blue-white streak = 5; stars still show-ing a-bove = 6), a near-miss on 5-7-5 but with a tight short-short-long shape that works; the amber fade and blue-white streak read like noctilucent or twilight cloud, and the stars above close on a quiet turn."
+    },
+    "Z": {
+      "imagery": 8,
+      "form": 9,
+      "specificity": 9,
+      "freshness": 7,
+      "resonance": 8,
+      "overall": 9,
+      "note": "Exact 5-7-5 (Nac-re-ous at dusk = 5; rain-bows bloom on a thin veil = 7; gone be-fore we look = 5), naming nacreous cloud and its iridescence accurately, with \"gone before we look\" landing the ephemerality; the reply is only the poem, with no padding."
+    }
+  },
+  "ranking": ["Z", "Y", "W", "X"]
+}

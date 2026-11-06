@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j3",
+  "scores": {
+    "W": {"style": 5, "motion": 7, "loop": 8, "craft": 7, "originality": 2, "overall": 4, "note": "Assembles the Figma logo mark piece for piece (half-pill top-left, coral, purple, blue, green circles), which breaks the no-logo rule; otherwise a clean staggered scatter-and-assemble with a seamless opacity-0 seam."},
+    "X": {"style": 5, "motion": 5, "loop": 8, "craft": 4, "originality": 4, "overall": 3, "note": "Selection-handle idea is a nice Figma nod, but the starburst's CSS transform overrides its SVG translate, so it sits clipped in the top-left corner instead of beside the square."},
+    "Y": {"style": 5, "motion": 5, "loop": 9, "craft": 6, "originality": 3, "overall": 5, "note": "All motion is periodic sine/cosine, so the loop is mathematically exact, but the orbiting, drifting, and bobbing shapes read as a generic shape screensaver with no designed choreography."},
+    "Z": {"style": 8, "motion": 8, "loop": 9, "craft": 7, "originality": 7, "overall": 8, "note": "Uses Figma's exact palette and shape vocabulary (quarter, half, circle, squircle, pill) on a dark glow without copying the logo, with staggered eased assemble, stretch, and scatter that returns exactly to its start."}
+  },
+  "ranking": ["Z", "Y", "W", "X"]
+}

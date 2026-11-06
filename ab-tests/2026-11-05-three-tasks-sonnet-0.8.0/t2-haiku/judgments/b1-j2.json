@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"imagery":6,"form":9,"specificity":4,"freshness":6,"resonance":5,"overall":5,"note":"5-7-5 (Pearl a-long one edge=5; the sun gone the cloud holds on=7; o-ver creak-ing ice=5) but the cloud is never identified as rare and the ice is a loose add-on."},
+"X":{"imagery":6,"form":9,"specificity":8,"freshness":4,"resonance":6,"overall":6,"note":"5-7-5 (Moth-er-of-pearl sky=5; na-cre-ous clouds hold the dusk=7; long af-ter sun-set=5), names nacreous clouds accurately but 'hold the dusk' and the mother-of-pearl label are stock."},
+"Y":{"imagery":5,"form":5,"specificity":7,"freshness":4,"resonance":4,"overall":4,"note":"Counts 4-7-5 (Pearl-lit they glow=4), so the first line misses the form, and it largely repeats X's middle line."},
+"Z":{"imagery":9,"form":9,"specificity":9,"freshness":8,"resonance":8,"overall":9,"note":"5-7-5 (Sun be-low the ridge=5; a lens cloud's edge still holds pearl=7; green then pink then gone=5), a lenticular cloud with iridescent colour shifts and a fading turn in the last line."}},
+"ranking":["Z","X","W","Y"]}

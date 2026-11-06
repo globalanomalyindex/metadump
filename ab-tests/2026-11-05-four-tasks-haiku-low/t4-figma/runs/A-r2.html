@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figma-style loop</title>
+<style>
+  :root {
+    --bg: #0e0e11;
+    --red: #F24E1E;
+    --orange: #FF7262;
+    --purple: #A259FF;
+    --blue: #1ABCFE;
+    --green: #0ACF83;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .stage {
+    position: relative;
+    width: min(86vmin, 620px);
+    aspect-ratio: 1;
+  }
+  .glow {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    filter: blur(28px);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .g1 {
+    left: 2%; top: 4%;
+    background: radial-gradient(circle, rgba(242, 78, 30, 0.7), transparent 65%);
+    animation: drift1 5s ease-in-out infinite;
+  }
+  .g2 {
+    right: 2%; top: 10%;
+    background: radial-gradient(circle, rgba(26, 188, 254, 0.6), transparent 65%);
+    animation: drift2 5s ease-in-out infinite;
+  }
+  .g3 {
+    left: 14%; bottom: 0;
+    background: radial-gradient(circle, rgba(162, 89, 255, 0.6), transparent 65%);
+    animation: drift3 5s ease-in-out infinite;
+  }
+  .logo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .piece {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: piece 5s infinite;
+  }
+  @keyframes piece {
+    0%   { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(var(--sr)) scale(0.4);
+           animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+    16%  { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1.06);
+           animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+    22%  { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1);
+           animation-timing-function: ease-in-out; }
+    46%  { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1);
+           animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1); }
+    60%  { opacity: 1; transform: translate(var(--ex), var(--ey)) rotate(var(--er)) scale(1);
+           animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+    74%  { opacity: 1; transform: translate(var(--ex), var(--ey)) rotate(var(--er)) scale(0.9);
+           animation-timing-function: ease-in; }
+    88%  { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1);
+           animation-timing-function: ease-in; }
+    96%  { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(var(--sr)) scale(0.4); }
+    100% { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(var(--sr)) scale(0.4); }
+  }
+  @keyframes drift1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(8%, -6%) scale(1.12); }
+  }
+  @keyframes drift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-7%, 8%) scale(0.9); }
+  }
+  @keyframes drift3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(5%, -8%) scale(1.08); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .piece, .glow { animation: none; }
+    .piece { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" role="img" aria-label="Five colored geometric shapes assemble into a logo, burst apart, and reassemble">
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+  <div class="glow g3"></div>
+  <svg class="logo" viewBox="-10 5 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path class="piece" style="fill: var(--red); --sx: -260px; --sy: -150px; --sr: -200deg; --ex: -90px; --ey: -120px; --er: -30deg; animation-delay: 0s"
+          d="M140,155 A25,25 0 0 1 165,130 H190 V180 H140 Z"/>
+    <circle class="piece" style="fill: var(--orange); --sx: 260px; --sy: -160px; --sr: 180deg; --ex: 110px; --ey: -120px; --er: 25deg; animation-delay: 0.05s"
+            cx="215" cy="155" r="25"/>
+    <circle class="piece" style="fill: var(--purple); --sx: -280px; --sy: 60px; --sr: -120deg; --ex: -150px; --ey: 10px; --er: -15deg; animation-delay: 0.1s"
+            cx="165" cy="205" r="25"/>
+    <path class="piece" style="fill: var(--blue); --sx: -240px; --sy: 200px; --sr: 90deg; --ex: -100px; --ey: 150px; --er: 20deg; animation-delay: 0.15s"
+          d="M140,230 H190 V280 H165 A25,25 0 0 1 140,255 Z"/>
+    <circle class="piece" style="fill: var(--green); --sx: 280px; --sy: 180px; --sr: -150deg; --ex: 120px; --ey: 150px; --er: -25deg; animation-delay: 0.2s"
+            cx="215" cy="255" r="25"/>
+  </svg>
+</div>
+</body>
+</html>

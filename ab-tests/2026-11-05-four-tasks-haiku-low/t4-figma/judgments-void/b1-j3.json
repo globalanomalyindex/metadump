@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j3",
+  "scores": {
+    "W": {"style": 5, "motion": 8, "loop": 9, "craft": 8, "originality": 4, "overall": 6, "note": "Dark glow field with staggered overshoot assembly, burst and reassembly loops cleanly on 5 s, but it rebuilds Figma's own five-shape mark, which breaks the no-logo rule."},
+    "X": {"style": 6, "motion": 6, "loop": 4, "craft": 5, "originality": 6, "overall": 5, "note": "Flat primitives with stripes and a starburst feel brand-adjacent, but the starburst rotates 90 degrees and snaps back at the seam (its shape is not 90-degree symmetric), and a letterbox band shows at the bottom of the desktop frame."},
+    "Y": {"style": 7, "motion": 7, "loop": 9, "craft": 8, "originality": 7, "overall": 7, "note": "A bounded card of brand-palette primitives with Figma-style transform handles; every CSS keyframe returns to its start value, the motion is gentle, and it avoids copying the logo."},
+    "Z": {"style": 4, "motion": 6, "loop": 9, "craft": 7, "originality": 2, "overall": 3, "note": "Reproduces Figma's five-shape mark almost exactly on a flat gray field; the loop is clean, but this is a logo animation rather than a brand visual."}
+  },
+  "ranking": ["Y", "W", "X", "Z"]
+}

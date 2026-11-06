@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"compact": 5, "collapsible": 6, "tracking": 7, "dark": 8, "usability": 6, "craft": 6, "overall": 6, "note": "Multi-package list is dense and tall when expanded (about 470px at rest), collapse and expand are instant with no transition, and the tracking and carrier inputs rely on placeholders with no labels."},
+"X": {"compact": 9, "collapsible": 9, "tracking": 9, "dark": 8, "usability": 9, "craft": 8, "overall": 9, "note": "A 300px pill expands into a tight card with a stage stepper, ETA, full tracking number, recent scans and a next-step line, with a grid-rows transition, inert body, aria-expanded, Escape to collapse, and a dismiss tab."},
+"Y": {"compact": 7, "collapsible": 9, "tracking": 8, "dark": 8, "usability": 8, "craft": 8, "overall": 8, "note": "The 232px pill animates width and height smoothly and the full six-checkpoint timeline with next-step advice is well organized, though the ETA truncates at rest and the expanded card is tall."},
+"Z": {"compact": 6, "collapsible": 6, "tracking": 5, "dark": 7, "usability": 5, "craft": 6, "overall": 5, "note": "Package detail expands from a div with no tabindex or role, so keyboard users cannot reach it, the tracking number is cut to six digits, and the panel is tall at rest with no next-step guidance."}
+},
+"ranking": ["X", "Y", "W", "Z"]}

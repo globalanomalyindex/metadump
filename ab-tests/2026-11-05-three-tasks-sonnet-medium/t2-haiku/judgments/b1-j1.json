@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j1", "scores": {
+"W": {"imagery": 8, "form": 9, "specificity": 7, "freshness": 8, "resonance": 7, "overall": 8, "note": "Counts 5-7-5 (sun gone from the street / a veil of ice up there still / burning pearl and rose); the street-to-sky cut is strong and nacreous clouds are evoked without being named, though 'veil' and 'pearl' are slightly familiar."},
+"X": {"imagery": 7, "form": 9, "specificity": 9, "freshness": 6, "resonance": 6, "overall": 7, "note": "Counts 5-7-5 (Mother-of-pearl veils / nacreous light at dusk, slow / fire on frozen air); accurately names nacreous clouds and the ice-fire contrast, but mother-of-pearl is the stock phrase and the middle line is padded."},
+"Y": {"imagery": 8, "form": 9, "specificity": 8, "freshness": 8, "resonance": 9, "overall": 9, "note": "Counts 5-7-5 (Winter dusk, sun gone / a veil too high for the dark / holds mother-of-pearl); the idea of a cloud too high for the darkness is accurate to polar stratospheric clouds and gives the poem its turn."},
+"Z": {"imagery": 5, "form": 4, "specificity": 6, "freshness": 3, "resonance": 4, "overall": 4, "note": "Counts 4-7-5 (Nacreous glow = 4), so the opening line misses the form, and 'the sky holds its breath' is a stock closer."}
+}, "ranking": ["Y", "W", "X", "Z"]}

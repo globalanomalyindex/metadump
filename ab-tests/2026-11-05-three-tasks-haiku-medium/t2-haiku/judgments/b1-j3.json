@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j3",
+  "scores": {
+    "W": {
+      "imagery": 8,
+      "form": 9,
+      "specificity": 9,
+      "freshness": 6,
+      "resonance": 8,
+      "overall": 8,
+      "note": "Counts exactly 5-7-5 (Na-cre-ous at dusk / rain-bows bloom on a thin veil / gone be-fore we look), names nacreous clouds and evokes their iridescence accurately, though 'thin veil' is a soft stock image and 'gone before we look' is a familiar closing move."
+    },
+    "X": {
+      "imagery": 7,
+      "form": 4,
+      "specificity": 4,
+      "freshness": 6,
+      "resonance": 6,
+      "overall": 5,
+      "note": "Counts 5-5-6 (the am-ber band fades / a thin blue-white streak / stars still show-ing a-bove), so the middle line is short and the shape is loose; the amber band and streak are vivid but the cloud is never clearly identified as rare, and the double dash and trailing spaces add markdown clutter."
+    },
+    "Y": {
+      "imagery": 8,
+      "form": 5,
+      "specificity": 8,
+      "freshness": 6,
+      "resonance": 8,
+      "overall": 7,
+      "note": "Counts 6-8-6 (sun gone be-hind the ridge / one cloud keeps its moth-er-of-pearl / un-til the grey comes in), so it misses 5-7-5 and is not a tight short-long-short; the nacreous mother-of-pearl image and the cloud holding its colour until the grey arrives land well."
+    },
+    "Z": {
+      "imagery": 7,
+      "form": 9,
+      "specificity": 7,
+      "freshness": 8,
+      "resonance": 7,
+      "overall": 8,
+      "note": "Counts exactly 5-7-5 (moth-er-of-pearl sky / a cloud no one has named yet / drifts past the moun-tain); the unnamed-cloud conceit is a fresh turn on rarity, though the mountain image is sparse and the premise sits loosely against nacreous clouds being named."
+    }
+  },
+  "ranking": ["W", "Z", "Y", "X"]
+}

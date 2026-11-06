@@ -1,13 +1,13 @@
 # Metadump
 
-A plugin/skill that turns a prompt (plus optional references) into a meta dump: a brain dump of structured task knowledge that models, tools and subagents draw on like a search index while the work is done. The dump seeds the work; it is not a source of truth to obey.
+A plugin/skill that turns a prompt (plus optional references) into a meta dump: a brain dump of structured task knowledge that models, tools and subagents draw on like a search index while the work is done. The dump brings material up to the surface to be tinkered and played with; it is not a source of truth to obey, and nothing in it is an instruction.
 
 ## Language
 
 ### The artifact
 
 **Meta dump**:
-One self-contained JSON file holding everything a model could usefully know about one task, built from a prompt and drawn on repeatedly while the work is done: the model's stream of consciousness about the task, put on paper. Like eating and digesting: everything goes in (the prompt, references, research, pages, videos, images, what the model knows), gets broken down and absorbed, and comes out as one new thing. Nothing passes through whole. It holds what was collected (the user's words, references, researched facts, screenshots, measurements, timings, transcripts) and what a model knows or can think of around the task (keywords, anti-keywords, readings, associations, exemplars, patterns, needs, options, decision points), each labeled for what it is. It seeds the work: it widens what the model can draw on and pins down specifics it would otherwise guess, and it never narrows the request. The user's prompt sets the scope and the model's judgment decides. Apart from its spine, its shape is designed for the task, which can be design, coding, TDD or any other work.
+One self-contained JSON file holding everything a model could usefully know about one task, built from a prompt and drawn on repeatedly while the work is done: the model's stream of consciousness about the task, put on paper. Like eating and digesting: everything goes in (the prompt, references, research, pages, videos, images, what the model knows), gets broken down and absorbed, and comes out as one new thing. Nothing passes through whole. It holds what was collected (the user's words, references, researched facts, screenshots, measurements, timings, transcripts) and what a model knows or can think of around the task (keywords, anti-keywords, readings, associations, exemplars, patterns, needs, options, decision points), each labeled for what it is. It seeds the work: it surfaces what the model knows but wouldn't say first, widens what it can draw on, and pins down specifics it would otherwise guess. It never narrows the request and gives no orders: apart from the user's own words, everything in it is material to pick from, combine and adjust. The user's prompt sets the scope and the model's judgment decides. Apart from its spine, its shape is designed for the task, which can be design, coding, TDD or any other work.
 _Avoid_: metadata file, spec, brief, style guide, mood board, source of truth, rulebook
 
 **Spine**:
@@ -39,12 +39,40 @@ The shape every entry takes, from the owner's hand-made dumps: one object per ar
 _Avoid_: card, record, item
 
 **Thesis**:
-The one idea at the top of a meta dump that explains the rest ("colors appear to exist inside materials rather than on their surfaces"). Recorded in the essence.
-_Avoid_: summary, tagline, headline
+The one idea at the top of a meta dump about what makes the subject interesting ("colors appear to exist inside materials rather than on their surfaces"). An insight, never a recipe for the deliverable. Recorded in the essence.
+_Avoid_: summary, tagline, headline, rule
+
+**Angle**:
+One of 2 to 5 contrasting ways into the task listed in the head, each a move and the entries it draws on. None is the default, so consumers start from different places instead of one road.
+_Avoid_: approach, strategy, direction (as a recommendation)
+
+**Deep cut**:
+Material the model knows but wouldn't surface on its own: the less obvious exemplar, the odd corner of the subject, the exact number, the term a specialist uses. What a dump exists to bring up.
+_Avoid_: trivia, fun fact
+
+**Dial**:
+A value offered with a range and what turning it does ("hover-in 300 to 700 ms: slower reads dreamier, past 700 it feels laggy"). The consumer sets it. Measured and sourced values are facts; illustrative ones are dials.
+_Avoid_: setting, default, parameter (as a fixed value)
+
+**Deal**:
+Giving one session a hand of the dump, chosen by real randomness outside the model (`deal.py`). The **hand** is the part of the deck that session works from: the user's words and don'ts, every tier-1 entry and the review questions, plus a random half of everything else (the dump's own worn paths included), in a fresh order, with a random angle to start from and a few deep cuts on top. The **dealt copy** is the file that holds the hand; the **deck** is the whole dump, which never changes. Sessions dealt from the same deck work from different mixes of it.
+_Avoid_: shuffle (as a step the model does itself), sample, recommendation, subset (it suggests a filter rather than a deal)
+
+**Look**:
+Rendering what a session built in the local headless browser and reading the screenshots before finishing: desktop and phone widths, the main control hovered, the main toggle opened, with a short list of what a reviewer would see (clipping, overlap, overflow, tiny targets, a hover that changes nothing) as things to look at, not rules (`look.py`, ADR 0018). The question asked of every screenshot is whether it reads as the user's words at full strength.
+_Avoid_: lint, gate, QA pass, visual regression
+
+**Spread**:
+How a dump offers any value the work has to choose: a range, or several values far apart across the space, each with what it does. Never a single value, which a consumer copies. The dump lays out the space; the consumer makes the choice.
+_Avoid_: setting, preset, recommended value
+
+**Setting**:
+A single value, default or verdict in a dump that makes a choice the work should make. Consumers copy settings, so a dump holds spreads instead.
+_Avoid_: (use it only for what a dump must not hold)
 
 **Formula**:
-The task compressed into a recipe ("saturated color + high-key light + translucent materials + minimal composition"), with the role each element plays. Recorded in the essence.
-_Avoid_: template, rule
+The subject's ingredients in one line ("saturated color + high-key light + translucent materials + minimal composition"), with the role each element plays: one combination among several, never the steps for making the deliverable. Recorded in the essence.
+_Avoid_: template, rule, recipe
 
 **Provenance**:
 The tag on every entry saying where it came from: `user_stated`, `reference_observed`, `researched`, `inferred`, `proposed`, or `unknown`, ranked in that order when entries conflict. A user-supplied video or image gives `reference_observed`; something found on the web gives `researched`.
@@ -74,8 +102,12 @@ _Avoid_: disambiguator
 The anti-keyword kind that excludes something from the output, e.g. "no stock-photo people".
 _Avoid_: ban, blocklist entry
 
+**Worn path**:
+A not-wanted anti-keyword the build wrote itself: where a typical output falls short of the user's words (a wrong reading, a generic default that drops part of the request, a stock phrase), with an `instead` that goes further along them. The usual moves for the user's own quality words are never worn paths; they are the material the dump pushes further (ADR 0016).
+_Avoid_: rule, ban, cliché list (as a list of the user's own quality's vocabulary)
+
 **Check**:
-An optional review prompt derived from objective entries ("highlights read white, not tinted") that a consumer may run on its own output as a self-review. Kept under the `checks` key, with its `severity`, for compatibility; a check never forces a revision, and a consumer may deviate and say why.
+An optional review question derived from objective entries ("do the highlights read white, or tinted?") that a consumer may ask of its own output as a self-review. Kept under the `checks` key, with its `severity`, for compatibility; a check never forces a revision, and a consumer may deviate and say why.
 _Avoid_: gate, requirement, must-pass test
 
 **Task ladder**:
@@ -173,5 +205,5 @@ Building a meta dump autonomously from a prompt and optional references, without
 _Avoid_: generate, dump mode
 
 **Use mode**:
-Working from an existing meta dump: consulting slices before each step for the specifics the work would otherwise guess, optionally reviewing output against the dump's checks, and writing new decisions back with their provenance. Consult, don't obey: the user's prompt and the model's judgment decide.
+Working from an existing meta dump: your own take first, then spreading out the slices that bear on the step and playing with them (picking what sparks something, combining unlikely pieces, turning dials, sketching variations), optionally looking back at the output with the dump's review questions, and writing new decisions back with their provenance. Play, don't obey: the user's prompt and the model's judgment decide.
 _Avoid_: query mode, read mode, compliance

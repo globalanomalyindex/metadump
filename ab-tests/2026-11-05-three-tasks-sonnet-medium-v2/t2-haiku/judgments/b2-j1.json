@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"imagery": 8, "form": 9, "specificity": 7, "freshness": 7, "resonance": 8, "overall": 8, "note": "Counts 5-7-5 (Moth-er-of-pearl cloud / I hold out cold hands to catch / col-our drain-ing off); human gesture of catching fading iridescence gives a real turn, though nacreous is only evoked via mother-of-pearl."},
+"X": {"imagery": 7, "form": 9, "specificity": 9, "freshness": 5, "resonance": 5, "overall": 6, "note": "Counts 5-7-5 (Na-cre-ous glow burns / in the long dark be-fore dawn / moth-er-of-pearl sky); accurate to polar stratospheric clouds glowing before dawn but descriptive with no turn and stock mother-of-pearl."},
+"Y": {"imagery": 5, "form": 9, "specificity": 3, "freshness": 6, "resonance": 5, "overall": 4, "note": "Counts 5-7-5 (Af-ter the storm waves / a sky I did not ask for / held out in both hands); lovely gesture but waves and storm only vaguely suggest undulatus, barely about rare clouds."},
+"Z": {"imagery": 5, "form": 8, "specificity": 8, "freshness": 4, "resonance": 4, "overall": 5, "note": "Counts 5-7-5 (Moth-er-of-pearl sheets / na-cre-ous light on cold air / dawn the sky holds brief); accurate but abstract, repeats the stock mother-of-pearl, and the last line is clumsy."}
+}, "ranking": ["W", "X", "Z", "Y"]}

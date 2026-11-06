@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en" data-surface="glow" data-reduce="false">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stillwater Studio: Reserve a Session</title>
+<style>
+/* ---------- tokens ---------- */
+:root {
+  color-scheme: dark;
+  --page-rgb: 13 17 38;
+  --text: #e9ecf7;
+  --muted: #a9b0cc;
+  --card: #161b38;
+  --edge-soft: rgb(255 255 255 / .09);
+  --focus-rgb: 159 216 255;
+  --focus: rgb(var(--focus-rgb));
+  --lilac: 184 166 255;
+  --teal: 127 227 214;
+
+  /* written by the script from the chosen motion reading */
+  --m-lift: 2px;
+  --m-enter-dur: 220ms;
+  --m-enter-ease: cubic-bezier(.33, 1, .68, 1);
+  --m-exit-dur: 300ms;
+  --m-exit-ease: cubic-bezier(.33, 1, .68, 1);
+  --m-tail-dur: 650ms;
+  --m-tail-ease: cubic-bezier(.22, 1, .36, 1);
+
+  /* the names the button uses */
+  --lift: var(--m-lift);
+  --enter-dur: var(--m-enter-dur);
+  --enter-ease: var(--m-enter-ease);
+  --exit-dur: var(--m-exit-dur);
+  --exit-ease: var(--m-exit-ease);
+  --tail-dur: var(--m-tail-dur);
+  --tail-ease: var(--m-tail-ease);
+  --tail-delay: 0ms;
+  --press: .98;
+  --glow-scale: 1.04;
+}
+
+/* ---------- light readings (surface) ---------- */
+html[data-surface="glow"] {
+  --face-rgb: 243 234 217; --face-a: 1;
+  --ink-rgb: 19 22 44;
+  --edge-rgb: 255 255 255; --edge-a: 0;
+  --sheen-rgb: 255 255 255; --sheen-hover: .16; --sheen-press: .28;
+  --glow-rgb: var(--lilac); --glow-hover: .85; --blur: 16px;
+  --ring-rgb: 200 210 255; --ring-hover: 0;
+}
+html[data-surface="halo"] {
+  --face-rgb: 255 255 255; --face-a: .06;
+  --ink-rgb: 238 240 250;
+  --edge-rgb: 255 255 255; --edge-a: .42;
+  --sheen-rgb: 200 210 255; --sheen-hover: .06; --sheen-press: .14;
+  --glow-rgb: var(--lilac); --glow-hover: .18; --blur: 14px;
+  --ring-rgb: 200 210 255; --ring-hover: .9;
+}
+html[data-surface="hairline"] {
+  --face-rgb: 255 255 255; --face-a: .04;
+  --ink-rgb: 238 240 250;
+  --edge-rgb: 255 255 255; --edge-a: .4;
+  --sheen-rgb: 255 255 255; --sheen-hover: .1; --sheen-press: .18;
+  --glow-rgb: var(--teal); --glow-hover: .3; --blur: 14px;
+  --ring-rgb: 200 210 255; --ring-hover: 0;
+}
+html[data-surface="frosted"] {
+  --face-rgb: 255 255 255; --face-a: .14;
+  --ink-rgb: 246 247 252;
+  --edge-rgb: 255 255 255; --edge-a: .3;
+  --sheen-rgb: 255 255 255; --sheen-hover: .08; --sheen-press: .24;
+  --glow-rgb: var(--teal); --glow-hover: .35; --blur: 14px;
+  --ring-rgb: 200 210 255; --ring-hover: 0;
+}
+/* backdrop blur only on the one focal button */
+html[data-surface="frosted"] .btn--focal .btn__face {
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+/* ---------- reduced motion: the response stays, the travel and loops go ---------- */
+html[data-reduce="true"] {
+  --lift: 0px; --press: 1; --glow-scale: 1;
+  --enter-dur: 150ms; --exit-dur: 150ms; --tail-dur: 150ms;
+  --enter-ease: linear; --exit-ease: linear; --tail-ease: linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-reduce="false"]) {
+    --lift: 0px; --press: 1; --glow-scale: 1;
+    --enter-dur: 150ms; --exit-dur: 150ms; --tail-dur: 150ms;
+    --enter-ease: linear; --exit-ease: linear; --tail-ease: linear;
+  }
+}
+
+/* ---------- page ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; padding-bottom: 56px;
+  background: rgb(var(--page-rgb));
+  color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; }
+.brand { display: inline-flex; align-items: center; color: var(--text); text-decoration: none; font-weight: 650; letter-spacing: .01em; }
+.brand__mark {
+  display: inline-block; width: 14px; height: 14px; margin-right: 10px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, #b8a6ff 45%, #1f6f73);
+}
+.top nav a { color: var(--muted); text-decoration: none; margin-left: 18px; padding: 4px 0; }
+.top nav a:hover { color: var(--text); }
+.text-link { color: #cfd6f5; padding: 10px 2px; text-underline-offset: 4px; }
+
+.layout { display: grid; gap: 24px; margin-top: 8px; }
+@media (min-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  .side { position: sticky; top: 16px; }
+}
+.side { display: grid; gap: 16px; }
+
+/* hero */
+.hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  padding: 64px 28px 56px; border-radius: 24px;
+  border: 1px solid var(--edge-soft);
+  background: linear-gradient(160deg, #181e42 0%, #0d1126 70%);
+}
+.orb { position: absolute; z-index: -1; border-radius: 50%; filter: blur(60px); opacity: .35; pointer-events: none; }
+.orb--a { width: 340px; height: 340px; right: -90px; top: -120px; background: #4b3f9a; }
+.orb--b { width: 260px; height: 260px; right: 160px; bottom: -150px; background: #1f6f73; opacity: .28; }
+.eyebrow { margin: 0 0 14px; color: #b9bfe0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.hero h1 { margin: 0; font-size: clamp(2.1rem, 5.4vw, 3.4rem); line-height: 1.05; font-weight: 650; letter-spacing: -.01em; max-width: 14ch; }
+.lede { margin: 18px 0 0; max-width: 56ch; color: #c9cfe6; }
+.hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 28px; }
+
+/* sessions */
+.sessions { margin-top: 40px; }
+.section-head h2 { margin: 0; font-size: 1.6rem; }
+.section-head h2:focus { outline: none; }
+.section-head p { margin: 4px 0 0; color: var(--muted); }
+.plans { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 20px; }
+@media (min-width: 700px) { .plans { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.plan {
+  display: flex; flex-direction: column; gap: 10px; padding: 22px;
+  background: var(--card); border: 1px solid var(--edge-soft); border-radius: 18px;
+}
+.plan.is-chosen { border-color: rgb(184 166 255 / .6); }
+.plan h3 { margin: 0; font-size: 1.15rem; }
+.plan p { margin: 0; }
+.plan__top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.price { font-size: 1.4rem; font-weight: 650; }
+.plan__meta { color: var(--muted); font-size: 14px; }
+.plan .btn { margin-top: auto; }
+
+.times { border: 0; padding: 0; margin: 28px 0 0; }
+.times legend { font-weight: 600; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; cursor: pointer;
+  border: 1px solid var(--edge-soft); border-radius: 999px; background: rgb(255 255 255 / .03);
+}
+.chip input { position: absolute; opacity: 0; pointer-events: none; margin: 0; }
+.chip:has(input:checked) { background: rgb(184 166 255 / .2); border-color: rgb(184 166 255 / .7); }
+.chip:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* ---------- the button ---------- */
+.btn {
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  min-height: 48px; padding: 0 24px; margin: 0;
+  border: 0; border-radius: 999px; background: none;
+  color: rgb(var(--ink-rgb));
+  font: inherit; font-weight: 600; font-size: 16px; letter-spacing: .01em; line-height: 1.2; text-align: center;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--exit-dur) var(--exit-ease);
+}
+.btn--block { display: flex; width: 100%; }
+.btn__glow {
+  position: absolute; inset: -12px; z-index: -2; border-radius: 999px; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(var(--glow-rgb) / .95), rgb(var(--teal) / .4) 62%, rgb(var(--teal) / 0));
+  filter: blur(var(--blur)); opacity: 0;
+  transition: opacity var(--exit-dur) var(--exit-ease), transform var(--exit-dur) var(--exit-ease);
+}
+.btn__face {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: rgb(var(--face-rgb) / var(--face-a));
+  box-shadow: inset 0 0 0 1px rgb(var(--edge-rgb) / var(--edge-a));
+}
+.btn__face::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: rgb(var(--sheen-rgb)); opacity: 0;
+}
+.btn__face::after {
+  content: ""; position: absolute; inset: -5px; border-radius: inherit;
+  border: 1px solid rgb(var(--ring-rgb)); opacity: 0;
+}
+.btn__label { position: relative; }
+
+/* keyboard: the same light, quieter, with a ring */
+.btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; transform: translate3d(0, calc(-.5 * var(--lift)), 0); transition: transform var(--enter-dur) var(--enter-ease); }
+.btn:focus-visible .btn__glow { opacity: calc(var(--glow-hover) * .4); }
+
+/* pointer hover only where a pointer can hover; enter and exit timed apart */
+@media (hover: hover) {
+  .btn:not(:disabled):hover {
+    transform: translate3d(0, calc(-1 * var(--lift)), 0);
+    transition: transform var(--enter-dur) var(--enter-ease);
+  }
+  .btn:not(:disabled):hover .btn__face::before {
+    opacity: var(--sheen-hover);
+    transition: opacity var(--enter-dur) var(--enter-ease);
+  }
+  .btn:not(:disabled):hover .btn__face::after {
+    opacity: var(--ring-hover);
+    transition: opacity var(--tail-dur) var(--tail-ease);
+  }
+  .btn:not(:disabled):hover .btn__glow {
+    opacity: var(--glow-hover);
+    transform: translate3d(0, calc(-.5 * var(--lift)), 0) scale(var(--glow-scale));
+    transition: opacity var(--tail-dur) var(--tail-ease) var(--tail-delay), transform var(--tail-dur) var(--tail-ease) var(--tail-delay);
+  }
+}
+
+/* press: answers at once, on transform and opacity only */
+.btn:not(:disabled):active {
+  transform: translate3d(0, 0, 0) scale(var(--press));
+  transition: transform 90ms ease-out;
+}
+.btn:not(:disabled):active .btn__face::before {
+  opacity: var(--sheen-press);
+  transition: opacity 90ms ease-out;
+}
+
+/* disabled: no response, legible label */
+.btn:disabled {
+  --face-rgb: 58 63 92; --face-a: 1; --ink-rgb: 201 205 224; --edge-a: 0;
+  cursor: not-allowed;
+}
+.btn:disabled .btn__glow { opacity: 0; }
+
+/* ---------- side cards ---------- */
+.card { background: var(--card); border: 1px solid var(--edge-soft); border-radius: 18px; padding: 20px; }
+.card h2 { margin: 0 0 12px; font-size: 1.05rem; }
+.summary { margin: 0 0 16px; display: grid; gap: 8px; }
+.summary div { display: flex; justify-content: space-between; gap: 12px; }
+.summary dt { color: var(--muted); }
+.summary dd { margin: 0; text-align: right; }
+.reserve .btn { margin-top: 0; }
+#save { margin-top: 10px; }
+.hint, .readout { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+.status { min-height: 1.5em; margin: 10px 0 0; color: #cfd6f5; font-size: 14px; }
+
+.opts { border: 0; padding: 0; margin: 0 0 14px; }
+.opts legend { margin-bottom: 6px; color: var(--muted); font-size: 14px; font-weight: 600; }
+.opts label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 12px; cursor: pointer; }
+.opts label:has(input:checked) { background: rgb(184 166 255 / .14); }
+.opts label span { display: grid; }
+.opts small { color: var(--muted); font-size: 13px; }
+input[type="radio"], input[type="checkbox"] { accent-color: #b8a6ff; width: 18px; height: 18px; margin: 3px 0 0; flex: none; }
+.check { display: flex; align-items: center; gap: 10px; margin: 8px 0; cursor: pointer; }
+
+.custom { display: grid; gap: 10px; margin: 4px 0 14px; padding: 12px; border-radius: 14px; background: rgb(255 255 255 / .03); }
+.custom svg { width: 100%; max-width: 240px; height: auto; justify-self: center; border-radius: 10px; background: rgb(0 0 0 / .18); }
+.custom label { display: grid; grid-template-columns: 28px 1fr 60px; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+.custom input[type="range"] { width: 100%; accent-color: #b8a6ff; margin: 0; }
+.custom output { color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+
+.state dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0 0 14px; font-size: 14px; }
+.state dt { color: var(--muted); }
+.state dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.state h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+#log { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--muted); font-size: 14px; }
+.list { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#top"><span class="brand__mark" aria-hidden="true"></span>Stillwater Studio</a>
+    <nav aria-label="Main">
+      <a href="#plans">Sessions</a>
+      <a href="#times">Times</a>
+      <a href="#">Studio</a>
+      <a href="#">Visit</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <div class="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="orb orb--a" aria-hidden="true"></div>
+        <div class="orb orb--b" aria-hidden="true"></div>
+        <p class="eyebrow">Sound and light, Tuesday to Sunday</p>
+        <h1 id="hero-title">Quiet hours, lit from within.</h1>
+        <p class="lede">Stillwater is a small room with the lights kept low, a warm bowl of sound, and a slow light that follows the breath. Sessions run from one hour to a half day, for one to six people.</p>
+        <div class="hero__actions">
+          <button class="btn btn--focal" id="hero-cta" type="button">
+            <span class="btn__glow" aria-hidden="true"></span><span class="btn__face" aria-hidden="true"></span><span class="btn__label">Choose a session</span>
+          </button>
+          <a class="text-link" href="#times">See open times</a>
+        </div>
+      </section>
+
+      <section class="sessions" id="plans" aria-labelledby="plans-title">
+        <div class="section-head">
+          <h2 id="plans-title" tabindex="-1">Sessions</h2>
+          <p>Tea is included. Choose a session, then a start time.</p>
+        </div>
+
+        <div class="plans">
+          <article class="plan" id="plan-single">
+            <div class="plan__top"><h3>Single session</h3><p class="price">$85</p></div>
+            <p class="plan__meta">60 minutes, up to 6 people</p>
+            <p>One guided session in the quiet room. A good first visit.</p>
+            <button class="btn btn--block" type="button" data-plan="single" aria-pressed="false">
+              <span class="btn__glow" aria-hidden="true"></span><span class="btn__face" aria-hidden="true"></span><span class="btn__label">Choose</span>
+            </button>
+          </article>
+
+          <article class="plan" id="plan-sound">
+            <div class="plan__top"><h3>Sound and light</h3><p class="price">$140</p></div>
+            <p class="plan__meta">90 minutes, 2 to 6 people</p>
+            <p>A sound bath with a slow light sequence that follows the breath.</p>
+            <button class="btn btn--block" type="button" data-plan="sound" aria-pressed="false">
+              <span class="btn__glow" aria-hidden="true"></span><span class="btn__face" aria-hidden="true"></span><span class="btn__label">Choose</span>
+            </button>
+          </article>
+
+          <article class="plan" id="plan-retreat">
+            <div class="plan__top"><h3>Retreat day</h3><p class="price">$320</p></div>
+            <p class="plan__meta">Four hours, 1 to 4 people</p>
+            <p>Two sessions, tea, and a walk through the garden between them.</p>
+            <button class="btn btn--block" type="button" data-plan="retreat" aria-pressed="false">
+              <span class="btn__glow" aria-hidden="true"></span><span class="btn__face" aria-hidden="true"></span><span class="btn__label">Choose</span>
+            </button>
+          </article>
+        </div>
+
+        <fieldset class="times" id="times">
+          <legend>Start time</legend>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="time" value="5:30 pm"><span>5:30 pm</span></label>
+            <label class="chip"><input type="radio" name="time" value="7:00 pm" checked><span>7:00 pm</span></label>
+            <label class="chip"><input type="radio" name="time" value="8:30 pm"><span>8:30 pm</span></label>
+          </div>
+        </fieldset>
+      </section>
+    </div>
+
+    <aside class="side" aria-label="Reservation and settings">
+      <section class="card reserve" aria-labelledby="reserve-title">
+        <h2 id="reserve-title">Your reservation</h2>
+        <dl class="summary">
+          <div><dt>Session</dt><dd id="sum-plan">None yet</dd></div>
+          <div><dt>Start</dt><dd id="sum-time">7:00 pm</dd></div>
+          <div><dt>Total</dt><dd id="sum-total">$0</dd></div>
+        </dl>
+        <button class="btn btn--block" id="reserve" type="button" disabled>
+          <span class="btn__glow" aria-hidden="true"></span><span class="btn__face" aria-hidden="true"></span><span class="btn__label">Reserve</span>
+        </button>
+        <p class="hint" id="reserve-hint">Choose a session to reserve it.</p>
+        <button class="btn btn--block" id="save" type="button" aria-pressed="false">
+          <span class="btn__glow" aria-hidden="true"></span><span class="btn__face" aria-hidden="true"></span><span class="btn__label">Save for later</span>
+        </button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card tune" aria-labelledby="tune-title">
+        <h2 id="tune-title">Tune the feel</h2>
+
+        <fieldset class="opts">
+          <legend>Motion on hover</legend>
+          <label><input type="radio" name="motion" value="settle" checked><span>Settle with a light tail<small>Lands fast; the glow keeps moving.</small></span></label>
+          <label><input type="radio" name="motion" value="float"><span>Float that settles<small>A small lift with a return that stays under 2 percent.</small></span></label>
+          <label><input type="radio" name="motion" value="rebound"><span>Visible rebound<small>Comes back past rest once, then settles.</small></span></label>
+          <label><input type="radio" name="motion" value="drift"><span>Symmetric drift<small>Soft in and soft out.</small></span></label>
+          <label><input type="radio" name="motion" value="custom" id="m-custom"><span>Your curve<small>Set the four control points below.</small></span></label>
+        </fieldset>
+
+        <div class="custom">
+          <svg viewBox="0 0 160 120" role="img" aria-label="Preview of the easing curve">
+            <line x1="10" y1="56.2" x2="150" y2="56.2" stroke="rgb(255 255 255 / .25)" stroke-dasharray="3 3"/>
+            <line id="h1" x1="10" y1="94.6" x2="10" y2="94.6" stroke="rgb(184 166 255 / .6)"/>
+            <line id="h2" x1="150" y1="56.2" x2="150" y2="56.2" stroke="rgb(184 166 255 / .6)"/>
+            <path id="curve" d="" fill="none" stroke="#e9ecf7" stroke-width="2" stroke-linecap="round"/>
+            <circle id="p1" cx="10" cy="94.6" r="3.5" fill="#b8a6ff"/>
+            <circle id="p2" cx="150" cy="56.2" r="3.5" fill="#7fe3d6"/>
+          </svg>
+          <label>x1<input type="range" id="c-x1" min="0" max="1" step="0.01" value="0.34"><output id="v-x1"></output></label>
+          <label>y1<input type="range" id="c-y1" min="-0.4" max="2.2" step="0.01" value="1.2"><output id="v-y1"></output></label>
+          <label>x2<input type="range" id="c-x2" min="0" max="1" step="0.01" value="0.64"><output id="v-x2"></output></label>
+          <label>y2<input type="range" id="c-y2" min="-0.4" max="2.2" step="0.01" value="1"><output id="v-y2"></output></label>
+          <label>ms<input type="range" id="c-ms" min="120" max="750" step="10" value="320"><output id="v-ms"></output></label>
+          <p class="readout" id="motion-readout" aria-live="polite"></p>
+        </div>
+
+        <fieldset class="opts">
+          <legend>Light on the button</legend>
+          <label><input type="radio" name="surface" value="glow" checked><span>Glow<small>Warm face with a soft halo that fades in.</small></span></label>
+          <label><input type="radio" name="surface" value="halo"><span>Halo<small>A thin ring of light rises at the rim.</small></span></label>
+          <label><input type="radio" name="surface" value="hairline"><span>Hairline<small>Faint fill and edge, teal light on hover.</small></span></label>
+          <label><input type="radio" name="surface" value="frosted"><span>Frosted<small>Glass on the focal button only.</small></span></label>
+        </fieldset>
+
+        <label class="check"><input type="checkbox" id="reduce"> Reduce motion</label>
+        <label class="check"><input type="checkbox" id="freeze"> Freeze bookings</label>
+        <p class="readout" id="contrast-readout" aria-live="polite"></p>
+      </section>
+
+      <section class="card state" aria-labelledby="state-title">
+        <h2 id="state-title">Session state</h2>
+        <dl>
+          <dt>Session</dt><dd id="st-plan">none</dd>
+          <dt>Start</dt><dd id="st-time">7:00 pm</dd>
+          <dt>Reserved</dt><dd id="st-reserved">no</dd>
+          <dt>Presses</dt><dd id="st-presses">0</dd>
+          <dt>Hovers, hero</dt><dd id="st-hovers">0</dd>
+          <dt>Motion</dt><dd id="st-motion">Settle with a light tail</dd>
+          <dt>Light</dt><dd id="st-surface">glow</dd>
+          <dt>Reduce motion</dt><dd id="st-reduce">off</dd>
+          <dt>Bookings frozen</dt><dd id="st-frozen">no</dd>
+        </dl>
+        <h3>Recent</h3>
+        <ol id="log"></ol>
+      </section>
+
+      <section class="card" aria-labelledby="holds-title">
+        <h2 id="holds-title">What holds</h2>
+        <ul class="list">
+          <li>Only transform and opacity animate; the glow is a pre-blurred layer that fades in.</li>
+          <li>Hover effects apply only where a pointer can hover; touch gets the press response.</li>
+          <li>No looping animation. Reduced motion removes the lift and the travel, and keeps the colour and opacity change.</li>
+          <li>The hit area is the padded button and does not move.</li>
+        </ul>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+  var mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  var PLANS = {
+    single:  { name: 'Single session', len: '60 minutes', price: 85 },
+    sound:   { name: 'Sound and light', len: '90 minutes', price: 140 },
+    retreat: { name: 'Retreat day', len: 'four hours', price: 320 }
+  };
+
+  var MOTIONS = {
+    settle:  { name: 'Settle with a light tail', face: [0.33, 1, 0.68, 1], enter: 220, exit: 300, tail: [0.22, 1, 0.36, 1], tailMs: 650, lift: 2, note: 'The face lands fast; the glow keeps moving after it.' },
+    float:   { name: 'Float that settles', face: [0.34, 1.2, 0.64, 1], enter: 320, exit: 380, tail: [0.22, 1, 0.36, 1], tailMs: 650, lift: 3, note: 'A small lift with a return that settles.' },
+    rebound: { name: 'Visible rebound', face: [0.34, 2, 0.64, 1], enter: 420, exit: 420, tail: [0.22, 1, 0.36, 1], tailMs: 700, lift: 3, note: 'The face comes back past rest once before it settles.' },
+    drift:   { name: 'Symmetric drift', face: [0.45, 0, 0.55, 1], enter: 260, exit: 420, tail: [0.45, 0, 0.55, 1], tailMs: 600, lift: 2, note: 'Soft in and soft out, close to a sine.' }
+  };
+
+  var state = {
+    plan: null,
+    time: '7:00 pm',
+    saved: false,
+    reserved: null,
+    frozen: false,
+    presses: 0,
+    hovers: 0,
+    motion: 'settle',
+    surface: 'glow',
+    reduce: mq ? mq.matches : false,
+    custom: { x1: 0.34, y1: 1.2, x2: 0.64, y2: 1, ms: 320 },
+    log: []
+  };
+
+  function motion() {
+    if (state.motion === 'custom') {
+      var c = state.custom;
+      return { name: 'Your curve', face: [c.x1, c.y1, c.x2, c.y2], enter: c.ms, exit: Math.round(c.ms * 1.35), tail: [0.22, 1, 0.36, 1], tailMs: 650, lift: 2, note: 'Your curve sets the face; the glow keeps its own tail.' };
+    }
+    return MOTIONS[state.motion];
+  }
+
+  function cubic(a) { return 'cubic-bezier(' + a.join(', ') + ')'; }
+
+  function bez(t, a, b) { var u = 1 - t; return 3 * u * u * t * a + 3 * u * t * t * b + t * t * t; }
+
+  // Largest value the curve reaches above 1, as a percentage of the travel.
+  function overshootPct(f) {
+    var max = 0;
+    for (var i = 0; i <= 400; i++) {
+      var y = bez(i / 400, f[1], f[3]);
+      if (y > max) max = y;
+    }
+    return Math.max(0, max - 1) * 100;
+  }
+
+  function xOf(v) { return 10 + v * 140; }
+  function yOf(v) { return 110 - ((v + 0.4) / 2.6) * 100; }
+
+  function curveD(f) {
+    var d = '';
+    for (var i = 0; i <= 60; i++) {
+      var t = i / 60;
+      d += (i ? 'L' : 'M') + xOf(bez(t, f[0], f[2])).toFixed(1) + ' ' + yOf(bez(t, f[1], f[3])).toFixed(1) + ' ';
+    }
+    return d;
+  }
+
+  function applyMotion() {
+    var m = motion();
+    var s = root.style;
+    s.setProperty('--m-lift', m.lift + 'px');
+    s.setProperty('--m-enter-dur', m.enter + 'ms');
+    s.setProperty('--m-exit-dur', m.exit + 'ms');
+    s.setProperty('--m-enter-ease', cubic(m.face));
+    s.setProperty('--m-exit-ease', cubic(m.face));
+    s.setProperty('--m-tail-dur', m.tailMs + 'ms');
+    s.setProperty('--m-tail-ease', cubic(m.tail));
+  }
+
+  function renderMotion() {
+    var m = motion();
+    var pct = overshootPct(m.face);
+    var kind = pct < 2 ? 'settles (return under 2 percent)' : (pct <= 40 ? 'visible rebound' : 'bounce');
+    var text = m.name + ': ' + m.enter + ' ms in, ' + m.exit + ' ms out, glow tail ' + m.tailMs + ' ms. Return past rest ' + pct.toFixed(1) + ' percent of the lift: ' + kind + '. ' + m.note;
+    if (state.reduce) text += ' Reduce motion is on, so the lift is 0 and the timings are 150 ms.';
+    $('#motion-readout').textContent = text;
+
+    $('#curve').setAttribute('d', curveD(m.face));
+    $('#p1').setAttribute('cx', xOf(m.face[0]).toFixed(1));
+    $('#p1').setAttribute('cy', yOf(m.face[1]).toFixed(1));
+    $('#p2').setAttribute('cx', xOf(m.face[2]).toFixed(1));
+    $('#p2').setAttribute('cy', yOf(m.face[3]).toFixed(1));
+    $('#h1').setAttribute('x2', xOf(m.face[0]).toFixed(1));
+    $('#h1').setAttribute('y2', yOf(m.face[1]).toFixed(1));
+    $('#h2').setAttribute('x1', xOf(m.face[2]).toFixed(1));
+    $('#h2').setAttribute('y1', yOf(m.face[3]).toFixed(1));
+    $('#h2').setAttribute('y2', yOf(1).toFixed(1));
+
+    $('#c-x1').value = state.custom.x1; $('#v-x1').textContent = state.custom.x1.toFixed(2);
+    $('#c-y1').value = state.custom.y1; $('#v-y1').textContent = state.custom.y1.toFixed(2);
+    $('#c-x2').value = state.custom.x2; $('#v-x2').textContent = state.custom.x2.toFixed(2);
+    $('#c-y2').value = state.custom.y2; $('#v-y2').textContent = state.custom.y2.toFixed(2);
+    $('#c-ms').value = state.custom.ms; $('#v-ms').textContent = state.custom.ms + ' ms';
+  }
+
+  // Contrast of the label, the control edge and the focus ring, read from the live tokens.
+  function lum(c) {
+    var v = c.map(function (x) {
+      x = x / 255;
+      return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  }
+  function contrast(a, b) {
+    var l1 = lum(a), l2 = lum(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  function mix(fg, a, bg) {
+    return fg.map(function (c, i) { return c * a + bg[i] * (1 - a); });
+  }
+  function rgbOf(name, cs) { return cs.getPropertyValue(name).trim().split(/\s+/).map(Number); }
+  function numOf(name, cs) { return parseFloat(cs.getPropertyValue(name)); }
+
+  function renderContrast() {
+    var cs = getComputedStyle(root);
+    var bg = rgbOf('--page-rgb', cs);
+    var face = mix(rgbOf('--face-rgb', cs), numOf('--face-a', cs), bg);
+    var ink = rgbOf('--ink-rgb', cs);
+    var peak = mix(rgbOf('--sheen-rgb', cs), numOf('--sheen-press', cs), face);
+    var edge = mix(rgbOf('--edge-rgb', cs), numOf('--edge-a', cs), face);
+    var ring = rgbOf('--focus-rgb', cs);
+
+    var rest = contrast(ink, face);
+    var pk = contrast(ink, peak);
+    var ed = contrast(edge, bg);
+    var fr = contrast(ring, bg);
+    var pass = pk >= 4.5 && ed >= 3 && fr >= 3;
+
+    var text = 'Label ' + rest.toFixed(1) + ':1 at rest and ' + pk.toFixed(1) + ':1 at the deepest press (4.5 needed). ' +
+      'Edge ' + ed.toFixed(1) + ':1 (3 needed). Focus ring ' + fr.toFixed(1) + ':1 (3 needed). ' +
+      (pass ? 'All pass.' : 'Something falls short.');
+    if (state.surface === 'frosted') {
+      text += ' Frosted is estimated over the page colour; the focal button sits over the hero light.';
+    }
+    $('#contrast-readout').textContent = text;
+  }
+
+  function renderPlans() {
+    $$('[data-plan]').forEach(function (btn) {
+      var id = btn.getAttribute('data-plan');
+      var on = state.plan === id;
+      btn.setAttribute('aria-pressed', String(on));
+      btn.querySelector('.btn__label').textContent = on ? 'Chosen' : 'Choose';
+      btn.closest('.plan').classList.toggle('is-chosen', on);
+    });
+  }
+
+  function renderSummary() {
+    var p = state.plan ? PLANS[state.plan] : null;
+    $('#sum-plan').textContent = p ? p.name + ', ' + p.len : 'None yet';
+    $('#sum-time').textContent = state.time;
+    $('#sum-total').textContent = p ? '$' + p.price : '$0';
+
+    var reserve = $('#reserve');
+    reserve.disabled = !p || state.frozen;
+    $('#reserve-hint').textContent = !p
+      ? 'Choose a session to reserve it.'
+      : (state.frozen ? 'Bookings are frozen (demo switch).' : 'Ready when you are.');
+
+    var save = $('#save');
+    save.setAttribute('aria-pressed', String(state.saved));
+    save.querySelector('.btn__label').textContent = state.saved ? 'Saved for later' : 'Save for later';
+  }
+
+  function renderState() {
+    $('#st-plan').textContent = state.plan ? PLANS[state.plan].name : 'none';
+    $('#st-time').textContent = state.time;
+    $('#st-reserved').textContent = state.reserved ? PLANS[state.reserved.plan].name + ', ' + state.reserved.time : 'no';
+    $('#st-presses').textContent = String(state.presses);
+    $('#st-hovers').textContent = String(state.hovers);
+    $('#st-motion').textContent = motion().name;
+    $('#st-surface').textContent = state.surface;
+    $('#st-reduce').textContent = state.reduce ? 'on' : 'off';
+    $('#st-frozen').textContent = state.frozen ? 'yes' : 'no';
+  }
+
+  function renderLog() {
+    var ol = $('#log');
+    ol.innerHTML = '';
+    if (!state.log.length) {
+      var li = document.createElement('li');
+      li.textContent = 'Nothing yet.';
+      ol.appendChild(li);
+      return;
+    }
+    state.log.forEach(function (entry) {
+      var li = document.createElement('li');
+      li.textContent = entry;
+      ol.appendChild(li);
+    });
+  }
+
+  function logEvent(text) {
+    state.log.unshift(text);
+    state.log = state.log.slice(0, 5);
+    renderLog();
+  }
+
+  function renderAll() {
+    renderPlans();
+    renderSummary();
+    renderState();
+    renderMotion();
+    renderContrast();
+  }
+
+  function setReduce(on, quiet) {
+    state.reduce = on;
+    root.setAttribute('data-reduce', String(on));
+    $('#reduce').checked = on;
+    if (!quiet) logEvent(on ? 'Reduce motion on' : 'Reduce motion off');
+    renderState();
+    renderMotion();
+  }
+
+  // ---- wiring ----
+
+  $$('[data-plan]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-plan');
+      state.plan = state.plan === id ? null : id;
+      logEvent(state.plan ? 'Chose ' + PLANS[state.plan].name : 'Cleared the session');
+      renderAll();
+    });
+  });
+
+  $$('input[name="time"]').forEach(function (input) {
+    input.addEventListener('change', function () {
+      state.time = input.value;
+      logEvent('Start time ' + state.time);
+      renderAll();
+    });
+  });
+
+  $('#reserve').addEventListener('click', function () {
+    var p = state.plan ? PLANS[state.plan] : null;
+    if (!p || state.frozen) return;
+    state.reserved = { plan: state.plan, time: state.time };
+    $('#status').textContent = 'Reserved: ' + p.name + ' at ' + state.time + '. This is a demo, so nothing was sent.';
+    logEvent('Reserved ' + p.name + ' at ' + state.time);
+    renderAll();
+  });
+
+  $('#save').addEventListener('click', function () {
+    state.saved = !state.saved;
+    logEvent(state.saved ? 'Saved a session for later' : 'Removed the saved session');
+    renderAll();
+  });
+
+  $('#freeze').addEventListener('change', function (e) {
+    state.frozen = e.target.checked;
+    logEvent(state.frozen ? 'Bookings frozen' : 'Bookings open');
+    renderAll();
+  });
+
+  $('#hero-cta').addEventListener('click', function () {
+    var target = document.getElementById('plans');
+    target.scrollIntoView({ behavior: state.reduce ? 'auto' : 'smooth', block: 'start' });
+    document.getElementById('plans-title').focus({ preventScroll: true });
+    logEvent('Went to the sessions from the hero');
+    renderAll();
+  });
+
+  $('#hero-cta').addEventListener('pointerenter', function (e) {
+    if (e.pointerType === 'mouse') {
+      state.hovers += 1;
+      renderState();
+    }
+  });
+
+  document.addEventListener('pointerdown', function (e) {
+    if (e.target.closest && e.target.closest('.btn')) {
+      state.presses += 1;
+      renderState();
+    }
+  });
+
+  $('#reduce').addEventListener('change', function (e) { setReduce(e.target.checked, false); });
+
+  if (mq) {
+    var onSystem = function (e) { setReduce(e.matches, true); };
+    if (mq.addEventListener) mq.addEventListener('change', onSystem);
+    else if (mq.addListener) mq.addListener(onSystem);
+  }
+
+  $$('input[name="motion"]').forEach(function (input) {
+    input.addEventListener('change', function () {
+      state.motion = input.value;
+      applyMotion();
+      logEvent('Motion: ' + motion().name);
+      renderAll();
+    });
+  });
+
+  ['x1', 'y1', 'x2', 'y2', 'ms'].forEach(function (k) {
+    $('#c-' + k).addEventListener('input', function (e) {
+      state.custom[k] = parseFloat(e.target.value);
+      if (state.motion !== 'custom') {
+        state.motion = 'custom';
+        $('#m-custom').checked = true;
+      }
+      applyMotion();
+      renderMotion();
+      renderState();
+    });
+  });
+
+  $$('input[name="surface"]').forEach(function (input) {
+    input.addEventListener('change', function () {
+      state.surface = input.value;
+      root.setAttribute('data-surface', state.surface);
+      logEvent('Light: ' + state.surface);
+      renderAll();
+    });
+  });
+
+  // ---- start ----
+  root.setAttribute('data-surface', state.surface);
+  root.setAttribute('data-reduce', String(state.reduce));
+  $('#reduce').checked = state.reduce;
+  applyMotion();
+  renderLog();
+  renderAll();
+})();
+</script>
+</body>
+</html>

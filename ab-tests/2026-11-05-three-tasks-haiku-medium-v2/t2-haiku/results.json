@@ -1,0 +1,181 @@
+{
+ "scores": {
+  "A": {
+   "imagery": 7.0,
+   "form": 8.83,
+   "specificity": 8.17,
+   "freshness": 5.92,
+   "resonance": 7.25,
+   "overall": 7.42,
+   "mean_rank": 2.33,
+   "per_run_overall": {
+    "A-r1": 6.33,
+    "A-r2": 7.0,
+    "A-r3": 8.0,
+    "A-r4": 8.33
+   }
+  },
+  "B": {
+   "imagery": 7.17,
+   "form": 7.75,
+   "specificity": 8.25,
+   "freshness": 6.42,
+   "resonance": 6.42,
+   "overall": 7.0,
+   "mean_rank": 2.67,
+   "per_run_overall": {
+    "B-r1": 5.67,
+    "B-r2": 8.33,
+    "B-r3": 7.67,
+    "B-r4": 6.33
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 8,
+  "losses": 14,
+  "ties": 2,
+  "win_rate": 0.38
+ },
+ "functional": {
+  "A-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "clouds no one expects",
+   "words_total": 12,
+   "syllables_per_line": [
+    4,
+    7,
+    5
+   ]
+  },
+  "A-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "winter's rarest sky",
+   "words_total": 11,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "A-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "gone before the name.",
+   "words_total": 14,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "A-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "seen by no one else",
+   "words_total": 15,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "its cold edge sharp on blue",
+   "words_total": 16,
+   "syllables_per_line": [
+    5,
+    7,
+    6
+   ]
+  },
+  "B-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "holds while air runs through",
+   "words_total": 14,
+   "syllables_per_line": [
+    5,
+    8,
+    6
+   ]
+  },
+  "B-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "above the ridge crest",
+   "words_total": 14,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "the sheen of a shell",
+   "words_total": 16,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 67950,
+   "mean_seconds": 7.5
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 118994,
+   "mean_seconds": 19.3
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 187177,
+   "ms": 1159322,
+   "tool_uses": 35,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.65,
+ "permutation": {
+  "p": 0.657,
+  "extreme": 46,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Lenticular cloud over a ridge with a sharp, accurate edge, but the lines count 5-7-6 (\"its cold edge sharp on blue\" is 6), and the close on \"on blue\" lands flat with no turn.",
+  "b1/j1/A-r1": "Clean 5-7-5 (\"Nacreous\" 3 syllables, \"across the winter dusk sky\" 7, \"clouds no one expects\" 5) naming nacreous clouds at winter dusk accurately, though \"spreads across\" is generic and the final line's surprise is more stated than shown.",
+  "b1/j1/B-r2": "Exact 5-7-5 (\"Midwinter ridge wind\" 5, \"one lens over the pale peak\" 7, \"holds while air runs through\" 5) that renders lenticular cloud physics faithfully, and the stillness-against-moving-air paradox gives the poem a real turn.",
+  "b1/j1/A-r2": "Exact 5-7-5 (\"Pearl-lit, high, unseen\" 5, \"nacreous clouds bloom at dusk\" 7, \"winter's rarest sky\" 5) with accurate nacreous detail and a strong \"pearl-lit\" image, but \"bloom\" and \"rarest\" are stock, and the last line tells the rarity rather than showing it.",
+  "b1/j2/B-r2": "Syllables are 5-7-5 exactly (Midwin-ter ridge wind / one lens o-ver the pale peak / holds while air runs through), and a lenticular cloud held over a peak while wind passes through it is accurately evoked; line 1 reads as a slightly clipped fragment.",
+  "b1/j2/A-r2": "Syllables are 5-7-5 exactly (pearl-lit high un-seen / na-cre-ous clouds bloom at dusk / win-ter's rar-est sky), and nacreous clouds are a true rare high-altitude winter dusk phenomenon, but 'rarest sky' and 'bloom' are stock phrasing and the close is a flat declaration.",
+  "b1/j2/A-r1": "Syllables are 5-7-5 exactly (na-cre-ous glow spreads / a-cross the win-ter dusk sky / clouds no one ex-pects); nacreous is accurate, but 'glow spreads across the sky' is generic and 'clouds no one expects' is a glib tag line with little feeling behind it.",
+  "b1/j2/B-r1": "Syllables run 5-7-6 (win-ter ridge one lens / holds still in the mov-ing wind / its cold edge sharp on blue), so the last line is one syllable long, but the lenticular image and the still-in-moving-wind turn are vivid and true.",
+  "b1/j3/A-r2": "Syllables 5-7-5 exact (pearl-lit high un-seen / na-cre-ous clouds bloom at dusk / win-ter's rar-est sky), nacreous clouds at dusk are accurately evoked and 'unseen' gestures at rarity, but 'winter's rarest sky' is a stock closer.",
+  "b1/j3/B-r2": "Syllables 5-7-5 exact (mid-win-ter ridge wind / one lens o-ver the pale peak / holds while air runs through), a lenticular cloud standing over a peak is accurately rendered and 'holds while air runs through' turns stillness against motion.",
+  "b1/j3/B-r1": "Syllables are 5-7-6 because 'its cold edge sharp on blue' runs six, and the lenticular is accurate but nearly repeats X's idea with a flatter, more abstract close ('holds still in the moving wind').",
+  "b1/j3/A-r1": "Syllables 5-7-5 exact (na-cre-ous glow spreads / a-cross the win-ter dusk sky / clouds no one ex-pects), nacreous at dusk is accurate and the last line lands a quiet turn, though 'no one expects' is a mild stock move.",
+  "b2/j1/B-r3": "Line counts are 5 (midwinter, the wind), 7 (a lens of cloud, not drifting), 5 (above the ridge crest), and the dash cut after line 1 is earned; a lenticular cloud that holds still over a ridge while the wind blows is accurately evoked, with the stillness-in-wind paradox giving it a turn.",
+  "b2/j1/A-r3": "Counts are 5 (Rare cloud, mother-pearl), 7 (blooms where the sky holds no sun), 5 (gone before the name), and nacreous clouds lit in twilight with the sun below the horizon are accurately evoked; the closing turn from sighting to unnameability lands, though the opening 'Rare cloud' states the subject outright.",
+  "b2/j1/B-r4": "Counts are 5 (Midwinter's late dusk), 7 (a veil keeps the sun's last light), 5 (the sheen of a shell), and the nacreous shell-sheen image is vivid and accurate, but 'veil' and 'sheen' are familiar and the noun ending gives less of a turn than X.",
+  "b2/j1/A-r4": "Counts are 5 (Night's edge, pearl-thin cloud), 7 (lit from beneath by the sun), 5 (seen by no one else), and light from a sun below the horizon striking high cloud after dusk is precise; 'seen by no one else' is a familiar solitude trope but the closing witness note still resonates.",
+  "b2/j2/B-r4": "Lines count 5/7/5 (Mid-win-ter's late dusk; a veil keeps the sun's last light; the sheen of a shell), and nacreous twilight is evoked without being named, with a fairly stock 'veil' and a quiet but unremarkable close.",
+  "b2/j2/A-r4": "Lines count 5/7/5 (Night's edge, pearl-thin cloud; lit from beneath by the sun; seen by no one else), accurately rendering a nacreous cloud lit from below after sunset, and 'seen by no one else' gives the poem its turn.",
+  "b2/j2/A-r3": "Lines count 5/7/5 (Rare cloud, mother-pearl; blooms where the sky holds no sun; gone before the name), naming mother-pearl and a sunless sky accurately, and 'gone before the name' is the strongest turn in the set despite a blunt opening line.",
+  "b2/j2/B-r3": "Lines count 5/7/5 (midwinter, the wind; a lens of cloud, not drifting; above the ridge crest), giving a precise lenticular cloud standing over a ridge, with 'not drifting' setting up a quiet tension against the wind though the opener is loose.",
+  "b2/j3/A-r4": "Exact 5-7-5 (Night's edge pearl-thin cloud 5 / lit from beneath by the sun 7 / seen by no one else 5) and accurately evokes a nacreous cloud lit from below after sunset, with the solitary witness giving it a clear turn.",
+  "b2/j3/B-r4": "Exact 5-7-5 (Midwinter's late dusk 5 / a veil keeps the sun's last light 7 / the sheen of a shell 5) with a seasonally precise nacreous setting, but veil, last light and shell-sheen lean on familiar pearl imagery and the ending lands softer.",
+  "b2/j3/B-r3": "Exact 5-7-5 (midwinter, the wind 5 / a lens of cloud, not drifting 7 / above the ridge crest 5) and the most precise phenomenon in the set, a stationary lenticular over a ridge, though its imagery is sparser and its feeling less earned.",
+  "b2/j3/A-r3": "Exact 5-7-5 (Rare cloud, mother-pearl 5 / blooms where the sky holds no sun 7 / gone before the name 5) with the strongest turn in the set, but opening on a stated 'Rare cloud' and 'mother-pearl' makes the imagery thinner and more generic."
+ }
+}

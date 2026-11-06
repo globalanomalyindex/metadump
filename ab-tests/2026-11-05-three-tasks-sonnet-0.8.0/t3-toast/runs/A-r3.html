@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Toast</title>
+<style>
+:root{--bg:#0d0f12;--panel:#15181d;--line:#23272e;--txt:#e7eaee;--mut:#8b929c;--acc:#5ee0a0;--warn:#f5b84b;--r:12px}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--txt);font:13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;
+ background-image:radial-gradient(circle at 20% 10%,#161b22,transparent 50%)}
+.page{padding:28px;color:var(--mut);max-width:560px}
+.page h1{font-size:15px;color:var(--txt);font-weight:600;margin-bottom:6px}
+.toast{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);background:var(--panel);border:1px solid var(--line);
+ border-radius:var(--r);box-shadow:0 10px 30px #000a;overflow:hidden;animation:in .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes in{from{transform:translateY(20px);opacity:0}}
+.toast.gone{display:none}
+.head{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.head:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.ico{width:26px;height:26px;border-radius:7px;background:#1d2a24;color:var(--acc);display:grid;place-items:center;flex:none}
+.ico svg{width:15px;height:15px}
+.ttl{flex:1;min-width:0}
+.ttl b{display:block;font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl span{color:var(--mut);font-size:11.5px}
+.chev{width:14px;height:14px;color:var(--mut);transition:transform .25s;flex:none}
+.toast.open .chev{transform:rotate(180deg)}
+.x{background:none;border:0;color:var(--mut);cursor:pointer;width:22px;height:22px;border-radius:6px;font-size:15px;line-height:1;margin-right:6px}
+.x:hover{background:var(--line);color:var(--txt)}
+.bar{height:3px;background:var(--line)}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .5s}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+.toast.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden}
+.inner{padding:10px 12px 12px}
+.sel{display:flex;gap:4px;margin-bottom:10px}
+.sel button{flex:1;background:none;border:1px solid var(--line);color:var(--mut);border-radius:7px;padding:4px 0;font:inherit;font-size:11.5px;cursor:pointer}
+.sel button[aria-pressed=true]{background:#1d2a24;color:var(--acc);border-color:#2b4a3b}
+.meta{display:flex;justify-content:space-between;color:var(--mut);font-size:11.5px;margin-bottom:8px}
+.meta b{color:var(--txt);font-weight:500}
+ol{list-style:none;padding:0;position:relative}
+li{display:flex;gap:10px;padding:0 0 9px;position:relative;color:var(--mut);font-size:12px}
+li:before{content:"";position:absolute;left:4px;top:11px;bottom:-1px;width:1px;background:var(--line)}
+li:last-child:before{display:none}
+li i{width:9px;height:9px;border-radius:50%;background:var(--line);margin-top:4px;flex:none;position:relative;z-index:1}
+li.done i{background:var(--acc)}
+li.cur i{background:var(--acc);box-shadow:0 0 0 3px #5ee0a033}
+li.cur,li.done.cur{color:var(--txt)}
+li small{display:block;font-size:10.5px;color:var(--mut)}
+.acts{display:flex;gap:6px;margin-top:2px}
+.acts button{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:6px;font:inherit;font-size:11.5px;cursor:pointer}
+.acts button:hover{border-color:#3a414b}
+.acts button.on{color:var(--acc);border-color:#2b4a3b}
+.pill{position:fixed;right:16px;bottom:16px;background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:99px;padding:7px 12px;font:inherit;cursor:pointer;display:none}
+.pill.show{display:block}
+.live{position:absolute;left:-9999px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page"><h1>Your orders</h1>Tap the toast to expand it. Switch packages, refresh, mute alerts or dismiss.</div>
+
+<section class="toast" id="toast" aria-label="Package tracking">
+ <div style="display:flex;align-items:center">
+  <button class="head" id="head" aria-expanded="false" aria-controls="body">
+   <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+   <span class="ttl"><b id="t1"></b><span id="t2"></span></span>
+   <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg>
+  </button>
+  <button class="x" id="close" aria-label="Dismiss">&times;</button>
+ </div>
+ <div class="bar"><i id="fill"></i></div>
+ <div class="body" id="body"><div><div class="inner">
+  <div class="sel" id="sel" role="group" aria-label="Packages"></div>
+  <div class="meta"><span>Carrier <b id="car"></b></span><span>ETA <b id="eta"></b></span></div>
+  <ol id="steps"></ol>
+  <div class="acts"><button id="ref">Refresh</button><button id="mute" aria-pressed="false">Alerts on</button><button id="copy">Copy #</button></div>
+ </div></div></div>
+ <div class="live" id="live" aria-live="polite"></div>
+</section>
+<button class="pill" id="pill">Show tracking</button>
+
+<script>
+const S=["Label created","Picked up","In transit","Out for delivery","Delivered"];
+const pk=[
+ {n:"Sony WH-1000XM5",c:"UPS",no:"1Z999AA10123456784",eta:"Today, 4-6 PM",s:3,t:["Oct 31, 9:12 AM","Nov 1, 6:40 PM","Nov 4, 2:05 AM","Nov 5, 7:48 AM"],l:["Brooklyn, NY","Newark, NJ","Hartford, CT","Stamford, CT"]},
+ {n:"Standing desk mat",c:"USPS",no:"9400111899223197428490",eta:"Fri, Nov 7",s:2,t:["Nov 3, 1:20 PM","Nov 3, 8:55 PM","Nov 5, 5:30 AM"],l:["Austin, TX","Dallas, TX","Memphis, TN"]},
+ {n:"Moka pot 6-cup",c:"FedEx",no:"781234567890",eta:"Mon, Nov 10",s:0,t:["Nov 5, 8:02 AM"],l:["Milan, IT"]}
+];
+let cur=0,muted=false;
+const $=id=>document.getElementById(id);
+const toast=$("toast"),head=$("head");
+const fmt=n=>n.length>14?n.slice(0,6)+"…"+n.slice(-4):n;
+function render(){
+ const p=pk[cur];
+ $("t1").textContent=p.n;
+ $("t2").textContent=S[p.s]+" · "+(p.s==4?"done":p.eta);
+ $("fill").style.width=((p.s+1)/S.length*100)+"%";
+ $("car").textContent=p.c+" "+fmt(p.no);
+ $("eta").textContent=p.eta;
+ $("steps").innerHTML=S.map((s,i)=>{
+  const d=i<=p.s;
+  return `<li class="${d?"done":""}${i==p.s?" cur":""}"><i></i><span>${s}${d?`<small>${p.l[i]} · ${p.t[i]}</small>`:""}</span></li>`}).join("");
+ $("sel").innerHTML=pk.map((q,i)=>`<button aria-pressed="${i==cur}" data-i="${i}">${q.n.split(" ")[0]}</button>`).join("");
+ $("mute").textContent=muted?"Alerts off":"Alerts on";
+ $("mute").setAttribute("aria-pressed",muted);
+ $("mute").classList.toggle("on",!muted);
+}
+head.onclick=()=>{const o=toast.classList.toggle("open");head.setAttribute("aria-expanded",o)};
+$("sel").onclick=e=>{const b=e.target.closest("button");if(b){cur=+b.dataset.i;render()}};
+$("ref").onclick=()=>{
+ const p=pk[cur],b=$("ref");b.textContent="Checking…";
+ setTimeout(()=>{
+  if(p.s<4){p.s++;p.t.push("Just now");p.l.push(p.s==4?"Front door":"Local facility");if(p.s==4)p.eta="Delivered";
+   $("live").textContent=p.n+": "+S[p.s]}
+  else $("live").textContent="Already delivered";
+  b.textContent="Refresh";render();
+ },600);
+};
+$("mute").onclick=()=>{muted=!muted;render()};
+$("copy").onclick=()=>{
+ const b=$("copy"),n=pk[cur].no;
+ try{navigator.clipboard.writeText(n)}catch(e){}
+ b.textContent="Copied";setTimeout(()=>b.textContent="Copy #",1200);
+};
+$("close").onclick=()=>{toast.classList.add("gone");$("pill").classList.add("show")};
+$("pill").onclick=()=>{toast.classList.remove("gone");$("pill").classList.remove("show")};
+render();
+</script>
+</body>
+</html>

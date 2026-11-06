@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ethereal Button</title>
+<style>
+  /* ---------- tokens ---------- */
+  :root {
+    --bg: #0c0e1a;
+    --bg-2: #141829;
+    --ink: #e9ecff;
+    --muted: #9aa3c7;
+    --line: rgba(255, 255, 255, 0.08);
+    --accent: #4b4fd6;
+    --accent-deep: #3a3db8;
+    --halo: rgba(132, 140, 255, 0.55);
+    --focus: #c9ceff;
+
+    /* motion tokens (set by presets in JS) */
+    --ease-lift: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-glow: cubic-bezier(0.19, 1, 0.22, 1);
+    --dur-in: 320ms;
+    --dur-glow: 700ms;
+    --delay-glow: 80ms;
+    --ease-out: cubic-bezier(0.87, 0, 0.13, 1);
+    --dur-out: 380ms;
+    --dur-glow-out: 500ms;
+    --ease-glow-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-press: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) { --bg: #0c0e1a; }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; }
+
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1d2246 0%, var(--bg) 60%) var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+    line-height: 1.55;
+    padding: 0 16px;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 0 72px; }
+
+  .eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+  h1 { font-size: clamp(28px, 5vw, 42px); line-height: 1.12; margin: 10px 0 14px; font-weight: 650; letter-spacing: -0.01em; }
+
+  .lede { color: var(--muted); max-width: 58ch; margin: 0 0 28px; font-size: 17px; }
+
+  .card {
+    background: linear-gradient(180deg, var(--bg-2), #10131f);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    margin-top: 20px;
+  }
+
+  .card h2 { font-size: 15px; margin: 0 0 12px; font-weight: 600; color: var(--ink); }
+
+  /* ---------- the button ---------- */
+  .stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 28px;
+    padding: 36px 24px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px dashed var(--line);
+  }
+
+  .ethereal {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    color: #ffffff;
+    background: linear-gradient(180deg, #5659e6 0%, var(--accent) 45%, var(--accent-deep) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    /* rest -> out: slow, calm return; only named properties */
+    transition: transform var(--dur-out) var(--ease-out);
+    will-change: auto;
+  }
+
+  /* the halo: a pre-drawn blurred layer; only its opacity animates */
+  .ethereal::before {
+    content: "";
+    position: absolute;
+    inset: -16px -10px;
+    z-index: -1;
+    border-radius: 999px;
+    background: radial-gradient(closest-side, var(--halo), rgba(132, 140, 255, 0) 100%);
+    filter: blur(14px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-glow-out) var(--ease-glow-out);
+  }
+
+  /* a faint veil of light across the top edge */
+  .ethereal::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.28), transparent 70%);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .ethereal > * { position: relative; z-index: 1; }
+
+  .ethereal .arrow {
+    display: inline-block;
+    transition: transform var(--dur-in) var(--ease-lift);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .ethereal:hover:not(:disabled),
+    .ethereal.is-hover {
+      transform: translate3d(0, -2px, 0);
+      transition: transform var(--dur-in) var(--ease-lift);
+    }
+    .ethereal:hover:not(:disabled)::before,
+    .ethereal.is-hover::before {
+      opacity: 0.95;
+      transition: opacity var(--dur-glow) var(--ease-glow) var(--delay-glow);
+    }
+    .ethereal:hover:not(:disabled) .arrow,
+    .ethereal.is-hover .arrow { transform: translate3d(3px, 0, 0); }
+  }
+
+  .ethereal:active:not(:disabled),
+  .ethereal.is-press {
+    transform: translate3d(0, 0, 0) scale(0.975);
+    transition: transform 120ms var(--ease-press);
+  }
+
+  .ethereal:focus-visible,
+  .ethereal.is-focus {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+
+  .ethereal:focus-visible::before,
+  .ethereal.is-focus::before { opacity: 0.7; }
+
+  .ethereal:disabled,
+  .ethereal.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+    background: linear-gradient(180deg, #3a3e5e, #2c3049);
+    transform: none;
+  }
+  .ethereal:disabled::before,
+  .ethereal.is-disabled::before { opacity: 0; }
+
+  /* touch: no hover; press shows the light instead */
+  @media (hover: none) {
+    .ethereal:active:not(:disabled)::before { opacity: 0.9; transition: opacity 180ms var(--ease-glow); }
+  }
+
+  /* reduced motion: keep colour and light changes, drop travel and drift */
+  @media (prefers-reduced-motion: reduce) {
+    .ethereal,
+    .ethereal .arrow,
+    .ethereal:hover, .ethereal.is-hover,
+    .ethereal:active, .ethereal.is-press {
+      transform: none !important;
+    }
+    .ethereal::before { transition: opacity 200ms linear !important; }
+    .ethereal:hover::before, .ethereal.is-hover::before { transition: opacity 200ms linear !important; }
+    .ethereal:hover .arrow, .ethereal.is-hover .arrow { transform: none !important; }
+  }
+  .rm-sim .ethereal,
+  .rm-sim .ethereal .arrow,
+  .rm-sim .ethereal:hover,
+  .rm-sim .ethereal.is-hover,
+  .rm-sim .ethereal:active,
+  .rm-sim .ethereal.is-press {
+    transform: none !important;
+  }
+  .rm-sim .ethereal::before,
+  .rm-sim .ethereal:hover::before,
+  .rm-sim .ethereal.is-hover::before { transition: opacity 200ms linear !important; }
+  .rm-sim .ethereal:hover .arrow,
+  .rm-sim .ethereal.is-hover .arrow { transform: none !important; }
+
+  /* ---------- state specimens ---------- */
+  .specimens { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px 18px; }
+  .specimen { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .specimen small { color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
+  .specimen .ethereal { font-size: 15px; padding: 12px 22px; }
+
+  /* ---------- controls ---------- */
+  .controls { display: grid; gap: 18px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .controls { grid-template-columns: 1.1fr 0.9fr; } }
+
+  .presets { display: grid; gap: 8px; }
+  .preset {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--line); background: rgba(255, 255, 255, 0.02);
+    color: var(--ink); cursor: pointer; text-align: left; font: inherit;
+    transition: border-color 260ms var(--ease-out), background-color 260ms var(--ease-out);
+  }
+  .preset:hover { border-color: rgba(160, 168, 255, 0.4); }
+  .preset[aria-pressed="true"] { border-color: rgba(160, 168, 255, 0.75); background: rgba(75, 79, 214, 0.14); }
+  .preset .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--muted); flex: none; }
+  .preset[aria-pressed="true"] .dot { background: #b9beff; box-shadow: 0 0 12px #8c93ff; }
+  .preset strong { display: block; font-weight: 600; font-size: 14px; }
+  .preset span { color: var(--muted); font-size: 13px; }
+
+  .field { display: grid; gap: 8px; margin-bottom: 16px; }
+  .field label { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
+  .field output { color: var(--ink); font-variant-numeric: tabular-nums; }
+  input[type="range"] { width: 100%; accent-color: #8c93ff; }
+
+  .toggles { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+  .toggles label { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); cursor: pointer; }
+  .toggles input { accent-color: #8c93ff; width: 16px; height: 16px; }
+
+  pre.readout {
+    margin: 0; padding: 14px 16px; border-radius: 12px;
+    background: #0a0c16; border: 1px solid var(--line);
+    font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: #c7ccf2; white-space: pre-wrap; word-break: break-word;
+  }
+
+  /* ---------- live log ---------- */
+  .log-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .count { font-size: 28px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .count small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .log { list-style: none; margin: 14px 0 0; padding: 0; max-height: 180px; overflow: auto; }
+  .log li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .log li:first-child { border-top: 0; }
+  .log li b { color: var(--ink); font-weight: 500; }
+  .empty { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  .ghost-btn {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer;
+    transition: color 220ms var(--ease-out), border-color 220ms var(--ease-out);
+  }
+  .ghost-btn:hover { color: var(--ink); border-color: rgba(255, 255, 255, 0.25); }
+  .ghost-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .notes { color: var(--muted); font-size: 14px; margin: 18px 0 0; padding-left: 18px; }
+  .notes li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow">Northwind Studio &middot; Early access</p>
+  <h1>Reserve your seat in the spring cohort.</h1>
+  <p class="lede">Twelve designers and engineers, six weeks, one shared studio. Seats are limited to 24 and close on Friday.</p>
+
+  <section class="card" aria-labelledby="demo-h">
+    <h2 id="demo-h">The button, live</h2>
+    <div class="stage">
+      <button class="ethereal" id="cta" type="button">
+        <span>Reserve my seat</span>
+        <span class="arrow" aria-hidden="true">&rarr;</span>
+      </button>
+      <p style="margin:0;color:var(--muted);font-size:14px;max-width:34ch;">
+        Hover to see the halo settle. Tab to it for the focus ring. Clicking adds a row to the log below.
+      </p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="states-h">
+    <h2 id="states-h">States</h2>
+    <div class="specimens">
+      <div class="specimen"><small>Rest</small><button class="ethereal" type="button" tabindex="-1">Reserve my seat</button></div>
+      <div class="specimen"><small>Hover</small><button class="ethereal is-hover" type="button" tabindex="-1">Reserve my seat</button></div>
+      <div class="specimen"><small>Focus-visible</small><button class="ethereal is-focus" type="button" tabindex="-1">Reserve my seat</button></div>
+      <div class="specimen"><small>Pressed</small><button class="ethereal is-press" type="button" tabindex="-1">Reserve my seat</button></div>
+      <div class="specimen"><small>Disabled</small><button class="ethereal is-disabled" type="button" tabindex="-1" disabled>Reserve my seat</button></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="tune-h">
+    <h2 id="tune-h">Tune the motion</h2>
+    <div class="controls">
+      <div>
+        <div class="presets" role="group" aria-label="Hover curve reading">
+          <button class="preset" type="button" data-preset="drift" aria-pressed="true">
+            <i class="dot"></i>
+            <div><strong>Slow drift</strong><span>Long ease-out settle. The default.</span></div>
+          </button>
+          <button class="preset" type="button" data-preset="pulse" aria-pressed="false">
+            <i class="dot"></i>
+            <div><strong>Soft pulse</strong><span>Symmetric in-out, no hard stop at the peak.</span></div>
+          </button>
+          <button class="preset" type="button" data-preset="bloom" aria-pressed="false">
+            <i class="dot"></i>
+            <div><strong>Delayed bloom</strong><span>The glow waits, then opens after the lift.</span></div>
+          </button>
+          <button class="preset" type="button" data-preset="overshoot" aria-pressed="false">
+            <i class="dot"></i>
+            <div><strong>Gentle overshoot</strong><span>Lifts past its mark and settles back once.</span></div>
+          </button>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label for="glow-ms">Glow settle <output id="glow-out">700 ms</output></label>
+          <input id="glow-ms" type="range" min="300" max="900" step="20" value="700">
+        </div>
+        <div class="toggles">
+          <label><input id="rm-toggle" type="checkbox"> Simulate reduced motion</label>
+          <label><input id="dis-toggle" type="checkbox"> Disabled</label>
+        </div>
+        <p style="margin:16px 0 8px;font-size:13px;color:var(--muted);">Current hover rule</p>
+        <pre class="readout" id="readout"></pre>
+      </div>
+    </div>
+    <ul class="notes">
+      <li>Only <code>transform</code> and <code>opacity</code> animate. The halo is a blurred layer that fades; its shadow is never recomputed per frame.</li>
+      <li>Reduced motion removes lift and drift and keeps the colour and light change.</li>
+      <li>Hover effects are wrapped in <code>hover: hover</code>, so touch gets the press light instead.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="log-h">
+    <div class="log-head">
+      <div>
+        <h2 id="log-h" style="margin:0">Reservations</h2>
+      </div>
+      <div class="count" aria-live="polite"><span id="count">0</span><small>seats claimed this session</small></div>
+    </div>
+    <ul class="log" id="log" aria-live="polite"></ul>
+    <p class="empty" id="empty">No reservations yet. Press the button to try it.</p>
+    <div class="row">
+      <button class="ghost-btn" id="reset" type="button">Clear log</button>
+      <span style="font-size:13px;color:var(--muted);" id="seats">Seats left: 24</span>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var cta = document.getElementById('cta');
+  var presets = {
+    drift:     { lift: 'cubic-bezier(0.22, 1, 0.36, 1)',   liftMs: 320, glow: 'cubic-bezier(0.19, 1, 0.22, 1)', delay: 80,  label: 'Slow drift' },
+    pulse:     { lift: 'cubic-bezier(0.45, 0, 0.55, 1)',   liftMs: 360, glow: 'cubic-bezier(0.45, 0, 0.55, 1)', delay: 0,   label: 'Soft pulse' },
+    bloom:     { lift: 'cubic-bezier(0.25, 0.8, 0.25, 1)', liftMs: 260, glow: 'cubic-bezier(0.25, 0.8, 0.25, 1)', delay: 140, label: 'Delayed bloom' },
+    overshoot: { lift: 'cubic-bezier(0.34, 1.56, 0.64, 1)', liftMs: 380, glow: 'cubic-bezier(0.19, 1, 0.22, 1)', delay: 60,  label: 'Gentle overshoot' }
+  };
+  var state = { preset: 'drift', glowMs: 700, reduced: false, disabled: false, seats: 24, count: 0 };
+
+  var glowInput = document.getElementById('glow-ms');
+  var glowOut = document.getElementById('glow-out');
+  var readout = document.getElementById('readout');
+  var log = document.getElementById('log');
+  var empty = document.getElementById('empty');
+  var countEl = document.getElementById('count');
+  var seatsEl = document.getElementById('seats');
+
+  function applyMotion() {
+    var p = presets[state.preset];
+    root.style.setProperty('--ease-lift', p.lift);
+    root.style.setProperty('--dur-in', p.liftMs + 'ms');
+    root.style.setProperty('--ease-glow', p.glow);
+    root.style.setProperty('--dur-glow', state.glowMs + 'ms');
+    root.style.setProperty('--delay-glow', p.delay + 'ms');
+    glowOut.textContent = state.glowMs + ' ms';
+    readout.textContent =
+      'reading:  ' + p.label + '\n' +
+      'lift:     transform ' + p.liftMs + 'ms ' + p.lift + '\n' +
+      'glow:     opacity ' + state.glowMs + 'ms ' + p.glow + '\n' +
+      'delay:    ' + p.delay + 'ms (glow only)\n' +
+      'release:  transform 380ms cubic-bezier(0.87, 0, 0.13, 1)';
+  }
+
+  function setPreset(name) {
+    state.preset = name;
+    document.querySelectorAll('.preset').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.preset === name));
+    });
+    applyMotion();
+  }
+
+  document.querySelectorAll('.preset').forEach(function (b) {
+    b.addEventListener('click', function () { setPreset(b.dataset.preset); });
+  });
+
+  glowInput.addEventListener('input', function () {
+    state.glowMs = Number(glowInput.value);
+    applyMotion();
+  });
+
+  document.getElementById('rm-toggle').addEventListener('change', function (e) {
+    state.reduced = e.target.checked;
+    document.querySelector('.stage').classList.toggle('rm-sim', state.reduced);
+    document.getElementById('states-h').closest('.card').classList.toggle('rm-sim', state.reduced);
+  });
+
+  function setDisabled(on) {
+    state.disabled = on;
+    cta.disabled = on;
+    cta.setAttribute('aria-disabled', String(on));
+  }
+  document.getElementById('dis-toggle').addEventListener('change', function (e) {
+    setDisabled(e.target.checked);
+  });
+
+  function render() {
+    countEl.textContent = state.count;
+    seatsEl.textContent = 'Seats left: ' + state.seats;
+    empty.hidden = state.count > 0;
+    cta.querySelector('span').textContent = state.seats === 0 ? 'Cohort full' : 'Reserve my seat';
+    if (state.seats === 0 && !state.disabled) setDisabled(true);
+  }
+
+  cta.addEventListener('click', function () {
+    if (state.seats <= 0 || cta.disabled) return;
+    state.seats -= 1;
+    state.count += 1;
+    var li = document.createElement('li');
+    var t = new Date();
+    var stamp = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0') + ':' + String(t.getSeconds()).padStart(2, '0');
+    li.innerHTML = '<span><b>Seat ' + (25 - state.seats) + ' reserved</b></span><span>' + stamp + '</span>';
+    log.prepend(li);
+    render();
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    state.count = 0;
+    state.seats = 24;
+    log.innerHTML = '';
+    setDisabled(false);
+    render();
+  });
+
+  applyMotion();
+  render();
+})();
+</script>
+</body>
+</html>

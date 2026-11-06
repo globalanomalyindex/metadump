@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Hour — Reserve a seat</title>
+<style>
+  :root{
+    --ink:#f3ecf7;
+    --muted:#b6a9c6;
+    --bg1:#14102a;
+    --bg2:#2a1b3d;
+    --amber:255,176,64;
+    --lilac:178,150,255;
+    --rose:255,140,190;
+
+    /* hand-written curves */
+    --c-arrive: cubic-bezier(.16,.84,.24,1);      /* fast settle, long soft tail */
+    --c-glow:   cubic-bezier(.22,.61,.12,1);      /* glow keeps arriving after lift stops */
+    --c-drift:  cubic-bezier(.37,.05,.63,.95);    /* slow sway while held */
+    --c-leave:  cubic-bezier(.45,0,.2,1);         /* unhurried exit */
+    --c-press:  cubic-bezier(.3,.9,.4,1);         /* quick, answers at once */
+    --c-breath: cubic-bezier(.1,.4,.9,.6);        /* slow rise at rest */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(60vmax 40vmax at 80% -10%, rgba(var(--lilac),.18), transparent 60%),
+      radial-gradient(50vmax 40vmax at 0% 110%, rgba(var(--rose),.12), transparent 60%),
+      linear-gradient(160deg,var(--bg1),var(--bg2));
+    display:grid;place-items:center;padding:32px 16px;
+  }
+  main{width:min(560px,100%)}
+  .eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--muted);margin:0 0 14px}
+  h1{font:600 clamp(30px,6vw,44px)/1.1 Georgia,"Times New Roman",serif;margin:0 0 14px;letter-spacing:-.01em}
+  p.lede{color:var(--muted);line-height:1.6;margin:0 0 28px;font-size:17px}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0 0 36px;font-size:15px}
+  dt{color:var(--muted)} dd{margin:0}
+
+  .row{display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+
+  /* ---------- the button ---------- */
+  .ethereal{
+    --lift:0px; --glow:0; --spread:10px;
+    position:relative;isolation:isolate;
+    min-height:52px;min-width:44px;padding:0 34px;
+    border:0;border-radius:999px;background:none;color:var(--ink);
+    font-family:inherit;font-size:17px;font-weight:600;line-height:1;letter-spacing:.01em;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transform:translate3d(0,0,0);
+    transition:transform 900ms var(--c-leave);
+    display:inline-flex;align-items:center;gap:10px;
+  }
+  /* glow: separate layer, only opacity + transform animate */
+  .ethereal::before{
+    content:"";position:absolute;inset:-14px;z-index:-2;border-radius:inherit;
+    background:
+      radial-gradient(closest-side, rgba(var(--amber),.55), rgba(var(--rose),.28) 55%, transparent 100%);
+    filter:blur(14px);
+    opacity:.28;transform:scale(.92);
+    transition:opacity 800ms var(--c-leave), transform 800ms var(--c-leave);
+    animation:breath 7s var(--c-breath) infinite alternate;
+    pointer-events:none;
+  }
+  /* translucent fill + edge */
+  .ethereal::after{
+    content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;
+    background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.28), inset 0 1px 0 rgba(255,255,255,.35);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    transition:background 700ms var(--c-glow), box-shadow 700ms var(--c-glow);
+  }
+  /* label sits on a plate so the glow cannot wash it out */
+  .label{
+    position:relative;padding:9px 0;
+    text-shadow:0 1px 10px rgba(20,12,40,.75), 0 0 2px rgba(20,12,40,.6);
+    transition:letter-spacing 900ms var(--c-arrive);
+  }
+  .arrow{
+    width:18px;height:18px;flex:none;
+    transition:transform 900ms var(--c-arrive);
+  }
+  @keyframes breath{
+    from{opacity:.22}
+    to{opacity:.4}
+  }
+  /* float: a few pixels, slow loop, only while hovered */
+  @keyframes drift{
+    0%{transform:translate3d(0,-4px,0)}
+    50%{transform:translate3d(0,-7px,0)}
+    100%{transform:translate3d(0,-4px,0)}
+  }
+
+  @media (hover:hover){
+    .ethereal:hover{
+      transform:translate3d(0,-4px,0);
+      transition:transform 700ms var(--c-arrive);
+      animation:drift 5200ms var(--c-drift) 700ms infinite;
+    }
+    .ethereal:hover::before{
+      opacity:.95;transform:scale(1.12);
+      transition:opacity 1200ms var(--c-glow), transform 1400ms var(--c-glow);
+      animation:none;
+    }
+    .ethereal:hover::after{
+      background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(var(--lilac),.12));
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.5), inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    .ethereal:hover .label{letter-spacing:.035em}
+    .ethereal:hover .arrow{transform:translateX(5px)}
+  }
+
+  /* keyboard focus: separate from hover, 3:1+ ring */
+  .ethereal:focus-visible{outline:none}
+  .ethereal:focus-visible::after{
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.5), 0 0 0 3px var(--bg1), 0 0 0 5px #ffd7a0;
+  }
+  .ethereal:focus-visible::before{opacity:.8;transform:scale(1.08);animation:none}
+
+  /* press: cuts the breath/float short, answers at once */
+  .ethereal:active{
+    animation:none;
+    transform:translate3d(0,1px,0) scale(.975);
+    transition:transform 140ms var(--c-press);
+  }
+  .ethereal:active::before{
+    opacity:.7;transform:scale(.96);
+    transition:opacity 120ms var(--c-press), transform 140ms var(--c-press);
+  }
+
+  /* result states */
+  .ethereal[aria-busy="true"]{cursor:progress}
+  .ethereal[aria-busy="true"] .arrow{animation:spin 900ms linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ethereal[data-state="done"]::before{
+    background:radial-gradient(closest-side, rgba(150,240,200,.55), rgba(var(--lilac),.25) 60%, transparent 100%);
+    opacity:.7;
+  }
+  .ethereal:disabled{cursor:default}
+
+  /* ghost companion sharing the curves */
+  .quiet{
+    background:none;border:0;color:var(--muted);font:inherit;font-size:15px;
+    min-height:44px;padding:0 6px;cursor:pointer;border-radius:8px;
+    text-decoration:underline;text-underline-offset:5px;text-decoration-color:rgba(182,169,198,.4);
+    transition:color 500ms var(--c-glow), text-decoration-color 500ms var(--c-glow);
+  }
+  .quiet:hover{color:var(--ink);text-decoration-color:rgba(var(--amber),.8)}
+  .quiet:focus-visible{outline:2px solid #ffd7a0;outline-offset:3px}
+
+  #status{margin:26px 0 0;min-height:1.6em;color:var(--muted);font-size:15px}
+  #status strong{color:var(--ink)}
+
+  /* touch / no-hover: keep a gentle resting glow, no hover-only state */
+  @media (hover:none){
+    .ethereal::before{opacity:.5}
+  }
+
+  /* reduced motion: no travel, no loops; keep colour and glow response */
+  @media (prefers-reduced-motion:reduce){
+    .ethereal,.ethereal::before,.ethereal::after,.label,.arrow{animation:none !important}
+    .ethereal:hover,.ethereal:active{transform:none}
+    .ethereal:hover .arrow{transform:none}
+    .ethereal:hover .label{letter-spacing:.01em}
+    .ethereal::before,.ethereal:hover::before{transition:opacity 300ms linear;transform:none}
+    .ethereal:hover::before{opacity:.95}
+    .ethereal[aria-busy="true"] .arrow{animation:none !important}
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Lumen Hour · Thursday 20 Nov</p>
+  <h1>An evening of slow light and live ambient sound</h1>
+  <p class="lede">Eighty seats under a glass ceiling at the Harbour Observatory. Doors at 7:30, first set at 8:15, no phones on the dome floor.</p>
+  <dl>
+    <dt>Venue</dt><dd>Harbour Observatory, Pier 4</dd>
+    <dt>Price</dt><dd>$38 · includes one drink</dd>
+    <dt>Seats left</dt><dd><span id="seats">23</span> of 80</dd>
+  </dl>
+
+  <div class="row">
+    <button class="ethereal" id="cta" type="button" data-state="idle">
+      <span class="label" id="label">Reserve your seat</span>
+      <svg class="arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
+    </button>
+    <button class="quiet" id="undo" type="button" hidden>Release my seat</button>
+  </div>
+  <p id="status" role="status" aria-live="polite">Hold seats for ten minutes while you decide.</p>
+</main>
+
+<script>
+(function(){
+  var btn=document.getElementById('cta'),
+      label=document.getElementById('label'),
+      undo=document.getElementById('undo'),
+      seatsEl=document.getElementById('seats'),
+      status=document.getElementById('status'),
+      seats=23, timer=null, held=false;
+
+  function render(){ seatsEl.textContent=seats; }
+
+  function setState(s){
+    btn.dataset.state=s;
+    btn.setAttribute('aria-busy', s==='loading' ? 'true':'false');
+    btn.disabled = (s==='loading');
+  }
+
+  btn.addEventListener('click',function(){
+    if(held) return;
+    setState('loading');
+    label.textContent='Holding your seat…';
+    status.textContent='One moment.';
+    timer=setTimeout(function(){
+      held=true; seats-=1; render();
+      setState('done');
+      btn.disabled=true;
+      label.textContent='Seat held for 10:00';
+      status.innerHTML='<strong>Seat 14C is yours.</strong> A confirmation is on its way to your inbox.';
+      undo.hidden=false; undo.focus();
+      var left=600;
+      timer=setInterval(function(){
+        left--;
+        if(left<=0){ clearInterval(timer); release(true); return; }
+        var m=Math.floor(left/60), s=('0'+left%60).slice(-2);
+        label.textContent='Seat held for '+m+':'+s;
+      },1000);
+    },900);
+  });
+
+  function release(expired){
+    clearInterval(timer); clearTimeout(timer);
+    if(held){ seats+=1; render(); }
+    held=false;
+    setState('idle');
+    label.textContent='Reserve your seat';
+    undo.hidden=true;
+    status.textContent = expired ? 'Your hold expired and the seat went back.' : 'Seat released.';
+    btn.focus();
+  }
+  undo.addEventListener('click',function(){ release(false); });
+  render();
+})();
+</script>
+</body>
+</html>

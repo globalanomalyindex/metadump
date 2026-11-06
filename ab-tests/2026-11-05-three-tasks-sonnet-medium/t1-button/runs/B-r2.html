@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Residency: Reserve a seat</title>
+<style>
+  :root {
+    /* curves: the face lands fast, the light drifts on behind it */
+    --land: cubic-bezier(0.22, 1, 0.36, 1);        /* steep ease-out, face */
+    --drift-in: cubic-bezier(0.16, 1, 0.3, 1);     /* glow arrives */
+    --drift-out: cubic-bezier(0.33, 0.9, 0.6, 1);  /* glow lingers on release */
+    --ink: #f4f1ff;
+    --bg1: #1b1740; --bg2: #3a2a6e; --bg3: #0f2f4a;
+    --accent: #b9a8ff; --accent2: #8fe3ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: #0d0b24;
+    min-height: 100vh;
+    display: grid; place-items: center;
+    padding: 24px 16px;
+    overflow-x: hidden;
+  }
+  /* coloured, blurred backdrop so the glass has light to show through */
+  .sky { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(160deg, var(--bg1), var(--bg2) 55%, var(--bg3)); }
+  .sky i { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .75; }
+  .sky i:nth-child(1) { width: 46vmax; height: 46vmax; left: -12vmax; top: -14vmax; background: #7a5cff; }
+  .sky i:nth-child(2) { width: 38vmax; height: 38vmax; right: -10vmax; top: 18vh; background: #2ec4d6; opacity: .55; }
+  .sky i:nth-child(3) { width: 30vmax; height: 30vmax; left: 25vw; bottom: -16vmax; background: #ff8fc7; opacity: .5; }
+
+  main { position: relative; z-index: 1; width: min(100%, 520px); }
+  .card {
+    padding: 36px 32px 28px;
+    border-radius: 24px;
+    background: rgba(14, 10, 40, .55);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 30px 80px -30px rgba(0,0,0,.6);
+  }
+  .eyebrow { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent2); margin: 0 0 12px; }
+  h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1.15; margin: 0 0 12px; font-weight: 650; letter-spacing: -.01em; }
+  p.lede { margin: 0 0 24px; color: #d6d0f2; line-height: 1.55; font-size: 1rem; }
+  .meta { display: flex; gap: 20px; margin: 0 0 24px; padding: 0; list-style: none; font-size: .9rem; color: #cfc8ee; flex-wrap: wrap; }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  label { display: block; font-size: .85rem; margin-bottom: 6px; color: #d6d0f2; }
+  input[type=email] {
+    width: 100%; font: inherit; color: var(--ink);
+    padding: 13px 14px; border-radius: 12px;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.28);
+    margin-bottom: 16px;
+  }
+  input[type=email]::placeholder { color: #a9a2cc; }
+  input[type=email]:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+  input[aria-invalid=true] { border-color: #ffb3c1; }
+  .err { color: #ffc2cd; font-size: .85rem; min-height: 1.2em; margin: -8px 0 12px; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+  /* ---------- the button ---------- */
+  .dream {
+    --lift: 0px;
+    --gx: 0px; --gy: 0px;
+    position: relative; isolation: isolate;
+    appearance: none; border: 0; cursor: pointer;
+    font: inherit; font-weight: 600; letter-spacing: .01em;
+    color: var(--ink);
+    min-height: 48px; min-width: 176px; padding: 0 28px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.14);          /* translucent fill, label checked at hover peak */
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.4); /* edge reaches 3:1 against the card */
+    -webkit-tap-highlight-color: transparent;
+    transform: translateY(0);
+    transition: transform 520ms var(--drift-out), background-color 420ms var(--drift-out);
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  /* soft glow: pre-blurred, only opacity + transform animate */
+  .dream::before {
+    content: ""; position: absolute; inset: -14px -22px; z-index: -2; border-radius: 999px;
+    background: radial-gradient(60% 90% at 50% 50%, rgba(185,168,255,.9), rgba(143,227,255,.5) 55%, transparent 75%);
+    filter: blur(14px);
+    opacity: 0;
+    transform: translate(var(--gx), var(--gy)) scale(.9);
+    transition: opacity 700ms var(--drift-out), transform 700ms var(--drift-out);
+    pointer-events: none;
+  }
+  /* rim of light + sheen, fades in by opacity */
+  .dream::after {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background:
+      linear-gradient(115deg, transparent 20%, rgba(255,255,255,.35) 45%, transparent 70%) ,
+      linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 60%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.85);
+    opacity: 0;
+    transition: opacity 650ms var(--drift-out);
+    pointer-events: none;
+  }
+  .dream .label { position: relative; text-shadow: 0 1px 10px rgba(20,10,60,.55); }
+  .dream .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); box-shadow: 0 0 0 0 rgba(143,227,255,.0); }
+
+  @media (hover: hover) {
+    .dream:hover:not([disabled]) {
+      --lift: -3px;
+      transform: translateY(-3px);
+      background: rgba(255,255,255,.2);
+      transition: transform 190ms var(--land), background-color 160ms var(--land);
+    }
+    .dream:hover:not([disabled])::before {
+      opacity: 1; transform: translate(var(--gx), var(--gy)) scale(1.04);
+      transition: opacity 260ms var(--drift-in), transform 420ms var(--drift-in);
+    }
+    .dream:hover:not([disabled])::after { opacity: 1; transition: opacity 240ms var(--drift-in); }
+  }
+  /* keyboard parity: quieter version, about half the lift */
+  .dream:focus-visible { outline: 2px solid var(--accent2); outline-offset: 5px; transform: translateY(-1.5px); transition: transform 190ms var(--land); }
+  .dream:focus-visible::before { opacity: .6; transform: scale(1); transition: opacity 260ms var(--drift-in), transform 420ms var(--drift-in); }
+  .dream:focus-visible::after { opacity: .7; transition: opacity 240ms var(--drift-in); }
+
+  /* press (also the touch response, where hover does not exist) */
+  .dream:active:not([disabled]) {
+    transform: translateY(0.5px) scale(.985);
+    transition: transform 90ms var(--land);
+  }
+  .dream:active:not([disabled])::before { opacity: 1; transform: scale(.96); transition: opacity 120ms linear, transform 120ms var(--land); }
+  .dream:active:not([disabled])::after { opacity: 1; transition: opacity 90ms linear; }
+
+  .dream[disabled] { cursor: not-allowed; background: rgba(255,255,255,.08); color: #cfc8ee; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+  .dream[aria-busy=true] { cursor: progress; }
+  .dream[data-state=done] { background: rgba(120,230,190,.22); box-shadow: inset 0 0 0 1px rgba(170,255,220,.7); }
+  .dream[data-state=done]::before { opacity: .85; transform: scale(1); background: radial-gradient(60% 90% at 50% 50%, rgba(120,240,190,.8), rgba(143,227,255,.35) 60%, transparent 75%); }
+
+  .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; display: none; animation: spin 900ms linear infinite; }
+  [aria-busy=true] .spinner { display: inline-block; }
+  [aria-busy=true] .dot { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ghost {
+    appearance: none; background: none; border: 0; color: #d6d0f2; font: inherit; cursor: pointer;
+    padding: 12px 8px; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(255,255,255,.4);
+  }
+  .ghost:hover { color: #fff; }
+  .ghost:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; border-radius: 6px; }
+
+  .status { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); font-size: .9rem; color: #d6d0f2; min-height: 2.4em; }
+  .status strong { color: var(--ink); }
+
+  /* reduced motion: fade only, no lift, no drift, no spin travel */
+  @media (prefers-reduced-motion: reduce) {
+    .dream, .dream::before, .dream::after { transition: opacity 200ms linear, background-color 200ms linear !important; transform: none !important; }
+    .dream:hover:not([disabled]), .dream:focus-visible, .dream:active:not([disabled]) { transform: none !important; }
+    .spinner { animation: none; border-top-color: rgba(255,255,255,.35); border-right-color: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<main>
+  <section class="card" aria-labelledby="t">
+    <p class="eyebrow">Autumn residency &middot; 12 seats</p>
+    <h1 id="t">Three quiet weeks of light studies in Lisbon</h1>
+    <p class="lede">A small cohort of designers and photographers working with window light, long exposure and slow motion. Mornings are for making, evenings for review over dinner.</p>
+    <ul class="meta">
+      <li><b>Oct 6 &ndash; 27</b> dates</li>
+      <li><b id="seats">5</b> seats left</li>
+      <li><b>&euro;1,240</b> all in</li>
+    </ul>
+
+    <form id="f" novalidate>
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="you@studio.com" autocomplete="email" aria-describedby="err">
+      <div id="err" class="err" role="alert"></div>
+      <div class="actions">
+        <button class="dream" id="btn" type="submit" data-state="idle">
+          <span class="dot" aria-hidden="true"></span><span class="spinner" aria-hidden="true"></span>
+          <span class="label" id="lbl">Reserve my seat</span>
+        </button>
+        <button class="ghost" type="button" id="reset">Reset demo</button>
+      </div>
+    </form>
+    <p class="status" id="status" aria-live="polite">Hold a seat for 48 hours. No payment today.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var f = document.getElementById('f'), btn = document.getElementById('btn'), lbl = document.getElementById('lbl');
+  var email = document.getElementById('email'), err = document.getElementById('err');
+  var status = document.getElementById('status'), seats = document.getElementById('seats');
+  var reset = document.getElementById('reset');
+  var count = 5, timer = null;
+
+  // the glow drifts a little toward the pointer; it rides transform on the glow layer only
+  btn.addEventListener('pointermove', function (e) {
+    var r = btn.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+    btn.style.setProperty('--gx', (x * 14).toFixed(1) + 'px');
+    btn.style.setProperty('--gy', (y * 6).toFixed(1) + 'px');
+  });
+  btn.addEventListener('pointerleave', function () {
+    btn.style.setProperty('--gx', '0px'); btn.style.setProperty('--gy', '0px');
+  });
+
+  function set(state, label) {
+    btn.dataset.state = state; lbl.textContent = label;
+    btn.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
+    btn.disabled = (state === 'loading');
+  }
+
+  f.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (btn.dataset.state === 'loading') return;
+    if (btn.dataset.state === 'done') { status.textContent = 'Your seat is already held. Check your inbox.'; return; }
+    var v = email.value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
+      email.setAttribute('aria-invalid', 'true');
+      err.textContent = 'Enter an email like you@studio.com so we can hold your seat.';
+      email.focus();
+      return;
+    }
+    email.removeAttribute('aria-invalid'); err.textContent = '';
+    set('loading', 'Holding your seat');
+    status.textContent = 'Holding a seat for ' + v + '...';
+    timer = setTimeout(function () {
+      count = Math.max(0, count - 1);
+      seats.textContent = count;
+      set('done', 'Seat held');
+      status.innerHTML = '<strong>Seat held.</strong> A confirmation is on its way to ' + v.replace(/[<>&]/g, '') + '. Expires in 48 hours.';
+    }, 1400);
+  });
+
+  email.addEventListener('input', function () {
+    if (email.getAttribute('aria-invalid')) { email.removeAttribute('aria-invalid'); err.textContent = ''; }
+  });
+
+  reset.addEventListener('click', function () {
+    clearTimeout(timer); count = 5; seats.textContent = count;
+    set('idle', 'Reserve my seat'); email.value = '';
+    email.removeAttribute('aria-invalid'); err.textContent = '';
+    status.textContent = 'Hold a seat for 48 hours. No payment today.';
+  });
+})();
+</script>
+</body>
+</html>

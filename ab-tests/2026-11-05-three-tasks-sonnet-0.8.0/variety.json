@@ -1,0 +1,74 @@
+{
+ "t1-button": {
+  "A_mean": 5.33,
+  "B_mean": 3.33,
+  "A": [
+   5.0,
+   5.0,
+   6.0
+  ],
+  "B": [
+   3.0,
+   4.0,
+   3.0
+  ],
+  "more_varied": {
+   "A": 3,
+   "B": 0,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P shares a lavender-pastel look and similar curve families across its three card pages, but the buttons differ (gradient pill, pearl/sparkle, shimmer sweep, white pill) and one page is a dark hero with a curve picker. Q reuses nearly identical curves (0.165,0.84,0.44,1 / 0.23,1,0.32,1 / 0.4,0,0.6,1) and the same Inter-and-purple look, with a few layout and dark-versus-light differences and solid purple or navy buttons.",
+   "v2 (P=B): P varies page context (dark card, light newsletter, hero, hero) but all four use the same indigo pill and nearly the same three curves (0.165,0.84,0.44,1 / 0.23,1,0.32,1 / 0.4,0,0.6,1). Q has differing curves including overshoot ones and a dark curve-picker page, but Q1 to Q3 are similar centered pastel-gradient cards with lilac/rose/aqua buttons.",
+   "v3 (P=A): P shares a lilac/serif card feel and similar curve families, but the buttons differ (white glass pill, pastel glow, purple-pink gradient on a dark hero, sparkle pastel) and the pages range from booking card to plans to dark landing to newsletter. Q uses near-identical bezier sets and the same dark indigo filled pill in all four, with only the page context (newsletter, dark studio, waitlist hero, observatory) changing."
+  ]
+ },
+ "t2-haiku": {
+  "A_mean": 1.33,
+  "B_mean": 5.0,
+  "A": [
+   1.0,
+   2.0,
+   1.0
+  ],
+  "B": [
+   7.0,
+   3.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is one poem four times: mother-of-pearl nacreous clouds holding the dusk/sun long after sunset, near-identical wording and endings. Q shares a dusk/pearl/ice motif but varies clouds (thin cloud vs lens cloud), setting (lake, ridge), moment (fading colors, gale, creaking ice) and endings.",
+   "v2 (P=B): P repeats the pearl/ice/sun-gone-at-dusk idea (three lens-cloud or pearl-edge takes, two ice endings) but varies lens cloud vs gale, color sequence, and lake ice framing; Q is nearly one poem four times: 'mother-of-pearl / nacreous clouds hold the dusk/sun long after sunset', with Q1-Q3 almost identical and only Q4 adding ice dreaming.",
+   "v3 (P=A): P is one poem four times: nacreous/mother-of-pearl clouds holding dusk after sunset, with near-identical lines reused across P1, P2 and P4. Q shares a dusk-pearl-ice palette, but varies the cloud (lens cloud vs thin cloud), setting (ridge, gale, lake), and endings (cracking ice, color fade to gone)."
+  ]
+ },
+ "t3-toast": {
+  "A_mean": 4.0,
+  "B_mean": 2.0,
+  "A": [
+   4.0,
+   4.0,
+   4.0
+  ],
+  "B": [
+   2.0,
+   2.0,
+   2.0
+  ],
+  "more_varied": {
+   "A": 3,
+   "B": 0,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P shares a dark card with a vertical checkpoint timeline and a bottom-right default, but differs in header (icon plus tabs, progress bar, tiny pill, centered with a select dropdown), accent hue and controls; Q is one design four times, a bottom-right pill with a blue dot and On the Way, chevron/x, and an expanded card of UPS number, timeline and copy/carrier buttons, varying only in minor details.",
+   "v2 (P=B): P is one design four times: bottom-right dark pill with blue dot, status, truncated ETA, chevron and close that expands upward into a vertical timeline card with Copy/carrier buttons. Q varies a little more (one centered at bottom, icon tile, progress bar, package tabs or dropdown, different accent colors) but is still a bottom corner toast expanding into a timeline card.",
+   "v3 (P=A): P shares the dark card, bottom corner placement and vertical timeline, but differs in placement (centered vs right), progress bars, icon tiles vs dots, package tabs/select and information structure. Q is nearly one design four times: same bottom-right pill with blue dot, chevron and x, same timeline plus Copy/Carrier buttons, same palette."
+  ]
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j1",
+  "scores": {
+    "W": {"compact": 8, "collapsible": 9, "tracking": 7, "dark": 9, "usability": 8, "craft": 8, "overall": 8, "note": "A single slim row at rest opens smoothly into a clear five-step timeline with timestamps and expected windows, an exception box and Keep open, though the tracking number is not shown in the toast itself and a class-name collision on the exception marker is a minor flaw."},
+    "X": {"compact": 7, "collapsible": 6, "tracking": 9, "dark": 8, "usability": 5, "craft": 7, "overall": 7, "note": "The richest package job (filters, per-package ETA and progress, carrier and tracking number, step rail, add form) in a compact panel, but it opens and closes instantly with no transition and every click rebuilds the whole toast so keyboard focus is lost."},
+    "Y": {"compact": 8, "collapsible": 9, "tracking": 8, "dark": 9, "usability": 9, "craft": 8, "overall": 8, "note": "Collapses to a single 48px row and opens with a real grid-rows transition into a dated timeline with the carrier window, exception handling and snooze, with a stable toggle, aria-expanded, inert closed panel, Escape and focus restoration."},
+    "Z": {"compact": 8, "collapsible": 6, "tracking": 6, "dark": 8, "usability": 7, "craft": 7, "overall": 6, "note": "A tidy pill with a useful one-line summary and a multi-package panel with status chips and progress bars, but the panel appears and disappears with no motion, shows only the last four digits and no step timeline, and offers little beyond Next step and Remove."}
+  },
+  "ranking": ["Y", "W", "X", "Z"]
+}

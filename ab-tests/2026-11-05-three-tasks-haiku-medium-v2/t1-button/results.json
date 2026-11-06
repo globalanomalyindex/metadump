@@ -1,0 +1,182 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 7.0,
+   "practical": 6.0,
+   "motion": 6.83,
+   "craft": 6.67,
+   "overall": 6.58,
+   "mean_rank": 2.58,
+   "per_run_overall": {
+    "A-r1": 6.33,
+    "A-r2": 5.67,
+    "A-r3": 6.33,
+    "A-r4": 8.0
+   }
+  },
+  "B": {
+   "dreamlike": 6.33,
+   "practical": 8.25,
+   "motion": 7.08,
+   "craft": 7.75,
+   "overall": 7.08,
+   "mean_rank": 2.42,
+   "per_run_overall": {
+    "B-r1": 7.67,
+    "B-r2": 7.0,
+    "B-r3": 7.0,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 12,
+  "losses": 7,
+  "ties": 5,
+  "win_rate": 0.6
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 2,
+   "js_error_text": [
+    "TypeError: Cannot read properties of undefined (reading 'split')\n    at applyCurve (file:///Users/chrisfiore/metadump-skill/ab-tests/2026-11-05-three-tasks-haik",
+    "TypeError: Cannot read properties of undefined (reading 'split')\n    at applyCurve (file:///Users/chrisfiore/metadump-skill/ab-tests/2026-11-05-three-tasks-haik"
+   ]
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 91347,
+   "mean_seconds": 82.4
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 169596,
+   "mean_seconds": 211.6
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 206192,
+   "ms": 1776129,
+   "tool_uses": 46,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.41,
+ "permutation": {
+  "p": 0.371,
+  "extreme": 26,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "A cream face with a lilac halo that fades in over a 650 ms tail reads most like light in a dark room, with real custom curves (220 ms in, 300 ms out, a rebound option) and a reduced-motion path, though the tuning console makes it feel like a prototype and the hover crops never caught the focal button.",
+  "b1/j1/A-r1": "It has the most dreamlike effects (aura, sheen, motes), but overflow hidden clips the aura, the white label sits on the light sky stop of the gradient, the motes loop while hovered, and the hover crops cut the button off, so it reads as a candy gradient more than ethereal.",
+  "b1/j1/B-r2": "A slate face with a blurred under-glow and a lilac fill fade is clean, legible and cheap to render, with a documented curve panel, a focus ring and a reduced-motion path, though the fill uses a plain ease-out and the hover reads as a tint more than a dream.",
+  "b1/j1/A-r2": "The card has a sensible focus ring and removes movement under reduced motion, but the shimmer pseudo-element sits outside the button at rest and shows as a white smudge on the page, letter-spacing animates (a layout cost), and the look is a standard gradient SaaS button.",
+  "b1/j2/B-r2": "Warm stoneware page with a dark-stage tester whose lilac glow tail and 260 ms ease-out settle are well built and checked against limits, but the hover change is subtle and the button sits inside a crowded shop page rather than being the focus.",
+  "b1/j2/A-r2": "The gradient shift, sheen sweep and rising motes read most clearly as dreamlike in the hover strip, but the 1.1 s hover settle is slow for a website button and the looping motes add render cost while hovered.",
+  "b1/j2/A-r1": "Selectable hover curves and durations plus aura, sheen and motes give a good tuning story, but the hover crops miss the button entirely, the desktop hero leaves the right half empty, and the motes loop while hovered.",
+  "b1/j2/B-r1": "The dark stage with a teal and lilac glow tail, a live curve plot, a live contrast readout and a reduced-motion path that keeps the colour change make it the most complete and practical response, though its hover crop shows the sidebar rather than the hero button.",
+  "b1/j3/A-r2": "Pleasant violet-to-pink gradient with a sheen and a lift, but the unclipped sheen pseudo-element leaves a visible white smear to the left of the Start free trial button at rest, and the letter-spacing animation on hover adds reflow.",
+  "b1/j3/B-r2": "Most practical of the four, with a legible cream-and-ink label, separate rest/hover/focus/pressed/disabled specimens, a reduced-motion path that keeps the colour change, and a contrast readout; the hover glow is quiet, so the dreamlike quality is more restrained.",
+  "b1/j3/B-r1": "The dark starfield page suits the brief, with a warm-cream face, a sheen plus glow tail, transform-only motion, a custom curve editor with a live SVG preview, a contrast check and a clean phone layout; the hover crop missed the hovered hero button, so the evidence for its motion is thin.",
+  "b1/j3/A-r1": "Motes, an aura and a sheen cross make it the most literally dreamy, and the phone layout is tidy, but overflow hidden clips the aura, the motes loop while hovered, the hover crop misses the button, and an empty progress track under the hero looks unfinished.",
+  "b2/j1/B-r3": "Cream-on-navy hero is well composed and the glow is a cheap pre-blurred layer with a 1.2-overshoot lift and a 700ms tail, but the glow is faint, the hover capture shows the disabled Saturday button instead of an enabled one, and the lab copy (\"Rebound ... a different reading\") is confusing.",
+  "b2/j1/A-r3": "Four distinct curves drive a violet-rose aura that breathes while hovered plus a 1.2s sheen sweep over a lavender palette, which reads dreamy, though the infinite aura animation and the glossy sweep cost more and the Save pills are small on tiles.",
+  "b2/j1/B-r4": "Best-practice build: a 240ms ease-land face, 680ms ease-tail glow, hover gated to hover-capable pointers, keyboard parity at half lift, a real reduced-motion path and a visible dreamlike toggle, but the violet glow is restrained and the duplicated id attribute and demo lab add clutter.",
+  "b2/j1/A-r4": "The gradient that slides from violet to rose with a 1.4s drift, a sky-and-rose halo, a text glow and a heart bloom gives the most ethereal hover, while animating letter-spacing, background-position and filter makes it heavier to render and the focus state has no lift.",
+  "b2/j2/B-r4": "Quiet Hours hero button lifts about 2px onto a soft lavender glow with a 680ms tail, restrained and calm, with focus ring, reduced-motion fallback, and a still-hover toggle all in place.",
+  "b2/j2/A-r4": "Hollowmere's Browse stays button visibly drifts its gradient toward pink and magenta with a long violet bloom on hover, the most ethereal hover in the set, with hover gated to pointer devices and reduced motion honored, though the placeholder gradient cards are a bit generic.",
+  "b2/j2/A-r3": "Moodboard's hover reads as a glossy white sheen band sweeping across the dark button more than as dreamlike light, the aura breathes on an infinite loop, and the hover rule is not gated to pointer devices so touch can stick.",
+  "b2/j2/B-r3": "Lantern and Lake uses a pre-blurred glow layer with a 420ms float curve returning about 1.25 percent, a tunable lift-curve editor, press and focus responses, and a motion scale for reduced motion, though the captured hover frames only show the disabled button so the main button's motion is inferred from source.",
+  "b2/j3/A-r4": "The hover morphs the violet pill into a rose-magenta glow with a sheen sweep and a letter-spacing lift, using four named curves at 520 to 1400ms, though the frosted glass buttons add backdrop-filter cost.",
+  "b2/j3/B-r4": "The most practical build, with keyboard parity, touch gating and a full reduced-motion fallback, but the hover is a restrained lift and faint glow that reads more as polite than dreamlike, and the lab panel adds clutter.",
+  "b2/j3/B-r3": "The cream button on navy gets a float curve with a tiny return, a fading rim and a lingering glow, all on transform and opacity, though the hover capture hit a disabled button so the hero response is not visible in the frames.",
+  "b2/j3/A-r3": "The moodboard page is the most polished layout and the ink button gets a breathing aura and sheen sweep, but the glossy band reads more like a sheen than ethereal light and the looping blurred pseudo-element is costly on every save button."
+ }
+}

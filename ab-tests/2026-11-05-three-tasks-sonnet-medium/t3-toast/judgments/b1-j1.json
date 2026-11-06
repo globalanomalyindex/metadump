@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j1","scores":{
+"W":{"compact":8,"collapsible":8,"tracking":7,"dark":8,"usability":8,"craft":8,"overall":7,"note":"Very slim collapsed pill with step dots and clean timeline, but ETA and carrier only appear once opened and the collapsed row is a bit sparse on what matters."},
+"X":{"compact":7,"collapsible":8,"tracking":9,"dark":9,"usability":8,"craft":8,"overall":8,"note":"Collapsed row shows status plus ETA window with progress bar, and the open panel adds tracking number with copy, step locations and times, and clear actions in a polished dark UI."},
+"Y":{"compact":6,"collapsible":8,"tracking":7,"dark":8,"usability":9,"craft":7,"overall":6,"note":"Most complete controls (switches, dismiss, labeled region) and a very small collapsed bar, but the opened panel leaves a large empty gap and the ETA is vague."},
+"Z":{"compact":9,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":8,"overall":8,"note":"Densest and most compact, with status, ETA, progress, tracking number and next-step buttons in a small footprint, though it rests open and has fewer labelled affordances."}},
+"ranking":["X","Z","W","Y"]}

@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ethereal Button</title>
+<style>
+  /* ---------- tokens ---------- */
+  :root {
+    --ink: #1d1b2e;
+    --muted: #5d5a73;
+    --paper: #f6f5fb;
+    --card: #ffffff;
+    --accent: #6d5ce8;
+    --accent-deep: #5544d0;
+    --accent-soft: rgba(109, 92, 232, 0.55);
+    --line: #e4e1f0;
+    --focus: #8f84ff;
+    --accent-text: #5544d0;
+
+    /* hand-set curves, all named so they can be tuned in one place */
+    --ease-lift: cubic-bezier(0.34, 1.3, 0.64, 1);   /* small, gentle overshoot on hover-in */
+    --ease-calm: cubic-bezier(0.87, 0, 0.13, 1);     /* calm in-out for hover-out and return */
+    --ease-drift: cubic-bezier(0.19, 1, 0.22, 1);    /* long expo-out for the halo to drift in */
+    --ease-press: cubic-bezier(0.3, 0, 0.2, 1);      /* quick press confirm */
+
+    --dur-lift-in: 320ms;
+    --dur-lift-out: 380ms;
+    --dur-glow: 620ms;
+    --dur-glow-out: 420ms;
+    --delay-bloom: 90ms;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #f1efff;
+      --muted: #b7b3cf;
+      --paper: #13121c;
+      --card: #1c1a2a;
+      --line: #2f2c44;
+      --accent-text: #cfc9ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --accent-text: #cfc9ff;
+    --ink: #f1efff;
+    --muted: #b7b3cf;
+    --paper: #13121c;
+    --card: #1c1a2a;
+    --line: #2f2c44;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 16px 64px;
+  }
+
+  h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h2 { font-size: 18px; margin: 0 0 12px; }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 60ch; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .plan-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; }
+  .price { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  .price small { font-size: 14px; color: var(--muted); font-weight: 500; }
+  ul.features { margin: 14px 0 0; padding-left: 20px; color: var(--muted); }
+  ul.features li + li { margin-top: 4px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 20px 18px; align-items: center; padding: 8px 4px; }
+  .row-label { min-width: 150px; font-weight: 600; font-size: 14px; color: var(--muted); }
+  .stage { padding: 56px 24px; display: flex; flex-wrap: wrap; gap: 28px 24px; align-items: center; justify-content: center; }
+
+  /* ---------- the button ---------- */
+  .btn {
+    --halo: var(--accent-soft);
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.32), transparent 70%),
+      linear-gradient(180deg, #6a5be0, #4d3ec8);
+    color: #ffffff;
+    font: 600 15px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    /* only transform moves; the halo fades on its own layer */
+    transition: transform var(--dur-lift-out) var(--ease-calm);
+  }
+
+  /* outer halo: a blurred pseudo-element behind the button, faded by opacity only */
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: -14px;
+    border-radius: inherit;
+    background: radial-gradient(closest-side, var(--halo), transparent);
+    filter: blur(12px);
+    opacity: 0;
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity var(--dur-glow-out) var(--ease-calm);
+  }
+
+  .btn:not(:disabled):hover::before,
+  .btn:not(:disabled):focus-visible::before {
+    opacity: 0.9;
+  }
+
+  .btn:not(:disabled):active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 140ms;
+    transition-timing-function: var(--ease-press);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+
+  .btn:disabled {
+    background: #d9d6e6;
+    border-color: transparent;
+    color: #5f5c74;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* ghost and secondary variants share the same curves */
+  .btn--ghost {
+    --halo: rgba(109, 92, 232, 0.35);
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn--ghost::after { content: none; }
+
+  .btn--soft {
+    --halo: rgba(255, 255, 255, 0.5);
+    background: var(--card);
+    color: var(--accent-text);
+    border-color: var(--line);
+  }
+
+  /* icon button: round, aria-pressed toggles a filled state */
+  .btn--icon { width: 44px; padding: 0; }
+  .btn--icon[aria-pressed="true"] { background: linear-gradient(180deg, #d43f73, #ab2658); }
+  .btn--icon[aria-pressed="true"]::before { --halo: rgba(212, 63, 115, 0.45); }
+  .btn--icon svg { width: 18px; height: 18px; fill: currentColor; transition: transform var(--dur-lift-out) var(--ease-calm); }
+  .btn--icon[aria-pressed="true"] svg { transform: scale(1.12); }
+
+  .count {
+    display: inline-block;
+    min-width: 1.5em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(20, 14, 70, 0.3);
+    font-size: 13px;
+  }
+  .btn--ghost .count, .btn--soft .count { background: var(--paper); }
+
+  /* hover: only on devices that can hover, so touch never gets a stuck state */
+  @media (hover: hover) {
+    .btn:not(:disabled):hover {
+      transform: translateY(-2px);
+      transition: transform var(--dur-lift-in) var(--ease-lift);
+    }
+    .btn:not(:disabled):hover::before {
+      transition: opacity var(--dur-glow) var(--ease-drift) var(--delay-bloom);
+    }
+  }
+
+  /* reduced motion: no travel, no drift; colour and halo intensity still change */
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .btn--icon svg { transition-duration: 1ms !important; }
+    .btn:not(:disabled):hover,
+    .btn:not(:disabled):active { transform: none !important; }
+    .btn::before { transition-duration: 180ms !important; transition-timing-function: linear !important; transition-delay: 0ms !important; }
+    .btn--icon[aria-pressed="true"] svg { transform: none; }
+  }
+  /* same rules, switched on by the demo toggle so the fallback can be seen without an OS setting */
+  body.sim-reduced .btn,
+  body.sim-reduced .btn--icon svg { transition-duration: 1ms !important; }
+  body.sim-reduced .btn:not(:disabled):hover,
+  body.sim-reduced .btn:not(:disabled):active { transform: none !important; }
+  body.sim-reduced .btn::before { transition-duration: 180ms !important; transition-timing-function: linear !important; transition-delay: 0ms !important; }
+  body.sim-reduced .btn--icon[aria-pressed="true"] svg { transform: none; }
+
+  /* ---------- demo chrome ---------- */
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--paper); }
+  .seg button {
+    min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px;
+    background: transparent; color: var(--muted); font: 600 13px/1 system-ui, sans-serif; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .readout { font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); margin: 14px 0 0; }
+  .readout b { color: var(--ink); font-weight: 600; }
+
+  .toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); cursor: pointer; min-height: 44px; }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+  .log { list-style: none; margin: 0; padding: 0; font-size: 14px; color: var(--muted); max-height: 180px; overflow: auto; }
+  .log li { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+  .log li:first-child { color: var(--ink); }
+  .status { min-height: 1.5em; font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  @media (min-width: 720px) { .grid-2 { grid-template-columns: 1.2fr 1fr; } }
+
+  .note { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+  code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--paper); padding: 1px 5px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Lumen Studio</h1>
+  <p class="lede">A small team for scheduling and client proofing. Hover a button to see the halo drift in; use the keyboard to see the focus ring. Every control below updates the activity log.</p>
+
+  <div class="grid-2">
+    <section class="card" aria-labelledby="plan-title">
+      <div class="plan-head">
+        <div>
+          <h2 id="plan-title">Team plan</h2>
+          <div class="price">$24 <small>per seat, per month</small></div>
+        </div>
+        <span class="count" id="seat-count" aria-live="polite">3 seats</span>
+      </div>
+      <ul class="features">
+        <li>Unlimited proofing rounds</li>
+        <li>Shared calendar with client review links</li>
+        <li>Priority email support</li>
+      </ul>
+
+      <div class="stage" style="margin-top: 18px; border-radius: 16px; background: var(--paper);">
+        <button class="btn" type="button" id="btn-trial" data-action="trial">
+          Start free trial <span class="count" id="trial-count">0</span>
+        </button>
+        <button class="btn btn--ghost" type="button" id="btn-save" aria-pressed="false" data-action="save">
+          <span id="save-label">Save for later</span>
+        </button>
+        <button class="btn btn--soft" type="button" data-action="invite">Invite a teammate</button>
+        <button class="btn btn--icon" type="button" id="btn-like" aria-pressed="false" aria-label="Like this plan" data-action="like">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.1C.9 8.6 2.6 5 6.2 5c2.1 0 3.4 1.2 4.3 2.4C11.4 6.2 12.7 5 14.8 5c3.6 0 5.3 3.6 3.8 6.9C19.5 16.4 12 21 12 21z"/></svg>
+        </button>
+        <button class="btn" type="button" disabled>Checkout unavailable</button>
+      </div>
+      <p class="note">The last button is disabled: it shows no hover, halo or lift.</p>
+    </section>
+
+    <section class="card" aria-labelledby="curve-title">
+      <h2 id="curve-title">Hover curve</h2>
+      <p class="note" style="margin-top:0">Pick a reading of &ldquo;dreamlike&rdquo;. The choice rewrites <code>--ease-lift</code> and <code>--dur-glow</code> on the page root, so the buttons change live.</p>
+      <div class="controls" role="group" aria-label="Hover curve preset" style="margin-top:12px">
+        <div class="seg" id="curve-seg">
+          <button type="button" data-preset="drift" aria-pressed="false">Slow drift</button>
+          <button type="button" data-preset="gentle" aria-pressed="true">Gentle lift</button>
+          <button type="button" data-preset="calm" aria-pressed="false">Calm</button>
+        </div>
+      </div>
+      <p class="readout" id="readout" aria-live="polite"></p>
+
+      <div class="row" style="margin-top:14px">
+        <label class="toggle"><input type="checkbox" id="sim-reduced"> Simulate reduced motion</label>
+      </div>
+      <p class="note">On a system with reduced motion turned on, the lift and drift are removed and only colour and halo intensity change.</p>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="log-title">
+    <h2 id="log-title">Activity</h2>
+    <p class="status" id="status" aria-live="polite">Nothing yet.</p>
+    <ol class="log" id="log" aria-label="Recent actions"></ol>
+    <div class="controls" style="margin-top:12px">
+      <button class="btn btn--ghost" type="button" id="btn-reset">Reset demo</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var state = { trials: 0, seats: 3, saved: false, liked: false, preset: 'gentle', events: 0 };
+  var root = document.documentElement;
+  var body = document.body;
+
+  var presets = {
+    drift:  { lift: 'cubic-bezier(0.19, 1, 0.22, 1)', glow: '780ms', label: 'Slow drift' },
+    gentle: { lift: 'cubic-bezier(0.34, 1.3, 0.64, 1)', glow: '620ms', label: 'Gentle lift' },
+    calm:   { lift: 'cubic-bezier(0.87, 0, 0.13, 1)', glow: '520ms', label: 'Calm' }
+  };
+
+  var el = {
+    trial: document.getElementById('btn-trial'),
+    trialCount: document.getElementById('trial-count'),
+    seatCount: document.getElementById('seat-count'),
+    save: document.getElementById('btn-save'),
+    saveLabel: document.getElementById('save-label'),
+    like: document.getElementById('btn-like'),
+    log: document.getElementById('log'),
+    status: document.getElementById('status'),
+    readout: document.getElementById('readout'),
+    reset: document.getElementById('btn-reset'),
+    simReduced: document.getElementById('sim-reduced'),
+    curveSeg: document.getElementById('curve-seg')
+  };
+
+  function time() {
+    var d = new Date();
+    return d.toTimeString().slice(0, 8);
+  }
+
+  function log(message) {
+    state.events += 1;
+    var li = document.createElement('li');
+    li.textContent = time() + '  ' + message;
+    el.log.insertBefore(li, el.log.firstChild);
+    while (el.log.children.length > 12) el.log.removeChild(el.log.lastChild);
+    el.status.textContent = message;
+  }
+
+  function render() {
+    el.trialCount.textContent = String(state.trials);
+    el.seatCount.textContent = state.seats + (state.seats === 1 ? ' seat' : ' seats');
+    el.save.setAttribute('aria-pressed', String(state.saved));
+    el.saveLabel.textContent = state.saved ? 'Saved' : 'Save for later';
+    el.like.setAttribute('aria-pressed', String(state.liked));
+    el.like.setAttribute('aria-label', state.liked ? 'Unlike this plan' : 'Like this plan');
+
+    var buttons = el.curveSeg.querySelectorAll('button');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('aria-pressed', String(buttons[i].getAttribute('data-preset') === state.preset));
+    }
+    var p = presets[state.preset];
+    el.readout.innerHTML =
+      '<b>' + p.label + '</b><br>' +
+      '--ease-lift: ' + p.lift + '<br>' +
+      '--dur-glow: ' + p.glow;
+  }
+
+  function applyPreset(name) {
+    var p = presets[name];
+    if (!p) return;
+    state.preset = name;
+    root.style.setProperty('--ease-lift', p.lift);
+    root.style.setProperty('--dur-glow', p.glow);
+    log('Hover curve set to ' + p.label.toLowerCase());
+    render();
+  }
+
+  el.trial.addEventListener('click', function () {
+    state.trials += 1;
+    state.seats = Math.min(state.seats + 1, 50);
+    log('Free trial started. Seats now ' + state.seats + '.');
+    render();
+  });
+
+  el.save.addEventListener('click', function () {
+    state.saved = !state.saved;
+    log(state.saved ? 'Plan saved to your list.' : 'Plan removed from your list.');
+    render();
+  });
+
+  body.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-action="invite"]');
+    if (!btn) return;
+    state.seats = Math.min(state.seats + 1, 50);
+    log('Invite sent. Seats now ' + state.seats + '.');
+    render();
+  });
+
+  el.like.addEventListener('click', function () {
+    state.liked = !state.liked;
+    log(state.liked ? 'Liked the Team plan.' : 'Like removed.');
+    render();
+  });
+
+  el.curveSeg.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-preset]');
+    if (b) applyPreset(b.getAttribute('data-preset'));
+  });
+
+  el.simReduced.addEventListener('change', function () {
+    body.classList.toggle('sim-reduced', el.simReduced.checked);
+    log(el.simReduced.checked ? 'Reduced motion simulated: no lift, no drift.' : 'Reduced motion simulation off.');
+  });
+
+  el.reset.addEventListener('click', function () {
+    state = { trials: 0, seats: 3, saved: false, liked: false, preset: 'gentle', events: 0 };
+    root.style.setProperty('--ease-lift', presets.gentle.lift);
+    root.style.setProperty('--dur-glow', presets.gentle.glow);
+    el.simReduced.checked = false;
+    body.classList.remove('sim-reduced');
+    el.log.innerHTML = '';
+    el.status.textContent = 'Demo reset.';
+    render();
+  });
+
+  applyPreset('gentle');
+  el.log.innerHTML = '';
+  state.events = 0;
+  render();
+})();
+</script>
+</body>
+</html>

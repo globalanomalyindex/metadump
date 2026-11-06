@@ -1,0 +1,179 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 7.0,
+   "practical": 6.08,
+   "motion": 6.67,
+   "craft": 6.83,
+   "overall": 6.42,
+   "mean_rank": 2.58,
+   "per_run_overall": {
+    "A-r1": 6.0,
+    "A-r2": 5.67,
+    "A-r3": 6.33,
+    "A-r4": 7.67
+   }
+  },
+  "B": {
+   "dreamlike": 6.58,
+   "practical": 8.08,
+   "motion": 7.5,
+   "craft": 7.42,
+   "overall": 7.08,
+   "mean_rank": 2.42,
+   "per_run_overall": {
+    "B-r1": 7.0,
+    "B-r2": 8.0,
+    "B-r3": 6.67,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 13,
+  "losses": 7,
+  "ties": 4,
+  "win_rate": 0.62
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 7,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 8,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 85953,
+   "mean_seconds": 53.7
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 114359,
+   "mean_seconds": 78.7
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 166357,
+   "ms": 625813,
+   "tool_uses": 31,
+   "note": "main loop only; worker usage not included"
+  }
+ },
+ "agreement_r": 0.38,
+ "permutation": {
+  "p": 0.314,
+  "extreme": 22,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Soft glass-tinted halo blooms after a short delay with a 400ms lift, and the reduced-motion preview is handled cleanly, though the glow reads more as a wash than a fog.",
+  "b1/j1/A-r1": "The cyan veil sweep is the most airy effect here, but it animates letter-spacing, box-shadow, filter and background-position, which reflow or repaint on every frame and cost more than the task needs.",
+  "b1/j1/B-r2": "The pearl sheen plus a scaling aura that blooms outward like light through fog is the most convincingly ethereal, with a visible focus ring, a reduced-motion switch, and mostly transform and opacity animation.",
+  "b1/j1/A-r2": "Reduced motion is handled in both CSS and JS and the loading and confirmed states work, but the gradient-shift and tint hover is plainer and less dreamlike, and background-position and letter-spacing transitions are costly to render.",
+  "b1/j2/B-r2": "Blurred halo visibly blooms and fades on the dark ground, with separate in (320ms lift, 700ms glow curve) and out (380ms release, 500ms glow) timings, a clear focus ring, a reduced-motion switch, and a disabled state.",
+  "b1/j2/A-r2": "The overshoot lift and drifting veil are pleasant, but the hover animates letter-spacing and background-position and the overflow:hidden clips the aura, so the glow reads mostly as a colour wash.",
+  "b1/j2/A-r1": "The cyan sheen sweep is a nice touch but reads as a flat wash, the white label on the pink Atelier button has weak contrast, and hover animates filter and letter-spacing.",
+  "b1/j2/B-r1": "The most complete system: 3px focus ring, reduced-motion preview, validated waitlist form with live region, and a responsive states table, though the halo is subtler and the bloom curve is a fairly ordinary ease-in-out.",
+  "b1/j3/A-r2": "Overshoot bloom and a drifting veil feel airy, but it animates box-shadow, filter, background-position and letter-spacing per hover, which is costly for a real page, and the plain shop layout is only average.",
+  "b1/j3/B-r2": "The halo is restrained but clearly lit, only transform and opacity animate, the focus ring and reduced-motion handling are solid, and the dark states grid gives it the clearest hierarchy.",
+  "b1/j3/B-r1": "Delayed bloom and the four distinct curve presets are the most thoughtful motion work, but backdrop-filter and blurred halos cost render time, and the garish gradient stage and tuning panel crowd the page.",
+  "b1/j3/A-r1": "The pearly veil sweep and slow haze exit are the most dreamlike, with a playful release spring, but letter-spacing and box-shadow transitions cost layout and paint, and the mismatched pink and cyan buttons weaken the palette.",
+  "b2/j1/B-r3": "Solid, tidy page with a live curve picker and a disabled state, but the blurred halo is modest and the hover strip shows no visible change on the captured button, so the dreamlike effect is hard to confirm.",
+  "b2/j1/A-r3": "Aurora conic wash and a slow sheen give the most luminous feel among the quieter entries, though 900ms transitions on filter and box-shadow are heavier to render and the hover evidence is subtle.",
+  "b2/j1/B-r4": "Restrained custom curves (overshoot lift, long drift on the glow) with a visible halo fade, will-change on the pseudo-element, focus ring, reduced-motion path and a sold-out state make it the most shippable.",
+  "b2/j1/A-r4": "Layered aurora, sheen and rising sparks read most dreamlike and the hover frames show the bloom clearly, though the 14px blur on an oversized conic layer and backdrop-filter cost more to render.",
+  "b2/j2/B-r4": "A single blurred halo fades in on a slow expo-out after an overshoot lift, which reads clearly in the hover strip and stays legible, but the effect is restrained and closer to a soft glow than ethereal, with clean reduced-motion, focus ring and sold-out handling.",
+  "b2/j2/A-r4": "The richest dream vocabulary (aura bloom, drifting sheen, rising sparks, sliding aurora gradient) with a live curve and duration panel and a calm mode, though the sheen snaps back after a one second delay and the single 600ms expo curve is generic.",
+  "b2/j2/A-r3": "The pastel gradient and rotating conic aura feel dreamy at rest, but in the hover strip the change is barely visible, the 900ms symmetric timing feels sluggish, and the blur and box-shadow transitions are heavier to render.",
+  "b2/j2/B-r3": "Named curve tokens give a mild overshoot lift in and a calm exit with a drifting halo on an opacity-only layer, plus focus ring, reduced-motion path and disabled state, though the white halo on the soft button is nearly invisible and the dreamlike quality is more modest.",
+  "b2/j3/A-r4": "Layers aura, sheen and sparks with four named curves and a duration slider, but the aura is clipped by overflow hidden and the hover frames show modest change on the primary.",
+  "b2/j3/B-r4": "Separate lift and glow curves with a delayed bloom give the most considered motion, but the invalid font shorthand drops button weight and size and the desktop layout leaves a large dead gap.",
+  "b2/j3/B-r3": "The most usable of the four: unclipped halo, sensible in and out timings, disabled and touch paths handled, and a clean mobile layout, though the hover change reads as subtle.",
+  "b2/j3/A-r3": "The conic aurora and shimmer feel the most dreamlike, but animating box-shadow, filter and a blurred rotating layer costs more to render than a site button should."
+ }
+}

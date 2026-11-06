@@ -30,7 +30,7 @@ Name tests with the glossary's terms (`GLOSSARY.md`).
 
 ## Development
 
-- Tests: `python3 -m unittest discover -s tests` (finalize.py, webpages.py, images.py, video.py, cdp.py, pixels.py; `tests/test_browser_integration.py` drives a local Chromium-family browser when one is installed and skips otherwise; `METADUMP_LIVE=1` adds network tests) and `node --test tests/workflow.test.mjs` (Workflow script control flow with mocked agents). Fixtures live in `tests/fixtures/`.
+- Tests: `python3 -m unittest discover -s tests` (finalize.py, deal.py, look.py, webpages.py, images.py, video.py, cdp.py, pixels.py; `tests/test_browser_integration.py` drives a local Chromium-family browser when one is installed and skips otherwise; `METADUMP_LIVE=1` adds network tests) and `node --test tests/workflow.test.mjs` (Workflow script control flow with mocked agents). Fixtures live in `tests/fixtures/`.
 - Validate: `claude plugin validate .`
 - Every Python script in `skills/metadump/scripts/` is Python 3.9+ standard library only; keep it that way so it runs anywhere the skill is installed. Optional tools (a Chromium-family browser, yt-dlp, ffmpeg/ffprobe, sips) are detected at runtime by `tools.py` and never installed. `METADUMP_DISABLE=browser,ffmpeg` hides tools to test the fallbacks.
 - `webpages.py` is a clean-room implementation (`docs/clean-room/`, `docs/adr/0004-clean-room-scraper.md`): change it from the spec and our own requirements, never by reading the original project.

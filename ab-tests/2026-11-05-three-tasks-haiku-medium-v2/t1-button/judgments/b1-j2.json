@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 7, "overall": 7, "note": "Warm stoneware page with a dark-stage tester whose lilac glow tail and 260 ms ease-out settle are well built and checked against limits, but the hover change is subtle and the button sits inside a crowded shop page rather than being the focus."},
+    "X": {"dreamlike": 8, "practical": 6, "motion": 7, "craft": 7, "overall": 7, "note": "The gradient shift, sheen sweep and rising motes read most clearly as dreamlike in the hover strip, but the 1.1 s hover settle is slow for a website button and the looping motes add render cost while hovered."},
+    "Y": {"dreamlike": 7, "practical": 6, "motion": 7, "craft": 6, "overall": 6, "note": "Selectable hover curves and durations plus aura, sheen and motes give a good tuning story, but the hover crops miss the button entirely, the desktop hero leaves the right half empty, and the motes loop while hovered."},
+    "Z": {"dreamlike": 7, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "The dark stage with a teal and lilac glow tail, a live curve plot, a live contrast readout and a reduced-motion path that keeps the colour change make it the most complete and practical response, though its hover crop shows the sidebar rather than the hero button."}
+  },
+  "ranking": ["Z", "X", "W", "Y"]
+}

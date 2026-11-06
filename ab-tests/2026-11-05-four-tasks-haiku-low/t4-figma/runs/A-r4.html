@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figma-style Loop</title>
+<style>
+  :root {
+    --bg-1: #17161c;
+    --bg-2: #0b0a0e;
+    --red: #F24E1E;
+    --orange: #FF7262;
+    --purple: #A259FF;
+    --blue: #1ABCFE;
+    --green: #0ACF83;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) { --bg-1: #f6f4fb; --bg-2: #e9e5f3; }
+  }
+  :root[data-theme="dark"] { --bg-1: #17161c; --bg-2: #0b0a0e; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg-2);
+  }
+  body {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 45%, var(--bg-1) 0%, var(--bg-2) 70%);
+  }
+  .stage {
+    position: relative;
+    width: min(80vw, 80vh, 520px);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+  }
+  .glow {
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(162,89,255,.35), rgba(26,188,254,.15) 45%, transparent 70%);
+    filter: blur(28px);
+    animation: glow 5s ease-in-out infinite;
+  }
+  svg {
+    position: relative;
+    width: 70%;
+    height: auto;
+    overflow: visible;
+  }
+  .s {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: assemble 5s infinite both;
+    will-change: transform, opacity;
+  }
+  .red    { fill: var(--red); }
+  .orange { fill: var(--orange); }
+  .purple { fill: var(--purple); }
+  .blue   { fill: var(--blue); }
+  .green  { fill: var(--green); }
+
+  @keyframes assemble {
+    0% {
+      opacity: 0;
+      transform: translate(var(--fx), var(--fy)) rotate(var(--fr)) scale(.3);
+      animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+    }
+    28% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg) scale(1.08);
+      animation-timing-function: cubic-bezier(.45, 0, .55, 1);
+    }
+    36% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg) scale(1);
+      animation-timing-function: ease-in-out;
+    }
+    66% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg) scale(1);
+      animation-timing-function: cubic-bezier(.6, 0, .8, .4);
+    }
+    84% {
+      opacity: 0;
+      transform: translate(var(--ex), var(--ey)) rotate(var(--er)) scale(.6);
+      animation-timing-function: linear;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--ex), var(--ey)) rotate(var(--er)) scale(.6);
+    }
+  }
+  @keyframes glow {
+    0%, 100% { transform: scale(.9); opacity: .5; }
+    30%      { transform: scale(1.08); opacity: 1; }
+    66%      { transform: scale(1); opacity: .8; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .s, .glow { animation: none; }
+    .s { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="stage" aria-label="Animated brand mark">
+    <div class="glow"></div>
+    <svg viewBox="-20 -20 140 190" role="img" aria-hidden="true">
+      <!-- Red: top-left half-pill -->
+      <path class="s red" style="--fx:-70px;--fy:-60px;--fr:-50deg;--ex:-90px;--ey:-40px;--er:-30deg;animation-delay:0s"
+            d="M50 0 V50 H25 A25 25 0 0 1 25 0 Z"/>
+      <!-- Orange: top-right circle -->
+      <circle class="s orange" cx="75" cy="25" r="25"
+              style="--fx:80px;--fy:-50px;--fr:40deg;--ex:90px;--ey:-30px;--er:50deg;animation-delay:.1s"/>
+      <!-- Purple: middle-left circle -->
+      <circle class="s purple" cx="25" cy="75" r="25"
+              style="--fx:-90px;--fy:10px;--fr:-30deg;--ex:-100px;--ey:30px;--er:-40deg;animation-delay:.2s"/>
+      <!-- Blue: middle-right circle -->
+      <circle class="s blue" cx="75" cy="75" r="25"
+              style="--fx:90px;--fy:20px;--fr:30deg;--ex:100px;--ey:40px;--er:40deg;animation-delay:.3s"/>
+      <!-- Green: bottom-left circle -->
+      <circle class="s green" cx="25" cy="125" r="25"
+              style="--fx:-60px;--fy:80px;--fr:-40deg;--ex:-70px;--ey:100px;--er:-50deg;animation-delay:.4s"/>
+    </svg>
+  </main>
+</body>
+</html>

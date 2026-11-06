@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"compact": 7, "collapsible": 7, "tracking": 7, "dark": 8, "usability": 6, "craft": 7, "overall": 7, "note": "Tidy teal toast with ETA, tracking number and action buttons, but no reduced-motion handling, no progress count and a floating-in animation that jumps."},
+"X": {"compact": 6, "collapsible": 7, "tracking": 7, "dark": 8, "usability": 9, "craft": 7, "overall": 7, "note": "Best accessibility (switch roles, region, status, reduced motion) and a very small collapsed bar, but the opened panel has a big empty gap and tiny type."},
+"Y": {"compact": 8, "collapsible": 8, "tracking": 7, "dark": 8, "usability": 8, "craft": 8, "overall": 8, "note": "Compact amber toast with dot progress, check-mark timeline and clean connectors; lacks a copyable tracking number and a full ETA time but has the best density and polish."},
+"Z": {"compact": 6, "collapsible": 8, "tracking": 9, "dark": 8, "usability": 7, "craft": 8, "overall": 8, "note": "Richest tracking (ETA window, progress bar, locations, copy number, actions) with a smooth expand, though the opened toast is taller than it needs to be."}
+}, "ranking": ["Y", "Z", "X", "W"]}

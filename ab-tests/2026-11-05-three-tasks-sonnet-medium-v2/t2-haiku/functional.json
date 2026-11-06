@@ -1,0 +1,90 @@
+{
+ "A-r1": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "fire on frozen air",
+  "words_total": 11,
+  "syllables_per_line": [
+   5,
+   6,
+   5
+  ]
+ },
+ "A-r2": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "the sky holds its breath.",
+  "words_total": 11,
+  "syllables_per_line": [
+   3,
+   7,
+   5
+  ]
+ },
+ "A-r3": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "mother-of-pearl sky",
+  "words_total": 11,
+  "syllables_per_line": [
+   4,
+   7,
+   5
+  ]
+ },
+ "A-r4": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "dawn the sky holds, brief.",
+  "words_total": 12,
+  "syllables_per_line": [
+   5,
+   6,
+   5
+  ]
+ },
+ "B-r1": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "then the cloud turns white",
+  "words_total": 16,
+  "syllables_per_line": [
+   5,
+   7,
+   5
+  ]
+ },
+ "B-r2": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "and we stay, in grey",
+  "words_total": 15,
+  "syllables_per_line": [
+   4,
+   7,
+   5
+  ]
+ },
+ "B-r3": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "colour draining off",
+  "words_total": 12,
+  "syllables_per_line": [
+   5,
+   7,
+   5
+  ]
+ },
+ "B-r4": {
+  "poem_lines": 3,
+  "ends_with_question": false,
+  "last_line": "held out in both hands",
+  "words_total": 16,
+  "syllables_per_line": [
+   6,
+   7,
+   5
+  ]
+ }
+}

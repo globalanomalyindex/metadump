@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halo Button</title>
+<style>
+  :root {
+    --bg: #12111f;
+    --card: #1b1a2e;
+    --ink: #ece9fb;
+    --muted: #a9a4c9;
+    --line: rgba(190, 180, 255, .16);
+    --btn-top: #4a3f9a;
+    --btn-bot: #3a3182;
+    --btn-ink: #fbfaff;
+    --halo: 190, 170, 255;
+
+    /* custom curves */
+    --bloom: cubic-bezier(0.165, 0.84, 0.44, 1);      /* glow arrives evenly, no overshoot */
+    --drift: cubic-bezier(0.23, 1, 0.32, 1);          /* early burst, long tail */
+    --leave: cubic-bezier(0.4, 0, 0.6, 1);            /* departure gets out of the way */
+    --pass:  cubic-bezier(0.45, 0.05, 0.25, 1);       /* single light pass across the face */
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#eeeaff; --card:#faf8ff; --ink:#201b45; --muted:#5a5584; --line:rgba(70,55,160,.18); --btn-top:#4a3f9a; --btn-bot:#392f7e; --halo: 150,130,255; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+    background: radial-gradient(900px 500px at 20% 0%, rgba(120,100,230,.18), transparent 60%), var(--bg);
+    color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .card {
+    width: min(100%, 440px); background: var(--card); border: 1px solid var(--line);
+    border-radius: 20px; padding: 32px 28px 24px;
+  }
+  .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 0 0 10px; font-weight: 650; }
+  p.lede { margin: 0 0 22px; color: var(--muted); }
+  form { display: grid; gap: 12px; }
+  label { font-size: 14px; color: var(--muted); }
+  input[type=email] {
+    width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+    background: rgba(255,255,255,.04); color: var(--ink); font: inherit;
+  }
+  input[type=email]:focus-visible { outline: 2px solid rgb(var(--halo)); outline-offset: 2px; }
+
+  /* ---------- the button ---------- */
+  .halo-btn {
+    position: relative; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 48px; padding: 0 28px; width: 100%;
+    border: 1px solid rgba(var(--halo), .35); border-radius: 14px;
+    background: linear-gradient(180deg, var(--btn-top), var(--btn-bot));
+    color: var(--btn-ink); font: 600 16px/1 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .01em;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transform: translateY(0);
+    /* leave: short, steeper */
+    transition: transform 180ms var(--leave);
+  }
+  /* glow: fixed-blur sibling layer, only opacity animates */
+  .halo-btn::before {
+    content: ""; position: absolute; inset: -6px; z-index: -1; border-radius: 20px;
+    background: radial-gradient(120% 140% at 50% 60%, rgba(var(--halo), .55), rgba(var(--halo), 0) 70%);
+    filter: blur(14px); opacity: 0;
+    transition: opacity 180ms var(--leave);
+  }
+  /* sheen: one pale pass across the face, clipped to the button */
+  .halo-btn::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%);
+    transform: translateX(-110%); opacity: 0;
+    transition: transform 0s linear 180ms, opacity 180ms var(--leave);
+  }
+  .halo-btn .label, .halo-btn .icon { position: relative; z-index: 1; }
+  .halo-btn .icon { width: 18px; height: 18px; flex: none; }
+
+  /* enter: lingering tail. Pointer devices only; focus-visible gets the same state */
+  @media (hover: hover) and (pointer: fine) {
+    .halo-btn:hover:not(:disabled) { transform: translateY(-2px); transition: transform 380ms var(--drift); }
+    .halo-btn:hover:not(:disabled)::before { opacity: 1; transition: opacity 460ms var(--bloom) 60ms; }
+    .halo-btn:hover:not(:disabled)::after { transform: translateX(110%); opacity: 1; transition: transform 700ms var(--pass), opacity 300ms var(--bloom); }
+  }
+  .halo-btn:focus-visible:not(:disabled) { outline: 2px solid rgb(var(--halo)); outline-offset: 3px; transform: translateY(-2px); transition: transform 380ms var(--drift); }
+  .halo-btn:focus-visible:not(:disabled)::before { opacity: 1; transition: opacity 460ms var(--bloom) 60ms; }
+  .halo-btn:focus-visible:not(:disabled)::after { transform: translateX(110%); opacity: 1; transition: transform 700ms var(--pass), opacity 300ms var(--bloom); }
+
+  /* press: lands softly, also the touch response */
+  .halo-btn:active:not(:disabled) { transform: translateY(0) scale(.985); transition: transform 120ms var(--leave); }
+  .halo-btn:active:not(:disabled)::before { opacity: .8; transition: opacity 120ms var(--leave); }
+
+  .halo-btn:disabled { cursor: progress; opacity: .85; }
+  .halo-btn[data-state=done] { background: linear-gradient(180deg, #3d7a78, #2f6361); border-color: rgba(160,240,230,.4); cursor: default; }
+
+  .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; display: none; animation: spin .8s linear infinite; position: relative; z-index: 1; }
+  .halo-btn[data-state=loading] .spinner { display: block; }
+  .halo-btn[data-state=loading] .icon { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .msg { min-height: 22px; font-size: 14px; color: var(--muted); margin: 14px 0 0; }
+  .meta { display: flex; justify-content: space-between; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; padding: 0; }
+  .link:focus-visible { outline: 2px solid rgb(var(--halo)); outline-offset: 2px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .halo-btn, .halo-btn::before, .halo-btn::after { transition-duration: 1ms !important; transition-delay: 0s !important; }
+    .halo-btn:hover:not(:disabled), .halo-btn:focus-visible:not(:disabled) { transform: none; }
+    .halo-btn::after { display: none; }
+    .spinner { animation-duration: 2s; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <p class="eyebrow">The Slow Letter</p>
+    <h1>One quiet essay, every other Sunday.</h1>
+    <p class="lede">Long-form writing on design, sleep and attention. No tracking pixels, no promotions, unsubscribe anytime.</p>
+
+    <form id="form" novalidate>
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+      <button class="halo-btn" id="btn" type="submit" data-state="idle">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="label" id="label">Subscribe</span>
+      </button>
+    </form>
+    <p class="msg" id="msg" role="status" aria-live="polite">Join 12,480 readers.</p>
+
+    <div class="meta">
+      <span>Subscribers <b id="count">12,480</b></span>
+      <button class="link" id="undo" type="button" hidden>Undo</button>
+    </div>
+  </main>
+
+<script>
+(function () {
+  var form = document.getElementById('form'), btn = document.getElementById('btn'),
+      label = document.getElementById('label'), msg = document.getElementById('msg'),
+      email = document.getElementById('email'), count = document.getElementById('count'),
+      undo = document.getElementById('undo');
+  var n = 12480, timer;
+  function set(state, text) { btn.dataset.state = state; label.textContent = text; }
+  function fmt(v) { return v.toLocaleString('en-US'); }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (btn.dataset.state !== 'idle') return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value)) {
+      msg.textContent = 'Please enter a valid email address.';
+      email.focus();
+      return;
+    }
+    set('loading', 'Subscribing…');
+    btn.disabled = true;
+    msg.textContent = 'Saving your place…';
+    timer = setTimeout(function () {
+      btn.disabled = false;
+      set('done', 'Subscribed');
+      n += 1; count.textContent = fmt(n);
+      msg.textContent = 'Welcome. The next letter goes out Sunday to ' + email.value + '.';
+      undo.hidden = false;
+    }, 1100);
+  });
+
+  undo.addEventListener('click', function () {
+    clearTimeout(timer);
+    set('idle', 'Subscribe');
+    n -= 1; count.textContent = fmt(n);
+    msg.textContent = 'Removed. Join ' + fmt(n) + ' readers.';
+    undo.hidden = true;
+    email.focus();
+  });
+})();
+</script>
+</body>
+</html>

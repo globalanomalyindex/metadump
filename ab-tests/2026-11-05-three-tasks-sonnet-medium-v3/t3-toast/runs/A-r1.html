@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Toast</title>
+<style>
+:root{
+  --bg:#0b0d10; --toast:#14171c; --line:#232830; --text:#e8ebf0; --mute:#8b93a1;
+  --accent:#4ade80; --warn:#fbbf24; --dim:#3a414c;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-image:radial-gradient(circle at 20% 10%,#12161c,transparent 60%)}
+.hint{position:fixed;left:16px;top:14px;color:var(--mute);font-size:12px}
+.hint kbd{background:var(--toast);border:1px solid var(--line);border-radius:4px;padding:0 5px;font:11px ui-monospace,monospace}
+.toast{position:fixed;right:16px;bottom:16px;width:min(300px,calc(100vw - 32px));background:var(--toast);
+  border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px #000a;overflow:hidden;
+  animation:in .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{transform:translateY(14px);opacity:0}}
+.head{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;background:none;border:0;color:inherit;
+  font:inherit;text-align:left;cursor:pointer}
+.head:focus-visible,.btn:focus-visible,.step:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 0 0 #4ade8066;animation:pulse 2s infinite}
+.delivered .dot{animation:none;background:var(--accent)}
+@keyframes pulse{70%{box-shadow:0 0 0 6px #4ade8000}}
+.t{flex:1;min-width:0}
+.t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t span{display:block;color:var(--mute);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{color:var(--mute);transition:transform .25s;flex:none}
+.open .chev{transform:rotate(180deg)}
+.bar{height:2px;background:var(--dim)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+.open .body{grid-template-rows:1fr}
+.inner{overflow:hidden;min-height:0}
+.pad{padding:8px 10px 10px;border-top:1px solid var(--line)}
+.meta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute);margin-bottom:8px}
+.meta code{color:var(--text);font:11.5px ui-monospace,SFMono-Regular,Menlo,monospace}
+.meta button{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0}
+ol{list-style:none;padding:0;position:relative}
+.step{display:flex;gap:8px;width:100%;background:none;border:0;color:var(--mute);font:inherit;text-align:left;padding:3px 0;cursor:pointer;position:relative}
+.step .pt{width:9px;height:9px;border-radius:50%;border:2px solid var(--dim);margin-top:4px;flex:none;background:var(--toast);z-index:1}
+.step.done .pt{background:var(--accent);border-color:var(--accent)}
+.step.now{color:var(--text)}
+.step.now .pt{border-color:var(--accent);background:var(--toast)}
+.step:not(:last-child)::before{content:"";position:absolute;left:4px;top:15px;bottom:-6px;width:1px;background:var(--dim)}
+.step.done:not(:last-child)::before{background:var(--accent)}
+.step small{margin-left:auto;font-size:11px;white-space:nowrap}
+.step div{min-width:0}
+.step em{display:block;font-style:normal;font-size:11px;color:var(--mute)}
+.acts{display:flex;gap:6px;margin-top:8px}
+.btn{flex:1;background:#1c2128;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:5px 6px;font:inherit;font-size:12px;cursor:pointer}
+.btn:hover{background:#242a33}
+.btn[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.ping{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--toast);border:1px solid var(--line);
+  padding:4px 10px;border-radius:999px;font-size:12px;color:var(--mute);opacity:0;transition:opacity .2s;pointer-events:none}
+.ping.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="hint">Click the toast to expand &middot; <kbd>Esc</kbd> collapses &middot; click a step to simulate progress</div>
+
+<section class="toast" id="toast" aria-label="Package tracking">
+  <button class="head" id="head" aria-expanded="false" aria-controls="body">
+    <span class="dot"></span>
+    <span class="t"><b id="status">Out for delivery</b><span id="sub">Arrives today, 2:10 – 4:30 PM</span></span>
+    <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+  </button>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="body" id="body"><div class="inner"><div class="pad">
+    <div class="meta"><span>UPS <code id="trk">1Z84A 6R90 3391 0472</code></span><button id="copy">Copy</button></div>
+    <ol id="steps"></ol>
+    <div class="acts">
+      <button class="btn" id="notify" aria-pressed="true">Alerts on</button>
+      <button class="btn" id="refresh">Refresh</button>
+      <button class="btn" id="dismiss">Hide</button>
+    </div>
+  </div></div></div>
+</section>
+<div class="ping" id="ping" role="status"></div>
+
+<script>
+(function(){
+  var steps=[
+    {t:"Label created",s:"Portland, OR",w:"Nov 3, 6:42 PM",sub:"Label created, awaiting pickup"},
+    {t:"Picked up",s:"Portland, OR",w:"Nov 3, 9:15 PM",sub:"Picked up by carrier"},
+    {t:"Departed facility",s:"Salt Lake City, UT",w:"Nov 4, 5:08 AM",sub:"In transit to Denver"},
+    {t:"Arrived at hub",s:"Denver, CO",w:"Nov 4, 11:52 PM",sub:"Sorting at local hub"},
+    {t:"Out for delivery",s:"Boulder, CO",w:"Nov 5, 7:30 AM",sub:"Arrives today, 2:10 – 4:30 PM"},
+    {t:"Delivered",s:"Front porch",w:"Nov 5, 3:24 PM",sub:"Left at front door"}
+  ];
+  var cur=4, alerts=true;
+  var $=function(i){return document.getElementById(i)};
+  var toast=$("toast"),head=$("head"),list=$("steps");
+
+  function render(){
+    list.innerHTML="";
+    steps.forEach(function(st,i){
+      var li=document.createElement("li");
+      var b=document.createElement("button");
+      b.className="step"+(i<cur?" done":i===cur?" now":"");
+      b.setAttribute("aria-label",st.t+(i<=cur?", "+st.w:", pending")+". Set as current step");
+      b.innerHTML='<span class="pt"></span><div></div><small></small>';
+      b.children[1].innerHTML="<span></span><em></em>";
+      b.children[1].children[0].textContent=st.t;
+      b.children[1].children[1].textContent=st.s;
+      b.children[2].textContent=i<=cur?st.w.split(", ")[1]:"—";
+      b.onclick=function(){cur=i;render();ping("Status: "+st.t)};
+      li.appendChild(b);list.appendChild(li);
+    });
+    var st=steps[cur];
+    $("status").textContent=st.t;
+    $("sub").textContent=st.sub;
+    $("fill").style.width=(cur/(steps.length-1)*100)+"%";
+    toast.classList.toggle("delivered",cur===steps.length-1);
+  }
+  function setOpen(o){
+    toast.classList.toggle("open",o);
+    head.setAttribute("aria-expanded",o);
+  }
+  var pt;
+  function ping(m){
+    var p=$("ping");p.textContent=m;p.classList.add("on");
+    clearTimeout(pt);pt=setTimeout(function(){p.classList.remove("on")},1600);
+  }
+  head.onclick=function(){setOpen(!toast.classList.contains("open"))};
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")setOpen(false)});
+  $("notify").onclick=function(){
+    alerts=!alerts;this.setAttribute("aria-pressed",alerts);
+    this.textContent=alerts?"Alerts on":"Alerts off";
+    ping(alerts?"You'll get delivery alerts":"Alerts muted");
+  };
+  $("refresh").onclick=function(){
+    if(cur<steps.length-1){cur++;render();ping(alerts?"Update: "+steps[cur].t:"Updated")}
+    else ping("Already delivered");
+  };
+  $("copy").onclick=function(){
+    var t=$("trk").textContent;
+    try{navigator.clipboard.writeText(t).catch(function(){})}catch(e){}
+    this.textContent="Copied";var b=this;setTimeout(function(){b.textContent="Copy"},1200);
+  };
+  $("dismiss").onclick=function(){
+    toast.style.display="none";ping("Hidden — click to bring back");
+    var r=function(){toast.style.display="";document.removeEventListener("click",r,true)};
+    setTimeout(function(){document.addEventListener("click",r,true)},50);
+  };
+  render();
+})();
+</script>
+</body>
+</html>

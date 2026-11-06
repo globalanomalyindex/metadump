@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"dreamlike": 6, "practical": 8, "motion": 8, "craft": 7, "overall": 7, "note": "Restrained violet glow and halo with three real cubic-bezier readings, a 600 ms glow tail and a 400 ms exit, all gated for reduced motion, focus and touch; the lab panel clutters the page but the button reads as a real control."},
+"X": {"dreamlike": 8, "practical": 7, "motion": 7, "craft": 8, "overall": 8, "note": "The hover shifts the gradient toward rose, adds a sheen sweep and a glow, and the stays page looks like a finished product; the letter-spacing and box-shadow transitions cost some layout and paint, but reduced motion and focus are handled."},
+"Y": {"dreamlike": 7, "practical": 6, "motion": 6, "craft": 7, "overall": 6, "note": "The ink button's sheen sweep and violet aura look good, but the aura runs an infinite ease-in-out loop on hover, the hover is not gated to fine pointers, and several tiles use backdrop blur."},
+"Z": {"dreamlike": 6, "practical": 8, "motion": 5, "craft": 7, "overall": 6, "note": "Live contrast checks, focus ring and disabled state are strong, but a :root:not(.motion-full) .btn rule overrides the lift and curve variables, so by default there is no lift and only a 150 ms linear fade until the user picks Full, which defeats the curve readings."}
+},
+"ranking": ["X", "W", "Y", "Z"]}

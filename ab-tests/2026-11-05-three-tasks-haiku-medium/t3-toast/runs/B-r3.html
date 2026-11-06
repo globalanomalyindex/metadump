@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel status toast</title>
+<style>
+:root{
+  --page:#0d0f13;
+  --surface:#1a1d24;
+  --surface-2:#242935;
+  --hair:#2e3441;
+  --text:#e6e8ec;
+  --muted:#a9b0be;
+  --focus:#8ab4ff;
+  --ok:#63d29a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;min-height:100vh;background:var(--page);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* demo page behind the panel */
+.demo{max-width:720px;margin:0 auto;padding:24px 16px 140px}
+h1{font-size:20px;margin:0 0 4px}
+h2{font-size:14px;margin:0 0 8px}
+.muted{color:var(--muted);margin:0}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:14px;margin-top:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select{font:inherit;color:var(--text);background:var(--surface-2);border:1px solid var(--hair);border-radius:8px;min-height:32px;padding:0 8px}
+.btn{font:inherit;color:var(--text);background:var(--surface-2);border:1px solid var(--hair);border-radius:8px;min-height:32px;min-width:32px;padding:0 12px;cursor:pointer}
+.btn:hover{border-color:#46526c}
+
+/* floating panel: the pill is the head; the body grows above it */
+.pkt{position:fixed;right:16px;bottom:16px;z-index:50;display:flex;flex-direction:column;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--hair);border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.45);overflow:hidden;transition:border-radius 220ms ease-out}
+.pkt[data-open="true"]{border-radius:16px}
+.pkt-head{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 10px 0 12px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.pkt-head:hover{background:rgba(255,255,255,.03)}
+.glyph{width:10px;height:10px;border-radius:50%;background:var(--hue,#9aa4b5);flex:none}
+.glyph.tri{width:0;height:0;border-radius:0;background:none;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid var(--hue)}
+.word{font-weight:600;white-space:nowrap}
+.eta{color:var(--muted);font-size:12px;white-space:nowrap}
+.chev{width:12px;height:12px;flex:none;margin-left:auto;color:var(--muted);transition:transform 220ms ease-out}
+.pkt[data-open="true"] .chev{transform:rotate(180deg)}
+
+.pkt-body{display:grid;grid-template-rows:1fr;max-width:min(300px,calc(100vw - 32px));overflow:hidden;transition:grid-template-rows 220ms ease-out,max-width 220ms ease-out}
+.pkt[data-open="false"] .pkt-body{grid-template-rows:0fr;max-width:0;transition-duration:170ms}
+.pkt-inner{min-height:0;overflow:hidden}
+.pkt-stack{width:min(300px,calc(100vw - 32px));padding:4px 14px 14px}
+.detail{margin:0 0 4px;font-size:13px}
+.eta-full{margin:0 0 4px;color:var(--muted);font-size:12px}
+.meta{margin:0 0 10px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.steps{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.step{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:baseline;font-size:13px}
+.mark{text-align:center;color:var(--muted)}
+.step.done .mark{color:var(--ok)}
+.step.current .mark,.step.current .name{color:var(--text)}
+.step.current .name{font-weight:600}
+.step.todo .name,.step.todo .when{color:var(--muted)}
+.when{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.actions button{flex:1 1 auto;min-height:32px;padding:0 8px;font:inherit;font-size:12px;color:var(--text);background:var(--surface-2);border:1px solid var(--hair);border-radius:8px;cursor:pointer}
+.actions button:hover{border-color:#46526c}
+.hint{margin:10px 0 0;min-height:1.45em;color:var(--muted);font-size:12px}
+
+.edge-tab{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:50;writing-mode:vertical-rl;min-width:32px;min-height:96px;padding:8px 6px;font:inherit;font-size:12px;color:var(--text);background:var(--surface);border:1px solid var(--hair);border-right:0;border-radius:10px 0 0 10px;cursor:pointer}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* status change cue: a short fade, removed under reduced motion */
+.cue{animation:cue 520ms ease-out}
+.glyph.cue{animation:cueg 520ms ease-out}
+@keyframes cue{from{opacity:.2}to{opacity:1}}
+@keyframes cueg{from{transform:scale(1.8)}to{transform:scale(1)}}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:0ms !important;animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<main class="demo">
+  <h1>Orders</h1>
+  <p class="muted">Sample page. The package status panel floats over it, bottom right.</p>
+
+  <section class="card" aria-labelledby="ctl">
+    <h2 id="ctl">Sample controls</h2>
+    <div class="row">
+      <label for="demo-status" class="muted">Package status</label>
+      <select id="demo-status"></select>
+      <button class="btn" id="demo-reset" type="button">Reset sample</button>
+    </div>
+    <p class="muted" style="margin-top:10px">Changing the status updates the panel. If the panel was dismissed, a status change brings it back with a short cue.</p>
+  </section>
+
+  <section class="card" aria-labelledby="ord">
+    <h2 id="ord">Order 20417</h2>
+    <p class="muted">Desk lamp with two bulbs. Shipped with Northline Express.</p>
+  </section>
+</main>
+
+<aside class="pkt" id="pkt" data-open="false" aria-label="Package status">
+  <button class="pkt-head" id="head" type="button" aria-expanded="false" aria-controls="pkt-body">
+    <span class="glyph" id="glyph" aria-hidden="true"></span>
+    <span class="word" id="word"></span>
+    <span class="eta" id="eta"></span>
+    <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="pkt-body" id="pkt-body" inert>
+    <div class="pkt-inner">
+      <div class="pkt-stack">
+        <p class="detail" id="detail"></p>
+        <p class="eta-full" id="eta-full"></p>
+        <p class="meta">Northline Express &middot; NL 4821 7730 5516</p>
+        <ol class="steps" id="steps"></ol>
+        <div class="actions">
+          <button id="copy" type="button">Copy number</button>
+          <button id="open" type="button">Open carrier</button>
+          <button id="dismiss" type="button">Dismiss</button>
+        </div>
+        <p class="hint" id="hint"></p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<button class="edge-tab" id="tab" type="button" hidden aria-label="Show package status">Track parcel</button>
+<div class="sr-only" id="live" aria-live="polite"></div>
+
+<script>
+(function () {
+  var CARRIER_URL = "https://track.example.com/?number=";
+  var NUMBER = "NL 4821 7730 5516";
+
+  // The four stages a parcel passes through, in the carrier's own wording.
+  var STAGES = [
+    { word: "Label Created", when: "Nov 3, 16:10 · Dayton, OH" },
+    { word: "On the Way", when: "Nov 4, 21:20 · Indianapolis, IN hub" },
+    { word: "Out for Delivery", when: "Nov 5, 07:50 · Chicago, IL" },
+    { word: "Delivered", when: "Nov 5, 15:42 · Front door" }
+  ];
+
+  // Each status: where it sits on the stage list, its look, and the shopper action.
+  var STATUSES = [
+    { word: "Label Created", hue: "#9aa4b5", glyph: "dot", eta_short: "Fri, Nov 7", eta: "Expected Fri, Nov 7",
+      stage: 0, detail: "The label exists, but the carrier has not scanned the parcel yet.",
+      action: "Nothing to do yet. Check again after the ship date." },
+    { word: "On the Way", hue: "#6fa8ff", glyph: "dot", eta_short: "Fri, Nov 7", eta: "Expected Fri, Nov 7, 9 am to 12 pm",
+      stage: 1, detail: "Left the Indianapolis hub and is moving toward you.",
+      action: "No action needed. Watch the expected window." },
+    { word: "Out for Delivery", hue: "#f2c15c", glyph: "dot", eta_short: "Today, 2 to 6 pm", eta: "Expected today, 2 to 6 pm",
+      stage: 2, detail: "On a delivery vehicle in your area today.",
+      action: "Make sure someone can receive it today." },
+    { word: "Delivered", hue: "#63d29a", glyph: "dot", eta_short: "Nov 5, 3:42 pm", eta: "Delivered Nov 5, 3:42 pm",
+      stage: 3, delivered: true, detail: "Left at the front door, per the carrier.",
+      action: "Check the contents. Keep the box until you have." },
+    { word: "Exception", hue: "#ff9a7a", glyph: "tri", eta_short: "Redeliver Nov 6", eta: "Redelivery Nov 6, 9 am to 12 pm",
+      stage: 2, exception: true, detail: "Cause: recipient unavailable at the first attempt.",
+      action: "Read the cause, then choose another window with the carrier." }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    pkt: $("pkt"), head: $("head"), glyph: $("glyph"), word: $("word"), eta: $("eta"),
+    body: $("pkt-body"), detail: $("detail"), etaFull: $("eta-full"), steps: $("steps"),
+    hint: $("hint"), copy: $("copy"), open: $("open"), dismiss: $("dismiss"),
+    tab: $("tab"), live: $("live"), demoStatus: $("demo-status"), reset: $("demo-reset")
+  };
+
+  var DEFAULT_STATUS = 2;
+  var state = { status: DEFAULT_STATUS, expanded: false, dismissed: false, note: null };
+
+  // Fill the sample-status select from the same list the panel uses.
+  STATUSES.forEach(function (s, i) {
+    var opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = s.word;
+    el.demoStatus.appendChild(opt);
+  });
+
+  function renderSteps(s) {
+    el.steps.textContent = "";
+    STAGES.forEach(function (st, i) {
+      var done = i < s.stage || (s.delivered === true && i === s.stage);
+      var current = !done && i === s.stage;
+      var li = document.createElement("li");
+      li.className = "step " + (done ? "done" : current ? "current" : "todo");
+
+      var mark = document.createElement("span");
+      mark.className = "mark";
+      mark.setAttribute("aria-hidden", "true");
+      mark.textContent = done ? "✓" : current ? (s.exception ? "▲" : "●") : "○";
+
+      var name = document.createElement("span");
+      name.className = "name";
+      name.textContent = current && s.exception ? st.word + " (exception)" : st.word;
+
+      var when = document.createElement("span");
+      when.className = "when";
+      when.textContent = done || current ? st.when : "Pending";
+
+      li.appendChild(mark);
+      li.appendChild(name);
+      li.appendChild(when);
+      el.steps.appendChild(li);
+    });
+  }
+
+  function render() {
+    var s = STATUSES[state.status];
+    el.pkt.dataset.open = String(state.expanded);
+    el.pkt.hidden = state.dismissed;
+    el.tab.hidden = !state.dismissed;
+    el.head.setAttribute("aria-expanded", String(state.expanded));
+    el.body.toggleAttribute("inert", !state.expanded);
+
+    el.glyph.className = "glyph" + (s.glyph === "tri" ? " tri" : "");
+    el.glyph.style.setProperty("--hue", s.hue);
+    el.word.textContent = s.word;
+    el.eta.textContent = s.eta_short;
+    el.detail.textContent = s.detail;
+    el.etaFull.textContent = s.eta;
+    el.hint.textContent = state.note || s.action;
+    el.demoStatus.value = String(state.status);
+    renderSteps(s);
+  }
+
+  function announce(msg) {
+    el.live.textContent = "";
+    setTimeout(function () { el.live.textContent = msg; }, 30);
+  }
+
+  function cue() {
+    el.word.classList.remove("cue");
+    el.glyph.classList.remove("cue");
+    void el.word.offsetWidth; // restart the animation
+    el.word.classList.add("cue");
+    el.glyph.classList.add("cue");
+  }
+
+  function setStatus(i) {
+    if (i === state.status) return;
+    var wasDismissed = state.dismissed;
+    state.status = i;
+    state.note = null;
+    if (wasDismissed) {
+      // A status change is one of the ways back after dismiss.
+      state.dismissed = false;
+      state.expanded = false;
+    }
+    render();
+    cue();
+    var s = STATUSES[i];
+    announce(s.word + ". " + s.eta + "." + (wasDismissed ? " Panel shown again." : ""));
+  }
+
+  function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return fallbackCopy(text); });
+      }
+    } catch (e) { /* fall through */ }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  function fallbackCopy(text) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Head toggles the panel.
+  el.head.addEventListener("click", function () {
+    state.expanded = !state.expanded;
+    render();
+  });
+
+  // Escape collapses the panel when focus is inside it.
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && state.expanded && !state.dismissed && el.pkt.contains(document.activeElement)) {
+      state.expanded = false;
+      render();
+      el.head.focus();
+    }
+  });
+
+  el.copy.addEventListener("click", function () {
+    copyText(NUMBER).then(function (ok) {
+      state.note = ok ? "Tracking number copied." : "Copy is blocked here. Select the number and copy it.";
+      render();
+      announce(state.note);
+    });
+  });
+
+  el.open.addEventListener("click", function () {
+    var w = window.open(CARRIER_URL + encodeURIComponent(NUMBER), "_blank");
+    if (w) {
+      try { w.opener = null; } catch (e) { /* ignore */ }
+      state.note = "Carrier page opened in a new tab.";
+    } else {
+      state.note = "Pop-up blocked. Allow pop-ups for this page to open the carrier.";
+    }
+    render();
+  });
+
+  el.dismiss.addEventListener("click", function () {
+    state.dismissed = true;
+    state.expanded = false;
+    state.note = null;
+    render();
+    el.tab.focus();
+    announce("Status panel hidden. Use the Track parcel tab on the right edge to show it again.");
+  });
+
+  el.tab.addEventListener("click", function () {
+    state.dismissed = false;
+    state.expanded = false;
+    render();
+    el.head.focus();
+  });
+
+  el.demoStatus.addEventListener("change", function (e) {
+    setStatus(Number(e.target.value));
+  });
+
+  el.reset.addEventListener("click", function () {
+    state = { status: DEFAULT_STATUS, expanded: false, dismissed: false, note: null };
+    render();
+    announce("Sample reset to " + STATUSES[DEFAULT_STATUS].word + ".");
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

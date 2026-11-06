@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamline Buttons</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0f0c1d;
+  --panel: rgba(23, 19, 48, 0.72);
+  --text: #f2efff;
+  --muted: #c4bfe3;
+  --mint: #8ff0d0;
+  --rose: #ffb3c9;
+  --glow: 115, 96, 234;
+  --ease-dream: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-haze: cubic-bezier(0.45, 0, 0.2, 1);
+  --ease-press: cubic-bezier(0.3, 0.7, 0.4, 1);
+  --dur: 560ms;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 24px 16px 48px;
+  background:
+    radial-gradient(1100px 560px at 8% -12%, #2b1f63 0%, transparent 62%),
+    radial-gradient(900px 520px at 108% 112%, #3b1c4c 0%, transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+h2 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lede, .muted { color: var(--muted); }
+.lede { margin: 0.4rem 0 0; max-width: 62ch; }
+.muted { font-size: 0.92rem; margin: 0; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: clamp(18px, 3vw, 28px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.track { display: grid; gap: 14px; }
+
+.progress {
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #7360ea, #b45aa0, #5fd6b0);
+  transition: width 900ms var(--ease-dream);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Button ---------- */
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  min-height: 44px;
+  padding: 0.7em 1.35em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(120deg, #6a55e0 0%, #4a68d0 50%, #9c4a8e 100%);
+  background-size: 220% 220%;
+  background-position: 0% 50%;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  box-shadow: 0 8px 24px -14px rgba(var(--glow), 0.8);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur) var(--ease-dream),
+    box-shadow var(--dur) var(--ease-dream),
+    letter-spacing var(--dur) var(--ease-dream),
+    background-position 1100ms var(--ease-haze),
+    background-color var(--dur) var(--ease-haze),
+    border-color var(--dur) var(--ease-haze),
+    color var(--dur) var(--ease-haze);
+}
+
+/* light sweep */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  transform: translateX(-110%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 1000ms var(--ease-dream), opacity 400ms var(--ease-haze);
+}
+
+/* soft halo that breathes outside the edge */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: -35% -10%;
+  z-index: -2;
+  background: radial-gradient(closest-side, rgba(var(--glow), 0.55), transparent 70%);
+  opacity: 0;
+  transform: scale(0.7);
+  filter: blur(10px);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease-haze), transform 900ms var(--ease-dream);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 4px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn--soft {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: rgba(157, 140, 255, 0.5);
+  box-shadow: none;
+}
+
+.btn--ghost[aria-pressed="true"] {
+  background: rgba(143, 240, 208, 0.14);
+  border-color: var(--mint);
+  color: var(--mint);
+}
+
+/* hover and press only where a pointer can hover, and only when motion is welcome */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  body:not(.calm) .btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 44px -16px rgba(var(--glow), 0.9), 0 0 0 6px rgba(var(--glow), 0.12);
+    background-position: 100% 50%;
+    letter-spacing: 0.03em;
+  }
+  body:not(.calm) .btn:hover::before:not(:disabled),
+  body:not(.calm) .btn:hover:not(:disabled)::before {
+    transform: translateX(110%);
+    opacity: 1;
+  }
+  body:not(.calm) .btn:hover:not(:disabled)::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+  body:not(.calm) .btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+    transition-duration: 140ms;
+    transition-timing-function: var(--ease-press);
+  }
+  body:not(.calm) .btn--soft:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  body:not(.calm) .btn--ghost:hover:not(:disabled) {
+    background-color: rgba(157, 140, 255, 0.14);
+    border-color: var(--rose);
+    color: var(--rose);
+  }
+}
+
+.btn[aria-busy="true"] { cursor: progress; }
+
+.spin {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: spin 800ms linear infinite;
+}
+
+.btn[aria-busy="true"] .spin { display: inline-block; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.8em;
+  font-variant-numeric: tabular-nums;
+  transition: transform 500ms var(--ease-dream);
+}
+
+.badge.bump { transform: scale(1.3); }
+
+/* ---------- Controls ---------- */
+
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+}
+
+.chip:has(input:checked) {
+  border-color: #9d8cff;
+  background: rgba(157, 140, 255, 0.16);
+}
+
+.chip input { accent-color: #9d8cff; margin: 0; }
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+
+.field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+
+input[type="email"] {
+  flex: 1 1 220px;
+  min-height: 44px;
+  padding: 0 1.1em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text);
+  font: inherit;
+}
+
+input[type="email"]:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}
+
+input[type="email"][aria-invalid="true"] { border-color: var(--rose); }
+
+.error { color: var(--rose); }
+
+.calm-note { color: var(--muted); font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn::before, .btn::after, .badge, .progress span {
+    transition-duration: 1ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">Dreamline &middot; Button kit</p>
+    <h1>Buttons that drift instead of snapping</h1>
+    <p class="lede">Hover adds a slow halo, a light sweep and a small lift, all on custom cubic-bezier curves. Presses answer quickly so the page still feels responsive. Pick a curve below and hover to compare.</p>
+  </header>
+
+  <section class="card" aria-labelledby="track-title">
+    <div class="track">
+      <div>
+        <h2 id="track-title">Tide Pool Rain</h2>
+        <p class="muted">Sleep sounds &middot; 42 min loop &middot; recorded on the Oregon coast</p>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+      <div class="meta"><span id="elapsed">0:00</span><span>42:00</span></div>
+      <div class="row">
+        <button class="btn" id="play" type="button">Play</button>
+        <button class="btn btn--soft" id="queue" type="button">Add to queue <span class="badge" id="queueCount">0</span></button>
+        <button class="btn btn--ghost" id="save" type="button" aria-pressed="false"><span aria-hidden="true" id="saveIcon">&#9825;</span> <span class="label">Save</span></button>
+      </div>
+      <p id="status" class="muted" role="status" aria-live="polite">Ready.</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="curve-title">
+    <h2 id="curve-title">Motion curve</h2>
+    <p class="muted">Sets <code>--ease-dream</code> on the page. Every hover and sweep in this kit reads from it.</p>
+    <div class="seg" role="radiogroup" aria-label="Easing curve">
+      <label class="chip"><input type="radio" name="curve" value="0.22,1,0.36,1" checked> Dream</label>
+      <label class="chip"><input type="radio" name="curve" value="0.45,0,0.2,1"> Haze</label>
+      <label class="chip"><input type="radio" name="curve" value="0.34,1.56,0.64,1"> Float (slight overshoot)</label>
+    </div>
+    <p class="mono" id="curveReadout">cubic-bezier(0.22, 1, 0.36, 1)</p>
+    <label class="chip" style="margin-top:12px">
+      <input type="checkbox" id="motion" checked> Dreamy motion on
+    </label>
+    <p class="calm-note">Turn it off for plain colour changes only. The setting also follows the system reduced-motion preference.</p>
+  </section>
+
+  <section class="card" aria-labelledby="news-title">
+    <h2 id="news-title">Get the quiet list</h2>
+    <p class="muted">One email a month. Unsubscribe in one click.</p>
+    <form id="subscribe" novalidate style="margin-top:14px">
+      <div class="field">
+        <label for="email" class="sr">Email address</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+        <button class="btn" id="subBtn" type="submit"><span class="spin" aria-hidden="true"></span><span class="label">Subscribe</span></button>
+      </div>
+      <p id="formMsg" class="muted" role="alert" style="min-height:1.5em;margin-top:10px"></p>
+    </form>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var body = document.body;
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---- Curve picker: writes --ease-dream, which every transition reads ----
+  var curveInputs = document.querySelectorAll('input[name="curve"]');
+  function applyCurve(value) {
+    root.style.setProperty("--ease-dream", "cubic-bezier(" + value + ")");
+    $("curveReadout").textContent = "cubic-bezier(" + value.split(",").join(", ") + ")";
+  }
+  Array.prototype.forEach.call(curveInputs, function (input) {
+    input.addEventListener("change", function () {
+      if (input.checked) {
+        applyCurve(input.value);
+        say("Curve set to " + input.parentNode.textContent.trim() + ".");
+      }
+    });
+  });
+  applyCurve(document.querySelector('input[name="curve"]:checked').value);
+
+  // ---- Motion toggle: adds .calm, which switches off the hover choreography ----
+  $("motion").addEventListener("change", function (e) {
+    body.classList.toggle("calm", !e.target.checked);
+    say(e.target.checked ? "Dreamy motion on." : "Motion reduced to colour changes.");
+  });
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    $("motion").checked = false;
+    body.classList.add("calm");
+  }
+
+  function say(message) { $("status").textContent = message; }
+
+  // ---- Play / pause: a simulated 42-minute track ----
+  var TRACK_LEN = 42 * 60;
+  var elapsed = 0;
+  var timer = null;
+
+  function fmt(seconds) {
+    return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
+  }
+
+  function render() {
+    $("elapsed").textContent = fmt(elapsed);
+    $("bar").style.width = (elapsed / TRACK_LEN * 100).toFixed(2) + "%";
+  }
+
+  function tick() {
+    elapsed += 1;
+    if (elapsed >= TRACK_LEN) {
+      elapsed = 0;
+      setPlaying(false);
+      say("Track finished. Press Play to hear it again.");
+    }
+    render();
+  }
+
+  function setPlaying(on) {
+    if (on && timer === null) timer = setInterval(tick, 1000);
+    if (!on && timer !== null) { clearInterval(timer); timer = null; }
+    $("play").textContent = timer ? "Pause" : "Play";
+    if (timer) say("Now playing: Tide Pool Rain.");
+    else if (elapsed > 0) say("Paused at " + fmt(elapsed) + ".");
+  }
+
+  $("play").addEventListener("click", function () { setPlaying(timer === null); });
+
+  // ---- Queue: counter with a small bump ----
+  var queued = 0;
+  function bump(el) {
+    el.classList.remove("bump");
+    void el.offsetWidth;
+    el.classList.add("bump");
+    setTimeout(function () { el.classList.remove("bump"); }, 420);
+  }
+  $("queue").addEventListener("click", function () {
+    queued += 1;
+    $("queueCount").textContent = queued;
+    bump($("queueCount"));
+    say(queued + (queued === 1 ? " track" : " tracks") + " waiting in your queue.");
+  });
+
+  // ---- Save: toggle with aria-pressed ----
+  $("save").addEventListener("click", function () {
+    var on = $("save").getAttribute("aria-pressed") !== "true";
+    $("save").setAttribute("aria-pressed", String(on));
+    $("save").querySelector(".label").textContent = on ? "Saved" : "Save";
+    $("saveIcon").innerHTML = on ? "&#9829;" : "&#9825;";
+    say(on ? "Saved to your library." : "Removed from your library.");
+  });
+
+  // ---- Subscribe: validation, busy state, success message ----
+  var email = $("email");
+  var subBtn = $("subBtn");
+  var formMsg = $("formMsg");
+
+  email.addEventListener("input", function () { email.removeAttribute("aria-invalid"); });
+
+  $("subscribe").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var value = email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
+      formMsg.className = "error";
+      formMsg.textContent = "Enter an email address like you@example.com.";
+      email.setAttribute("aria-invalid", "true");
+      email.focus();
+      return;
+    }
+    formMsg.className = "muted";
+    formMsg.textContent = "";
+    subBtn.setAttribute("aria-busy", "true");
+    subBtn.disabled = true;
+    subBtn.querySelector(".label").textContent = "Sending";
+
+    setTimeout(function () {
+      subBtn.removeAttribute("aria-busy");
+      subBtn.disabled = false;
+      subBtn.querySelector(".label").textContent = "Subscribed";
+      formMsg.textContent = "You're in. A welcome note is on its way to " + value + ".";
+      email.value = "";
+      say("Subscribed to the quiet list.");
+    }, 1200);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

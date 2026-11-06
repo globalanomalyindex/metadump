@@ -1,0 +1,74 @@
+{
+ "t1-button": {
+  "A_mean": 5.33,
+  "B_mean": 4.33,
+  "A": [
+   6.0,
+   6.0,
+   4.0
+  ],
+  "B": [
+   4.0,
+   3.0,
+   6.0
+  ],
+  "more_varied": {
+   "A": 2,
+   "B": 1,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P mixes distinct motion ideas (a drifting aura with box-shadow glow, a skewed sheen crossing, a rotating mote/spin, and a background-position gradient shift) across different page contexts (moodboard, rental cards, pricing card, hero). Q repeats one architecture, a face-plus-glow two-curve system with a translate lift, blur glass and a 'Settle/Float/Rebound' tune-the-motion panel, in Q2, Q3 and Q4, with Q1 only adding a sheen; the palettes are all the same violet-on-pale-gradient.",
+   "v2 (P=B): P repeats one mechanism in all four: a lifted face with a blurred glow tail fading out, the same cubic-bezier pair, and the same 'Tune the motion' panel, with only the page context and surface swapped. Q varies more in what moves (colour shift with scale in Q1, background-position sheen in Q2, skewed sweep with motes in Q3, diagonal sheen on a dark button in Q4) and in palette, though Q2 and Q4 share the sheen idea and Q1 and Q3 share the violet primary.",
+   "v3 (P=A): P is four violet-gradient pills on near-white lavender pages, each with the same lift, glow and sheen sweep, differing mainly in page context. Q varies more in palette and surface (pale lavender, dark indigo hero, dark pricing card, navy pill on a pink-to-blue gradient) and in glow treatment, though its four hovers still share a soft-glow-and-lift motion idea."
+  ]
+ },
+ "t2-haiku": {
+  "A_mean": 3.0,
+  "B_mean": 3.33,
+  "A": [
+   3.0,
+   4.0,
+   2.0
+  ],
+  "B": [
+   4.0,
+   3.0,
+   3.0
+  ],
+  "more_varied": {
+   "A": 1,
+   "B": 2,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): Set P is four nacreous/pearl-cloud dusk-or-night poems that all stress rarity and being unseen, so the subject and image repeat and only the closing angle shifts. Set Q is four lenticular-over-ridge poems with the same wind-and-stillness image, but Q1 adds a camera-lens angle and snow, Q2 a colour shift from pearl to gray, and Q4 a late-autumn setting, so it varies slightly more, though Q1, Q3 and Q4 are close to interchangeable.",
+   "v2 (P=B): P is mostly one image written three times: a lens-shaped cloud over a ridge with wind running through it while the cloud stays still (P1, P2, P4), with only P3's pearl veil at dusk differing. Q is one subject, nacreous cloud, in every poem, but its angles differ more: Q1 is the sun lighting it from below the horizon, Q4 is its brief vanishing before it gets a name, while Q2 and Q3 are nearly the same winter-dusk glow.",
+   "v3 (P=A): Set P is four takes on one nacreous/pearl cloud at dusk in winter, with the same unseen or no-one-expects angle recurring, so it reads as one idea reworded. Set Q is four takes on one lenticular cloud over a ridge in wind, spread across autumn, midwinter, first snow and a pearl-to-gray dusk, but Q2 and Q3 are near-duplicates of each other."
+  ]
+ },
+ "t3-toast": {
+  "A_mean": 5.67,
+  "B_mean": 3.67,
+  "A": [
+   5.0,
+   7.0,
+   5.0
+  ],
+  "B": [
+   3.0,
+   4.0,
+   4.0
+  ],
+  "more_varied": {
+   "A": 3,
+   "B": 0,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P keeps every tracker in the bottom-right corner, but its information structures differ (a tabbed multi-package list, a summary pill over a list, a pill over a panel with an add form, and a pill over per-package timelines) and it uses teal against three near-identical blues. Q1, Q2 and Q4 are the same corner pill expanding to a single-parcel vertical timeline, almost clones of each other; only Q3, a centred inline widget with a latest-banner and a keep-updates toggle, is a genuinely different take.",
+   "v2 (P=B): P repeats one bottom-right collapsed row that expands into the same vertical timeline with a green-or-white dot, and P1, P3 and P4 are near copies; only P2 breaks out as an in-flow panel with a 'latest' banner. Q spans a floating pill that expands into a package list with an add form (Q1), a header-style stack (Q2), per-package progress bars (Q3) and a teal horizontal stepper with All/Active/Delivered tabs (Q4), with clearly different palettes and information structures, though most still sit bottom-right.",
+   "v3 (P=A): P repeats a bottom-right dark panel with a collapsed pill or bar and a package list, but P3 breaks out with filter tabs and a single-package stepper. In Q, Q1 is the outlier (an in-flow card at top of a centered column), while Q2, Q3 and Q4 are near-identical bottom-right rows that expand into the same vertical checkmark stepper."
+  ]
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "t1-button": {
+  "A_mean": 4.0,
+  "B_mean": 5.33,
+  "A": [
+   4.0,
+   4.0,
+   4.0
+  ],
+  "B": [
+   6.0,
+   5.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P2 (Dreamline booking card) and P3 (Dreamline button kit) share the name, the same violet-to-teal sheen plus blur halo, and the same --ease-dream curve, and P4 (Halo Lighting) reuses that sheen-and-lift mechanism with the same copy; only the page contexts and light/dark surfaces change. In Q, the four pages (linen shop, curve-tuning studio, serif trip planner, scheduling SaaS) and their palettes (indigo fill, teal serif, peach-lavender-mint glow, mint-purple glow) differ more, though all four still lean on a white sheen sweep.",
+   "v2 (P=B): P spans four palettes (cream and teal serif travel, lavender SaaS, pale blue studio, linen indigo) but all four use the same lift plus sheen-sweep plus soft-glow recipe with near-identical curve families. Q pairs two dark pages (indigo audio player and dark lamp shop) and two light ones, with the same cubic-bezier(0.22, 1, 0.36, 1) reused across three designs and the 'Dreamline' name appearing twice, so it reads as more repeated.",
+   "v3 (P=A): P repeats a violet gradient primary button with a halo, lift and sheen on the same dream curve (0.22, 1, 0.36, 1) across three of four pages, and P1/P2 are both dark-theme halo buttons; the pages differ (lamp shop, audio player, notes SaaS, booking card) but the motion idea is nearly the same. Q varies the button styles more (ghost, teal solid, indigo solid, white pill) and includes a cream serif trip-planner palette, though Q1, Q3 and Q4 still share a lavender surface and glow-plus-sheen motion on similar easing curves."
+  ]
+ },
+ "t2-haiku": {
+  "A_mean": 4.0,
+  "B_mean": 4.67,
+  "A": [
+   6.0,
+   4.0,
+   2.0
+  ],
+  "B": [
+   4.0,
+   5.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 1,
+   "B": 2,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P repeats the nacreous/mother-of-pearl image in three of four poems (P1, P2, P4), but the subjects still differ: a dawn fjord, a mountain passage, an unseen cloud at dusk, and a rainbow veil. Q1 and Q2 are essentially one poem (sun behind the ridge, cloud edge turning mother-of-pearl, grey or blue taking over), so Q has only three real takes, with Q3 (lens cloud on a ridge) and Q4 (amber band, stars above) distinct.",
+   "v2 (P=B): P has a lens cloud held over a windy ridge, an amber-to-blue afterglow with stars, and two near-identical nacreous-cloud-at-sunset poems (P3 and P4 share the ridge, the mother-of-pearl edge and the fade to blue or grey). Q is more concentrated: Q2, Q3 and Q4 all lean on nacreous or mother-of-pearl light, and Q1, Q2 and Q4 end on the same unseen or gone-by-dawn beat, with only Q1 (silver threads, noctilucent-style) and Q3 (an unnamed cloud past a mountain) clearly separate.",
+   "v3 (P=A): P is one idea four times: every poem is a nacreous, mother-of-pearl cloud that vanishes unseen, differing only in setting (veil, fjord, mountain) and ending. Q has three distinct takes (a twilight amber-and-blue streak under stars, a stationary lens cloud on a ridge, and a sunset mother-of-pearl edge) but Q3 and Q4 repeat the same ridge-sunset-mother-of-pearl image with different endings."
+  ]
+ },
+ "t3-toast": {
+  "A_mean": 4.33,
+  "B_mean": 4.33,
+  "A": [
+   4.0,
+   4.0,
+   5.0
+  ],
+  "B": [
+   5.0,
+   5.0,
+   3.0
+  ],
+  "more_varied": {
+   "A": 1,
+   "B": 2,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is four bottom-right dark multi-package lists sharing one palette (near-identical #0c0e12 / #161920 surfaces, blue accent) and an add-form footer; P3 (monospace, ledger rows) and P4 (accordion timeline) are the main departures. Q is four single-parcel vertical timelines with Copy/Open/Dismiss actions, with Q2 and Q3 nearly identical, but Q4 uses a horizontal progress bar and Q1, Q2 and Q3 use different accents (amber, green, neutral) and reopen patterns, so the set spreads a little further.",
+   "v2 (P=B): P mixes a single-package timeline with buttons (P1), a progress-stepper card (P2), a multi-package tabbed list (P3) and a checklist with a status pill (P4), with some palette spread (teal, blue, amber). Q is weaker: Q3 and Q4 are both multi-package lists with an add form and share a #7aa2ff accent, and Q2 is a single-package timeline close to P1 and P4.",
+   "v3 (P=A): P mixes a multi-package list (P1, P4 are close cousins with status pills and an add-form footer), a tabbed list with progress bars (P3), and a minimal dot-and-count header (P2), so it spans several information structures on one dark palette. Q is four single-parcel status panels with the same bottom-right toast, the same vertical timeline and the same Copy number / Open carrier / Dismiss button trio (Q2 and Q4 are nearly identical), differing mainly in accent color and title."
+  ]
+ }
+}

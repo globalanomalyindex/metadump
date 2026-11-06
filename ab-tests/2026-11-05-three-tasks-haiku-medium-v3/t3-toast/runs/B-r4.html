@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel status toast</title>
+<style>
+:root {
+  --page: #121212;
+  --card: #1F1B24;
+  --card-raise: #2A2630;
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #E5E5E5;
+  --muted: #9CA3AF;
+  --track: #4A4B47;
+  --warn: #F59E0B;
+  --ok: #22C55E;
+  --ease-open: cubic-bezier(0.22, 1, 0.36, 1);
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+body { min-height: 100vh; }
+main { max-width: 640px; margin: 0 auto; padding: 24px 16px 380px; }
+h1 { font-size: 18px; margin: 0 0 6px; font-weight: 600; }
+h2 { font-size: 12px; margin: 22px 0 8px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+p { margin: 0 0 8px; color: var(--muted); }
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--card-raise);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  min-height: 32px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.2); }
+button:disabled { opacity: 0.4; cursor: default; }
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.log { list-style: none; margin: 0; padding: 0; font-variant-numeric: tabular-nums; }
+.log li { padding: 5px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+.log time { color: var(--text); margin-right: 8px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- toast ---------- */
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: min(296px, calc(100vw - 32px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 10;
+}
+.notice {
+  position: relative;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.notice b { color: var(--text); font-weight: 600; }
+.notice-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--track); }
+.notice-bar i { display: block; height: 100%; background: var(--text); transform-origin: left center; }
+
+.head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 12px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+}
+.head:hover { background: var(--card-raise); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text); flex: none; }
+.dot.warn { background: var(--warn); }
+.dot.ok { background: var(--ok); }
+.title { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.count { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+.chev { width: 12px; height: 12px; flex: none; color: var(--muted); transition: transform 200ms var(--ease-open); }
+.toast.open .chev { transform: rotate(180deg); }
+
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 160ms ease-in;
+}
+.toast.open .panel { grid-template-rows: 1fr; transition: grid-template-rows 260ms var(--ease-open); }
+.panel-inner { overflow: hidden; min-height: 0; }
+.panel-body { padding: 4px 12px 10px; border-top: 1px solid var(--line); }
+.meta { font-size: 12px; margin: 8px 0 6px; color: var(--muted); }
+
+.rail { list-style: none; margin: 0; padding: 0; }
+.rail li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  column-gap: 10px;
+  min-height: 34px;
+  padding-bottom: 6px;
+}
+.rail li:last-child { padding-bottom: 0; }
+.rail li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 18px;
+  bottom: -2px;
+  border-left: 1.5px dashed var(--track);
+}
+.rail li.done:not(:last-child)::before { border-left-style: solid; border-left-color: var(--muted); }
+.mk {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 1px solid var(--track);
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  color: var(--card);
+}
+.rail li.done .mk { background: var(--text); border-color: var(--text); }
+.rail li.current .mk { border: 2px solid var(--text); }
+.lbl { display: block; }
+.rail li.next .lbl { color: var(--muted); }
+.when { display: block; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.exc { margin-top: 10px; padding: 2px 0 2px 10px; border-left: 2px solid var(--warn); }
+.exc p { color: var(--text); margin: 0 0 8px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.actions button { min-height: 32px; font-size: 12px; padding: 0 8px; }
+.note { font-size: 12px; margin: 8px 0 0; }
+.snoozed { margin-top: 10px; font-size: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.snoozed button { min-height: 28px; font-size: 12px; }
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.updated { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ghost { background: none; border-color: transparent; color: var(--muted); }
+
+.restore {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  border-radius: 999px;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .toast.open .panel, .chev { transition: none !important; }
+}
+@media (max-width: 480px) {
+  main { padding-bottom: 400px; }
+}
+</style>
+</head>
+<body>
+
+<main>
+  <h1>Northline parcel PX-48213-KL</h1>
+  <p>A compact status toast for one package. It closes to a single row; open it to see the five steps. Use the demo controls to move the parcel along, raise a delivery exception, or pass time.</p>
+
+  <h2>Demo controls</h2>
+  <div class="controls" aria-label="Demo controls">
+    <button type="button" id="dNext">Next status</button>
+    <button type="button" id="dRaise">Raise delivery exception</button>
+    <button type="button" id="dClear">Clear exception</button>
+    <button type="button" id="dTime">Pass 15 min</button>
+    <button type="button" id="dReset">Reset sample</button>
+  </div>
+
+  <h2>Activity</h2>
+  <ol class="log" id="log" aria-label="Activity log"></ol>
+</main>
+
+<section class="toast open" id="toast" aria-label="Tracking PX-48213-KL">
+  <div class="notice" id="notice" hidden>
+    <span id="noticeText"></span>
+    <span class="notice-bar"><i id="noticeBar"></i></span>
+  </div>
+
+  <button class="head" id="toggle" type="button" aria-expanded="true" aria-controls="panel">
+    <span class="dot" id="dot" aria-hidden="true"></span>
+    <span class="title" id="title">Out for delivery</span>
+    <span class="count" id="count">4 of 5</span>
+    <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <div class="panel" id="panel">
+    <div class="panel-inner">
+      <div class="panel-body">
+        <p class="meta">PX-48213-KL · Northline Parcels</p>
+
+        <ol class="rail" id="rail"></ol>
+
+        <div class="exc" id="exception" hidden>
+          <p id="excDetail"></p>
+          <div class="actions" id="actions">
+            <button type="button" data-act="open">Open carrier page</button>
+            <button type="button" data-act="contact">Contact carrier</button>
+            <button type="button" data-act="seen">Mark seen, keep watching</button>
+            <button type="button" data-act="snooze">Snooze 1 h</button>
+          </div>
+          <p class="note" id="contact" hidden>Northline support: 0800 555 0142 (sample number), Mon to Sat 08:00 to 20:00.</p>
+          <p class="note" id="seenNote" hidden></p>
+        </div>
+
+        <div class="snoozed" id="snoozed" hidden>
+          <span>Exception snoozed until <span id="snoozeUntil"></span></span>
+          <button type="button" data-act="wake">Wake now</button>
+        </div>
+
+        <div class="foot">
+          <span class="updated" id="updated"></span>
+          <button type="button" class="ghost" data-act="dismiss">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<button class="restore" id="restore" type="button" hidden>
+  <span class="dot" aria-hidden="true"></span>
+  <span>Track PX-48213-KL</span>
+</button>
+
+<div class="sr-only" id="sr" aria-live="polite"></div>
+
+<script>
+(() => {
+  const STEPS = ['Ordered', 'Packed', 'Handed to the carrier', 'Out for delivery', 'Delivered'];
+  const NOTICE_MS = 4000;
+  const SNOOZE_MIN = 60;
+  const CHECK = '<svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2.5 6.5l2.2 2.2L9.5 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const EXC_DETAIL = 'Delivery attempt missed: nobody answered and there is no safe place to leave the parcel. Next attempt Fri 6 Nov.';
+
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    toast: $('toast'), toggle: $('toggle'), title: $('title'), count: $('count'), dot: $('dot'),
+    panel: $('panel'), rail: $('rail'), exc: $('exception'), excDetail: $('excDetail'),
+    actions: $('actions'), contact: $('contact'), seenNote: $('seenNote'), snoozed: $('snoozed'),
+    snoozeUntil: $('snoozeUntil'), updated: $('updated'), notice: $('notice'), noticeText: $('noticeText'),
+    noticeBar: $('noticeBar'), restore: $('restore'), log: $('log'), sr: $('sr'),
+    next: $('dNext'), raise: $('dRaise'), clear: $('dClear'), time: $('dTime'), reset: $('dReset')
+  };
+
+  const fresh = () => ({
+    stage: 3,
+    times: ['Mon 3 Nov, 16:20', 'Tue 4 Nov, 09:05', 'Tue 4 Nov, 18:40', 'Thu 5 Nov, 07:55', null],
+    clock: 642,            // minutes since midnight, Thu 5 Nov 10:42
+    exc: null,             // null, or { seen: boolean }
+    snoozeUntil: null,     // clock minute when the exception returns
+    expanded: true,
+    dismissed: false,
+    contactOpen: false
+  });
+  let state = fresh();
+
+  const fmt = (min) => String(Math.floor(min / 60) % 24).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+  const delivered = () => state.stage >= 4;
+
+  // ---- activity log and screen-reader announcements ----
+  const entries = [];
+  function log(msg) {
+    entries.unshift({ t: fmt(state.clock), msg });
+    entries.length = Math.min(entries.length, 8);
+    el.log.replaceChildren(...entries.map((e) => {
+      const li = document.createElement('li');
+      const t = document.createElement('time');
+      t.textContent = e.t;
+      li.append(t, document.createTextNode(e.msg));
+      return li;
+    }));
+  }
+  function announce(msg) { el.sr.textContent = msg; }
+
+  // ---- routine notice: a short line that leaves on its own, paused by hover or focus ----
+  let noticeLeft = 0;
+  let hovering = false;
+  let focused = false;
+  function showNotice(text) {
+    el.noticeText.textContent = text;
+    noticeLeft = NOTICE_MS;
+    el.noticeBar.style.transform = 'scaleX(1)';
+    el.notice.hidden = false;
+  }
+  setInterval(() => {
+    if (el.notice.hidden) return;
+    if (!hovering && !focused) noticeLeft -= 50;
+    if (noticeLeft <= 0) { el.notice.hidden = true; return; }
+    el.noticeBar.style.transform = 'scaleX(' + (noticeLeft / NOTICE_MS) + ')';
+  }, 50);
+
+  // ---- state changes ----
+  function advance() {
+    if (delivered()) return;
+    state.stage += 1;
+    state.times[state.stage] = fmt(state.clock);
+    if (delivered()) {
+      state.exc = null;
+      state.snoozeUntil = null;
+      state.contactOpen = false;
+    }
+    const label = STEPS[state.stage];
+    showNotice('Now: ' + label + ', ' + fmt(state.clock));
+    log('Status changed to ' + label);
+    announce('Status: ' + label);
+    render();
+  }
+
+  function raiseException() {
+    if (delivered() || state.exc) return;
+    state.exc = { seen: false };
+    state.snoozeUntil = null;
+    state.contactOpen = false;
+    state.dismissed = false;
+    state.expanded = true;
+    log('Delivery exception raised');
+    announce('Delivery exception. Next steps are in the menu.');
+    render();
+  }
+
+  function clearException() {
+    if (!state.exc) return;
+    state.exc = null;
+    state.snoozeUntil = null;
+    state.contactOpen = false;
+    log('Exception cleared');
+    announce('Exception cleared');
+    render();
+  }
+
+  function passTime(mins) {
+    state.clock = Math.min(1439, state.clock + mins);
+    log('Clock moved to ' + fmt(state.clock));
+    if (state.snoozeUntil !== null && state.clock >= state.snoozeUntil) {
+      state.snoozeUntil = null;
+      log('Snooze ended, exception is back');
+      announce('Snooze ended. Exception is back.');
+    }
+    render();
+  }
+
+  function act(name) {
+    if (!state.exc) return;
+    if (name === 'open') {
+      log('Opened carrier tracking page (demo: nothing navigates)');
+      announce('Carrier page opened. The toast stays on screen.');
+    } else if (name === 'contact') {
+      state.contactOpen = !state.contactOpen;
+      log(state.contactOpen ? 'Showing carrier phone route' : 'Hid carrier phone route');
+    } else if (name === 'seen') {
+      state.exc.seen = true;
+      log('Marked seen, still tracking');
+      announce('Marked seen. Still tracking.');
+    } else if (name === 'snooze') {
+      state.snoozeUntil = state.clock + SNOOZE_MIN;
+      state.contactOpen = false;
+      log('Exception snoozed until ' + fmt(state.snoozeUntil));
+      announce('Exception snoozed for one hour.');
+    } else if (name === 'wake') {
+      state.snoozeUntil = null;
+      log('Snooze ended early, exception is back');
+      announce('Exception is back.');
+    }
+    render();
+  }
+
+  // ---- rendering ----
+  function render() {
+    const s = state;
+    const done = delivered();
+    const snoozed = !!s.exc && s.snoozeUntil !== null;
+    const seen = !!s.exc && s.exc.seen;
+
+    el.toast.hidden = s.dismissed;
+    el.restore.hidden = !s.dismissed;
+    el.toast.classList.toggle('open', s.expanded);
+    el.toggle.setAttribute('aria-expanded', String(s.expanded));
+    el.panel.inert = !s.expanded;
+
+    el.title.textContent = s.exc && !done ? 'Delivery exception' : STEPS[s.stage];
+    el.count.textContent = snoozed ? 'Snoozed' : (s.stage + 1) + ' of 5';
+    el.dot.className = 'dot' + (done ? ' ok' : (s.exc ? ' warn' : ''));
+
+    el.rail.replaceChildren(...STEPS.map((label, i) => {
+      const cls = i < s.stage ? 'done' : (i === s.stage ? 'current' : 'next');
+      const li = document.createElement('li');
+      li.className = cls;
+      const mk = document.createElement('span');
+      mk.className = 'mk';
+      mk.setAttribute('aria-hidden', 'true');
+      if (cls === 'done') mk.innerHTML = CHECK;
+      const body = document.createElement('div');
+      const lbl = document.createElement('span');
+      lbl.className = 'lbl';
+      lbl.textContent = label;
+      const when = document.createElement('span');
+      when.className = 'when';
+      when.textContent = i <= s.stage ? s.times[i] : (i === 4 ? 'Window 10:00 to 14:00' : 'Expected Thu 5 Nov');
+      body.append(lbl, when);
+      li.append(mk, body);
+      return li;
+    }));
+
+    const showExc = !!s.exc && !snoozed && !done;
+    el.exc.hidden = !showExc;
+    el.excDetail.textContent = EXC_DETAIL;
+    el.actions.hidden = seen;
+    el.seenNote.hidden = !seen;
+    el.seenNote.textContent = 'Seen at ' + fmt(s.clock) + '. Still tracking.';
+    el.contact.hidden = !s.contactOpen;
+
+    el.snoozed.hidden = !snoozed;
+    if (snoozed) el.snoozeUntil.textContent = fmt(s.snoozeUntil);
+
+    el.updated.textContent = 'Updated ' + fmt(s.clock) + ' · Northline';
+
+    el.next.disabled = done;
+    el.raise.disabled = done || !!s.exc;
+    el.clear.disabled = !s.exc;
+  }
+
+  // ---- events ----
+  el.toggle.addEventListener('click', () => {
+    state.expanded = !state.expanded;
+    render();
+  });
+
+  el.toast.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.expanded) {
+      state.expanded = false;
+      render();
+      el.toggle.focus();
+    }
+  });
+
+  el.toast.addEventListener('mouseenter', () => { hovering = true; });
+  el.toast.addEventListener('mouseleave', () => { hovering = false; });
+  el.toast.addEventListener('focusin', () => { focused = true; });
+  el.toast.addEventListener('focusout', (e) => {
+    if (!el.toast.contains(e.relatedTarget)) focused = false;
+  });
+
+  el.panel.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    const name = btn.dataset.act;
+    if (name === 'dismiss') {
+      state.dismissed = true;
+      log('Dismissed, tap Track to bring it back');
+      announce('Tracking toast dismissed.');
+      render();
+      el.restore.focus();
+    } else {
+      act(name);
+    }
+  });
+
+  el.restore.addEventListener('click', () => {
+    state.dismissed = false;
+    log('Tracking toast reopened');
+    render();
+    el.toggle.focus();
+  });
+
+  el.next.addEventListener('click', advance);
+  el.raise.addEventListener('click', raiseException);
+  el.clear.addEventListener('click', clearException);
+  el.time.addEventListener('click', () => passTime(15));
+  el.reset.addEventListener('click', () => {
+    state = fresh();
+    entries.length = 0;
+    log('Sample reset: Out for delivery');
+    announce('Sample reset');
+    render();
+  });
+
+  log('Sample loaded: Out for delivery, 4 of 5');
+  render();
+})();
+</script>
+</body>
+</html>

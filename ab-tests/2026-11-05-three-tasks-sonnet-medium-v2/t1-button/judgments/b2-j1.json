@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 8, "overall": 7, "note": "Subtle, well-built night-glass button with long asymmetric curves and good focus/reduced-motion, but the hover change is quiet and barely reads as ethereal."},
+"X": {"dreamlike": 8, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "Clear aurora blur-bloom sweeping across the gradient with soft overshoot and slow exhale; strong affordance, legible label, focus ring and reduced motion handled."},
+"Y": {"dreamlike": 8, "practical": 9, "motion": 8, "craft": 9, "overall": 9, "note": "Luminous rim, cloud glow and floating plate with slow release curves, pre-blurred composite-only layers, calm mode, reduced-motion and strong focus ring in a polished real-world form."},
+"Z": {"dreamlike": 8, "practical": 6, "motion": 7, "craft": 7, "overall": 7, "note": "Pastel iridescent glow with blurred bloom is the most visually ethereal, but the low-contrast pale button at rest has weaker affordance and the blurred rotating glow is costlier."}
+}, "ranking": ["Y", "X", "Z", "W"]}

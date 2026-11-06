@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j1", "scores": {
+"W": {"style": 7, "motion": 7, "loop": 8, "craft": 7, "originality": 6, "overall": 7, "note": "Flat primitives in spectrum colours on a soft gradient with Figma-style selection handles on the square; all keyframes return to rest so the 5 s seam is clean, with reduced-motion holding the frame-0 layout."},
+"X": {"style": 4, "motion": 6, "loop": 7, "craft": 7, "originality": 3, "overall": 4, "note": "Reassembles the five pieces of the Figma mark in its exact colours, which copies the logo the brief forbids, and the backOut start gives a small velocity kink at the seam."},
+"Y": {"style": 5, "motion": 6, "loop": 8, "craft": 7, "originality": 3, "overall": 5, "note": "Dark glow field with the Figma mark assembling, bursting and reassembling is energetic and seamless, but it reproduces the logo's geometry and palette rather than a fresh brand visual."},
+"Z": {"style": 7, "motion": 7, "loop": 5, "craft": 6, "originality": 6, "overall": 6, "note": "Stripe-pattern blob, morphing handle and starburst give an airy primitive composition with a clear beat plan, but the starburst is not 90-degree symmetric so it snaps at the seam and the ground shows a hard letterbox edge."}
+},
+"ranking": ["W", "Z", "Y", "X"]}

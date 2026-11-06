@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Package tracker toast</title>
+<style>
+:root{
+  --page:#121212;
+  --card:#1F1B24;
+  --card-2:#26222C;
+  --hair:rgba(255,255,255,.10);
+  --text:#E5E5E5;
+  --muted:#9CA3AF;
+  --ok:#22C55E;
+  --warn:#F59E0B;
+  --focus:#E5E5E5;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--text)}
+body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+button{font:inherit;color:inherit}
+
+/* ---------- page behind the widget (sample content) ---------- */
+.page{max-width:600px;margin:0 auto;padding:28px 16px 220px}
+h1{font-size:20px;margin:0 0 4px;font-weight:650}
+.muted{color:var(--muted)}
+.orders{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid var(--hair)}
+.orders li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--hair)}
+.orders b{display:block;font-weight:600}
+.orders .s{font-size:12px;color:var(--muted)}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--hair);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.demo{margin-top:24px;padding:14px;border:1px dashed var(--hair);border-radius:10px}
+.demo-h{margin:0 0 10px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+#readout{margin:10px 0 0;font-size:12px;color:var(--muted)}
+
+/* ---------- shared controls ---------- */
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.btn{min-height:28px;padding:0 9px;border-radius:6px;border:1px solid var(--hair);background:transparent;cursor:pointer;font-size:12px;color:var(--text)}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.06)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:focus-visible,.x:focus-visible,.note a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* ---------- the compact tracking menu (top right) ---------- */
+.pk{position:fixed;top:16px;right:16px;width:280px;background:var(--card);border:1px solid var(--hair);border-radius:12px;z-index:10}
+.pk-row{display:flex;align-items:center;gap:8px;width:100%;height:44px;padding:0 10px 0 12px;background:none;border:0;border-radius:12px;cursor:pointer;text-align:left}
+.pk-row:hover{background:var(--card-2)}
+.pk-row:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--ok)}
+.dot.warn{background:var(--warn)}
+.dot.seen{background:none;box-shadow:inset 0 0 0 2px var(--warn)}
+.pk-stage{flex:1;min-width:0;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chev{width:14px;height:14px;flex:none;color:var(--muted);transition:transform 200ms ease}
+.pk.open .chev{transform:rotate(180deg)}
+
+.pk-body{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows 160ms ease-in,visibility 0s linear 160ms}
+.pk.open .pk-body{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows 280ms cubic-bezier(.22,1,.36,1),visibility 0s}
+.pk-inner{min-height:0;overflow:hidden}
+
+.steps{list-style:none;margin:0;padding:6px 12px 2px}
+.steps li{position:relative;display:grid;grid-template-columns:14px 1fr;gap:10px;padding-bottom:9px}
+.steps li:last-child{padding-bottom:4px}
+.steps li::after{content:"";position:absolute;left:6.25px;top:16px;bottom:0;border-left:1.5px dashed var(--muted);opacity:.7}
+.steps li.done::after{border-left-style:solid;border-left-color:var(--text);opacity:1}
+.steps li:last-child::after{display:none}
+.mk{width:14px;height:14px;margin-top:2px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--muted);display:grid;place-items:center;background:var(--card);color:var(--card)}
+.mk svg{width:10px;height:10px}
+.steps li.done .mk{background:var(--text);border-color:var(--text)}
+.steps li.current .mk{border-color:var(--text);box-shadow:0 0 0 3px rgba(229,229,229,.16)}
+.lbl{font-size:13px;line-height:18px}
+.steps li.todo .lbl{color:var(--muted)}
+.when{font-size:11.5px;line-height:16px;color:var(--muted)}
+.exp{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+
+.exc{margin:4px 12px 10px;padding:9px 10px;border:1px solid rgba(245,158,11,.5);border-radius:8px}
+.exc-h{font-size:12.5px;font-weight:600;color:var(--warn)}
+.exc-h .muted{font-weight:400}
+.exc-d{margin:4px 0 8px;font-size:12px}
+.snz{font-size:12px;color:var(--muted);margin-bottom:8px}
+.note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+.note a{color:var(--text)}
+
+.pk-foot{margin:0 12px;padding:8px 0 10px;border-top:1px solid var(--hair);font-size:11px;color:var(--muted)}
+.pk-foot b{display:block;font-weight:600;font-size:12px;color:var(--text)}
+.pk-foot span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+
+/* ---------- transient toasts (bottom right) ---------- */
+.toasts{position:fixed;right:16px;bottom:16px;width:300px;display:flex;flex-direction:column;gap:6px;z-index:20}
+.toast{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--hair);border-radius:10px;padding:9px 32px 11px 12px;opacity:0;transform:translateY(10px);transition:opacity 200ms ease,transform 300ms cubic-bezier(.22,1,.36,1)}
+.toast.in{opacity:1;transform:none}
+.toast.out{opacity:0;transform:translateY(6px);transition-duration:160ms}
+.toast.sticky{border-color:rgba(245,158,11,.5)}
+.t-txt{display:flex;flex-direction:column;gap:2px;font-size:12.5px}
+.t-txt b{font-weight:600}
+.t-sub{font-size:12px;color:var(--muted)}
+.x{position:absolute;top:4px;right:4px;width:26px;height:26px;border:0;border-radius:6px;background:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer}
+.x:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--muted);transform-origin:left center;transform:scaleX(1)}
+
+@media (max-width:520px){
+  .pk{left:12px;right:12px;width:auto}
+  .toasts{left:12px;right:12px;width:auto}
+  .page{padding-top:88px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:0ms!important;transition-delay:0ms!important}
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <h1>Orders</h1>
+  <p class="muted">Three orders this month. The tracked parcel is in the menu at the top right.</p>
+  <ul class="orders">
+    <li>
+      <div><b>Walnut desk lamp</b><span class="s">Order 20417 · 1 item · $84.00</span></div>
+      <span class="tag" id="lampTag">In transit</span>
+    </li>
+    <li>
+      <div><b>Linen throw, oat</b><span class="s">Order 20391 · delivered Oct 28</span></div>
+      <span class="tag">Delivered</span>
+    </li>
+    <li>
+      <div><b>Ceramic pour-over set</b><span class="s">Order 20352 · arriving Nov 8</span></div>
+      <span class="tag">Scheduled</span>
+    </li>
+  </ul>
+
+  <section class="demo" aria-label="Demo controls">
+    <p class="demo-h">Demo controls</p>
+    <div class="acts">
+      <button class="btn" id="dNext" type="button">Next scan</button>
+      <button class="btn" id="dReport" type="button">Report exception</button>
+      <button class="btn" id="dReset" type="button">Reset</button>
+    </div>
+    <p id="readout"></p>
+  </section>
+</main>
+
+<section class="pk" id="pk" aria-label="Package tracking">
+  <button class="pk-row" id="pkRow" type="button" data-action="toggle" aria-expanded="false" aria-controls="pkBody">
+    <span class="dot" id="pkDot"></span>
+    <span class="pk-stage" id="pkStage"></span>
+    <span class="pk-count" id="pkCount"></span>
+    <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="pk-body" id="pkBody" role="region" aria-label="Delivery steps">
+    <div class="pk-inner">
+      <div id="pkSteps"></div>
+      <div id="pkExc"></div>
+      <div class="pk-foot" id="pkFoot"></div>
+    </div>
+  </div>
+</section>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-relevant="additions"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- sample data -------------------------------------------------------
+  var STAGES = [
+    { name: 'Ordered',              at: 'Mon 2 Nov, 09:14' },
+    { name: 'Packed',               at: 'Mon 2 Nov, 17:40' },
+    { name: 'Handed to the carrier', at: 'Tue 3 Nov, 08:22' },
+    { name: 'Out for delivery',     at: 'Thu 5 Nov, 07:05', expected: 'Thu 5 Nov' },
+    { name: 'Delivered',            at: 'Thu 5 Nov, 13:52', expected: 'Thu 5 Nov, 10:00 to 14:00' }
+  ];
+  var START_STAGE = 2;
+  var ITEM = 'Walnut desk lamp';
+  var CARRIER = 'Northwind Ground';
+  var TRACKING = 'NW 4471 0852 9163';
+  var EXC_DETAIL = 'Address needs a building code. The carrier retries Friday 6 Nov.';
+  var SNOOZE_UNTIL = '16:00';
+  var TOAST_MS = 4000;   // routine toasts leave after about 4 s
+  var TICK_MS = 50;
+  var CHECK = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 7.2l2.3 2.3 4.7-4.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  // ---- elements ----------------------------------------------------------
+  function $(id) { return document.getElementById(id); }
+  var pk = $('pk'), row = $('pkRow'), dot = $('pkDot'), stageEl = $('pkStage'),
+      countEl = $('pkCount'), stepsEl = $('pkSteps'), excEl = $('pkExc'),
+      footEl = $('pkFoot'), toastsEl = $('toasts'), lampTag = $('lampTag'),
+      dNext = $('dNext'), dReport = $('dReport'), dReset = $('dReset'), readout = $('readout');
+
+  // ---- state -------------------------------------------------------------
+  var state, toasts = [], excToast = null;
+
+  function freshState() {
+    return { stage: START_STAGE, exc: null, open: false, note: '' };
+  }
+  function isDelivered() { return state.stage === 4; }
+
+  function tone() {
+    if (isDelivered()) return 'ok';
+    if (state.exc) return state.exc.seen ? 'seen' : 'warn';
+    return 'idle';
+  }
+
+  function stepClass(i) {
+    if (i < state.stage || (isDelivered() && i === 4)) return 'done';
+    if (i === state.stage) return 'current';
+    return 'todo';
+  }
+
+  // ---- render ------------------------------------------------------------
+  function excHTML() {
+    var e = state.exc;
+    var buttons;
+    if (e.snoozedUntil) {
+      buttons = '<div class="snz">Snoozed until ' + SNOOZE_UNTIL + '.</div>' +
+                '<div class="acts"><button class="btn" type="button" data-action="unsnooze">Show now</button></div>';
+    } else {
+      buttons = '<div class="acts">' +
+        '<button class="btn" type="button" data-action="open">Open carrier page</button>' +
+        '<button class="btn" type="button" data-action="contact" aria-expanded="' + e.contact + '">Contact carrier</button>' +
+        (e.seen ? '' : '<button class="btn" type="button" data-action="seen">Mark seen, keep watching</button>') +
+        '<button class="btn" type="button" data-action="snooze">Snooze to ' + SNOOZE_UNTIL + '</button>' +
+        '</div>';
+    }
+    var extra = '';
+    if (e.contact) {
+      extra += '<p class="note">' + CARRIER + ': <a href="tel:+18005550142">1-800-555-0142</a>, Mon to Sat 08:00 to 20:00</p>';
+    }
+    if (state.note) {
+      extra += '<p class="note">' + state.note + '</p>';
+    }
+    return '<div class="exc">' +
+      '<div class="exc-h">Delivery exception' + (e.seen ? ' <span class="muted">· seen, still tracking</span>' : '') + '</div>' +
+      '<p class="exc-d">' + EXC_DETAIL + '</p>' + buttons + extra +
+      '</div>';
+  }
+
+  function render() {
+    var active = document.activeElement;
+    var focusInside = !!(active && pk.contains(active));
+    var focusKey = focusInside ? active.getAttribute('data-action') : null;
+
+    var delivered = isDelivered();
+    pk.classList.toggle('open', state.open);
+    row.setAttribute('aria-expanded', String(state.open));
+    dot.className = 'dot ' + tone();
+    stageEl.textContent = (state.exc && !state.exc.seen && !delivered) ? 'Delivery exception' : STAGES[state.stage].name;
+    countEl.textContent = (delivered ? 5 : state.stage + 1) + ' of 5';
+
+    stepsEl.innerHTML = '<ol class="steps">' + STAGES.map(function (s, i) {
+      var c = stepClass(i);
+      var when = (c === 'todo') ? '<span class="exp">Expected</span>' + s.expected : s.at;
+      return '<li class="' + c + '"><span class="mk">' + (c === 'done' ? CHECK : '') + '</span>' +
+             '<div><div class="lbl">' + s.name + '</div><div class="when">' + when + '</div></div></li>';
+    }).join('') + '</ol>';
+
+    excEl.innerHTML = (state.exc && !delivered) ? excHTML() : '';
+    footEl.innerHTML = '<b>' + ITEM + '</b><span>' + CARRIER + ' · ' + TRACKING + '</span>';
+
+    lampTag.textContent = delivered ? 'Delivered' : 'In transit';
+    dNext.disabled = delivered;
+    dReport.disabled = delivered || !!state.exc;
+    readout.textContent = 'Stage ' + (state.stage + 1) + ' of 5. ' +
+      (state.exc ? (state.exc.seen ? 'Exception seen, still tracking.' : 'Exception open.') : 'No exception.') +
+      (state.exc && state.exc.snoozedUntil ? ' Snoozed until ' + SNOOZE_UNTIL + '.' : '');
+
+    if (focusInside) {
+      var target = focusKey ? pk.querySelector('[data-action="' + focusKey + '"]') : null;
+      (target || row).focus({ preventScroll: true });
+    }
+  }
+
+  // ---- toasts ------------------------------------------------------------
+  function removeToast(item) {
+    if (toasts.indexOf(item) === -1) return;
+    toasts = toasts.filter(function (t) { return t !== item; });
+    item.el.classList.add('out');
+    setTimeout(function () { item.el.remove(); }, 200);
+  }
+
+  function toastMsg(title, sub, opts) {
+    opts = opts || {};
+    var sticky = !!opts.sticky;
+    var el = document.createElement('div');
+    el.className = 'toast' + (sticky ? ' sticky' : '');
+
+    var txt = document.createElement('div');
+    txt.className = 't-txt';
+    var b = document.createElement('b');
+    b.textContent = title;
+    var s = document.createElement('span');
+    s.className = 't-sub';
+    s.textContent = sub;
+    txt.appendChild(b);
+    txt.appendChild(s);
+
+    var x = document.createElement('button');
+    x.className = 'x';
+    x.type = 'button';
+    x.setAttribute('aria-label', 'Dismiss: ' + title);
+    x.textContent = '×';
+
+    el.appendChild(txt);
+    el.appendChild(x);
+
+    var item = { el: el, sticky: sticky, total: TOAST_MS, left: TOAST_MS, hover: false, bar: null };
+    if (!sticky) {
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      el.appendChild(bar);
+      item.bar = bar;
+    }
+    el.addEventListener('mouseenter', function () { item.hover = true; });
+    el.addEventListener('mouseleave', function () { item.hover = false; });
+    x.addEventListener('click', function () {
+      removeToast(item);
+      if (item === excToast) excToast = null;
+    });
+
+    toastsEl.appendChild(el);
+    toasts.push(item);
+    while (toasts.length > 3) {
+      var oldest = toasts.filter(function (t) { return !t.sticky; })[0];
+      if (!oldest) break;
+      removeToast(oldest);
+    }
+    requestAnimationFrame(function () { el.classList.add('in'); });
+    return item;
+  }
+
+  // Timer runs for routine toasts only; it holds while hovered or while the tab is hidden.
+  setInterval(function () {
+    if (document.hidden) return;
+    toasts.slice().forEach(function (t) {
+      if (t.sticky || t.hover) return;
+      t.left -= TICK_MS;
+      t.bar.style.transform = 'scaleX(' + Math.max(0, t.left / t.total) + ')';
+      if (t.left <= 0) removeToast(t);
+    });
+  }, TICK_MS);
+
+  // ---- actions -----------------------------------------------------------
+  function act(a) {
+    switch (a) {
+      case 'toggle':
+        state.open = !state.open;
+        break;
+      case 'open':
+        state.note = 'Would open the carrier’s tracking page. This demo makes no network requests.';
+        break;
+      case 'contact':
+        if (state.exc) state.exc.contact = !state.exc.contact;
+        break;
+      case 'seen':
+        if (state.exc) {
+          state.exc.seen = true;
+          state.note = 'Marked seen. Tracking continues.';
+          if (excToast) { removeToast(excToast); excToast = null; }
+        }
+        break;
+      case 'snooze':
+        if (state.exc) { state.exc.snoozedUntil = SNOOZE_UNTIL; state.note = ''; }
+        break;
+      case 'unsnooze':
+        if (state.exc) state.exc.snoozedUntil = null;
+        break;
+    }
+    render();
+  }
+
+  function nextScan() {
+    if (isDelivered()) return;
+    state.stage += 1;
+    if (state.stage === 3) {
+      toastMsg('Out for delivery', 'Left the Lakeview depot at 07:05');
+    }
+    if (state.stage === 4) {
+      state.exc = null;
+      state.note = '';
+      if (excToast) { removeToast(excToast); excToast = null; }
+      toastMsg('Delivered', 'Signed for at the front desk, 13:52');
+    }
+    render();
+  }
+
+  function reportException() {
+    if (isDelivered() || state.exc) return;
+    state.exc = { seen: false, contact: false, snoozedUntil: null };
+    state.note = '';
+    excToast = toastMsg('Delivery exception', EXC_DETAIL, { sticky: true });
+    render();
+  }
+
+  function reset() {
+    toasts.forEach(function (t) { t.el.remove(); });
+    toasts = [];
+    excToast = null;
+    state = freshState();
+    render();
+  }
+
+  // ---- wiring ------------------------------------------------------------
+  pk.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-action]');
+    if (b && pk.contains(b)) act(b.getAttribute('data-action'));
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.open && pk.contains(document.activeElement)) {
+      state.open = false;
+      render();
+      row.focus();
+    }
+  });
+
+  dNext.addEventListener('click', nextScan);
+  dReport.addEventListener('click', reportException);
+  dReset.addEventListener('click', reset);
+
+  state = freshState();
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j1","scores":{
+"W":{"imagery":9,"form":9,"specificity":9,"freshness":9,"resonance":8,"overall":9,"note":"Fallstreak hole with ice streaks and the cold contrail line is accurate and fresh; counts 5 (Round gap in the sheet) / 7 (streaks of ice falling below) / 5 (the plane's line gone cold)."},
+"X":{"imagery":6,"form":9,"specificity":7,"freshness":5,"resonance":6,"overall":6,"note":"Nacreous clouds before dawn are evoked accurately but 'mother-of-pearl' is the stock epithet; counts 5 (Na-cre-ous glow burns) / 7 / 5 (moth-er-of-pearl sky)."},
+"Y":{"imagery":7,"form":9,"specificity":7,"freshness":7,"resonance":8,"overall":7,"note":"Noctilucent clouds holding the last light then fading to plain sky, with a good turn; counts 5 (Night-shin-ing streaks hold) / 7 (the last blue-white of the day) / 5 (then grey, then just sky)."},
+"Z":{"imagery":5,"form":8,"specificity":7,"freshness":4,"resonance":4,"overall":5,"note":"Nacreous clouds named but the lines are abstract and stock; counts 5 (Moth-er-of-pearl sheets) / 7 (na-cre-ous light on cold air) / 5 (dawn the sky holds, brief)."}},
+"ranking":["W","Y","X","Z"]}

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Tracker Toast</title>
+<style>
+:root{
+  --bg:#0b0b0d; --surface:#17181c; --surface2:#1f2127; --line:#2c2f37;
+  --text:#e6e8ec; --muted:#a3a8b3; --amber:#f0b45a; --green:#5cc98a; --blue:#6aa8f0;
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.page{padding:28px;max-width:560px;color:var(--muted)}
+.page h1{font-size:15px;color:var(--text);margin:0 0 6px;font-weight:600}
+.page p{margin:0 0 10px}
+.page button.demo{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+.page button.demo:hover{background:var(--surface2)}
+
+.toast{position:fixed;right:16px;bottom:16px;width:236px;background:var(--surface);border:1px solid var(--line);
+  border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;
+  transition:opacity .2s, transform .2s var(--ease-out), border-radius .22s var(--ease-out), border-color .3s}
+.toast.open{border-radius:14px}
+.toast[hidden]{display:none}
+.toast.out{opacity:0;transform:translateY(8px)}
+.toast.in{animation:enter .25s var(--ease-out)}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}}
+
+.face{display:flex;align-items:center;gap:6px;height:36px;padding:0 4px 0 12px}
+.toggle{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:36px;cursor:pointer;border-radius:16px}
+.toggle:focus-visible,.icon:focus-visible,.act:focus-visible,.tab:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c,var(--blue));flex:none}
+.word{font-weight:600;white-space:nowrap}
+.eta{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.chev{margin-left:auto;width:14px;height:14px;flex:none;color:var(--muted);transition:transform .22s var(--ease-out)}
+.open .chev{transform:rotate(180deg)}
+.icon{all:unset;box-sizing:border-box;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;cursor:pointer;color:var(--muted);flex:none}
+.icon:hover{background:var(--surface2);color:var(--text)}
+.icon svg{width:14px;height:14px}
+
+.pulse .word{animation:pulse .5s ease-out 1}
+@keyframes pulse{40%{transform:scale(1.12);color:var(--c)}}
+.pulse{border-color:var(--c)}
+
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .15s ease-in}
+.open .body{grid-template-rows:1fr;transition:grid-template-rows .25s var(--ease-out)}
+.body>div{overflow:hidden;min-height:0}
+.inner{padding:2px 12px 10px;border-top:1px solid var(--line);margin-top:0}
+.open .inner{padding-top:8px}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:11.5px;margin-bottom:8px}
+.meta b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+ol{list-style:none;margin:0 0 8px;padding:0}
+li{position:relative;padding:0 0 7px 18px;font-size:12px;color:var(--muted)}
+li::before{content:"";position:absolute;left:3px;top:5px;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface)}
+li::after{content:"";position:absolute;left:6px;top:14px;bottom:-4px;width:1px;background:var(--line)}
+li:last-child::after{display:none}
+li.done::before{background:var(--green);border-color:var(--green)}
+li.done::after{background:var(--green)}
+li.now{color:var(--text)}
+li.now::before{background:var(--c);border-color:var(--c)}
+li small{display:block;color:var(--muted);font-size:11px}
+.next{background:var(--surface2);border-radius:8px;padding:6px 8px;font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.actions{display:flex;gap:6px}
+.act{all:unset;box-sizing:border-box;flex:1;text-align:center;height:28px;line-height:28px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:12px;color:var(--text);background:var(--surface);white-space:nowrap}
+.act:hover{background:var(--surface2)}
+.act.ok{color:var(--green);border-color:var(--green)}
+
+.tab{all:unset;box-sizing:border-box;position:fixed;right:0;bottom:24px;width:26px;height:44px;display:grid;place-items:center;
+  background:var(--surface);border:1px solid var(--line);border-right:0;border-radius:10px 0 0 10px;cursor:pointer;color:var(--muted)}
+.tab[hidden]{display:none}
+.tab:hover{color:var(--text);background:var(--surface2)}
+.tab .dot{position:absolute;top:6px;left:6px;width:6px;height:6px}
+.tab svg{width:14px;height:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .toast.out,.toast.in{transform:none}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Order #48213 &middot; Ridgeline desk lamp</h1>
+  <p>Your parcel is on its way. Use the tracker in the corner: tap the status to expand, or simulate the carrier's next scan.</p>
+  <button class="demo" id="advance">Simulate next carrier scan</button>
+  <button class="demo" id="reset">Reset</button>
+</main>
+
+<section class="toast" id="toast" aria-label="Package tracking">
+  <div class="face">
+    <button class="toggle" id="toggle" aria-expanded="false" aria-controls="body">
+      <span class="dot" id="dot"></span>
+      <span class="word" id="word"></span>
+      <span class="eta" id="eta"></span>
+      <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
+    </button>
+    <button class="icon" id="dismiss" aria-label="Dismiss tracker" title="Dismiss">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+    </button>
+  </div>
+  <div class="body" id="body" role="region" aria-label="Tracking details">
+    <div><div class="inner">
+      <div class="meta"><span>UPS &middot; <b id="num"></b></span><span id="updated"></span></div>
+      <ol id="steps"></ol>
+      <div class="next" id="next"></div>
+      <div class="actions">
+        <button class="act" id="copy">Copy number</button>
+        <a class="act" id="carrier" href="https://www.ups.com/track?tracknum=1Z999AA10123456784" target="_blank" rel="noopener noreferrer">Open UPS</a>
+      </div>
+    </div></div>
+  </div>
+  <div class="sr" id="live" role="status" aria-live="polite"></div>
+</section>
+
+<button class="tab" id="tab" hidden aria-label="Show package tracker"><span class="dot" id="tabdot"></span>
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 5l6-3 6 3v6l-6 3-6-3zM2 5l6 3 6-3M8 8v6"/></svg>
+</button>
+
+<script>
+(function(){
+  var NUM="1Z999AA10123456784";
+  var STAGES=[
+    {word:"Label Created",color:"#a3a8b3",next:"UPS has not received the parcel yet. Nothing to do.",eta:"Est. Fri, Nov 7"},
+    {word:"On the Way",color:"#6aa8f0",next:"Moving between facilities. No action needed.",eta:"Est. Fri, Nov 7"},
+    {word:"Out for Delivery",color:"#f0b45a",next:"On the truck today. Check your delivery instructions.",eta:"Today, 1–5 PM"},
+    {word:"Delivered",color:"#5cc98a",next:"Left at front door. Bring it inside.",eta:"Today, 2:47 PM"}
+  ];
+  var EVENTS=[
+    ["Label created","Nov 4, 6:12 PM","Ridgeline Goods, Portland OR"],
+    ["Departed facility","Nov 5, 9:40 AM","Portland OR"],
+    ["Out for delivery","Nov 7, 7:55 AM","Oakland CA"],
+    ["Delivered","Nov 7, 2:47 PM","Front door"]
+  ];
+  var state={stage:1,open:false,dismissed:false};
+  var $=function(i){return document.getElementById(i)};
+  var toast=$("toast"),toggle=$("toggle");
+  $("num").textContent=NUM;
+
+  function render(announce){
+    var s=STAGES[state.stage];
+    toast.style.setProperty("--c",s.color);
+    $("tabdot").style.background=s.color;
+    $("dot").style.background=s.color;
+    $("word").textContent=s.word;
+    $("eta").textContent=s.eta;
+    $("next").textContent=s.next;
+    $("updated").textContent="Updated "+EVENTS[state.stage][1];
+    var h="";
+    EVENTS.forEach(function(e,i){
+      var cls=i<state.stage?"done":i===state.stage?"now":"";
+      if(i>state.stage)return;
+      h+='<li class="'+cls+'"'+(i===state.stage?' aria-current="step"':'')+'>'+e[0]+'<small>'+e[1]+' · '+e[2]+'</small></li>';
+    });
+    if(state.stage<3)h+='<li style="opacity:.55">'+(state.stage<2?"Out for delivery":"Delivered")+'<small>Expected</small></li>';
+    $("steps").innerHTML=h;
+    toast.classList.toggle("open",state.open);
+    toggle.setAttribute("aria-expanded",state.open);
+    toast.hidden=state.dismissed;
+    $("tab").hidden=!state.dismissed;
+    if(announce)$("live").textContent="Package status: "+s.word+". "+s.eta;
+  }
+  function cue(){
+    toast.classList.remove("pulse");void toast.offsetWidth;toast.classList.add("pulse");
+    setTimeout(function(){toast.classList.remove("pulse")},700);
+  }
+  toggle.addEventListener("click",function(){state.open=!state.open;render()});
+  $("dismiss").addEventListener("click",function(){
+    toast.classList.add("out");
+    setTimeout(function(){toast.classList.remove("out");state.dismissed=true;state.open=false;render()},180);
+  });
+  function show(){
+    state.dismissed=false;render();
+    toast.classList.remove("in");void toast.offsetWidth;toast.classList.add("in");
+  }
+  $("tab").addEventListener("click",function(){show();toggle.focus()});
+  $("advance").addEventListener("click",function(){
+    if(state.stage>=3)return;
+    state.stage++;
+    var wasHidden=state.dismissed;
+    if(wasHidden)show();else render();
+    render(true);cue();
+    if(state.stage===3)$("advance").disabled=true;
+  });
+  $("reset").addEventListener("click",function(){
+    state.stage=1;state.open=false;state.dismissed=false;$("advance").disabled=false;render(true);
+  });
+  $("copy").addEventListener("click",function(){
+    var b=$("copy");
+    function ok(){b.textContent="Copied";b.classList.add("ok");setTimeout(function(){b.textContent="Copy number";b.classList.remove("ok")},1500)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(NUM).then(ok,fallback)}else fallback();
+    function fallback(){
+      var t=document.createElement("textarea");t.value=NUM;t.style.position="fixed";t.style.opacity="0";
+      document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}t.remove();ok();
+    }
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&state.open){state.open=false;render();toggle.focus()}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

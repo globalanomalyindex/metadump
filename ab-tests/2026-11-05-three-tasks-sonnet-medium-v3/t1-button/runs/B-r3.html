@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Journal: Join the waitlist</title>
+<style>
+  :root {
+    --bg: #0e0c1f;
+    --bg-2: #181436;
+    --ink: #f4f1ff;
+    --ink-soft: #b9b3da;
+    --violet: #7a63e8;
+    --violet-deep: #3b2c9a;
+    --rose: #f0a6d8;
+    --peach: #ffc9a3;
+    --ring: #ffe9c7;
+
+    /* hand-written curves: each one has a job */
+    --settle:   cubic-bezier(0.16, 1, 0.3, 1);       /* fast arrival, long low tail */
+    --drift:    cubic-bezier(0.45, 0.1, 0.25, 1);    /* slow start, arrives late (glow) */
+    --exhale:   cubic-bezier(0.6, 0, 0.4, 1);        /* slow leave, keeps fading after pointer left */
+    --float:    cubic-bezier(0.37, 0, 0.63, 1);      /* sine-like loop while held */
+    --breath:   cubic-bezier(0.7, 0, 0.9, 0.5);      /* slow rise, quick fall */
+    --nudge:    cubic-bezier(0.3, 0.9, 0.2, 1.25);   /* tiny overshoot, arrow only */
+    --press:    cubic-bezier(0.2, 0.8, 0.2, 1);      /* immediate answer */
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(60rem 40rem at 78% -10%, rgba(122,99,232,.28), transparent 60%),
+      radial-gradient(50rem 36rem at 5% 105%, rgba(240,166,216,.14), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    line-height: 1.6;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+  }
+  main { width: 100%; max-width: 560px; }
+  .eyebrow {
+    font: 600 .75rem/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--rose);
+    margin: 0 0 18px;
+  }
+  h1 { font-weight: 500; font-size: clamp(2rem, 6vw, 2.9rem); line-height: 1.1; margin: 0 0 16px; letter-spacing: -.01em; }
+  h1 em { font-style: italic; color: var(--peach); }
+  p.lede { color: var(--ink-soft); font-size: 1.08rem; margin: 0 0 28px; max-width: 46ch; }
+  ul.facts { list-style: none; padding: 0; margin: 0 0 32px; display: grid; gap: 8px;
+    font: .95rem/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink-soft); }
+  ul.facts li::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--rose); margin-right: 12px; vertical-align: middle; opacity: .8; }
+
+  form { display: grid; gap: 12px; }
+  label.field { font: 500 .85rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); }
+  input[type=email] {
+    width: 100%; min-height: 48px; margin-top: 6px; padding: 0 16px;
+    font: 1rem ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+    background: rgba(255,255,255,.05); border: 1px solid rgba(185,179,218,.35); border-radius: 14px;
+    transition: border-color .6s var(--settle), background-color .6s var(--settle);
+  }
+  input[type=email]:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-color: transparent; background: rgba(255,255,255,.08); }
+  input[aria-invalid=true] { border-color: #ff9bb0; }
+  .error { min-height: 1.3em; margin: 0; font: .85rem ui-sans-serif, system-ui, sans-serif; color: #ffb3c4; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: center; margin-top: 4px; }
+
+  /* ---------- the dreamlike button ---------- */
+  .dream {
+    --mx: 50%; --my: 50%;
+    position: relative;
+    isolation: isolate;               /* keeps the glow between page and label */
+    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    min-height: 52px; min-width: 210px; padding: 0 30px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 999px;
+    font: 600 1rem/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .01em;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(122,99,232,.62), rgba(59,44,154,.78));
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transform: translate3d(0,0,0);
+    /* leaving: slow exhale so the move keeps going after the pointer is gone */
+    transition: transform 1500ms var(--exhale), border-color 1200ms var(--exhale);
+  }
+  /* layers behind the box. Blur is fixed; only opacity and transform ever change. */
+  .dream::before, .dream::after, .dream .halo, .dream .bloom, .dream .sheen {
+    content: ""; position: absolute; pointer-events: none; border-radius: inherit;
+  }
+  /* soft halo that breathes at rest (slow rise, quick fall) */
+  .dream .halo {
+    inset: -10px; z-index: -2;
+    background: radial-gradient(closest-side, rgba(150,125,255,.85), rgba(240,166,216,.35) 60%, transparent 100%);
+    filter: blur(14px);
+    opacity: .28;
+    animation: breathe 7s var(--breath) infinite;
+  }
+  /* the hover bloom: spreads 18px+ past the edge, arrives late and leaves slowly */
+  .dream .bloom {
+    inset: -18px; z-index: -3;
+    background:
+      radial-gradient(60% 90% at var(--mx) var(--my), rgba(255,201,163,.75), transparent 70%),
+      linear-gradient(120deg, rgba(122,99,232,.95), rgba(240,166,216,.9) 55%, rgba(255,201,163,.85));
+    filter: blur(22px);
+    opacity: 0;
+    transform: scale(.94);
+    transition: opacity 1800ms var(--exhale), transform 1800ms var(--exhale);
+  }
+  /* a light that follows the pointer with a lag */
+  .dream .sheen {
+    inset: 0; z-index: 0; overflow: hidden; opacity: 0;
+    background: radial-gradient(90px 60px at var(--mx) var(--my), rgba(255,255,255,.34), transparent 70%);
+    transition: opacity 1400ms var(--exhale);
+  }
+  /* solid-ish plate under the label so the glow can never wash it out */
+  .dream::before {
+    inset: 1px; z-index: -1;
+    background: linear-gradient(180deg, rgba(14,12,31,.0), rgba(14,12,31,.38));
+  }
+  .dream .label { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 12px;
+    text-shadow: 0 1px 8px rgba(14,12,31,.55); }
+  .dream .arrow { width: 18px; height: 18px; flex: none; transition: transform 900ms var(--exhale); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .dream:hover:not([aria-disabled=true]) {
+      transform: translate3d(0,-4px,0);
+      border-color: rgba(255,233,199,.55);
+      /* arriving: fast settle with a long low tail */
+      transition: transform 1100ms var(--settle), border-color 700ms var(--settle);
+    }
+    .dream:hover:not([aria-disabled=true]) .bloom {
+      opacity: 1; transform: scale(1);
+      transition: opacity 1200ms var(--drift), transform 1600ms var(--settle);
+      animation: float 4.8s var(--float) 1.1s infinite;
+    }
+    .dream:hover:not([aria-disabled=true]) .sheen { opacity: 1; transition: opacity 900ms var(--drift); }
+    .dream:hover:not([aria-disabled=true]) .arrow { transform: translateX(5px); transition: transform 700ms var(--nudge); }
+  }
+
+  /* keyboard focus gets the same bloom plus a ring that holds 3:1 on any glow */
+  .dream:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 5px;
+    transform: translate3d(0,-4px,0);
+    transition: transform 1100ms var(--settle);
+  }
+  .dream:focus-visible .bloom { opacity: 1; transform: scale(1); transition: opacity 1200ms var(--drift), transform 1600ms var(--settle); }
+  .dream:focus-visible .arrow { transform: translateX(5px); transition: transform 700ms var(--nudge); }
+
+  /* press: cuts the breath, answers at once, transform and opacity only */
+  .dream:active:not([aria-disabled=true]) {
+    transform: translate3d(0,0,0) scale(.985);
+    transition: transform 140ms var(--press);
+  }
+  .dream:active:not([aria-disabled=true]) .bloom { opacity: .72; transform: scale(.97); transition: opacity 160ms var(--press), transform 160ms var(--press); animation: none; }
+  .dream:active:not([aria-disabled=true]) .halo { animation-play-state: paused; opacity: .1; }
+
+  /* states: idle, working, done */
+  .dream[aria-disabled=true] { cursor: progress; }
+  .dream[data-state=done] { cursor: default; background: linear-gradient(135deg, rgba(86,160,150,.6), rgba(32,84,98,.8)); }
+  .dream[data-state=done] .halo { background: radial-gradient(closest-side, rgba(150,255,220,.8), rgba(150,210,255,.3) 60%, transparent 100%); }
+  .dream[data-state=done] .bloom { opacity: .9; transform: scale(1); transition: opacity 1600ms var(--drift); background: linear-gradient(120deg, rgba(120,230,200,.9), rgba(150,190,255,.85)); animation: none; }
+  .dots { display: inline-flex; gap: 5px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .3; animation: dot 1.2s var(--float) infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+  .label .swap { animation: swap 900ms var(--settle) both; }
+
+  @keyframes breathe { 0%,100% { opacity: .2; transform: scale(.98); } 62% { opacity: .5; transform: scale(1.04); } }
+  @keyframes float   { 0%,100% { transform: scale(1) translate3d(0,0,0); } 50% { transform: scale(1.04) translate3d(0,3px,0); } }
+  @keyframes dot     { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+  @keyframes swap    { from { opacity: 0; transform: translate3d(0,6px,0); } to { opacity: 1; transform: none; } }
+
+  /* ghost companion button shares the curves, no glow layers */
+  .ghost {
+    min-height: 52px; padding: 0 12px; background: none; border: 0; color: var(--ink);
+    font: 500 1rem ui-sans-serif, system-ui, sans-serif; cursor: pointer; border-radius: 10px;
+    text-decoration: underline; text-decoration-color: rgba(240,166,216,.0); text-underline-offset: 6px;
+    transition: text-decoration-color 1200ms var(--exhale), color 1200ms var(--exhale);
+  }
+  @media (hover: hover) { .ghost:hover { text-decoration-color: var(--rose); color: var(--peach); transition: text-decoration-color 600ms var(--drift), color 600ms var(--drift); } }
+  .ghost:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+
+  .status { margin: 22px 0 0; min-height: 3em; font: .95rem/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); }
+  .status strong { color: var(--peach); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .status button { background: none; border: 0; padding: 0; color: var(--rose); text-decoration: underline; cursor: pointer; font: inherit; }
+  .status button:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 4px; }
+
+  details { margin-top: 18px; font: .95rem/1.55 ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft);
+    border-left: 2px solid rgba(240,166,216,.4); padding-left: 16px; }
+  details[hidden] { display: none; }
+
+  /* reduced motion: keep colour and glow response, drop travel, float and loops */
+  @media (prefers-reduced-motion: reduce) {
+    .dream, .dream:hover:not([aria-disabled=true]), .dream:focus-visible, .dream:active:not([aria-disabled=true]) { transform: none; transition: border-color 200ms linear; }
+    .dream .halo { animation: none; opacity: .3; }
+    .dream .bloom, .dream:hover:not([aria-disabled=true]) .bloom, .dream:active:not([aria-disabled=true]) .bloom { transform: none; animation: none; transition: opacity 200ms linear; }
+    .dream .sheen, .dream:hover:not([aria-disabled=true]) .sheen { transition: opacity 200ms linear; }
+    .dream .arrow, .dream:hover:not([aria-disabled=true]) .arrow, .dream:focus-visible .arrow { transform: none; transition: none; }
+    .dots i { animation: none; opacity: .8; }
+    .label .swap { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Lumen Journal</p>
+  <h1>A quieter place to <em>write things down</em>.</h1>
+  <p class="lede">Lumen is a private journal that keeps one calm page open for you each evening. Early access opens to the first 2,000 writers.</p>
+  <ul class="facts">
+    <li>End-to-end encrypted entries, stored on your device first</li>
+    <li>A single prompt each evening, never a streak counter</li>
+    <li>Free during early access</li>
+  </ul>
+
+  <form id="signup" novalidate>
+    <label class="field" for="email">Email address
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" aria-describedby="err" required>
+    </label>
+    <p class="error" id="err" role="alert"></p>
+    <div class="row">
+      <button class="dream" id="cta" type="submit" data-state="idle">
+        <span class="halo" aria-hidden="true"></span>
+        <span class="bloom" aria-hidden="true"></span>
+        <span class="sheen" aria-hidden="true"></span>
+        <span class="label" id="ctaLabel"><span class="swap">Join the waitlist</span>
+          <svg class="arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5"/></svg>
+        </span>
+      </button>
+      <button class="ghost" type="button" id="more" aria-expanded="false" aria-controls="how">How it works</button>
+    </div>
+  </form>
+
+  <p class="status" id="status" aria-live="polite">1,284 of 2,000 early spots claimed.</p>
+  <details id="how" hidden open>
+    Each evening Lumen offers one gentle prompt. You write, it saves locally, and an encrypted copy syncs only if you turn sync on. Invitations go out in the order people join.
+  </details>
+</main>
+
+<script>
+(function () {
+  var form = document.getElementById('signup');
+  var btn = document.getElementById('cta');
+  var labelEl = document.getElementById('ctaLabel');
+  var email = document.getElementById('email');
+  var err = document.getElementById('err');
+  var status = document.getElementById('status');
+  var more = document.getElementById('more');
+  var how = document.getElementById('how');
+  var claimed = 1284, total = 2000, busy = false, timer = null;
+
+  var arrowSVG = labelEl.querySelector('svg').outerHTML;
+  function setLabel(html) { labelEl.innerHTML = '<span class="swap">' + html + '</span>' + arrowSVG; }
+  function setLabelPlain(html) { labelEl.innerHTML = '<span class="swap">' + html + '</span>'; }
+
+  // The light follows the pointer, lagging behind it on the sheen's own transition.
+  btn.addEventListener('pointermove', function (e) {
+    var r = btn.getBoundingClientRect();
+    btn.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    btn.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+  btn.addEventListener('pointerleave', function () {
+    btn.style.setProperty('--mx', '50%'); btn.style.setProperty('--my', '50%');
+  });
+
+  function render() {
+    status.innerHTML = '<strong>' + claimed.toLocaleString('en-US') + '</strong> of ' + total.toLocaleString('en-US') + ' early spots claimed.';
+  }
+
+  more.addEventListener('click', function () {
+    var open = more.getAttribute('aria-expanded') === 'true';
+    more.setAttribute('aria-expanded', String(!open));
+    how.hidden = open;
+  });
+  more.setAttribute('aria-expanded', 'true'); how.hidden = false;
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (busy || btn.dataset.state === 'done') return;
+    var v = email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+      err.textContent = v ? 'That address doesn’t look complete. Try name@domain.com.' : 'Add your email so we can send your invitation.';
+      email.setAttribute('aria-invalid', 'true'); email.focus(); return;
+    }
+    err.textContent = ''; email.removeAttribute('aria-invalid');
+    busy = true;
+    btn.setAttribute('aria-disabled', 'true'); btn.dataset.state = 'working';
+    setLabelPlain('Saving your spot <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>');
+    timer = setTimeout(function () {
+      busy = false; claimed += 1; render();
+      btn.removeAttribute('aria-disabled'); btn.dataset.state = 'done';
+      setLabelPlain('You’re on the list ✓');
+      status.innerHTML = '<strong>Spot ' + claimed.toLocaleString('en-US') + '</strong> is yours. We’ll write to ' + v.replace(/[<>&]/g, '') + '. <button type="button" id="undo">Not you?</button>';
+      document.getElementById('undo').addEventListener('click', reset);
+    }, 1600);
+  });
+
+  function reset() {
+    clearTimeout(timer); claimed -= 1; busy = false;
+    btn.dataset.state = 'idle'; btn.removeAttribute('aria-disabled');
+    setLabel('Join the waitlist'); email.value = ''; email.focus(); render();
+  }
+  email.addEventListener('input', function () { if (email.value) { err.textContent = ''; email.removeAttribute('aria-invalid'); } });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halcyon Sleep Studio - Reserve a session</title>
+<style>
+  :root {
+    --ink: #1d1b34;
+    --ink-soft: #55527a;
+    --bg-a: #eef0ff;
+    --bg-b: #f7eefa;
+    --bg-c: #e6f6f7;
+    --lilac: #b9a8ff;
+    --rose: #ffb8d9;
+    --mint: #a8f0e2;
+    --sky: #9cc8ff;
+
+    /* the dreamlike curves: long, slow tails; gentle overshoot */
+    --drift:   cubic-bezier(.22, .8, .12, 1);       /* arrives like fog settling */
+    --bloom:   cubic-bezier(.16, 1.2, .3, 1);       /* soft overshoot, like a breath */
+    --exhale:  cubic-bezier(.5, 0, .1, 1);          /* leaves slowly, no snap */
+    --veil:    cubic-bezier(.3, .0, .2, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f1efff; --ink-soft:#a9a6d0; --bg-a:#14122b; --bg-b:#1d1236; --bg-c:#0f2230; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    color: var(--ink);
+    background:
+      radial-gradient(60rem 40rem at 10% 0%, var(--bg-b), transparent 60%),
+      radial-gradient(50rem 40rem at 100% 100%, var(--bg-c), transparent 60%),
+      var(--bg-a);
+    display: grid; place-items: center;
+    padding: 24px 16px;
+  }
+  .sans { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  .card {
+    width: min(100%, 520px);
+    background: color-mix(in srgb, var(--bg-a) 60%, transparent);
+    border: 1px solid color-mix(in srgb, var(--lilac) 40%, transparent);
+    border-radius: 28px;
+    padding: 36px 32px 28px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 30px 80px -40px rgba(90, 70, 190, .45);
+  }
+  .eyebrow { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 14px; }
+  h1 { font-weight: 400; font-size: clamp(28px, 6vw, 38px); line-height: 1.12; margin: 0 0 12px; letter-spacing: -.01em; }
+  p.lede { margin: 0 0 22px; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 0 0 28px; font-size: 14px; }
+  dt { color: var(--ink-soft); } dd { margin: 0; }
+  .seats { font-variant-numeric: tabular-nums; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+  /* ---------- the button ---------- */
+  .halo-btn {
+    --mx: 50%; --my: 50%;
+    position: relative; isolation: isolate;
+    appearance: none; border: 0; cursor: pointer;
+    min-height: 52px; padding: 0 30px;
+    border-radius: 999px;
+    font: 500 16px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .02em;
+    color: #2a2352;
+    background: linear-gradient(135deg, #fff 0%, #f3edff 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 6px 16px -8px rgba(110, 90, 210, .35),
+      0 0 0 1px rgba(185,168,255,.45);
+    transition:
+      transform .9s var(--drift),
+      box-shadow 1.1s var(--drift),
+      color .6s var(--veil),
+      letter-spacing 1.1s var(--drift);
+    -webkit-tap-highlight-color: transparent;
+    overflow: visible;
+  }
+  .halo-btn > span { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 10px; }
+
+  /* drifting aurora inside */
+  .halo-btn::before {
+    content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit;
+    background:
+      radial-gradient(60% 120% at var(--mx) var(--my), rgba(255,255,255,.9), transparent 60%),
+      linear-gradient(110deg, var(--lilac), var(--rose), var(--mint), var(--sky), var(--lilac));
+    background-size: 100% 100%, 300% 100%;
+    background-position: 0 0, 0% 0;
+    opacity: 0; transform: scale(.94);
+    transition: opacity 1.2s var(--drift), transform 1.4s var(--bloom), background-position 2.4s var(--exhale);
+    filter: saturate(1.05);
+  }
+  /* out-of-bounds halo glow */
+  .halo-btn::after {
+    content: ""; position: absolute; inset: -14px; z-index: -1; border-radius: inherit;
+    background: radial-gradient(closest-side, rgba(185,168,255,.65), rgba(255,184,217,.35) 55%, transparent 100%);
+    filter: blur(14px);
+    opacity: 0; transform: scale(.82);
+    transition: opacity 1.4s var(--drift), transform 1.6s var(--bloom);
+    pointer-events: none;
+  }
+  .halo-btn .arrow {
+    width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    transform: translateX(0); opacity: .75;
+    transition: transform 1s var(--bloom), opacity .8s var(--veil);
+  }
+
+  /* motes that float up */
+  .motes { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .motes i {
+    position: absolute; bottom: 30%; width: 5px; height: 5px; border-radius: 50%;
+    background: radial-gradient(circle, #fff, rgba(255,255,255,0) 70%);
+    opacity: 0; transform: translateY(6px) scale(.4);
+    transition: opacity .6s var(--exhale), transform .9s var(--exhale);
+  }
+  .motes i:nth-child(1) { left: 14%; }
+  .motes i:nth-child(2) { left: 32%; width: 4px; height: 4px; }
+  .motes i:nth-child(3) { left: 50%; width: 6px; height: 6px; }
+  .motes i:nth-child(4) { left: 68%; width: 4px; height: 4px; }
+  .motes i:nth-child(5) { left: 86%; }
+
+  @media (hover: hover) {
+    .halo-btn:hover {
+      transform: translateY(-3px) scale(1.025);
+      letter-spacing: .055em;
+      color: #1d1745;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.9) inset,
+        0 22px 40px -16px rgba(120, 95, 230, .55),
+        0 0 0 1px rgba(185,168,255,.0);
+    }
+    .halo-btn:hover::before { opacity: 1; transform: scale(1); background-position: 0 0, 100% 0; }
+    .halo-btn:hover::after  { opacity: 1; transform: scale(1.08); }
+    .halo-btn:hover .arrow  { transform: translateX(5px); opacity: 1; }
+    .halo-btn:hover .motes i { opacity: .9; transform: translateY(-26px) scale(1); }
+    .halo-btn:hover .motes i:nth-child(2) { transition-delay: .12s; transform: translateY(-34px) scale(1); }
+    .halo-btn:hover .motes i:nth-child(3) { transition-delay: .24s; transform: translateY(-30px) scale(1); }
+    .halo-btn:hover .motes i:nth-child(4) { transition-delay: .06s; transform: translateY(-38px) scale(1); }
+    .halo-btn:hover .motes i:nth-child(5) { transition-delay: .18s; transform: translateY(-28px) scale(1); }
+  }
+  .halo-btn:focus-visible {
+    outline: 2px solid var(--ink); outline-offset: 5px;
+  }
+  .halo-btn:focus-visible::before { opacity: 1; transform: scale(1); }
+  .halo-btn:focus-visible::after { opacity: 1; transform: scale(1.05); }
+  /* press: a soft inward settle, not a snap */
+  .halo-btn:active { transform: translateY(0) scale(.985); transition-duration: .35s; transition-timing-function: var(--veil); }
+
+  /* states */
+  .halo-btn[data-state="loading"] { cursor: progress; }
+  .halo-btn[data-state="loading"]::before { opacity: 1; transform: scale(1); animation: breathe 1.8s var(--exhale) infinite; }
+  .halo-btn[data-state="done"]::before {
+    opacity: 1; transform: scale(1);
+    background: radial-gradient(60% 120% at 50% 50%, rgba(255,255,255,.7), transparent 60%), linear-gradient(110deg, var(--mint), var(--sky));
+  }
+  .halo-btn[data-state="done"]::after { opacity: .8; transform: scale(1); background: radial-gradient(closest-side, rgba(168,240,226,.7), transparent); }
+  @keyframes breathe { 0%,100% { filter: saturate(1) brightness(1); } 50% { filter: saturate(1.3) brightness(1.08); } }
+
+  .label { display: inline-block; transition: opacity .5s var(--veil), transform .8s var(--drift), filter .8s var(--drift); }
+  .label.swap { opacity: 0; transform: translateY(6px); filter: blur(4px); }
+
+  /* secondary ghost button, same language, quieter */
+  .ghost {
+    appearance: none; border: 0; background: none; cursor: pointer;
+    font: 500 15px/1 ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft);
+    padding: 14px 6px; position: relative; min-height: 44px;
+    transition: color .7s var(--drift), letter-spacing .9s var(--drift);
+  }
+  .ghost::after {
+    content: ""; position: absolute; left: 6px; right: 6px; bottom: 9px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--lilac), var(--rose), transparent);
+    transform: scaleX(.2); opacity: 0;
+    transition: transform 1s var(--drift), opacity .8s var(--drift);
+  }
+  @media (hover: hover) {
+    .ghost:hover { color: var(--ink); letter-spacing: .03em; }
+    .ghost:hover::after { transform: scaleX(1); opacity: 1; }
+  }
+  .ghost:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+  .ghost[aria-pressed="true"] { color: var(--ink); }
+  .ghost[aria-pressed="true"]::after { transform: scaleX(1); opacity: 1; }
+
+  .status { min-height: 1.4em; margin: 18px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+  /* reduced motion: keep the colour/glow changes, drop movement and long fades */
+  @media (prefers-reduced-motion: reduce) {
+    .halo-btn, .halo-btn::before, .halo-btn::after, .halo-btn .arrow, .motes i, .label, .ghost, .ghost::after {
+      transition-duration: .01ms !important; transition-delay: 0s !important; animation: none !important;
+    }
+    .halo-btn:hover, .halo-btn:active { transform: none; }
+    .halo-btn:hover .arrow, .halo-btn:hover .motes i { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main class="card">
+  <p class="eyebrow sans">Evening session &middot; Thursday</p>
+  <h1>Slow Descent: a guided hour for sleeping well</h1>
+  <p class="lede">Low light, long exhales and a gentle body scan with Marisol Okafor. No experience needed. Bring a blanket; we provide the quiet.</p>
+  <dl class="sans">
+    <dt>When</dt><dd>Thu 13 Nov, 8:00 to 9:00 pm</dd>
+    <dt>Where</dt><dd>Halcyon Studio, 14 Wren Lane</dd>
+    <dt>Price</dt><dd>$24 &middot; first session free</dd>
+    <dt>Places</dt><dd class="seats"><span id="seats">7</span> of 12 left</dd>
+  </dl>
+
+  <div class="actions">
+    <button class="halo-btn" id="reserve" type="button" data-state="idle" aria-describedby="status">
+      <span>
+        <span class="label" id="label">Reserve my place</span>
+        <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+      <span class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+    </button>
+    <button class="ghost" id="remind" type="button" aria-pressed="false">Remind me instead</button>
+  </div>
+  <p class="status sans" id="status" role="status" aria-live="polite"></p>
+</main>
+
+<script>
+(function () {
+  var btn = document.getElementById('reserve');
+  var label = document.getElementById('label');
+  var seatsEl = document.getElementById('seats');
+  var statusEl = document.getElementById('status');
+  var remind = document.getElementById('remind');
+  var seats = 7, reserved = false, busy = false, timer = null;
+
+  // aurora follows the pointer/finger, eased by CSS
+  btn.addEventListener('pointermove', function (e) {
+    var r = btn.getBoundingClientRect();
+    btn.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+    btn.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+  });
+  btn.addEventListener('pointerleave', function () {
+    btn.style.setProperty('--mx', '50%'); btn.style.setProperty('--my', '50%');
+  });
+
+  function setLabel(text, cb) {
+    label.classList.add('swap');
+    setTimeout(function () {
+      label.textContent = text;
+      label.classList.remove('swap');
+      if (cb) cb();
+    }, 320);
+  }
+
+  btn.addEventListener('click', function () {
+    if (busy) return;
+    busy = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.dataset.state = 'loading';
+    setLabel(reserved ? 'Releasing…' : 'Holding your place…');
+    // simulated network round trip
+    timer = setTimeout(function () {
+      reserved = !reserved;
+      seats += reserved ? -1 : 1;
+      seatsEl.textContent = seats;
+      btn.dataset.state = reserved ? 'done' : 'idle';
+      btn.removeAttribute('aria-busy');
+      setLabel(reserved ? 'You’re in. Tap to release' : 'Reserve my place');
+      statusEl.textContent = reserved
+        ? 'Reserved. A confirmation is on its way to your inbox.'
+        : 'Your place was released. ' + seats + ' places open.';
+      if (reserved && remind.getAttribute('aria-pressed') === 'true') remind.click();
+      busy = false;
+    }, 1400);
+  });
+
+  remind.addEventListener('click', function () {
+    var on = remind.getAttribute('aria-pressed') !== 'true';
+    remind.setAttribute('aria-pressed', on);
+    remind.textContent = on ? 'Reminder set for Thu 6 pm' : 'Remind me instead';
+    statusEl.textContent = on ? 'We’ll nudge you two hours before the session.' : 'Reminder cleared.';
+  });
+})();
+</script>
+</body>
+</html>

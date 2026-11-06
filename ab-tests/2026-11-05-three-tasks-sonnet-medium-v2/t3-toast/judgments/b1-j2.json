@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"compact":5,"collapsible":6,"tracking":7,"dark":7,"usability":6,"craft":4,"overall":5,"note":"Rich content, but the chevron and close icons overlap in the header, the timeline is clipped mid-row with a dead gap below the buttons, and the opened card looks unfinished."},
+"X":{"compact":9,"collapsible":8,"tracking":8,"dark":8,"usability":6,"craft":8,"overall":8,"note":"Tidy and very compact: collapsed it shows status and ETA with a progress bar, and opened it fits the number, steps and actions cleanly; it has no Escape handling or status role."},
+"Y":{"compact":7,"collapsible":8,"tracking":9,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Clear status, ETA, carrier, copyable number, full timeline and actions, plus Escape and labeled controls; the collapsed chip is small, though the opened card is a little tall."},
+"Z":{"compact":6,"collapsible":8,"tracking":8,"dark":7,"usability":8,"craft":6,"overall":6,"note":"Well-built toggle with good accessibility and separate open and close easing, but the timeline shows a stray 'Expected · Expected' and the opened card is large with wasted space."}},
+"ranking":["Y","X","Z","W"]}

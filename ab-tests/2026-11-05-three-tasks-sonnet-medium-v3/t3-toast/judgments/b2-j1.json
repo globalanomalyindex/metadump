@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"compact": 9, "collapsible": 8, "tracking": 8, "dark": 8, "usability": 9, "craft": 8, "overall": 8, "note": "Tiny status pill with segmented progress opens to a tight timeline, tracking number, copy and carrier link, with strong aria-expanded, live region and focus support."},
+"X": {"compact": 8, "collapsible": 8, "tracking": 8, "dark": 9, "usability": 7, "craft": 8, "overall": 8, "note": "Polished green-accent toast with stepper, scans, copy/refresh/alerts and multi-package dots, but the open subtitle truncates the ETA and the tracking number is ellipsized."},
+"Y": {"compact": 6, "collapsible": 8, "tracking": 9, "dark": 8, "usability": 8, "craft": 8, "overall": 7, "note": "Full seven-step timeline with ETAs, a switch for notify and good ARIA, but the opened panel is tall and the action row wraps awkwardly."},
+"Z": {"compact": 6, "collapsible": 7, "tracking": 6, "dark": 7, "usability": 5, "craft": 6, "overall": 5, "note": "Clean collapsed toast, but the open state wastes space at the bottom, the carrier tabs are confusing, the tracking number is clipped and there is no live region."}
+}, "ranking": ["W", "X", "Y", "Z"]}

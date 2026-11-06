@@ -1,0 +1,199 @@
+{
+ "scores": {
+  "A": {
+   "compact": 6.58,
+   "collapsible": 5.67,
+   "tracking": 7.83,
+   "dark": 7.92,
+   "usability": 6.58,
+   "craft": 6.83,
+   "overall": 6.5,
+   "mean_rank": 3.42,
+   "per_run_overall": {
+    "A-r1": 7.0,
+    "A-r2": 6.67,
+    "A-r3": 6.33,
+    "A-r4": 6.0
+   }
+  },
+  "B": {
+   "compact": 7.75,
+   "collapsible": 8.5,
+   "tracking": 8.17,
+   "dark": 8.33,
+   "usability": 8.33,
+   "craft": 7.92,
+   "overall": 8.08,
+   "mean_rank": 1.58,
+   "per_run_overall": {
+    "B-r1": 8.67,
+    "B-r2": 7.33,
+    "B-r3": 8.33,
+    "B-r4": 8.0
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 21,
+  "losses": 1,
+  "ties": 2,
+  "win_rate": 0.92
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 38,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 458,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 491,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 36,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 462,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 0,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 32,
+   "surface_luminance": 0.004,
+   "dark_surface": true,
+   "expanded_height_px": 478,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 46,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 286,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 52,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 52,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 56,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 56,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 348,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 50,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 88836,
+   "mean_seconds": 65.2
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 157628,
+   "mean_seconds": 191.6
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 216776,
+   "ms": 1425519,
+   "tool_uses": 49,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.75,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "A small pill collapses to a 300px card with a clear stage rail, check and current markers, expected ETA, carrier and tracking number, and the open and close transitions are smooth with aria-expanded, an inert closed panel and a live region, though the collapsed item name truncates to 'Walnut d...'.",
+  "b1/j1/A-r1": "The collapsed bar is tidy and the open list packs several packages with progress bars, ETAs and recent scans, but the panel snaps open and shut with no transition and the expanded list runs tall.",
+  "b1/j1/B-r2": "The grid-row expand is smooth and the timeline with expected windows and exception actions reads well, but the top notice strip and a second close button make the collapsed state heavier and leave some dead space in the open panel.",
+  "b1/j1/A-r2": "It is the most complete tracker, with multiple packages, an add-tracking-number form, progress, timelines and per-row actions, but the open panel is large for a toast and toggles instantly with no transition.",
+  "b1/j2/B-r2": "Thorough and accessible (role=switch, labelled dismiss, sr-only state prefixes, Escape and focus return) with a clear five-step timeline and exception block, though the open panel carries dead space above the footer and the notice bar adds height.",
+  "b1/j2/A-r2": "Richest tracking (multiple packages, ETA, carrier, tracking number, timeline, actions, add form) but the open state is tall and crowded, the footer shows an empty strip, and the region is unlabelled and has no dismiss control.",
+  "b1/j2/A-r1": "Very compact pill with clear up/down state, aria-expanded and Escape, and a multi-package list with ETA, masked tracking numbers and progress bars, though the open panel runs tall and next-step guidance is limited to two buttons per row.",
+  "b1/j2/B-r1": "The tightest footprint, with a clean checkmark timeline, mono tracking number, carrier, expected window and latest event, and green and amber accents that hold up on near-black; the label truncates and the exception path sits behind a sample button.",
+  "b1/j3/A-r2": "Clean dark card with a badge and summary line, but the open state is tall because the add form is always visible, and the open/close snaps with no transition.",
+  "b1/j3/B-r2": "The most complete tracker (dated steps, expected windows, exception actions, snooze, carrier, tracking number) with a smooth grid-height open, but the collapsed stack with a notice bar and two close marks is busy and the open panel is tall.",
+  "b1/j3/B-r1": "Smallest footprint at rest and when open, with a smooth panel ease, checkmarked steps, aria-expanded and a live region; it lacks a standing next-step line outside an exception.",
+  "b1/j3/A-r1": "A strong one-line summary and a useful multi-package list with progress bars and tags, but the panel appears at full height with no transition and tracking numbers are masked.",
+  "b2/j1/B-r3": "A single slim row at rest opens smoothly into a clear five-step timeline with timestamps and expected windows, an exception box and Keep open, though the tracking number is not shown in the toast itself and a class-name collision on the exception marker is a minor flaw.",
+  "b2/j1/A-r3": "The richest package job (filters, per-package ETA and progress, carrier and tracking number, step rail, add form) in a compact panel, but it opens and closes instantly with no transition and every click rebuilds the whole toast so keyboard focus is lost.",
+  "b2/j1/B-r4": "Collapses to a single 48px row and opens with a real grid-rows transition into a dated timeline with the carrier window, exception handling and snooze, with a stable toggle, aria-expanded, inert closed panel, Escape and focus restoration.",
+  "b2/j1/A-r4": "A tidy pill with a useful one-line summary and a multi-package panel with status chips and progress bars, but the panel appears and disappears with no motion, shows only the last four digits and no step timeline, and offers little beyond Next step and Remove.",
+  "b2/j2/B-r4": "Single-parcel toast with a clean collapsed row, a smooth 260ms grid-rows open and a 160ms close, a five-step rail with dates and delivery window, an exception block with actions, and inert panel plus aria-expanded when closed.",
+  "b2/j2/A-r4": "The collapsed pill is the most compact of the four, but it is a multi-package list with no per-package timeline, the open and close are instant with no transition, and the chevron is a tiny glyph.",
+  "b2/j2/A-r3": "The richest tracking content (filters, five-step timeline, events, carrier and tracking number) but the open panel is tall, the toggle has no transition, the tracking input has only a placeholder, and the whole region re-renders on each click so focus is lost and the live region re-announces everything.",
+  "b2/j2/B-r3": "Strong single-parcel toast: a compact row that opens smoothly into a timeline with expected windows, a clear amber exception state with actions, labelled hide and notice dismiss buttons, aria-pressed on Keep open, and focus returned after re-render; the tracking number is only in the aria-label, not visible.",
+  "b2/j3/A-r4": "The 32px pill is the most compact footprint, but the panel toggles instantly with no transition, lists four packages with 10-11px text and only a progress bar rather than a timeline, and every action rebuilds the list so keyboard focus is lost.",
+  "b2/j3/B-r4": "A 48px single-row collapse with a smooth grid-rows open and close, a labeled five-step rail with dates and expected windows, the tracking number in the header, and a well-built exception block with next-step actions, all with inert panel, Escape and focus handling.",
+  "b2/j3/B-r3": "It rests as a 56px collapsed row with a separate hide control, animates the panel smoothly with visibility hidden when closed, shows a clean timeline with expected tags and an exception box, and keeps focus on the control used, though the tracking number is not shown inside the toast.",
+  "b2/j3/A-r3": "The multi-package list, segmented filter and monospace full tracking number with a step timeline are strong, but the expanded state is tall, open and close are instant, the whole root is rebuilt with innerHTML so focus drops after each action, and the add-form inputs rely on placeholders alone for labels."
+ }
+}

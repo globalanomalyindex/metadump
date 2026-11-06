@@ -1,0 +1,199 @@
+{
+ "scores": {
+  "A": {
+   "compact": 7.25,
+   "collapsible": 7.58,
+   "tracking": 7.75,
+   "dark": 8.08,
+   "usability": 6.67,
+   "craft": 7.42,
+   "overall": 7.33,
+   "mean_rank": 2.17,
+   "per_run_overall": {
+    "A-r1": 7.33,
+    "A-r2": 7.33,
+    "A-r3": 8.33,
+    "A-r4": 6.33
+   }
+  },
+  "B": {
+   "compact": 7.33,
+   "collapsible": 7.25,
+   "tracking": 7.42,
+   "dark": 7.42,
+   "usability": 7.25,
+   "craft": 6.42,
+   "overall": 6.62,
+   "mean_rank": 2.83,
+   "per_run_overall": {
+    "B-r1": 6.33,
+    "B-r2": 6.67,
+    "B-r3": 7.83,
+    "B-r4": 5.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 8,
+  "losses": 15,
+  "ties": 1,
+  "win_rate": 0.35
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 317,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 54,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 344,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 56,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 59,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 361,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 39,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 269,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 40,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 267,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 38,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 312,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 42,
+   "surface_luminance": 0.011,
+   "dark_surface": true,
+   "expanded_height_px": 414,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 38,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 251,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 77843,
+   "mean_seconds": 27.0
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 99924,
+   "mean_seconds": 42.1
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 228261,
+   "ms": 1538112,
+   "tool_uses": 39,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.13,
+ "permutation": {
+  "p": 0.286,
+  "extreme": 20,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Very small and toggle works with aria-expanded, but the collapsed ETA is truncated, the action buttons wrap awkwardly, and there is no progress or ETA once opened.",
+  "b1/j1/A-r1": "Clean teal-on-dark card with the ETA right in the collapsed state, progress bar, six-step timeline, and tidy buttons, with only a little dead space at the bottom.",
+  "b1/j1/B-r2": "Good next-step note and timeline with a dismiss and restore tab, but the carrier and tracking number collide and wrap, and the ETA is truncated when collapsed.",
+  "b1/j1/A-r2": "Polished multi-package toast with progress bar, notify toggle and a select, but it has no explicit ETA when collapsed and a full-width select uses space.",
+  "b1/j2/B-r2": "Pill collapses nicely with dismiss and status announcements, but the ETA is truncated when collapsed and the opened header row has an overlapping, cramped tracking-number line.",
+  "b1/j2/A-r2": "Very small collapsed bar with progress strip and a polished opened timeline with ETA, carrier and tracking tail, though it lacks a live region and a clear next-action line and adds an unneeded package select.",
+  "b1/j2/A-r1": "Clean teal-on-dark with progress bar, step count, ETA time and right-aligned timestamps, but empty padding at the bottom when opened and no tracking number or carrier shown.",
+  "b1/j2/B-r1": "Covers status, carrier link, number, timeline and a no-action note in a tight panel, but the collapsed ETA is truncated and the footer buttons wrap awkwardly.",
+  "b1/j3/A-r2": "Polished collapsed row with progress bar and smooth grid-height transition, but the opened card is tall, it has a needless package dropdown, no explicit next-step guidance, and status changes are not announced.",
+  "b1/j3/B-r2": "Tiny pill that expands to a dense timeline with next-step note, copy and carrier link, plus dismiss, restore tab, live region and Escape, though the collapsed ETA truncates and the expanded meta row wraps awkwardly.",
+  "b1/j3/B-r1": "Smallest footprint, clean expanded layer with tracking number, next-step line, timestamped timeline and labelled actions, live region and Escape support, with only minor truncation and a wrapping button label.",
+  "b1/j3/A-r1": "Attractive teal accent, progress bar and timeline, but it omits the carrier and tracking number and a clear next step, leaves dead space at the bottom, and has weak screen-reader announcements.",
+  "b2/j1/B-r3": "Clean pill with a full timeline, next-step hint and carrier link, but the Copy number button wraps awkwardly and the open state is tall.",
+  "b2/j1/A-r3": "Collapsed card shows item, status and ETA with a progress bar, and opening adds package tabs, carrier, tracking number, timeline and actions in a tight, polished layout.",
+  "b2/j1/B-r4": "Very small, but the ETA is truncated to Arrive… when collapsed, the tracking number and carrier name wrap, and there is no progress or next-step cue.",
+  "b2/j1/A-r4": "Dense and readable with a progress bar, 5 of 6 count and ETA, but the open panel has dead space at the bottom, the chevron is a tiny glyph, and the status is not announced.",
+  "b2/j2/B-r4": "Good ARIA and a restore dot, but the collapsed ETA truncates to 'Arrive...' and the tracking number wraps awkwardly when open.",
+  "b2/j2/A-r4": "Very tight with a progress bar and clean timeline, but the open card has dead space at the bottom, a tiny triangle toggle, and no live-region announcement.",
+  "b2/j2/A-r3": "Richest tracker (package switcher, carrier, ETA, dated timeline, refresh/alerts/copy) with a green accent that holds on dark and a still-compact footprint.",
+  "b2/j2/B-r3": "Clear timeline with location detail and a next-action note plus an edge-tab restore, though the ETA is only 'Thu' and the Copy number button wraps.",
+  "b2/j3/A-r4": "Very compact with clear timeline, ETA and progress bar, but no live-region announcement, no reduced-motion handling, and no next-action guidance.",
+  "b2/j3/B-r4": "Good ARIA and a restore tab, but the ETA truncates to 'Arrive...' and the tracking number wraps awkwardly, hurting the core tracking job.",
+  "b2/j3/B-r3": "Clear status, ETA, carrier, tracking number, timeline and an explicit next-action note, with solid ARIA, live region and restore tab in a tidy dense layout.",
+  "b2/j3/A-r3": "Polished multi-package toast with progress bar, ETA and carrier, but taller when open and the extra package tabs add bulk beyond the compact brief."
+ }
+}

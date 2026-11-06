@@ -1,0 +1,179 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 8.5,
+   "practical": 6.92,
+   "motion": 8.25,
+   "craft": 8.17,
+   "overall": 8.08,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "A-r1": 8.33,
+    "A-r2": 8.33,
+    "A-r3": 7.33,
+    "A-r4": 8.33
+   }
+  },
+  "B": {
+   "dreamlike": 4.25,
+   "practical": 8.83,
+   "motion": 6.17,
+   "craft": 7.0,
+   "overall": 5.75,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "B-r1": 5.0,
+    "B-r2": 5.67,
+    "B-r3": 6.0,
+    "B-r4": 6.33
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 0,
+  "losses": 23,
+  "ties": 1,
+  "win_rate": 0.02
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 80675,
+   "mean_seconds": 46.8
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 96752,
+   "mean_seconds": 47.2
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 200822,
+   "ms": 1611726,
+   "tool_uses": 37,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.8,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Clean, cheap, accessible dark pill with a faint sheen and glow, but the hover is quick and subtle so it reads as polite rather than dreamlike.",
+  "b1/j1/A-r1": "Pastel iridescent gradient drifting with a rotating sparkle and soft glow feels ethereal, with legible dark label, focus ring and reduced-motion fallback.",
+  "b1/j1/B-r2": "Solid, performant button with a light pass and glow arriving on a lingering tail, but visually a conventional purple CTA with limited ethereal quality.",
+  "b1/j1/A-r2": "Colour-shifting aurora, rising motes and slow overshoot-and-fade exhale are the most dreamlike, though the white resting button has weaker affordance and the 1.4s timings are long.",
+  "b1/j2/B-r2": "Very practical (fast leave, focus-visible, reduced motion, opacity-only glow) but the hover is a faint glow and light pass on a dark solid button, more polite than ethereal.",
+  "b1/j2/A-r2": "Slow fog-like bezier drift with colour bloom, motes and soft overshoot, serif card and pearly button feel genuinely ethereal, with a reduced-motion fallback, though 1-2s durations and blur layers cost some practicality.",
+  "b1/j2/A-r1": "Pastel iridescent bloom with sparkle icon and long eased transitions reads dreamy and coherent, but the label sits on shifting gradients and slow 1s+ timings are a little heavy for a real form.",
+  "b1/j2/B-r1": "Clean landing page with a state readout and solid accessibility, but the hover is a quick sheen and dot pulse on a navy pill that barely registers as dreamlike.",
+  "b1/j3/A-r2": "Slow fog-like bezier gradient bloom with rising motes feels ethereal, though the pale white rest state is low-affordance and the long 1-2.4s timings plus blur layers are heavier.",
+  "b1/j3/B-r2": "Clean dark button with a soft glow and light pass, fast 180ms leave and good focus and reduced motion, but the hover is too subtle to read as dreamlike.",
+  "b1/j3/B-r1": "Well-engineered, realistic hero page with solid states and documented curves, but the hover change is barely visible and not ethereal.",
+  "b1/j3/A-r1": "Pastel iridescent gradient drift with a spinning sparkle and soft overshoot is the most dreamlike and polished, with legible dark label, focus ring and reduced-motion handling.",
+  "b2/j1/B-r3": "Polished, accessible and cheap (opacity-only glow, focus mirrors hover, reduced motion), but the hover is a faint glow and sheen pass that barely reads as ethereal, and the resting sheen band looks like a rendering artifact.",
+  "b2/j1/A-r3": "Slow multi-layer bloom with pointer-following mist, halo breathing and sheen on four distinct curves is the most ethereal, with good focus ring and reduced motion, though 1-2s timings and animated blur filters cost some practicality.",
+  "b2/j1/B-r4": "Clean dark UI where the hover lifts and blooms with a soft violet-to-blue glow over fast 180ms exit and 480ms entry curves; practical and well made but restrained, more polished than dreamy.",
+  "b2/j1/A-r4": "Pastel aura with an overshoot bloom, drifting gradient and letter-spacing breathe feels genuinely dreamlike on a coherent soft page, with focus and reduced-motion handled; the letter-spacing animation and small label are minor practical costs.",
+  "b2/j2/B-r4": "Clean, fast glow and lift with solid focus and reduced-motion handling, but 180-480ms feels crisp more than ethereal.",
+  "b2/j2/A-r4": "Pastel halo with blur bloom, overshoot bezier and long soft return reads truly dreamy, with a tidy card layout, focus ring and reduced-motion.",
+  "b2/j2/A-r3": "Rich mist, blur halo, sheen and pointer-following glow are ethereal, but 1-2s durations, animated filter blur and a small label cost practicality, and the hover frames missed the button.",
+  "b2/j2/B-r3": "Competent sheen sweep with focus and reduced-motion, but a sheen artifact sits on the button at rest and the effect is more shiny than dreamlike.",
+  "b2/j3/A-r4": "Pastel aurora gradient drifts across the pill over 1.6s with a bloom halo and letter-spacing breath, genuinely ethereal, though the small dark label on pale gradient is a little soft and durations are long.",
+  "b2/j3/B-r4": "Clean, accessible dark UI with a nice lavender fill and glow in 180-480ms, but it reads as a polished glow button more than dreamlike.",
+  "b2/j3/B-r3": "Strong contrast, proper focus mirroring and reduced-motion handling, with a pale light sweep that is pretty but brief and fairly subtle.",
+  "b2/j3/A-r3": "Source has blurred breathing halo, pointer-following mist and 1.2-1.9s eased sweeps, very ethereal, but the hover capture missed the button, the label is small and the curve-picker demo clutters the page."
+ }
+}

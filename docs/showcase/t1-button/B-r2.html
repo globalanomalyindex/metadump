@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nocturne - Evening wind-down</title>
+<style>
+  :root {
+    --bg: #0b0a17;
+    --bg-2: #15122b;
+    --ink: #ece9fb;
+    --ink-dim: #a8a3c7;
+    --label: #14102a;          /* dark label on pale plate: ~13:1 */
+    --glow-a: 150, 170, 255;   /* moonlight blue */
+    --glow-b: 214, 160, 255;   /* lilac */
+    --glow-c: 130, 235, 235;   /* faint aqua edge */
+
+    /* hand-written curves, one per property */
+    --c-settle: cubic-bezier(0.16, 1, 0.3, 1);        /* fast arrival, long low tail */
+    --c-drift:  cubic-bezier(0.45, 0.1, 0.25, 1);     /* slow start, late arrival */
+    --c-exhale: cubic-bezier(0.6, 0, 0.3, 1.0);       /* leaves slower than it came */
+    --c-breath: cubic-bezier(0.37, 0, 0.63, 1);       /* sine-ish */
+    --c-press:  cubic-bezier(0.2, 0.9, 0.3, 1);       /* instant answer */
+    --c-overshoot: cubic-bezier(0.3, 0.2, 0.2, 1.35); /* soft check pop */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 520px at 78% -10%, rgba(120, 110, 255, .22), transparent 70%),
+      radial-gradient(700px 480px at 6% 105%, rgba(180, 110, 255, .14), transparent 70%),
+      linear-gradient(180deg, var(--bg-2), var(--bg) 60%);
+    color: var(--ink);
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: grid; place-items: center;
+    padding: 32px 16px;
+  }
+  main { width: 100%; max-width: 560px; }
+  .eyebrow { letter-spacing: .18em; text-transform: uppercase; font-size: 12px; color: var(--ink-dim); margin: 0 0 14px; }
+  h1 {
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    font-weight: 400; font-size: clamp(32px, 7vw, 48px); line-height: 1.1; margin: 0 0 16px;
+    letter-spacing: -.01em;
+  }
+  h1 em { font-style: italic; color: #cfc6ff; }
+  p.lede { color: var(--ink-dim); margin: 0 0 28px; max-width: 46ch; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0 0 34px; padding: 0; list-style: none; color: var(--ink-dim); font-size: 14px; }
+  .meta li::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgb(var(--glow-a)); margin-right: 8px; vertical-align: middle; opacity: .8; }
+
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; }
+
+  /* ---------- the button ---------- */
+  .dream {
+    --mx: 50%; --my: 50%;
+    position: relative; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 52px; padding: 14px 30px;
+    border: 0; border-radius: 999px;
+    font-family: inherit; font-size: 16px; font-weight: 600; line-height: 1; letter-spacing: .01em;
+    color: var(--label);
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: transparent;
+    transform: translate3d(0, 0, 0);
+    transition: transform 900ms var(--c-exhale);
+  }
+  /* plate: translucent pale fill, the label is dark on it */
+  .dream .plate {
+    position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background:
+      radial-gradient(120px 60px at var(--mx) var(--my), rgba(255,255,255,.55), transparent 70%),
+      linear-gradient(135deg, rgba(232, 228, 255, .90), rgba(214, 200, 255, .84));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), inset 0 -8px 16px rgba(150,130,255,.18);
+    transition: filter 1100ms var(--c-exhale), background-color 1100ms var(--c-exhale);
+  }
+  /* resting breath: opacity + scale only, blur is static */
+  .dream::before {
+    content: ""; position: absolute; inset: -14px; z-index: -3; border-radius: inherit;
+    background: conic-gradient(from 200deg, rgba(var(--glow-a), .9), rgba(var(--glow-b), .9), rgba(var(--glow-c), .7), rgba(var(--glow-a), .9));
+    filter: blur(14px); opacity: .28;
+    animation: breath 8s var(--c-breath) infinite;
+    will-change: opacity, transform;
+  }
+  /* hover bloom: spreads past the edge, trails the lift */
+  .dream::after {
+    content: ""; position: absolute; inset: -22px; z-index: -2; border-radius: inherit;
+    background:
+      radial-gradient(60% 90% at var(--mx) var(--my), rgba(var(--glow-b), .95), transparent 70%),
+      radial-gradient(80% 100% at 50% 50%, rgba(var(--glow-a), .75), transparent 75%);
+    filter: blur(16px); opacity: 0; transform: scale(.82);
+    transition: opacity 1000ms var(--c-exhale), transform 1400ms var(--c-exhale);
+    will-change: opacity, transform;
+    pointer-events: none;
+  }
+  .dream .label { position: relative; display: inline-flex; align-items: center; gap: 10px; transition: transform 700ms var(--c-exhale), letter-spacing 700ms var(--c-exhale); }
+  .dream .icon { width: 18px; height: 18px; display: inline-block; flex: none; }
+  .dream .icon svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .dream .arrow { transition: transform 1100ms var(--c-exhale); }
+
+  @keyframes breath {
+    0%   { opacity: .24; transform: scale(.97); }
+    38%  { opacity: .5;  transform: scale(1.03); }  /* inhale is quicker than the exhale */
+    100% { opacity: .24; transform: scale(.97); }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .dream:hover {
+      transform: translate3d(0, -3px, 0);
+      transition: transform 1100ms var(--c-settle);
+      animation: float 5.5s 1100ms var(--c-breath) infinite;
+    }
+    .dream:hover .plate { filter: brightness(1.06) saturate(1.1); transition: filter 600ms var(--c-drift); }
+    .dream:hover::after { opacity: 1; transform: scale(1); transition: opacity 1600ms var(--c-drift), transform 1300ms var(--c-settle); }
+    .dream:hover .arrow { transform: translateX(4px); transition: transform 1200ms var(--c-settle) 80ms; }
+    .dream:hover .label { letter-spacing: .03em; transition: letter-spacing 1200ms var(--c-settle); }
+  }
+  @keyframes float { 0%,100% { transform: translate3d(0,-3px,0); } 50% { transform: translate3d(0,-6px,0); } }
+
+  /* keyboard focus: the glow joins in, plus a real ring */
+  .dream:focus-visible { outline: 3px solid #fff; outline-offset: 5px; box-shadow: 0 0 0 7px rgba(var(--glow-a), .55); }
+  .dream:focus-visible::after { opacity: 1; transform: scale(1); }
+  .dream:focus-visible .arrow { transform: translateX(4px); }
+  .dream:focus:not(:focus-visible) { outline: none; }
+
+  /* press answers at once, whatever the hover was doing */
+  .dream:active {
+    animation: none;
+    transform: translate3d(0, 1px, 0) scale(.975);
+    transition: transform 110ms var(--c-press);
+  }
+  .dream:active::before { animation-play-state: paused; opacity: .7; }
+  .dream:active .plate { filter: brightness(.95); transition: filter 90ms linear; }
+
+  .dream[aria-busy="true"] { cursor: progress; }
+  .dream[aria-busy="true"]::before { animation-duration: 1.6s; }
+  .dream .spinner { display: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(20,16,42,.25); border-top-color: var(--label); animation: spin .9s linear infinite; }
+  .dream[aria-busy="true"] .spinner { display: inline-block; }
+  .dream[aria-busy="true"] .icon .arrow, .dream[aria-busy="true"] .icon .check { display: none; }
+  .dream .icon .check { display: none; }
+  .dream[aria-pressed="true"] .icon .arrow { display: none; }
+  .dream[aria-pressed="true"] .icon .check { display: block; }
+  .dream[aria-pressed="true"] .check path { stroke-dasharray: 22; stroke-dashoffset: 22; animation: draw 700ms var(--c-overshoot) forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* quiet secondary: same curves, no glow layer */
+  .ghost {
+    font-family: inherit; font-size: 15px; font-weight: 500; line-height: 1; color: var(--ink);
+    background: transparent; border: 1px solid rgba(236,233,251,.28); border-radius: 999px;
+    min-height: 48px; padding: 12px 22px; cursor: pointer;
+    transition: background-color 900ms var(--c-exhale), border-color 900ms var(--c-exhale), transform 900ms var(--c-exhale);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ghost:hover { background-color: rgba(var(--glow-a), .14); border-color: rgba(var(--glow-b), .75); transition-duration: 1000ms; transition-timing-function: var(--c-settle); }
+  }
+  .ghost:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+  .ghost:active { transform: scale(.97); transition-duration: 100ms; transition-timing-function: var(--c-press); }
+
+  /* live state panel */
+  .status {
+    margin-top: 34px; padding: 18px 20px; border-radius: 18px;
+    background: rgba(236,233,251,.05); border: 1px solid rgba(236,233,251,.12);
+    display: grid; gap: 4px; font-size: 15px;
+  }
+  .status strong { font-weight: 600; }
+  .status span { color: var(--ink-dim); }
+  .status .count { font-variant-numeric: tabular-nums; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* keep colour and glow response, drop travel, breath, float */
+    .dream, .dream:hover, .dream:active { transform: none; animation: none; }
+    .dream::before { animation: none; opacity: .35; }
+    .dream::after { transform: none; transition: opacity 200ms linear; }
+    .dream:hover::after, .dream:focus-visible::after { transform: none; }
+    .dream .arrow, .dream:hover .arrow, .dream:focus-visible .arrow { transform: none; transition: none; }
+    .dream:hover .label { letter-spacing: normal; }
+    .dream .plate, .dream:hover .plate { transition-duration: 150ms; }
+    .dream[aria-pressed="true"] .check path { animation: none; stroke-dashoffset: 0; }
+    .dream .spinner { animation-duration: 2.4s; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Nocturne &middot; Sleep rituals</p>
+  <h1>Let the day <em>drift</em> off before you do.</h1>
+  <p class="lede">A gentle 20-minute wind-down: dimmer light, slower breathing, and a reminder that arrives at the hour you choose.</p>
+  <ul class="meta">
+    <li>20 minutes</li>
+    <li>No account needed</li>
+    <li>Works offline</li>
+  </ul>
+
+  <div class="row">
+    <button class="dream" id="cta" type="button" aria-pressed="false">
+      <span class="plate" aria-hidden="true"></span>
+      <span class="label">
+        <span class="text" id="cta-text">Begin tonight's wind-down</span>
+        <span class="icon" aria-hidden="true">
+          <svg class="arrow" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11M10 4.5 14.5 9 10 13.5"/></svg>
+          <svg class="check" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5 7.5 13.5 14.5 5"/></svg>
+          <span class="spinner"></span>
+        </span>
+      </span>
+    </button>
+    <button class="ghost" id="later" type="button">Remind me at 9:30 pm</button>
+  </div>
+
+  <div class="status" aria-live="polite" role="status">
+    <strong id="s-title">Not started</strong>
+    <span id="s-body">Your wind-down is waiting. Nothing has been scheduled.</span>
+    <span class="count">Evenings completed this week: <b id="count">3</b> of 7</span>
+  </div>
+</main>
+
+<script>
+(function () {
+  var cta = document.getElementById('cta');
+  var txt = document.getElementById('cta-text');
+  var later = document.getElementById('later');
+  var sTitle = document.getElementById('s-title');
+  var sBody = document.getElementById('s-body');
+  var count = document.getElementById('count');
+  var busy = false, started = false, n = 3, timer = null;
+
+  // light follows the pointer inside the plate and bloom (cheap: only custom properties)
+  cta.addEventListener('pointermove', function (e) {
+    var r = cta.getBoundingClientRect();
+    cta.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+    cta.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+  });
+  cta.addEventListener('pointerleave', function () {
+    cta.style.setProperty('--mx', '50%'); cta.style.setProperty('--my', '50%');
+  });
+
+  function render() {
+    cta.setAttribute('aria-pressed', started ? 'true' : 'false');
+    cta.removeAttribute('aria-busy');
+    txt.textContent = started ? 'Wind-down running - tap to end' : "Begin tonight's wind-down";
+    count.textContent = n;
+    if (started) {
+      sTitle.textContent = 'Wind-down running';
+      sBody.textContent = 'Lights dimmed, breathing guide on. Tap the button again to end it.';
+    } else {
+      sTitle.textContent = 'Not started';
+      sBody.textContent = 'Your wind-down is waiting. Nothing has been scheduled.';
+    }
+  }
+
+  cta.addEventListener('click', function () {
+    if (busy) return;
+    if (started) { started = false; n = Math.min(7, n + 1); render(); sTitle.textContent = 'Evening complete'; sBody.textContent = 'Sleep well. That is one more calm evening this week.'; return; }
+    busy = true;
+    cta.setAttribute('aria-busy', 'true');
+    txt.textContent = 'Dimming the lights...';
+    sTitle.textContent = 'Starting';
+    sBody.textContent = 'Preparing your session.';
+    timer = setTimeout(function () { busy = false; started = true; render(); }, 1200);
+  });
+
+  later.addEventListener('click', function () {
+    var on = later.getAttribute('data-on') !== '1';
+    later.setAttribute('data-on', on ? '1' : '0');
+    later.textContent = on ? 'Reminder set for 9:30 pm (undo)' : 'Remind me at 9:30 pm';
+    sTitle.textContent = on ? 'Reminder set' : 'Reminder removed';
+    sBody.textContent = on ? "We'll nudge you at 9:30 pm tonight." : 'No reminder is scheduled.';
+  });
+})();
+</script>
+</body>
+</html>

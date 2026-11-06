@@ -1,0 +1,5 @@
+{"block": "b2", "judge": "j3", "scores": {"W": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 7, "overall": 6, "note": "Soft pastel aurora bloom with long exhale curves and good focus and reduced-motion handling, but the hover is subtle and the glow washes out on the pale page."},
+"X": {"dreamlike": 8, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "Vivid pink-to-cyan bloom behind a white pill label with layered 1.1-1.6s curves, drift, press snap and reduced-motion fallback; legible and clearly ethereal."},
+"Y": {"dreamlike": 9, "practical": 8, "motion": 9, "craft": 8, "overall": 9, "note": "Dark moody page where a peach-lilac glow blooms and floats with slow exhale curves, pointer-following sheen, distinct leave timing, strong focus ring and thorough reduced-motion rules."},
+"Z": {"dreamlike": 7, "practical": 8, "motion": 7, "craft": 7, "overall": 7, "note": "Solid gradient button with a drifting white sheen on hover that is pleasant and highly legible, but it reads more polished than ethereal."}},
+"ranking": ["Y", "X", "Z", "W"]}

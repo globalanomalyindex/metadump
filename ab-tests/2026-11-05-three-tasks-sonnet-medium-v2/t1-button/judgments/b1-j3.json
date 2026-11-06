@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"dreamlike": 8, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "Bloom glow, drifting aurora and arrow reveal on a dark gradient pill feel properly ethereal, with long soft-landing curves, focus-visible and reduced-motion handled, and the label stays legible."},
+"X": {"dreamlike": 5, "practical": 8, "motion": 6, "craft": 7, "overall": 6, "note": "Well-built and accessible with a gentle ring and soft glow, but the hover is subtle and the dark navy button barely changes, so it reads more refined than dreamlike."},
+"Y": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 8, "overall": 7, "note": "Warm halo, lift and letter-spacing shift with unhurried curves and a good focus ring, polished but restrained, and the glass button at rest has lower affordance."},
+"Z": {"dreamlike": 8, "practical": 6, "motion": 8, "craft": 8, "overall": 7, "note": "Most vivid iridescent bloom and sheen with nice overshoot, but at peak glow the white label washes out against pastel colors, hurting legibility, and the animated blur layer is heavier."}
+},
+"ranking": ["W", "Z", "Y", "X"]}

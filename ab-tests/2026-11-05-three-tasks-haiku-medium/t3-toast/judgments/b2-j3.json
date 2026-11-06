@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j3",
+  "scores": {
+    "W": {"compact": 6, "collapsible": 5, "tracking": 5, "dark": 8, "usability": 7, "craft": 5, "overall": 5, "note": "Collapsed bar is clean and the toggle has aria-expanded and Escape, but the open panel swaps instantly with no transition, has no ETA, and the at-rest and open captures show a blank title and 'undefined' tracking that looks like shared localStorage pollution from another design under the same key, so judged mainly from source."},
+    "X": {"compact": 9, "collapsible": 9, "tracking": 8, "dark": 9, "usability": 9, "craft": 9, "overall": 9, "note": "A 272px pill that morphs into a card, with status, ETA and a clear timeline, smooth grid and radius transitions in the frames, live-region announcements, aria-current on the active step, reduced-motion handling and a reopen tab after dismiss, though it lacks an explicit next-action line."},
+    "Y": {"compact": 8, "collapsible": 9, "tracking": 9, "dark": 8, "usability": 9, "craft": 8, "overall": 9, "note": "The pill grows upward with clean width and height transitions, inert on the collapsed body, status shown as word plus dot, the most complete tracking content including ETA, carrier, number, timeline and a concrete next-action hint, with only minor step-name wrapping on phones."},
+    "Z": {"compact": 7, "collapsible": 6, "tracking": 4, "dark": 9, "usability": 6, "craft": 7, "overall": 6, "note": "A dense, well-colored multi-package list with status pills and remove buttons, but the toggle is an instant display swap with no Escape handling, the advance status is not announced, the tracking number and timeline are missing, and it opens by default so the at-rest footprint is large."}
+  },
+  "ranking": ["X", "Y", "Z", "W"]
+}

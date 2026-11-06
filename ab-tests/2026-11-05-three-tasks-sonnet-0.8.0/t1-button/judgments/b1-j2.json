@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"dreamlike":4,"practical":9,"motion":6,"craft":6,"overall":5,"note":"Very practical (fast leave, focus-visible, reduced motion, opacity-only glow) but the hover is a faint glow and light pass on a dark solid button, more polite than ethereal."},
+"X":{"dreamlike":9,"practical":7,"motion":9,"craft":9,"overall":9,"note":"Slow fog-like bezier drift with colour bloom, motes and soft overshoot, serif card and pearly button feel genuinely ethereal, with a reduced-motion fallback, though 1-2s durations and blur layers cost some practicality."},
+"Y":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Pastel iridescent bloom with sparkle icon and long eased transitions reads dreamy and coherent, but the label sits on shifting gradients and slow 1s+ timings are a little heavy for a real form."},
+"Z":{"dreamlike":3,"practical":9,"motion":6,"craft":7,"overall":5,"note":"Clean landing page with a state readout and solid accessibility, but the hover is a quick sheen and dot pulse on a navy pill that barely registers as dreamlike."}},
+"ranking":["X","Y","W","Z"]}

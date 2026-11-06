@@ -245,6 +245,9 @@ def _validate_anti_keyword(ak, ptr, report):
             _note(report, "warnings", "not_meant_needs_instead", ptr, "not_meant should say which sense is meant")
 
 
+MIN_ANGLES = 2
+
+
 def _validate_spine(out, report):
     man = out["manifest"]
     for field in MANIFEST_REQUIRED:
@@ -265,6 +268,10 @@ def _validate_spine(out, report):
         _note(report, "warnings", "no_task_job", "/essence/task/job",
               "list the user's whole job end to end in essence.task.job (shopping: find, compare, choose, add, review the bag, "
               "check out), so the default reading and every build can cover all of it")
+    if len(out["essence"].get("angles") or []) < MIN_ANGLES:
+        _note(report, "warnings", "no_angles", "/essence/angles",
+              "give the head %d to 5 `angles`: contrasting ways into the task, each a move and what it draws on, none a "
+              "default, so consumers start from different places instead of one recipe (ADR 0012)" % MIN_ANGLES)
     if not isinstance(out["routing"], list):
         _note(report, "errors", "bad_routing", "/routing", "routing must be a list of routes")
         out["routing"] = []
@@ -447,13 +454,24 @@ def _source_hosts(out):
     return hosts
 
 
+def _deal_note(fname):
+    """The first thing in every dump (ADR 0014): a builder that opens the file before reading use mode still meets the deal."""
+    return ("Deal before reading on: python3 <SKILL>/scripts/deal.py %s (<SKILL> is the metadump skill's folder) prints your hand, "
+            "an angle to start from and two deep cuts, and writes a dealt copy: the user's words and don'ts, tier 1 and the review "
+            "questions, plus a random half of everything else, in a fresh order. Work from that copy: read whole and "
+            "as stored, this file pulls every session toward the same shape." % fname)
+
+
 def _how_to_read(fname, head_lines):
     return [
-        "1. Read the head first: the first %d lines hold manifest, essence and routing (Read limit=%d, or jq '{manifest, essence, routing}' %s)." % (head_lines, head_lines, fname),
-        "2. Pick the route for your job and run its jq: jq '<routing[i].jq>' %s" % fname,
-        "3. Also pull the anti-keywords and review prompts (checks) for your scope: jq '.anti_keywords, .checks' %s" % fname,
-        "4. Look up any term (lowercase): jq '.index[\"<term>\"]' %s  -> hits give id + path; not_meant lists senses to avoid." % fname,
-        "5. Grep works too: every entry is one line, so grep -n '<word>' %s returns whole entries." % fname,
+        "1. Deal first: python3 <SKILL>/scripts/deal.py %s, then read the dealt copy it names for every step below (write-backs go to this file)." % fname,
+        "2. Read the head: the first %d lines hold manifest, essence and routing (Read limit=%d, or jq '{manifest, essence, routing}' %s)." % (head_lines, head_lines, fname),
+        "3. Pick the route for your job and run its jq: jq '<routing[i].jq>' %s" % fname,
+        "4. Also pull the anti-keywords and review prompts (checks) for your scope: jq '.anti_keywords, .checks' %s" % fname,
+        "5. Look up any term (lowercase): jq '.index[\"<term>\"]' %s  -> hits give id + path; not_meant lists senses to avoid." % fname,
+        "6. Grep works too: every entry is one line, so grep -n '<word>' %s returns whole entries." % fname,
+        "7. When you have built something that renders, look at it before you finish: python3 <SKILL>/scripts/look.py <your file.html> "
+        "screenshots it, hovers and opens it, and lists clipping, overlap and overflow. Read the screenshots and fix what you see.",
     ]
 
 
@@ -465,10 +483,11 @@ def _measure(out, spans):
         route["jq"] = ", ".join(_jq_expr(out, p) for p in paths)
         route["tokens"] = sum(_tokens(resolve(out, p)[1]) for p in paths)
         route["lines"] = [list(spans[p]) for p in paths if p in spans]
-    man = out["manifest"]
+    fname = "%s.metadump.json" % out["manifest"].get("slug", "dump")
+    out["manifest"] = man = {"deal": _deal_note(fname), **{k: v for k, v in out["manifest"].items() if k != "deal"}}
     head = spans.get("/routing", (0, 0))[1]
     man["head_lines"] = head
-    man["how_to_read"] = _how_to_read("%s.metadump.json" % man.get("slug", "dump"), head)
+    man["how_to_read"] = _how_to_read(fname, head)
     stats = _stats(out)
     stats["tokens"] = man.get("stats", {}).get("tokens", 0)
     man["stats"] = stats
@@ -859,7 +878,7 @@ def _check_images_viewed(workdir, draft, report):
                   "citing a source with image_id %s or the page, video or url it came from" % (img["id"], img.get("file", ""), img["id"]))
 
 
-AUTO_TIER1_JOB = "always first: the defining tier-1 entries"
+AUTO_TIER1_JOB = "start here: what the task is most about"
 
 
 def _add_tier1_route(out):
@@ -867,7 +886,7 @@ def _add_tier1_route(out):
     out["routing"] = [r for r in out["routing"] if not (isinstance(r, dict) and r.get("auto"))]
     paths = [ptr for _eid, ptr, entry, _h in iter_entries(out) if entry.get("tier") == 1]
     if paths:
-        out["routing"].insert(0, {"job": AUTO_TIER1_JOB, "when": "pull first for any job: the most relevant entries (relevance, not rules)",
+        out["routing"].insert(0, {"job": AUTO_TIER1_JOB, "when": "the first slice for any job: the most relevant material to work with, not rules",
                                   "auto": True, "paths": paths})
 
 
@@ -900,6 +919,9 @@ def build_dump(dump):
     _check_digested(out, sections, report)
     _check_wordy(out, report)
     _check_quality_readings(out, report)
+    _check_directive_voice(out, report)
+    _check_single_settings(out, report)
+    _check_tamed_insteads(out, report)
     return out, report
 
 
@@ -942,6 +964,81 @@ def _check_quality_readings(out, report):
                   "a quality facet needs at least %d `readings` side by side (it has %d): the ways '%s' can be read for this task, "
                   "each with what it looks like in practice, so the consumer chooses or combines instead of copying one definition"
                   % (QUALITY_MIN_READINGS, n, entry.get("term", "?")))
+
+
+# Rule words and the old brief labels. The head, the exports and the review prompts are what every consumer reads
+# first, so they hand over material to play with, not orders (ADR 0012).
+DIRECTIVE = re.compile(r"\b(must(?: not)?|never|always|nothing else|(?<!not )the only|no other|(?:choose|pick|use|select) "
+                       r"(?:one|a single|only))\b|^\s*(?:core|must|should)\s*:", re.I | re.M)
+
+
+def _spine_texts(out):
+    """(pointer, text) for the prose a consumer reads first: the essence, each export's text and each review prompt."""
+    ess = out.get("essence") or {}
+    for key in ("one_sentence", "summary"):
+        if isinstance(ess.get(key), str):
+            yield "/essence/" + key, ess[key]
+    formula = ess.get("formula") if isinstance(ess.get("formula"), dict) else {}
+    for key in ("full", "essential"):
+        if isinstance(formula.get(key), str):
+            yield "/essence/formula/" + key, formula[key]
+    for i, angle in enumerate(ess.get("angles") or []):
+        text = angle if isinstance(angle, str) else (angle.get("text") if isinstance(angle, dict) else None)
+        if isinstance(text, str):
+            yield "/essence/angles/%d" % i, text
+    for name, payload in (out.get("exports") or {}).items():
+        if isinstance(payload, dict) and isinstance(payload.get("text"), str):
+            yield "/exports/%s/text" % name, payload["text"]
+    for cid, check in (out.get("checks") or {}).items():
+        if isinstance(check, dict) and isinstance(check.get("text"), str):
+            yield "/checks/%s/text" % cid, check["text"]
+
+
+def _check_directive_voice(out, report):
+    for ptr, text in _spine_texts(out):
+        m = DIRECTIVE.search(text)
+        if m:
+            _note(report, "warnings", "directive_voice", ptr,
+                  "reads as an order ('%s'): say what's there to work with (an observation, options side by side, a question "
+                  "for review), so the consumer plays with it instead of following it" % m.group(0).strip())
+
+
+# One curve or one colour, offered by the build's own entries, is a setting the consumer copies (test 12: all four
+# builds pasted the four curves). The dump offers spreads: several values or a range (ADR 0013).
+SINGLE_LITERAL = re.compile(r"^\s*(cubic-bezier\([^)]*\)|#[0-9a-f]{3,8}|(?:rgba?|hsla?|oklch|oklab|lab|lch)\([^)]*\))\s*$", re.I)
+
+
+def _check_single_settings(out, report):
+    for _eid, ptr, entry, _h in iter_entries(out):
+        tokens = entry.get("tokens")
+        if entry.get("prov") in COLLECTED_PROVS or not isinstance(tokens, dict):
+            continue
+        if tokens.get("status") in ("measured", "sourced"):
+            continue
+        single = [k for k, v in tokens.items() if k != "status" and isinstance(v, str) and SINGLE_LITERAL.match(v)]
+        if single:
+            _note(report, "warnings", "single_setting", ptr,
+                  "`tokens.%s` offers one value for a choice the work makes: give several spread across the space, or a "
+                  "range, each with what it does, so the consumer explores instead of copying (ADR 0013)" % single[0])
+
+
+# A worn path's `instead` goes further along the user's words, never back from them (ADR 0016). In test 15 the button
+# dump turned every dreamlike move into "a faint halo", "low opacity", "only on hover", and the dump buttons came out quiet.
+TAMING = re.compile(r"\b(faint|faintly|subtle|subtly|subdued|toned[- ]down|low[- ]opacity|barely|restrained|"
+                    r"understated|quieter|gentler|dimmer)\b|\bonly (?:on|at|when|in)\b", re.I)   # intensity, not palette
+FURTHER = re.compile(r"\b(bold|bolder|bigger|brighter|stronger|deeper|wider|further|fuller|richer|more|stranger|wilder|"
+                     r"lusher|intense|fills|floods|whole|everywhere|all the way|larger|louder)\b", re.I)
+
+
+def _check_tamed_insteads(out, report):
+    for key, ak in (out.get("anti_keywords") or {}).items():
+        if not isinstance(ak, dict) or ak.get("kind") != "not_wanted" or ak.get("prov") in COLLECTED_PROVS:
+            continue   # the user's own don'ts say what they mean
+        instead = " ".join(ak["instead"]) if isinstance(ak.get("instead"), list) else str(ak.get("instead") or "")
+        if TAMING.search(instead) and not FURTHER.search(instead):
+            _note(report, "warnings", "tamed_instead", "/anti_keywords/" + _esc(key),
+                  "the `instead` only offers a quieter version ('%s'): give a spread that also goes further along the "
+                  "user's words, more of the quality, not less of it (ADR 0016)" % TAMING.search(instead).group(0))
 
 
 WORDY_TEXT_WORDS = 40      # a facet's prose is a line or two; the rest belongs in lists of short phrases

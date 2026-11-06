@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Toast</title>
+<style>
+:root{
+  --bg:#0b0d10;--surface:#14171c;--surface2:#1b1f26;--line:#262b33;
+  --text:#e6e9ee;--mute:#8b93a1;--accent:#7cc4ff;--ok:#5fd48a;--warn:#f5b84b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;
+  background-image:radial-gradient(circle at 20% 10%,#12171f,transparent 50%)}
+.page{padding:20px;color:var(--mute);font-size:12px}
+.page b{color:var(--text);font-weight:600}
+.toast{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.55);overflow:hidden;
+  animation:in .25s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.head{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.head:hover{background:var(--surface2)}
+.head:focus-visible,.btn:focus-visible,.x:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 0 3px #7cc4ff22}
+.dot.done{background:var(--ok);box-shadow:0 0 0 3px #5fd48a22}
+.dot.out{background:var(--warn);box-shadow:0 0 0 3px #f5b84b22}
+.ttl{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl strong{font-weight:600}.ttl span{color:var(--mute);margin-left:6px;font-size:12px}
+.chev{color:var(--mute);transition:transform .2s;font-size:10px}
+.toast.open .chev{transform:rotate(180deg)}
+.bar{height:3px;background:var(--line)}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .4s,background .3s}
+.bar i.done{background:var(--ok)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
+.toast.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden}
+.inner{padding:8px 10px 10px}
+.meta{display:flex;justify-content:space-between;color:var(--mute);font-size:11px;margin-bottom:8px}
+.meta em{font-style:normal;color:var(--text)}
+ol{list-style:none;padding:0;position:relative}
+li{display:flex;gap:8px;padding:3px 0;font-size:12px;color:var(--mute);position:relative}
+li::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid var(--line);margin-top:4px;flex:none;background:var(--bg)}
+li.done{color:var(--text)}li.done::before{background:var(--ok);border-color:var(--ok)}
+li.cur{color:var(--text)}li.cur::before{border-color:var(--accent);background:var(--accent)}
+li time{margin-left:auto;font-size:11px;color:var(--mute);white-space:nowrap}
+.act{display:flex;gap:6px;margin-top:8px}
+.btn{flex:1;padding:5px 6px;background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:7px;font:inherit;font-size:12px;cursor:pointer}
+.btn:hover{border-color:var(--mute)}
+.btn.on{border-color:var(--accent);color:var(--accent)}
+.x{background:none;border:0;color:var(--mute);cursor:pointer;font-size:14px;padding:0 2px;border-radius:4px}
+.x:hover{color:var(--text)}
+.note{font-size:11px;color:var(--ok);min-height:14px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="page"><b>Orders</b> / Desk lamp, matte black — tracking toast is bottom right.</div>
+
+<section class="toast" id="toast" aria-label="Package tracking">
+  <div style="display:flex;align-items:center">
+    <button class="head" id="head" aria-expanded="false" aria-controls="body">
+      <span class="dot" id="dot"></span>
+      <span class="ttl"><strong id="ttl">Out for delivery</strong><span id="eta">Today by 6 PM</span></span>
+      <span class="chev">▲</span>
+    </button>
+    <button class="x" id="dismiss" aria-label="Dismiss" style="margin-right:8px">✕</button>
+  </div>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="body" id="body"><div><div class="inner">
+    <div class="meta"><span>UPS <em>1Z 84F 9A2 03 5521 7740</em></span><span id="stops"></span></div>
+    <ol id="list"></ol>
+    <div class="act">
+      <button class="btn" id="copy">Copy #</button>
+      <button class="btn" id="notify" aria-pressed="false">Notify me</button>
+      <button class="btn" id="adv">Advance</button>
+    </div>
+    <div class="note" id="note"></div>
+  </div></div></div>
+</section>
+
+<script>
+(function(){
+  var steps=[
+    {t:"Label created",w:"Mon 9:12 AM",s:"Out for delivery"},
+    {t:"Picked up, Portland OR",w:"Mon 5:40 PM"},
+    {t:"Arrived, Salt Lake City hub",w:"Tue 6:05 AM"},
+    {t:"Departed hub",w:"Tue 11:30 PM"},
+    {t:"Out for delivery",w:"Wed 7:48 AM",eta:"Today by 6 PM"},
+    {t:"Delivered",w:"Front door",eta:"Delivered 2:14 PM"}
+  ];
+  var cur=4,$=function(i){return document.getElementById(i)};
+  var toast=$("toast"),head=$("head"),note=$("note");
+  function say(m){note.textContent=m;clearTimeout(say.t);say.t=setTimeout(function(){note.textContent=""},2000)}
+  function render(){
+    var done=cur===steps.length-1;
+    $("list").innerHTML=steps.map(function(s,i){
+      var c=i<cur||done&&i<=cur?"done":i===cur?"cur":"";
+      var tm=i<=cur?s.w:"";
+      return '<li class="'+c+'">'+s.t+(tm?'<time>'+tm+'</time>':'')+'</li>';
+    }).join("");
+    $("ttl").textContent=steps[cur].t;
+    $("eta").textContent=steps[cur].eta||"Est. "+(cur<4?"Wed":"today");
+    $("dot").className="dot"+(done?" done":cur===4?" out":"");
+    var f=$("fill");f.style.width=((cur+1)/steps.length*100)+"%";f.className=done?"done":"";
+    $("stops").textContent=(cur+1)+" of "+steps.length;
+    $("adv").disabled=done;$("adv").style.opacity=done?.4:1;
+  }
+  head.onclick=function(){
+    var o=toast.classList.toggle("open");head.setAttribute("aria-expanded",o);
+  };
+  $("adv").onclick=function(){if(cur<steps.length-1){cur++;render();say("Status updated")}};
+  $("notify").onclick=function(){
+    var b=$("notify"),on=b.classList.toggle("on");
+    b.setAttribute("aria-pressed",on);b.textContent=on?"Notifying ✓":"Notify me";
+    say(on?"You'll be alerted on changes":"Alerts off");
+  };
+  $("copy").onclick=function(){
+    var n="1Z84F9A203552 17740";
+    var ok=function(){say("Tracking number copied")};
+    try{navigator.clipboard.writeText(n).then(ok,ok)}catch(e){ok()}
+  };
+  $("dismiss").onclick=function(){
+    toast.style.transition="opacity .2s,transform .2s";toast.style.opacity=0;toast.style.transform="translateY(8px)";
+    setTimeout(function(){toast.hidden=true;
+      var r=document.createElement("button");r.className="btn";r.textContent="Show package toast";
+      r.style.cssText="position:fixed;right:16px;bottom:16px;width:auto;padding:6px 10px";
+      r.onclick=function(){r.remove();toast.hidden=false;toast.style.opacity=1;toast.style.transform="none"};
+      document.body.appendChild(r);r.focus();
+    },200);
+  };
+  render();
+})();
+</script>
+</body>
+</html>

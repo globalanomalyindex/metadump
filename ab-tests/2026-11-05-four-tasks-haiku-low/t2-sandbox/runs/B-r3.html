@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Box Sandbox</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #f4f1ea; }
+  canvas { position: fixed; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  canvas.hover { cursor: grab; }
+  canvas.held { cursor: grabbing; }
+  #reset {
+    position: fixed; top: 12px; left: 12px; padding: 6px 12px;
+    font: 13px system-ui, sans-serif; color: #2b2b2b; background: #fff;
+    border: 1px solid #2b2b2b; border-radius: 4px; cursor: pointer;
+  }
+  #reset:focus-visible { outline: 2px solid #2b2b2b; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<button id="reset" type="button">Reset</button>
+<script>
+(function () {
+  'use strict';
+
+  // Simulation constants: pixels and seconds.
+  const DT = 1 / 60;             // fixed simulation step
+  const SUBSTEPS = 4;            // solver sub-steps per step
+  const SOLVER_ITERATIONS = 6;
+  const GRAVITY = 2000;          // px/s^2, pulls toward the floor
+  const RESTITUTION = 0.15;      // bounce, applied only above RESTITUTION_MIN_SPEED
+  const RESTITUTION_MIN_SPEED = 80;
+  const FRICTION = 0.5;
+  const SLOP = 0.5;              // px of overlap tolerated before correction
+  const CORRECTION = 0.5;        // share of the excess overlap corrected per pass
+  const MAX_SPEED = 3000;        // px/s
+  const MAX_SPIN = 40;           // rad/s
+  const SPRING_HZ = 5;           // grab spring frequency
+  const SPRING_ZETA = 0.9;       // grab spring damping ratio
+  const SPRING_MAX_ACC = 40000;  // px/s^2
+  const SLEEP_SPEED = 12;        // px/s
+  const SLEEP_SPIN = 0.1;        // rad/s
+  const SLEEP_TIME = 0.5;        // s below both limits before a box sleeps
+  const FLOOR_BAND = 40;         // visible floor strip height
+  const VELOCITY_WINDOW_MS = 120;
+
+  const SPECS = [
+    { w: 64, h: 44, color: '#e07a5f' },
+    { w: 48, h: 48, color: '#3d405b' },
+    { w: 80, h: 36, color: '#81b29a' },
+    { w: 44, h: 60, color: '#f2cc8f' },
+    { w: 56, h: 40, color: '#6d597a' },
+    { w: 72, h: 52, color: '#b56576' },
+    { w: 40, h: 40, color: '#355070' },
+    { w: 60, h: 34, color: '#eaac8b' }
+  ];
+
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const resetButton = document.getElementById('reset');
+
+  let W = 0, H = 0, dpr = 1, floorY = 0;
+  let boxes = [];     // dynamic boxes; drawn in array order, last is in front
+  let statics = [];   // floor, walls, ceiling
+  let grab = null;    // { box, local: {x, y}, id, samples: [] }
+  const pointer = { x: 0, y: 0 };
+
+  function makeBody(x, y, w, h, angle, color, dynamic) {
+    return {
+      x: x, y: y, a: angle,
+      vx: 0, vy: 0, om: 0,
+      w: w, h: h, color: color,
+      dyn: dynamic,
+      im: dynamic ? 1 : 0,                       // inverse mass (unit mass)
+      ii: dynamic ? 12 / (w * w + h * h) : 0,    // inverse inertia
+      sleeping: !dynamic,                        // static bodies never wake
+      sleepT: 0
+    };
+  }
+
+  function buildStatics() {
+    const pad = 200;
+    statics = [
+      makeBody(W / 2, floorY + 100, W + 2 * pad, 200, 0, null, false),  // floor
+      makeBody(-100, H / 2, 200, H + 2 * pad, 0, null, false),          // left wall
+      makeBody(W + 100, H / 2, 200, H + 2 * pad, 0, null, false),       // right wall
+      makeBody(W / 2, -100, W + 2 * pad, 200, 0, null, false)           // ceiling
+    ];
+  }
+
+  function spawnPoses() {
+    const n = SPECS.length;
+    return SPECS.map(function (_, i) {
+      return {
+        x: W * (0.18 + 0.64 * i / (n - 1)),
+        y: Math.max(160, H * 0.3) - (i % 3) * 80,
+        a: (i % 2 ? 0.35 : -0.25)
+      };
+    });
+  }
+
+  function placeAtSpawn() {
+    const poses = spawnPoses();
+    boxes.forEach(function (b, i) {
+      b.x = poses[i].x; b.y = poses[i].y; b.a = poses[i].a;
+      b.vx = 0; b.vy = 0; b.om = 0;
+      b.sleeping = false; b.sleepT = 0;
+    });
+  }
+
+  function createBoxes() {
+    boxes = SPECS.map(function (s) { return makeBody(0, 0, s.w, s.h, 0, s.color, true); });
+    placeAtSpawn();
+  }
+
+  // ---- collision ------------------------------------------------------
+
+  function corners(b) {
+    const c = Math.cos(b.a), s = Math.sin(b.a);
+    const hw = b.w / 2, hh = b.h / 2;
+    const lx = [-hw, hw, hw, -hw], ly = [-hh, -hh, hh, hh];
+    const out = [];
+    for (let i = 0; i < 4; i++) {
+      out.push({ x: b.x + lx[i] * c - ly[i] * s, y: b.y + lx[i] * s + ly[i] * c });
+    }
+    return out;
+  }
+
+  function axesOf(b) {
+    const c = Math.cos(b.a), s = Math.sin(b.a);
+    return [{ x: c, y: s }, { x: -s, y: c }];
+  }
+
+  function projectRange(pts, n) {
+    let lo = Infinity, hi = -Infinity;
+    for (const p of pts) {
+      const d = p.x * n.x + p.y * n.y;
+      if (d < lo) lo = d;
+      if (d > hi) hi = d;
+    }
+    return [lo, hi];
+  }
+
+  // Separating-axis test between two rotated boxes.
+  // Returns a manifold { A, B, n (A to B), depth, pts } or null.
+  function collide(A, B) {
+    const pa = corners(A), pb = corners(B);
+    let best = Infinity, bestAxis = null, bestFromB = false;
+    const sets = [[axesOf(A), false], [axesOf(B), true]];
+    for (const set of sets) {
+      for (const n of set[0]) {
+        const ra = projectRange(pa, n), rb = projectRange(pb, n);
+        const overlap = Math.min(ra[1] - rb[0], rb[1] - ra[0]);
+        if (overlap <= 0) return null;
+        if (overlap < best) { best = overlap; bestAxis = n; bestFromB = set[1]; }
+      }
+    }
+    let nx = bestAxis.x, ny = bestAxis.y;
+    if ((B.x - A.x) * nx + (B.y - A.y) * ny < 0) { nx = -nx; ny = -ny; }
+    // The incident body is the one that does not own the reference face.
+    // Its deepest vertices (up to two) become the contact points.
+    const incident = bestFromB ? pa : pb;
+    const dots = incident.map(function (p) { return p.x * nx + p.y * ny; });
+    const extreme = bestFromB ? Math.max.apply(null, dots) : Math.min.apply(null, dots);
+    const pts = [];
+    incident.forEach(function (p, i) {
+      if (Math.abs(dots[i] - extreme) < 1 && pts.length < 2) pts.push(p);
+    });
+    return { A: A, B: B, n: { x: nx, y: ny }, depth: best, pts: pts };
+  }
+
+  function wake(b) {
+    if (b.dyn) { b.sleeping = false; b.sleepT = 0; }
+  }
+
+  function detect() {
+    const all = boxes.concat(statics);
+    const out = [];
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        const A = all[i], B = all[j];
+        if (A.sleeping && B.sleeping) continue;
+        const m = collide(A, B);
+        if (!m) continue;
+        // A resting body is woken by any awake body touching it.
+        if (A.sleeping) wake(A); else if (B.sleeping) wake(B);
+        out.push(m);
+      }
+    }
+    return out;
+  }
+
+  function relativeVelocity(A, B, rA, rB) {
+    return {
+      x: (B.vx - B.om * rB.y) - (A.vx - A.om * rA.y),
+      y: (B.vy + B.om * rB.x) - (A.vy + A.om * rA.x)
+    };
+  }
+
+  function applyImpulse(A, B, rA, rB, jx, jy) {
+    A.vx -= jx * A.im; A.vy -= jy * A.im;
+    A.om -= A.ii * (rA.x * jy - rA.y * jx);
+    B.vx += jx * B.im; B.vy += jy * B.im;
+    B.om += B.ii * (rB.x * jy - rB.y * jx);
+  }
+
+  // Impulse-based contact response with Coulomb friction.
+  function solve(m) {
+    const A = m.A, B = m.B, n = m.n;
+    const tx = -n.y, ty = n.x;
+    const share = 1 / m.pts.length;
+    for (const p of m.pts) {
+      const rA = { x: p.x - A.x, y: p.y - A.y };
+      const rB = { x: p.x - B.x, y: p.y - B.y };
+      let rv = relativeVelocity(A, B, rA, rB);
+      const vn = rv.x * n.x + rv.y * n.y;
+      if (vn >= 0) continue;                       // already separating
+      const rAn = rA.x * n.y - rA.y * n.x, rBn = rB.x * n.y - rB.y * n.x;
+      const kN = A.im + B.im + A.ii * rAn * rAn + B.ii * rBn * rBn;
+      if (kN <= 0) continue;
+      const e = -vn > RESTITUTION_MIN_SPEED ? RESTITUTION : 0;
+      const lambda = -(1 + e) * vn / kN * share;
+      applyImpulse(A, B, rA, rB, lambda * n.x, lambda * n.y);
+
+      rv = relativeVelocity(A, B, rA, rB);
+      const vt = rv.x * tx + rv.y * ty;
+      const rAt = rA.x * ty - rA.y * tx, rBt = rB.x * ty - rB.y * tx;
+      const kT = A.im + B.im + A.ii * rAt * rAt + B.ii * rBt * rBt;
+      if (kT <= 0) continue;
+      let lt = -vt / kT * share;
+      const maxF = FRICTION * lambda;
+      if (lt > maxF) lt = maxF; else if (lt < -maxF) lt = -maxF;
+      applyImpulse(A, B, rA, rB, lt * tx, lt * ty);
+    }
+  }
+
+  // Pushes overlapping boxes apart along the contact normal.
+  function correct(m) {
+    const sum = m.A.im + m.B.im;
+    if (sum <= 0) return;
+    const c = Math.max(m.depth - SLOP, 0) * CORRECTION / sum;
+    m.A.x -= m.n.x * c * m.A.im; m.A.y -= m.n.y * c * m.A.im;
+    m.B.x += m.n.x * c * m.B.im; m.B.y += m.n.y * c * m.B.im;
+  }
+
+  // ---- grab -----------------------------------------------------------
+
+  // Spring-damper pull from the grab anchor on the box to the pointer.
+  // The box is moved by forces, never teleported, so it still collides.
+  function applySpring(h) {
+    const b = grab.box;
+    const ca = Math.cos(b.a), sa = Math.sin(b.a);
+    const rx = grab.local.x * ca - grab.local.y * sa;
+    const ry = grab.local.x * sa + grab.local.y * ca;
+    const ax = b.x + rx, ay = b.y + ry;
+    const avx = b.vx - b.om * ry, avy = b.vy + b.om * rx;
+    const w = 2 * Math.PI * SPRING_HZ;
+    let accX = w * w * (pointer.x - ax) - 2 * SPRING_ZETA * w * avx;
+    let accY = w * w * (pointer.y - ay) - 2 * SPRING_ZETA * w * avy;
+    const mag = Math.hypot(accX, accY);
+    if (mag > SPRING_MAX_ACC) { const k = SPRING_MAX_ACC / mag; accX *= k; accY *= k; }
+    b.vx += accX * h; b.vy += accY * h;
+    b.om += (rx * accY - ry * accX) * b.ii * h;
+    b.om *= Math.exp(-2 * h);
+  }
+
+  function pointerVelocity() {
+    const s = grab.samples;
+    if (s.length < 2) return { x: 0, y: 0 };
+    const first = s[0], last = s[s.length - 1];
+    const now = performance.now();
+    if (now - last.t > 80) return { x: 0, y: 0 };   // pointer was still before release
+    const dt = (last.t - first.t) / 1000;
+    if (dt <= 0) return { x: 0, y: 0 };
+    return { x: (last.x - first.x) / dt, y: (last.y - first.y) / dt };
+  }
+
+  function endGrab(e) {
+    if (!grab || e.pointerId !== grab.id) return;
+    const b = grab.box;
+    const v = pointerVelocity();
+    const sp = Math.hypot(v.x, v.y);
+    const k = sp > MAX_SPEED ? MAX_SPEED / sp : 1;
+    b.vx = v.x * k; b.vy = v.y * k;                // release keeps the pointer velocity
+    b.sleepT = 0;
+    grab = null;
+    canvas.classList.remove('held');
+  }
+
+  // ---- stepping -------------------------------------------------------
+
+  function substep(h) {
+    for (const b of boxes) if (!b.sleeping) b.vy += GRAVITY * h;
+    if (grab) applySpring(h);
+
+    const contacts = detect();
+    for (let i = 0; i < SOLVER_ITERATIONS; i++) {
+      for (const m of contacts) solve(m);
+    }
+
+    for (const b of boxes) {
+      if (b.sleeping) continue;
+      b.x += b.vx * h; b.y += b.vy * h; b.a += b.om * h;
+      const sp = Math.hypot(b.vx, b.vy);
+      if (sp > MAX_SPEED) { const k = MAX_SPEED / sp; b.vx *= k; b.vy *= k; }
+      if (Math.abs(b.om) > MAX_SPIN) b.om = Math.sign(b.om) * MAX_SPIN;
+    }
+
+    for (const m of detect()) correct(m);
+  }
+
+  function updateSleep() {
+    for (const b of boxes) {
+      if (b.sleeping) continue;
+      if (grab && grab.box === b) { b.sleepT = 0; continue; }
+      const quiet = Math.hypot(b.vx, b.vy) < SLEEP_SPEED && Math.abs(b.om) < SLEEP_SPIN;
+      b.sleepT = quiet ? b.sleepT + DT : 0;
+      if (b.sleepT >= SLEEP_TIME) { b.sleeping = true; b.vx = 0; b.vy = 0; b.om = 0; }
+    }
+  }
+
+  function step() {
+    const h = DT / SUBSTEPS;
+    for (let i = 0; i < SUBSTEPS; i++) substep(h);
+    updateSleep();
+  }
+
+  // ---- input ----------------------------------------------------------
+
+  function toWorld(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function pickBox(p) {
+    for (let i = boxes.length - 1; i >= 0; i--) {
+      const b = boxes[i];
+      const dx = p.x - b.x, dy = p.y - b.y;
+      const c = Math.cos(b.a), s = Math.sin(b.a);
+      const lx = c * dx + s * dy, ly = -s * dx + c * dy;
+      if (Math.abs(lx) <= b.w / 2 && Math.abs(ly) <= b.h / 2) return b;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    if (grab || e.button > 0) return;
+    const p = toWorld(e);
+    const b = pickBox(p);
+    if (!b) return;
+    const dx = p.x - b.x, dy = p.y - b.y;
+    const c = Math.cos(b.a), s = Math.sin(b.a);
+    grab = {
+      box: b,
+      local: { x: c * dx + s * dy, y: -s * dx + c * dy },
+      id: e.pointerId,
+      samples: [{ t: performance.now(), x: p.x, y: p.y }]
+    };
+    boxes.splice(boxes.indexOf(b), 1);
+    boxes.push(b);                                  // bring to front
+    wake(b);
+    pointer.x = p.x; pointer.y = p.y;
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('held');
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    const p = toWorld(e);
+    if (!grab) {
+      canvas.classList.toggle('hover', !!pickBox(p));
+      return;
+    }
+    if (e.pointerId !== grab.id) return;
+    pointer.x = p.x; pointer.y = p.y;
+    const t = performance.now();
+    grab.samples.push({ t: t, x: p.x, y: p.y });
+    while (grab.samples.length > 2 && t - grab.samples[0].t > VELOCITY_WINDOW_MS) grab.samples.shift();
+  });
+
+  canvas.addEventListener('pointerup', endGrab);
+  canvas.addEventListener('pointercancel', endGrab);
+
+  resetButton.addEventListener('click', function () {
+    grab = null;
+    canvas.classList.remove('held');
+    placeAtSpawn();
+  });
+
+  // ---- drawing and loop -----------------------------------------------
+
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.fillStyle = '#d8d2c4';
+    ctx.fillRect(0, floorY, W, H - floorY);
+    ctx.strokeStyle = '#2b2b2b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, floorY + 0.5);
+    ctx.lineTo(W, floorY + 0.5);
+    ctx.stroke();
+
+    for (const b of boxes) {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.a);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.strokeRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      ctx.restore();
+    }
+
+    if (grab) {
+      const b = grab.box;
+      const ca = Math.cos(b.a), sa = Math.sin(b.a);
+      const ax = b.x + grab.local.x * ca - grab.local.y * sa;
+      const ay = b.y + grab.local.x * sa + grab.local.y * ca;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(pointer.x, pointer.y);
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(pointer.x, pointer.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#2b2b2b';
+      ctx.fill();
+    }
+  }
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    floorY = H - FLOOR_BAND;
+    buildStatics();
+  }
+
+  window.addEventListener('resize', resize);
+
+  // Expose box centers in page CSS pixels for the test harness.
+  window.boxes = function () {
+    return boxes.map(function (b) { return { x: b.x, y: b.y, w: b.w, h: b.h }; });
+  };
+
+  resize();
+  createBoxes();
+  for (let i = 0; i < 240; i++) step();            // 4 s of pre-roll so the boxes start at rest
+
+  let last = performance.now();
+  let acc = 0;
+  function frame(now) {
+    acc += Math.min((now - last) / 1000, 0.25);
+    last = now;
+    while (acc >= DT) { step(); acc -= DT; }
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

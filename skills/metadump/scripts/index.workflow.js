@@ -88,8 +88,9 @@ const SYNTH = {
 }
 // What verify's passes report, by kind. `constraint` is a finding about a constraint mechanism (a scoped anti-keyword with
 // an instead, an invariant with its variable, a forbidden shortcut), which may exclude (ADR 0005): verify uses it when
-// unsure, and it never starts a widening round (ADR 0011).
-const NARROWING_KINDS = ['scope', 'quality', 'job', 'definition', 'copy', 'constraint']
+// unsure, and it never starts a widening round (ADR 0011). `directive` is the head or an export reading as orders, or
+// funnelling every consumer to the same pick (ADR 0012).
+const NARROWING_KINDS = ['scope', 'quality', 'job', 'definition', 'copy', 'directive', 'tamed', 'constraint']   // tamed: ADR 0016
 const VERIFY = {
   type: 'object',
   properties: {

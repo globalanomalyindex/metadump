@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j3","scores":{
+"W":{"compact":9,"collapsible":7,"tracking":7,"dark":7,"usability":5,"craft":6,"overall":6,"note":"Very compact with clear timeline, ETA and progress bar, but no live-region announcement, no reduced-motion handling, and no next-action guidance."},
+"X":{"compact":7,"collapsible":7,"tracking":6,"dark":7,"usability":7,"craft":5,"overall":5,"note":"Good ARIA and a restore tab, but the ETA truncates to 'Arrive...' and the tracking number wraps awkwardly, hurting the core tracking job."},
+"Y":{"compact":8,"collapsible":8,"tracking":10,"dark":8,"usability":8,"craft":9,"overall":9,"note":"Clear status, ETA, carrier, tracking number, timeline and an explicit next-action note, with solid ARIA, live region and restore tab in a tidy dense layout."},
+"Z":{"compact":6,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":8,"overall":7,"note":"Polished multi-package toast with progress bar, ETA and carrier, but taller when open and the extra package tabs add bulk beyond the compact brief."}},
+"ranking":["Y","Z","W","X"]}

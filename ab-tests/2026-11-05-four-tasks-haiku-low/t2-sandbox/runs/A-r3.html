@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Box Sandbox</title>
+<style>
+:root{--bg:#f4f1ea;--ink:#222;--box:#3b82f6;--box-drag:#f59e0b;--ui:#ffffff}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#15161a;--ink:#eee;--box:#60a5fa;--box-drag:#fbbf24;--ui:#22242a}
+}
+:root[data-theme="dark"]{--bg:#15161a;--ink:#eee;--box:#60a5fa;--box-drag:#fbbf24;--ui:#22242a}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh;touch-action:none}
+#bar{position:fixed;top:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+#bar button{pointer-events:auto}
+button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--ink);background:var(--ui);color:var(--ink);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--box)}
+#hint{font-size:13px;opacity:.7;margin-left:auto;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Physics sandbox: drag boxes around"></canvas>
+<div id="bar">
+  <button id="spawn" type="button">Add box</button>
+  <button id="gravity" type="button">Gravity: on</button>
+  <button id="reset" type="button">Reset</button>
+  <span id="hint">Drag a box to move it. Click empty space to drop one.</span>
+</div>
+<script>
+(function () {
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var spawnBtn = document.getElementById('spawn');
+  var gravBtn = document.getElementById('gravity');
+  var resetBtn = document.getElementById('reset');
+
+  var W = 0, H = 0, dpr = 1;
+  var GRAV = 1400;      // px/s^2
+  var MAX_V = 3000;     // px/s clamp
+  var MAX_BOXES = 80;
+  var SUBSTEPS = 8;
+  var ITERATIONS = 6;
+  var RESTITUTION = 0.2;
+  var FRICTION = 0.3;
+  var SLOP_V = 20;      // below this normal speed, no bounce
+
+  var gravityOn = true;
+  var boxes = [];
+  var drag = null;      // {box, ox, oy, tx, ty, pvx, pvy, lastX, lastY, lastT}
+  var click = null;     // {x, y, t} for click-to-spawn detection
+
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (var i = 0; i < boxes.length; i++) keepInside(boxes[i]);
+  }
+
+  function keepInside(b) {
+    b.x = clamp(b.x, b.w / 2, W - b.w / 2);
+    b.y = clamp(b.y, b.h / 2, H - b.h / 2);
+  }
+
+  function makeBox(x, y, w, h) {
+    return { x: x, y: y, w: w, h: h, vx: 0, vy: 0, im: 1 };
+  }
+
+  var INITIAL = [[90, 60], [60, 60], [120, 40], [50, 100], [80, 80], [70, 50]];
+
+  function resetWorld() {
+    drag = null;
+    boxes = [];
+    for (var i = 0; i < INITIAL.length; i++) {
+      var s = INITIAL[i];
+      var x = W * (0.2 + i * 0.12);
+      var y = 80 + (i % 3) * 90;
+      boxes.push(makeBox(x, y, s[0], s[1]));
+    }
+  }
+
+  function spawnAt(x, y) {
+    if (boxes.length >= MAX_BOXES) return;
+    var w = 40 + Math.random() * 80;
+    var h = 40 + Math.random() * 60;
+    var b = makeBox(x, y, w, h);
+    keepInside(b);
+    boxes.push(b);
+  }
+
+  function spawnRandom() {
+    spawnAt(W * (0.15 + Math.random() * 0.7), 60);
+  }
+
+  // Physics ---------------------------------------------------------------
+
+  function integrate(dt) {
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (drag && drag.box === b) {
+        // Dragged boxes follow the pointer exactly; other boxes are pushed by them.
+        b.vx = clamp((drag.tx - b.x) / dt, -MAX_V, MAX_V);
+        b.vy = clamp((drag.ty - b.y) / dt, -MAX_V, MAX_V);
+      } else if (gravityOn) {
+        b.vy = clamp(b.vy + GRAV * dt, -MAX_V, MAX_V);
+      }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+    }
+  }
+
+  function solveWalls(b) {
+    // floor
+    if (b.y + b.h / 2 > H) {
+      b.y = H - b.h / 2;
+      if (b.vy > 0) b.vy = Math.abs(b.vy) < SLOP_V ? 0 : -b.vy * RESTITUTION;
+      b.vx *= 0.9;
+    }
+    // ceiling
+    if (b.y - b.h / 2 < 0) {
+      b.y = b.h / 2;
+      if (b.vy < 0) b.vy = -b.vy * RESTITUTION;
+    }
+    // left wall
+    if (b.x - b.w / 2 < 0) {
+      b.x = b.w / 2;
+      if (b.vx < 0) b.vx = -b.vx * RESTITUTION;
+    }
+    // right wall
+    if (b.x + b.w / 2 > W) {
+      b.x = W - b.w / 2;
+      if (b.vx > 0) b.vx = -b.vx * RESTITUTION;
+    }
+  }
+
+  function solvePair(a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var ox = (a.w + b.w) / 2 - Math.abs(dx);
+    var oy = (a.h + b.h) / 2 - Math.abs(dy);
+    if (ox <= 0 || oy <= 0) return;
+
+    var nx = 0, ny = 0, pen;
+    if (ox < oy) {
+      nx = dx < 0 ? -1 : 1; pen = ox;
+    } else {
+      ny = dy < 0 ? -1 : 1; pen = oy;
+    }
+
+    var total = a.im + b.im;
+    if (total <= 0) return;
+
+    // positional correction, split by inverse mass
+    a.x -= nx * pen * (a.im / total);
+    a.y -= ny * pen * (a.im / total);
+    b.x += nx * pen * (b.im / total);
+    b.y += ny * pen * (b.im / total);
+
+    // normal impulse
+    var rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+    var rvn = rvx * nx + rvy * ny;
+    if (rvn < 0) {
+      var e = Math.abs(rvn) < SLOP_V ? 0 : RESTITUTION;
+      var j = -(1 + e) * rvn / total;
+      a.vx -= j * a.im * nx;
+      a.vy -= j * a.im * ny;
+      b.vx += j * b.im * nx;
+      b.vy += j * b.im * ny;
+    }
+
+    // friction impulse along the contact tangent
+    var tx = -ny, ty = nx;
+    rvx = b.vx - a.vx; rvy = b.vy - a.vy;
+    var rvt = rvx * tx + rvy * ty;
+    var jt = clamp(-rvt / total * FRICTION, -Math.abs(rvt), Math.abs(rvt));
+    a.vx -= jt * a.im * tx;
+    a.vy -= jt * a.im * ty;
+    b.vx += jt * b.im * tx;
+    b.vy += jt * b.im * ty;
+  }
+
+  function step(dt) {
+    integrate(dt);
+    for (var it = 0; it < ITERATIONS; it++) {
+      for (var i = 0; i < boxes.length; i++) solveWalls(boxes[i]);
+      for (var p = 0; p < boxes.length; p++) {
+        for (var q = p + 1; q < boxes.length; q++) solvePair(boxes[p], boxes[q]);
+      }
+    }
+    for (var k = 0; k < boxes.length; k++) solveWalls(boxes[k]);
+  }
+
+  // Rendering --------------------------------------------------------------
+
+  function roundRectPath(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  function render() {
+    var styles = getComputedStyle(document.documentElement);
+    var colBox = styles.getPropertyValue('--box').trim() || '#3b82f6';
+    var colDrag = styles.getPropertyValue('--box-drag').trim() || '#f59e0b';
+    var colInk = styles.getPropertyValue('--ink').trim() || '#222';
+
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      var isDrag = drag && drag.box === b;
+      roundRectPath(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h, 6);
+      ctx.fillStyle = isDrag ? colDrag : colBox;
+      ctx.globalAlpha = 0.9;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = colInk;
+      ctx.stroke();
+    }
+  }
+
+  // Loop -------------------------------------------------------------------
+
+  var last = 0;
+  function frame(now) {
+    var elapsed = last ? (now - last) / 1000 : 1 / 60;
+    last = now;
+    var dt = Math.min(elapsed, 1 / 30);
+    var h = dt / SUBSTEPS;
+    for (var s = 0; s < SUBSTEPS; s++) step(h);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  // Input ------------------------------------------------------------------
+
+  function pointerPos(e) {
+    var r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function hitTest(x, y) {
+    for (var i = boxes.length - 1; i >= 0; i--) {
+      var b = boxes[i];
+      if (Math.abs(x - b.x) <= b.w / 2 && Math.abs(y - b.y) <= b.h / 2) return b;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    var p = pointerPos(e);
+    var now = performance.now();
+    var b = hitTest(p.x, p.y);
+    if (b) {
+      b.im = 0;
+      drag = {
+        box: b,
+        ox: p.x - b.x, oy: p.y - b.y,
+        tx: b.x, ty: b.y,
+        pvx: 0, pvy: 0,
+        lastX: p.x, lastY: p.y, lastT: now
+      };
+      click = null;
+      canvas.setPointerCapture(e.pointerId);
+    } else {
+      click = { x: p.x, y: p.y, t: now };
+    }
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var p = pointerPos(e);
+    var now = performance.now();
+    drag.tx = p.x - drag.ox;
+    drag.ty = p.y - drag.oy;
+    var dt = Math.max((now - drag.lastT) / 1000, 1 / 240);
+    var ivx = (p.x - drag.lastX) / dt;
+    var ivy = (p.y - drag.lastY) / dt;
+    drag.pvx = drag.pvx * 0.6 + ivx * 0.4;
+    drag.pvy = drag.pvy * 0.6 + ivy * 0.4;
+    drag.lastX = p.x; drag.lastY = p.y; drag.lastT = now;
+  });
+
+  function endPointer(e) {
+    if (drag) {
+      var b = drag.box;
+      b.im = 1;
+      b.vx = clamp(drag.pvx, -2000, 2000);
+      b.vy = clamp(drag.pvy, -2000, 2000);
+      drag = null;
+    } else if (click && e.type === 'pointerup') {
+      var p = pointerPos(e);
+      var moved = Math.hypot(p.x - click.x, p.y - click.y);
+      if (moved < 6 && performance.now() - click.t < 400) spawnAt(p.x, p.y);
+    }
+    click = null;
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
+  // Controls ---------------------------------------------------------------
+
+  spawnBtn.addEventListener('click', spawnRandom);
+  gravBtn.addEventListener('click', function () {
+    gravityOn = !gravityOn;
+    gravBtn.textContent = 'Gravity: ' + (gravityOn ? 'on' : 'off');
+  });
+  resetBtn.addEventListener('click', function () {
+    resetWorld();
+  });
+
+  window.addEventListener('resize', resize);
+
+  // Test harness hook ------------------------------------------------------
+
+  window.boxes = function () {
+    return boxes.map(function (b) {
+      return { x: b.x, y: b.y, w: b.w, h: b.h };
+    });
+  };
+
+  resize();
+  resetWorld();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

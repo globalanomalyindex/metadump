@@ -1,0 +1,189 @@
+{
+ "scores": {
+  "A": {
+   "physics": 5.92,
+   "interaction": 6.67,
+   "stability": 6.67,
+   "clarity": 7.75,
+   "craft": 6.25,
+   "overall": 6.33,
+   "mean_rank": 2.83,
+   "per_run_overall": {
+    "A-r1": 7.0,
+    "A-r2": 7.0,
+    "A-r3": 6.0,
+    "A-r4": 5.33
+   }
+  },
+  "B": {
+   "physics": 7.75,
+   "interaction": 7.75,
+   "stability": 7.67,
+   "clarity": 4.67,
+   "craft": 6.75,
+   "overall": 6.83,
+   "mean_rank": 2.17,
+   "per_run_overall": {
+    "B-r1": 6.0,
+    "B-r2": 6.67,
+    "B-r3": 7.0,
+    "B-r4": 7.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 13,
+  "losses": 6,
+  "ties": 5,
+  "win_rate": 0.65
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 6,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 8,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 6,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 6,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 6,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 8,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 8,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "boxes_hook": true,
+   "box_count": 8,
+   "drag_moves_box": true,
+   "falls_after_release": true,
+   "boxes_in_view": 100,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 85929,
+   "mean_seconds": 54.9
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 144120,
+   "mean_seconds": 196.6
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 170227,
+   "ms": 680889,
+   "tool_uses": 30,
+   "note": "main loop only; stopped before the widening round"
+  }
+ },
+ "agreement_r": 0.2,
+ "permutation": {
+  "p": 0.486,
+  "extreme": 34,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Solid sequential-impulse solver with sleeping and Coulomb friction and a direct, throwable drag, but the only control is Reset and there is no hint text, so the task is not obvious.",
+  "b1/j1/A-r1": "Spring-driven drag with throw, click-to-add, gravity toggle and HUD text make it the most usable, though boxes are axis-aligned with no rotation and the HUD overlaps boxes on phone width.",
+  "b1/j1/B-r2": "Most believable physics (SAT oriented boxes with rotation, friction, restitution, sleeping, spring grab with a visible tether and throw), but it offers only Reset and no hint, so it is hard to discover.",
+  "b1/j1/A-r2": "Substepped 1/240 solver with friction, a kinematic drag that throws, and Add/Reset/Clear with a count and hint, though the hint overlaps the stack on phone width and boxes do not rotate.",
+  "b1/j2/B-r2": "Only build with true polygon (SAT) collisions and rotation, so the drag pile tumbles believably, but it offers only a Reset button and no instructions, and the floor is invisible at rest.",
+  "b1/j2/A-r2": "Clean toolbar with Add, Reset, Clear and a live count plus a hint, and direct drag with throw, though boxes are axis-aligned only and the bottom hint overlaps boxes on phone.",
+  "b1/j2/A-r1": "Most polished: a floating control panel with Add, Gravity toggle, Reset and Clear, a status HUD, 8 substeps, spring drag with throw, and a steady stack; the HUD slightly overlaps boxes on phone.",
+  "b1/j2/B-r1": "Most literal drag (kinematic follow with throw on release) and a clear floor, but axis-aligned boxes, only a Reset button, no on-screen instructions, and adding boxes only works via an undiscoverable click on empty space.",
+  "b1/j3/A-r2": "Axis-aligned boxes at 240 Hz stack cleanly with throws and a full add/reset/clear set plus a visible hint, though boxes never rotate and floor friction is crude.",
+  "b1/j3/B-r2": "Rigid rotating bodies with SAT contacts, sleeping and a spring grab give the most believable stacking and tumbling, but there is no on-screen hint and only a Reset control.",
+  "b1/j3/B-r1": "Direct kinematic drag with clean throws and a tidy floor that stays stable, but the boxes are axis-aligned and the only control is Reset with no instructions.",
+  "b1/j3/A-r1": "Good controls and HUD instructions and a direct drag, but a neighbouring box was launched off the stack during a drag and one box looks unsupported in the desktop rest frame, and the HUD covers the stack on phone.",
+  "b2/j1/B-r3": "Rotating boxes with impulse friction, sleeping and a spring grab that keeps release velocity give believable stacks, but there are no add or gravity controls and no on-screen instructions beyond the Reset button.",
+  "b2/j1/A-r3": "Clear Add, Gravity and Reset controls and a hint, but boxes are axis-aligned and never rotate, the drag sets velocity directly, and bottom-edge boxes look clipped and overlapped in the captures.",
+  "b2/j1/B-r4": "Oriented-box SAT with sequential impulses, Baumgarte push-out, sleeping and a spring grab with throw gives the most convincing physics, and the dark grid look reads well, though the hint text overlaps boxes at the floor and there is no add control.",
+  "b2/j1/A-r4": "Add by click, Backspace and R are usable and touch works through pointer events, but the boxes are non-rotating AABBs with a lagging proportional drag, so stacks look like blocks and the HUD is wordy.",
+  "b2/j2/B-r4": "Rotated SAT contacts with substeps, sleeping and a spring grab with release velocity give believable throws, but the only control is Reset and the hint text sits on top of a box on desktop.",
+  "b2/j2/A-r4": "Axis-aligned boxes never rotate or tip and the drag chases the pointer by velocity, so release throws are weak; click-to-spawn and a long HUD line are the only guidance.",
+  "b2/j2/A-r3": "Clear Add, Gravity and Reset buttons, a readable hint and a dark mode with rounded boxes make it the easiest to use, though the boxes are axis-aligned slabs that never tip.",
+  "b2/j2/B-r3": "Rotated boxes settle into believable leaning stacks after a pre-roll and the spring grab keeps spin and throw momentum, but there is no hint text and only a Reset button.",
+  "b2/j3/A-r4": "Axis-aligned boxes only, so nothing rotates or tips and stacks look flat; the throw just keeps the lagging chase velocity and the HUD text is the only guidance.",
+  "b2/j3/B-r4": "Rotated SAT boxes with sequential impulses, substeps, a spring grab and release velocity give believable tipping piles and throws, with a clean dark grid look and a clear hint, though the mobile hint text clips into a box.",
+  "b2/j3/B-r3": "Same solid rotated-box approach with contact manifolds and a spring grab, settling into convincing stacks, but the only control is Reset and the visuals are plainer.",
+  "b2/j3/A-r3": "Direct pointer tracking and clear Add box, Gravity and Reset controls, but upright AABB-only physics and a dragged body that shoves neighbours hard make the piles less believable."
+ }
+}

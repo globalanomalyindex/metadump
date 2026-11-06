@@ -1,0 +1,43 @@
+{
+  "block": "b2",
+  "judge": "j1",
+  "scores": {
+    "W": {
+      "imagery": 7,
+      "form": 8,
+      "specificity": 9,
+      "freshness": 7,
+      "resonance": 7,
+      "overall": 8,
+      "note": "Line counts are 5 (midwinter, the wind), 7 (a lens of cloud, not drifting), 5 (above the ridge crest), and the dash cut after line 1 is earned; a lenticular cloud that holds still over a ridge while the wind blows is accurately evoked, with the stillness-in-wind paradox giving it a turn."
+    },
+    "X": {
+      "imagery": 7,
+      "form": 9,
+      "specificity": 8,
+      "freshness": 7,
+      "resonance": 9,
+      "overall": 9,
+      "note": "Counts are 5 (Rare cloud, mother-pearl), 7 (blooms where the sky holds no sun), 5 (gone before the name), and nacreous clouds lit in twilight with the sun below the horizon are accurately evoked; the closing turn from sighting to unnameability lands, though the opening 'Rare cloud' states the subject outright."
+    },
+    "Y": {
+      "imagery": 8,
+      "form": 8,
+      "specificity": 8,
+      "freshness": 6,
+      "resonance": 6,
+      "overall": 7,
+      "note": "Counts are 5 (Midwinter's late dusk), 7 (a veil keeps the sun's last light), 5 (the sheen of a shell), and the nacreous shell-sheen image is vivid and accurate, but 'veil' and 'sheen' are familiar and the noun ending gives less of a turn than X."
+    },
+    "Z": {
+      "imagery": 8,
+      "form": 8,
+      "specificity": 9,
+      "freshness": 6,
+      "resonance": 8,
+      "overall": 8,
+      "note": "Counts are 5 (Night's edge, pearl-thin cloud), 7 (lit from beneath by the sun), 5 (seen by no one else), and light from a sun below the horizon striking high cloud after dusk is precise; 'seen by no one else' is a familiar solitude trope but the closing witness note still resonates."
+    }
+  },
+  "ranking": ["X", "W", "Z", "Y"]
+}

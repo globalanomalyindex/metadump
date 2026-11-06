@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j1","scores":{
+"W":{"compact":7,"collapsible":8,"tracking":8,"dark":8,"usability":8,"craft":7,"overall":7.5,"note":"Clean pill with a full timeline, next-step hint and carrier link, but the Copy number button wraps awkwardly and the open state is tall."},
+"X":{"compact":8,"collapsible":9,"tracking":10,"dark":9,"usability":8,"craft":9,"overall":9,"note":"Collapsed card shows item, status and ETA with a progress bar, and opening adds package tabs, carrier, tracking number, timeline and actions in a tight, polished layout."},
+"Y":{"compact":8,"collapsible":7,"tracking":6,"dark":7,"usability":6,"craft":6,"overall":6,"note":"Very small, but the ETA is truncated to Arrive… when collapsed, the tracking number and carrier name wrap, and there is no progress or next-step cue."},
+"Z":{"compact":8,"collapsible":7,"tracking":8,"dark":8,"usability":7,"craft":6,"overall":7,"note":"Dense and readable with a progress bar, 5 of 6 count and ETA, but the open panel has dead space at the bottom, the chevron is a tiny glyph, and the status is not announced."}},
+"ranking":["X","W","Z","Y"]}

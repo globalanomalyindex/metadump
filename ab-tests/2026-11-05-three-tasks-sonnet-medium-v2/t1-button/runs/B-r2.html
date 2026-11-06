@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lull: Dreamlike Button</title>
+<style>
+:root{
+  --bg:#070a16; --ink:#e9eeff; --muted:#9aa6cf;
+  --moon:#8fb8ff; --moon-2:#b9a6ff; --rim:rgba(170,200,255,.55);
+  /* hand-written curves, one per job */
+  --settle:cubic-bezier(.16,1,.3,1);          /* fast front, long low tail: the lift */
+  --bloom:cubic-bezier(.45,.1,.25,1);         /* late soft landing: the cloud */
+  --trail:cubic-bezier(.6,0,.4,1);            /* slow, symmetric: the sheen */
+  --recede:cubic-bezier(.33,1,.68,1);         /* quick-ish exit */
+  --snap:cubic-bezier(.2,.8,.2,1);            /* press */
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:
+  radial-gradient(60rem 40rem at 70% -10%,#1a2150 0%,transparent 60%),
+  radial-gradient(40rem 30rem at 0% 100%,#2a1a4d 0%,transparent 60%),var(--bg);
+  color:var(--ink);font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:grid;place-items:center;padding:24px}
+main{width:min(520px,100%);padding:8px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:.75rem;color:var(--moon)}
+h1{font-weight:600;font-size:clamp(1.9rem,6vw,2.6rem);line-height:1.15;margin:.5rem 0 1rem}
+p{color:var(--muted);margin:0 0 1.75rem;max-width:44ch}
+form{display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+label{font-size:.85rem;color:var(--muted)}
+input{width:100%;margin-top:6px;padding:12px 14px;border-radius:12px;border:1px solid #2b3566;background:rgba(255,255,255,.04);color:var(--ink);font:inherit}
+input:focus-visible{outline:2px solid var(--moon);outline-offset:2px}
+.field{width:100%}
+
+/* ---------- the button ---------- */
+.dream{
+  --lift:0px; --float:0px;
+  position:relative; isolation:isolate; cursor:pointer;
+  min-height:48px; padding:0 30px; border:0; border-radius:999px;
+  font:600 1rem/1 inherit; font-family:inherit; color:#fff; letter-spacing:.02em;
+  background:linear-gradient(135deg,rgba(40,52,120,.78),rgba(70,50,140,.72)); /* translucent fill */
+  box-shadow:inset 0 0 0 1px rgba(160,190,255,.28);
+  transform:translateY(0) scale(1);
+  transition:transform .5s var(--recede), box-shadow .45s var(--recede);
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+}
+.dream .label{position:relative;z-index:2;display:inline-flex;align-items:center;gap:10px;
+  text-shadow:0 1px 8px rgba(5,8,30,.9);transition:letter-spacing .9s var(--settle)}
+/* clouds: pre-blurred layers, only opacity + transform animate */
+.dream::before,.dream::after{content:"";position:absolute;border-radius:inherit;pointer-events:none;z-index:-1}
+.dream::before{ /* wide cloud */
+  inset:-12px; background:radial-gradient(closest-side,rgba(143,184,255,.55),rgba(185,166,255,.28) 60%,transparent 100%);
+  filter:blur(10px); opacity:.18; transform:scale(.92);
+  transition:opacity .6s var(--recede), transform .6s var(--recede);
+}
+.dream::after{ /* tight rim + sheen */
+  inset:-2px; padding:2px; background:linear-gradient(120deg,rgba(143,184,255,.9),rgba(185,166,255,.9),rgba(143,184,255,.9));
+  background-size:250% 100%; background-position:100% 0;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:0; transition:opacity .5s var(--recede), background-position .6s var(--recede);
+}
+.dream .plate{position:absolute;inset:0;border-radius:inherit;z-index:1;background:rgba(10,14,40,.55);pointer-events:none} /* holds label contrast */
+
+@media (hover:hover){
+  .dream:hover{
+    transform:translateY(-3px) scale(1.015);
+    box-shadow:inset 0 0 0 1px rgba(190,210,255,.5);
+    transition:transform 1.1s var(--settle), box-shadow .9s var(--bloom);
+  }
+  .dream:hover::before{opacity:.75;transform:scale(1.04);transition:opacity 1.6s var(--bloom), transform 1.8s var(--bloom);
+    animation:breathe 4.8s 1.8s ease-in-out infinite}
+  .dream:hover::after{opacity:1;background-position:0 0;transition:opacity .6s var(--settle), background-position 2s var(--trail)}
+  .dream:hover .label{letter-spacing:.06em}
+}
+@keyframes breathe{0%,100%{opacity:.75;transform:scale(1.04)}50%{opacity:.55;transform:scale(1.09)}}
+
+.dream:focus-visible{outline:2px solid #fff;outline-offset:4px;box-shadow:0 0 0 6px rgba(143,184,255,.35)}
+.dream:focus-visible::before{opacity:.6;transform:scale(1.02)}
+.dream:active{transform:translateY(0) scale(.97);transition:transform 70ms var(--snap)}
+.dream:active::before{opacity:.35;transition:opacity 90ms linear}
+.dream[disabled]{cursor:progress}
+
+.dream .dot{width:8px;height:8px;border-radius:50%;background:var(--moon);box-shadow:0 0 8px var(--moon);display:none}
+.dream[data-state="sending"] .dot{display:inline-block;animation:pulse 1s ease-in-out infinite}
+.dream[data-state="done"]{background:linear-gradient(135deg,rgba(30,90,100,.8),rgba(50,100,130,.75))}
+@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+
+.status{min-height:1.5em;font-size:.9rem;color:var(--moon)}
+.fine{margin-top:2rem;font-size:.8rem;color:#6d78a6}
+
+/* reduced motion: keep colour + glow response, drop travel and loops */
+@media (prefers-reduced-motion:reduce){
+  .dream,.dream:hover,.dream:active{transform:none}
+  .dream::before,.dream::after,.dream,.dream .label{transition:opacity .25s linear, box-shadow .25s linear, background-position 0s}
+  .dream:hover::before{animation:none;transform:none}
+  .dream:hover .label{letter-spacing:.02em}
+  .dream[data-state="sending"] .dot{animation:none}
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Lull &middot; Sleep journal</div>
+  <h1>Catch tonight's dreams before they fade.</h1>
+  <p>Lull is a quiet voice journal for the first minute after you wake. Join the waitlist and we'll send an invite when the autumn beta opens.</p>
+  <form id="f" novalidate>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+    </div>
+    <button class="dream" id="btn" type="submit" data-state="idle">
+      <span class="plate"></span>
+      <span class="label"><span class="dot" aria-hidden="true"></span><span id="txt">Join the waitlist</span></span>
+    </button>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </form>
+  <p class="fine">Hover, tab to focus, or press. On touch screens the glow responds to taps instead of hover. Waitlist count: <strong id="count">1,284</strong></p>
+</main>
+<script>
+(function(){
+  var f=document.getElementById('f'),b=document.getElementById('btn'),t=document.getElementById('txt'),
+      s=document.getElementById('status'),e=document.getElementById('email'),c=document.getElementById('count');
+  var n=1284;
+  f.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    if(b.dataset.state==='sending')return;
+    if(b.dataset.state==='done'){ // reset: second click returns to idle
+      b.dataset.state='idle';t.textContent='Join the waitlist';s.textContent='';e.value='';e.focus();return;
+    }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.value)){
+      s.textContent='That email looks incomplete. Try name@domain.com.';e.focus();return;
+    }
+    b.dataset.state='sending';b.setAttribute('aria-disabled','true');t.textContent='Sending';s.textContent='';
+    setTimeout(function(){
+      n++;c.textContent=n.toLocaleString('en-US');
+      b.dataset.state='done';b.removeAttribute('aria-disabled');t.textContent='You are on the list';
+      s.textContent='Thanks. Check '+e.value+' for a confirmation. Press again to add another address.';
+    },1100);
+  });
+  // touch: brief lit state on tap since there is no hover
+  b.addEventListener('touchstart',function(){b.classList.add('touched')},{passive:true});
+})();
+</script>
+</body>
+</html>

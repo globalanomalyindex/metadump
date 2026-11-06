@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Package Tracker Toast</title>
+<style>
+:root{
+  --bg:#0c0e12;--panel:#161920;--panel-2:#1d2129;--line:#2a2f3a;
+  --text:#e7eaf0;--muted:#8a919f;--accent:#7aa2ff;--ok:#4cc38a;--warn:#f0b429;--bad:#ef6461;
+  --r:12px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding:24px 16px}
+main{max-width:520px}
+h1{font-size:15px;margin:0 0 6px;font-weight:600}
+main p{color:var(--muted);margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.toast{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px rgba(0,0,0,.5);overflow:hidden}
+
+.head{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;background:none;border:0;text-align:left}
+.ico{width:16px;height:16px;flex:none;color:var(--accent)}
+.title{font-weight:600}
+.sub{color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.sub.flash{color:var(--accent)}
+.count{background:var(--accent);color:#0b1220;border-radius:999px;font-size:11px;font-weight:700;padding:0 7px;line-height:17px}
+.chev{width:14px;height:14px;flex:none;color:var(--muted);transition:transform .18s}
+.head[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+
+.body{border-top:1px solid var(--line);max-height:60vh;overflow:auto}
+.filters{display:flex;gap:4px;padding:6px 8px;background:var(--panel-2)}
+.filters button{flex:1;background:none;border:1px solid transparent;border-radius:7px;padding:3px 0;color:var(--muted);font-size:12px}
+.filters button[aria-pressed="true"]{background:var(--panel);border-color:var(--line);color:var(--text)}
+
+.list{list-style:none;margin:0;padding:0}
+.item+.item{border-top:1px solid var(--line)}
+.item-head{padding:8px 10px;cursor:pointer}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chip{font-size:11px;color:var(--muted);white-space:nowrap}
+.meta{color:var(--muted);font-size:11px;margin-top:1px;font-variant-numeric:tabular-nums}
+.segs{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px}
+.segs i{height:3px;border-radius:2px;background:var(--line)}
+.segs i.on{background:var(--accent)}
+.s2 .chip{color:var(--warn)}
+.s3 .chip{color:var(--ok)}
+.s3 .segs i.on{background:var(--ok)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 10px 8px}
+.eta{color:var(--muted);font-size:11px}
+.acts{display:flex;gap:4px}
+.acts button{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:11px}
+.acts button:disabled{opacity:.4;cursor:default}
+.acts .ghost{background:none;border-color:transparent;color:var(--muted)}
+.acts .ghost:hover{color:var(--bad)}
+.events{display:none;list-style:none;margin:0;padding:0 10px 8px 10px;border-top:1px dashed var(--line);padding-top:6px}
+.item.open .events{display:block}
+.events li{display:flex;gap:8px;color:var(--muted);font-size:11px;padding:2px 0}
+.events time{color:#6b7280;white-space:nowrap;font-variant-numeric:tabular-nums}
+.empty{padding:14px 10px;color:var(--muted);text-align:center;font-size:12px}
+
+.add{border-top:1px solid var(--line);padding:9px 10px;display:grid;gap:6px;background:var(--panel-2)}
+.add .row2{display:grid;grid-template-columns:86px 1fr;gap:6px}
+.add input,.add select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:12px;min-width:0}
+.add button.primary{background:var(--accent);color:#0b1220;border:0;border-radius:7px;padding:6px;font-weight:600;font-size:12px}
+.err{color:var(--bad);font-size:11px;min-height:0}
+.err:empty{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>Orders</h1>
+  <p>Tracked packages live in the toast in the bottom-right corner. Expand it to update, inspect or add packages.</p>
+</main>
+
+<section class="toast" aria-label="Package tracker">
+  <button class="head" id="toggle" aria-expanded="true" aria-controls="body">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+    <span class="title">Packages</span>
+    <span class="count" id="count">0</span>
+    <span class="sub" id="sub"></span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+  </button>
+
+  <div class="body" id="body">
+    <div class="filters" role="group" aria-label="Filter packages">
+      <button type="button" data-filter="active" aria-pressed="true">Active</button>
+      <button type="button" data-filter="all" aria-pressed="false">All</button>
+    </div>
+    <ul class="list" id="list"></ul>
+    <div class="empty" id="empty" hidden>Nothing in transit. Add a tracking number below.</div>
+
+    <form class="add" id="add" autocomplete="off" novalidate>
+      <input id="f-name" placeholder="Name (optional)" maxlength="40" aria-label="Package name">
+      <div class="row2">
+        <select id="f-carrier" aria-label="Carrier">
+          <option>UPS</option><option>FedEx</option><option>USPS</option><option>DHL</option><option>Amazon</option>
+        </select>
+        <input id="f-track" placeholder="Tracking number" maxlength="30" aria-label="Tracking number">
+      </div>
+      <div class="err" id="f-err" role="alert"></div>
+      <button class="primary" type="submit">Track package</button>
+    </form>
+  </div>
+</section>
+
+<script>
+const STAGES = ["Label created", "In transit", "Out for delivery", "Delivered"];
+const EVENT_TEXT = [
+  "Label created, awaiting pickup",
+  "Picked up, in transit",
+  "Out for delivery, arriving today",
+  "Delivered, left at front door"
+];
+
+let uid = 10;
+let noticeTimer = null;
+const state = {
+  collapsed: false,
+  filter: "active",
+  notice: "",
+  packages: [
+    { id: 1, name: "Walnut desk lamp", carrier: "UPS", tracking: "1Z84A02W0391552607", stage: 2, eta: "Today, by 8 PM", open: false,
+      events: [["Nov 4, 6:12 AM", EVENT_TEXT[0]], ["Nov 4, 4:40 PM", EVENT_TEXT[1]], ["Nov 5, 7:05 AM", EVENT_TEXT[2]]] },
+    { id: 2, name: "Linen duvet cover", carrier: "USPS", tracking: "9400111899223856412037", stage: 1, eta: "Fri, Nov 7", open: false,
+      events: [["Nov 3, 2:30 PM", EVENT_TEXT[0]], ["Nov 4, 9:15 AM", EVENT_TEXT[1]]] },
+    { id: 3, name: "USB-C hub", carrier: "Amazon", tracking: "TBA3187264519", stage: 0, eta: "Mon, Nov 10", open: false,
+      events: [["Nov 5, 8:02 AM", EVENT_TEXT[0]]] },
+    { id: 4, name: "Ceramic pour-over set", carrier: "FedEx", tracking: "782394015566", stage: 3, eta: "Delivered Nov 3", open: false,
+      events: [["Nov 1, 10:00 AM", EVENT_TEXT[0]], ["Nov 2, 8:40 AM", EVENT_TEXT[1]], ["Nov 3, 1:22 PM", EVENT_TEXT[3]]] }
+  ]
+};
+
+const $toggle = document.getElementById("toggle");
+const $body = document.getElementById("body");
+const $count = document.getElementById("count");
+const $sub = document.getElementById("sub");
+const $list = document.getElementById("list");
+const $empty = document.getElementById("empty");
+const $form = document.getElementById("add");
+const $name = document.getElementById("f-name");
+const $carrier = document.getElementById("f-carrier");
+const $track = document.getElementById("f-track");
+const $err = document.getElementById("f-err");
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const now = () => new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+function itemHTML(p) {
+  const segs = [0, 1, 2, 3].map(i => `<i class="${i <= p.stage ? "on" : ""}"></i>`).join("");
+  const eta = p.stage === 3 ? "Delivered" : p.eta;
+  const events = p.events.slice().reverse()
+    .map(([t, s]) => `<li><time>${esc(t)}</time><span>${esc(s)}</span></li>`).join("");
+  return `
+  <li class="item s${p.stage}${p.open ? " open" : ""}" data-id="${p.id}">
+    <div class="item-head" data-act="toggle">
+      <div class="row"><span class="name">${esc(p.name)}</span><span class="chip">${STAGES[p.stage]}</span></div>
+      <div class="meta">${esc(p.carrier)} &middot; ${esc(p.tracking.slice(-6))}</div>
+      <div class="segs">${segs}</div>
+    </div>
+    <div class="foot">
+      <span class="eta">${esc(eta)}</span>
+      <span class="acts">
+        <button type="button" data-act="adv" ${p.stage === 3 ? "disabled" : ""}>Next update</button>
+        <button type="button" class="ghost" data-act="rm" aria-label="Remove ${esc(p.name)}">Remove</button>
+      </span>
+    </div>
+    <ul class="events">${events}</ul>
+  </li>`;
+}
+
+function render() {
+  const active = state.packages.filter(p => p.stage < 3);
+  const arriving = state.packages.filter(p => p.stage === 2).length;
+  const summary = active.length
+    ? `${active.length} on the way${arriving ? ` · ${arriving} arriving today` : ""}`
+    : "All packages delivered";
+
+  $sub.textContent = state.notice || summary;
+  $sub.classList.toggle("flash", !!state.notice);
+  $count.textContent = active.length;
+  $toggle.setAttribute("aria-expanded", String(!state.collapsed));
+  $body.hidden = state.collapsed;
+
+  document.querySelectorAll("[data-filter]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.filter === state.filter)));
+
+  const shown = state.packages.filter(p => state.filter === "all" || p.stage < 3);
+  $list.innerHTML = shown.map(itemHTML).join("");
+  $empty.hidden = shown.length > 0;
+}
+
+function setNotice(msg) {
+  state.notice = msg;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => { state.notice = ""; render(); }, 3200);
+  render();
+}
+
+function advance(p) {
+  if (p.stage >= 3) return;
+  p.stage += 1;
+  p.events.push([now(), EVENT_TEXT[p.stage]]);
+  if (p.stage === 3) p.eta = "Delivered " + now().split(",")[0];
+  setNotice(`${p.name}: ${STAGES[p.stage]}`);
+}
+
+$toggle.addEventListener("click", () => {
+  state.collapsed = !state.collapsed;
+  render();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !state.collapsed) {
+    state.collapsed = true;
+    render();
+    $toggle.focus();
+  }
+});
+
+document.querySelectorAll("[data-filter]").forEach(b =>
+  b.addEventListener("click", () => { state.filter = b.dataset.filter; render(); }));
+
+$list.addEventListener("click", e => {
+  const btn = e.target.closest("[data-act]");
+  if (!btn) return;
+  const item = btn.closest(".item");
+  const id = Number(item.dataset.id);
+  const p = state.packages.find(x => x.id === id);
+  if (!p) return;
+  const act = btn.dataset.act;
+  if (act === "toggle") {
+    p.open = !p.open;
+    render();
+  } else if (act === "adv") {
+    advance(p);
+  } else if (act === "rm") {
+    state.packages = state.packages.filter(x => x.id !== id);
+    render();
+  }
+});
+
+$form.addEventListener("submit", e => {
+  e.preventDefault();
+  const t = $track.value.trim();
+  if (!/^[A-Za-z0-9]{8,30}$/.test(t)) {
+    $err.textContent = "Tracking numbers are 8 to 30 letters or digits.";
+    return;
+  }
+  if (state.packages.some(p => p.tracking === t)) {
+    $err.textContent = "Already tracking that number.";
+    return;
+  }
+  const name = $name.value.trim() || `Package ...${t.slice(-4)}`;
+  const eta = new Date(Date.now() + 3 * 864e5)
+    .toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  state.packages.unshift({
+    id: ++uid, name, carrier: $carrier.value, tracking: t, stage: 0,
+    eta: "by " + eta, open: false, events: [[now(), EVENT_TEXT[0]]]
+  });
+  $form.reset();
+  $err.textContent = "";
+  state.collapsed = false;
+  setNotice(`Now tracking ${name}`);
+});
+
+render();
+</script>
+</body>
+</html>

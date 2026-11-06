@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel toast</title>
+<style>
+:root{
+  --page:#0e0f12; --card:#1b1c21; --lift:#25262c; --edge:#32343b;
+  --text:#ebebee; --muted:#9ca3af; --accent:#34d399; --warn:#f5a524;
+  --open:260ms; --close:170ms; --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.stage{min-height:100%;padding:28px 20px 120px;max-width:720px;margin:0 auto}
+h1{font-size:15px;font-weight:600;margin:0 0 4px}
+.stage p{color:var(--muted);margin:0 0 18px;max-width:46ch}
+.demo{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.demo button{background:var(--card);color:var(--text);border:1px solid var(--edge);border-radius:6px;
+  padding:6px 10px;font:inherit;font-size:12px;cursor:pointer;min-height:28px}
+.demo button:hover{background:var(--lift)}
+
+/* ---- the toast ---- */
+.toast{position:fixed;right:16px;bottom:16px;width:min(304px,calc(100vw - 32px));
+  background:var(--card);border:1px solid var(--edge);border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45);overflow:hidden;
+  transition:opacity .2s ease,transform .2s var(--ease)}
+.toast.gone{opacity:0;transform:translateY(8px);pointer-events:none}
+.toast::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);transition:background .2s}
+.toast[data-state=exception]::before{background:var(--warn)}
+.head{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:9px;width:100%;
+  height:44px;padding:0 10px 0 15px;cursor:pointer}
+.head:focus-visible,.btn:focus-visible,.sw:focus-visible,.x:focus-visible{outline:2px solid #8ab4ff;outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+[data-state=exception] .dot{background:var(--warn)}
+.stage-word{font-weight:600;white-space:nowrap}
+.eta{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.count{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.chev{width:14px;height:14px;flex:none;color:var(--muted);transition:transform 200ms var(--ease)}
+.toast.open .chev{transform:rotate(180deg)}
+.x{all:unset;box-sizing:border-box;width:28px;height:28px;display:grid;place-items:center;border-radius:6px;
+  color:var(--muted);cursor:pointer;margin-right:4px;font-size:16px;line-height:1}
+.x:hover{background:var(--lift);color:var(--text)}
+.top{display:flex;align-items:center}
+
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--close) ease-in}
+.toast.open .panel{grid-template-rows:1fr;transition:grid-template-rows var(--open) var(--ease)}
+.panel>div{overflow:hidden;min-height:0}
+.inner{padding:2px 12px 10px 15px;border-top:1px solid var(--edge)}
+.meta{display:flex;justify-content:space-between;align-items:center;margin:8px 0 6px;font-size:11.5px;color:var(--muted)}
+.meta b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.copy{all:unset;cursor:pointer;color:var(--accent);font-size:11.5px;padding:3px 6px;border-radius:4px}
+.copy:hover{background:var(--lift)}
+.copy:focus-visible{outline:2px solid #8ab4ff}
+
+/* fixed-height step list: both rails sit in one grid cell, the taller one sets the height */
+.rail{display:grid}
+.rail>ol{grid-area:1/1;list-style:none;margin:0;padding:0}
+.rail>ol.ghost{visibility:hidden}
+.rail li{position:relative;display:flex;gap:9px;align-items:baseline;padding:3px 0 3px 18px;min-height:22px;
+  color:var(--muted);font-size:12.5px}
+.rail li::before{content:"";position:absolute;left:3px;top:10px;width:8px;height:8px;border-radius:50%;
+  border:1.5px solid #5b5f69;background:var(--card)}
+.rail li::after{content:"";position:absolute;left:6.5px;top:19px;bottom:-5px;width:1px;background:#3a3c44}
+.rail li:last-child::after{display:none}
+.rail li.done{color:var(--text)}
+.rail li.done::before{background:var(--accent);border-color:var(--accent)}
+.rail li.done::after{background:var(--accent);opacity:.55}
+.rail li.now{color:var(--text);font-weight:600}
+.rail li.now::before{background:var(--card);border-color:var(--accent);box-shadow:0 0 0 2px rgba(52,211,153,.25)}
+[data-state=exception] .rail li.now::before{border-color:var(--warn);box-shadow:0 0 0 2px rgba(245,165,36,.25)}
+.rail li.scan{font-size:11.5px;padding-top:1px;padding-bottom:1px;min-height:18px}
+.rail li.scan::before{width:4px;height:4px;left:5px;top:8px;border-width:0;background:#5b5f69}
+.rail li.scan::after{left:6.5px;top:12px;bottom:-4px}
+.rail li.scan.done::before{background:var(--accent)}
+.rail li.scan.future::before{background:#4a4d56}
+.rail time{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rail li:not(.done):not(.now) time{visibility:hidden}
+
+.exc{display:none;margin:6px 0 4px;padding:7px 9px;border-radius:8px;background:var(--lift);font-size:12px}
+.exc b{color:var(--warn);font-weight:600}
+.exc .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+[data-state=exception] .exc{display:block}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;padding:0 9px;min-height:26px;display:inline-flex;align-items:center;
+  border:1px solid var(--edge);border-radius:6px;font-size:11.5px;color:var(--text);background:var(--card)}
+.btn:hover{background:#2f3037}
+
+.foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--edge);
+  font-size:11.5px;color:var(--muted)}
+.opt{display:flex;align-items:center;gap:6px;cursor:pointer;min-height:24px}
+.sw{all:unset;box-sizing:border-box;position:relative;width:28px;height:16px;border-radius:8px;background:#3d3f48;cursor:pointer;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#d6d6da;transition:transform .15s var(--ease)}
+.sw[aria-checked=true]{background:#1f8f68}
+.sw[aria-checked=true]::after{transform:translateX(12px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.snz{display:none;color:var(--warn);font-size:11px}
+.toast.snoozed .snz{display:inline}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <h1>Orders</h1>
+  <p>Your parcel toast sits bottom right. Tap the row to open the steps. These buttons play carrier updates.</p>
+  <div class="demo">
+    <button id="adv">Next carrier scan</button>
+    <button id="exc">Simulate delivery exception</button>
+    <button id="rst">Reset</button>
+    <button id="show">Show toast</button>
+  </div>
+</div>
+
+<section class="toast" id="toast" data-state="ok" aria-label="Package tracking">
+  <div class="top">
+    <button class="head" id="head" aria-expanded="false" aria-controls="panel">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="stage-word" id="word">Out for delivery</span>
+      <span class="eta" id="eta">Today by 6 pm</span>
+      <span class="count" id="count">4/5</span>
+      <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
+    </button>
+    <button class="x" id="close" aria-label="Dismiss tracking toast">&times;</button>
+  </div>
+  <div class="panel" id="panel" role="region" aria-label="Delivery steps">
+    <div>
+      <div class="inner">
+        <div class="meta"><span>UPS <b id="num">1Z 84F 2A0 03 5521 4476</b></span><button class="copy" id="copy">Copy</button></div>
+        <div class="rail" id="rail"></div>
+        <div class="exc" id="excbox">
+          <b>Delivery exception</b> &middot; Nobody to sign. Retry tomorrow.
+          <div class="acts">
+            <button class="btn" data-act="carrier">Open carrier page</button>
+            <button class="btn" data-act="seen">Mark seen</button>
+            <button class="btn" data-act="snooze">Snooze 1 h</button>
+          </div>
+        </div>
+        <div class="foot">
+          <label class="opt"><button class="sw" id="scans" role="switch" aria-checked="false" aria-label="Show every scan"></button>All scans</label>
+          <span class="snz" id="snz">Snoozed</span>
+          <label class="opt">Notify<button class="sw" id="notify" role="switch" aria-checked="true" aria-label="Notify me on updates"></button></label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sr" id="live" role="status" aria-live="polite"></div>
+</section>
+
+<script>
+(function(){
+  var steps = [
+    {w:"Ordered", d:"Mon 9:12 am", eta:"Arrives Thu", scans:[]},
+    {w:"Packed", d:"Mon 4:40 pm", eta:"Arrives Thu", scans:[["Label created","Mon 4:05 pm"]]},
+    {w:"With carrier", d:"Tue 7:02 am", eta:"Arrives Thu", scans:[["Picked up, Reno NV","Tue 7:02 am"],["Arrived at hub, Sparks NV","Tue 11:48 pm"],["Departed hub","Wed 2:15 am"]]},
+    {w:"Out for delivery", d:"Wed 7:31 am", eta:"Today by 6 pm", scans:[["Arrived at local facility","Wed 5:50 am"],["Loaded on vehicle","Wed 7:31 am"]]},
+    {w:"Delivered", d:"Wed 2:46 pm", eta:"Left at front door", scans:[["Delivered, front door","Wed 2:46 pm"]]}
+  ];
+  var cur = 3, exception = false, showScans = false, notify = true, snoozeTimer = null;
+  var $ = function(id){return document.getElementById(id)};
+  var toast=$("toast"), head=$("head"), rail=$("rail"), live=$("live");
+
+  function listHTML(full, ghost){
+    var h = '<ol' + (ghost ? ' class="ghost" aria-hidden="true"' : '') + '>';
+    steps.forEach(function(s,i){
+      var cls = i < cur ? "done" : i === cur ? "now" : "";
+      // the current step is "done" once delivered
+      if(cur === 4 && i === 4) cls = "done";
+      if(full){
+        // finer events sit between main steps, belonging to the step they lead into
+        s.scans.forEach(function(sc,k){
+          if(i === 4 && cur !== 4) return;
+          var past = i < cur || (i === cur && (k < s.scans.length));
+          if(i > cur) past = false;
+          h += '<li class="scan ' + (past ? "done" : "future") + '"><span>'+sc[0]+'</span><time>'+(past?sc[1]:"")+'</time></li>';
+        });
+      }
+      h += '<li class="'+cls+'"'+(cls==="now"?' aria-current="step"':'')+'><span>'+s.w+'</span><time>'+(i<=cur?s.d:"")+'</time></li>';
+    });
+    return h + '</ol>';
+  }
+  // scans precede their step; reverse so list reads top = first step? keep chronological: scans before their step
+  function render(){
+    var shown = listHTML(showScans,false);
+    var ghost = listHTML(true,true);   // longest state reserves height
+    rail.innerHTML = shown + ghost;
+    var s = steps[cur];
+    $("word").textContent = exception ? "Delivery exception" : s.w;
+    $("eta").textContent = exception ? "Retry tomorrow" : s.eta;
+    $("count").textContent = (cur+1)+"/"+steps.length;
+    toast.dataset.state = exception ? "exception" : "ok";
+    $("scans").setAttribute("aria-checked", showScans);
+    $("notify").setAttribute("aria-checked", notify);
+    $("adv").disabled = cur >= 4;
+  }
+  function say(t){ if(notify){ live.textContent = ""; setTimeout(function(){live.textContent = t},30);} }
+  function setOpen(o){
+    toast.classList.toggle("open", o);
+    head.setAttribute("aria-expanded", o);
+  }
+  head.addEventListener("click", function(){ setOpen(!toast.classList.contains("open")); });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && toast.classList.contains("open")){ setOpen(false); head.focus(); }});
+  $("close").addEventListener("click", function(){ toast.classList.add("gone"); });
+  $("show").addEventListener("click", function(){ toast.classList.remove("gone"); });
+  $("scans").addEventListener("click", function(){ showScans = !showScans; render(); });
+  $("notify").addEventListener("click", function(){
+    notify = !notify; render();
+    live.textContent = notify ? "Notifications on" : "Notifications off";
+  });
+  $("copy").addEventListener("click", function(){
+    var b = $("copy"), n = $("num").textContent.replace(/\s/g,"");
+    function ok(){ b.textContent = "Copied"; setTimeout(function(){ b.textContent = "Copy"; }, 1400); }
+    try{ navigator.clipboard.writeText(n).then(ok, ok); }catch(e){ ok(); }
+  });
+  $("adv").addEventListener("click", function(){
+    if(cur < 4){ cur++; exception = false; toast.classList.remove("snoozed"); toast.classList.remove("gone"); render(); say(steps[cur].w + ". " + steps[cur].eta); }
+  });
+  $("exc").addEventListener("click", function(){
+    cur = 3; exception = true; toast.classList.remove("gone"); setOpen(true); render(); say("Delivery exception. Nobody to sign. Retry tomorrow.");
+  });
+  $("rst").addEventListener("click", function(){
+    cur = 3; exception = false; toast.classList.remove("snoozed","gone"); setOpen(false); showScans=false; render();
+  });
+  document.querySelector(".acts").addEventListener("click", function(e){
+    var a = e.target.getAttribute("data-act"); if(!a) return;
+    if(a==="carrier"){ say("Opening carrier page"); window.open("https://www.ups.com/track","_blank","noopener"); }
+    if(a==="seen"){ exception = false; render(); say("Marked seen. Still watching this package."); }
+    if(a==="snooze"){
+      exception = false; toast.classList.add("snoozed"); render(); say("Snoozed for one hour");
+      clearTimeout(snoozeTimer);
+      snoozeTimer = setTimeout(function(){ toast.classList.remove("snoozed"); }, 3600000);
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

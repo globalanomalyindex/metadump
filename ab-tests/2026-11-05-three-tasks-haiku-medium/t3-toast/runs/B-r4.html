@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package status toast</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --page: #0b0b0d;
+    --surface: #1b1c21;
+    --surface-2: #25272e;
+    --hairline: rgba(255, 255, 255, 0.09);
+    --text: #e6e8ec;
+    --text-2: #a3a9b5;
+    --focus: #8ab4ff;
+    --t-label: #a7b0be;
+    --t-shipped: #8ab4ff;
+    --t-out: #5fd4c2;
+    --t-done: #86e39c;
+    --t-alert: #f2c46d;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--page);
+    color: var(--text);
+    font: 14px/1.45 var(--font);
+  }
+  body { padding: 16px; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* ---- demo page behind the component ---- */
+  main { max-width: 520px; margin: 0 auto; padding-bottom: 120px; }
+  h1 { font-size: 18px; font-weight: 600; margin: 8px 0 2px; }
+  .muted { color: var(--text-2); margin: 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .skel { height: 10px; border-radius: 5px; background: var(--surface-2); margin: 10px 0; }
+  .skel.short { width: 55%; }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .ctl {
+    min-height: 32px; padding: 0 12px; border-radius: 8px;
+    border: 1px solid var(--hairline); background: var(--surface-2);
+    color: var(--text); font: 500 12px/1 var(--font); cursor: pointer;
+  }
+  .ctl:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.2); }
+  .ctl:disabled { opacity: 0.45; cursor: not-allowed; }
+  #demo-note { font: 12px/1.4 var(--mono); color: var(--text-2); margin: 10px 0 0; }
+
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---- the toast ---- */
+  .toast {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 10;
+    width: min(272px, calc(100vw - 32px));
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    transition: border-radius 240ms ease-out;
+  }
+  .toast.is-open { border-radius: 14px; }
+  .toast.enter { animation: enter 220ms ease-out both; }
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .toast[data-tone="label"]   { --tone: var(--t-label); }
+  .toast[data-tone="shipped"] { --tone: var(--t-shipped); }
+  .toast[data-tone="out"]     { --tone: var(--t-out); }
+  .toast[data-tone="done"]    { --tone: var(--t-done); }
+  .toast[data-tone="alert"]   { --tone: var(--t-alert); }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 12px;
+    margin: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .head:hover { background: rgba(255, 255, 255, 0.03); }
+
+  .glyph {
+    flex: none;
+    width: 16px; height: 16px;
+    color: var(--tone);
+    display: block;
+  }
+  .glyph svg { display: block; width: 16px; height: 16px; }
+  .glyph.pulse svg { animation: pulse 500ms ease-out 1; }
+  @keyframes pulse {
+    0%   { transform: scale(1); opacity: 1; }
+    40%  { transform: scale(1.5); opacity: 0.55; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .word, .eta {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .word { font-size: 13px; font-weight: 600; line-height: 16px; color: var(--text); }
+  .eta  { font-size: 12px; line-height: 15px; color: var(--text-2); }
+
+  .chev {
+    flex: none;
+    width: 16px; height: 16px;
+    color: var(--text-2);
+    transition: transform 180ms ease-in;
+  }
+  .chev svg { display: block; }
+  .toast.is-open .chev { transform: rotate(180deg); transition: transform 240ms ease-out; }
+
+  /* body height animates with grid rows; hidden from assistive tech when collapsed */
+  .body {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition: grid-template-rows 180ms ease-in, visibility 0s linear 180ms;
+  }
+  .toast.is-open .body {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows 240ms ease-out, visibility 0s;
+  }
+  .body-inner { min-height: 0; overflow: hidden; }
+  .pad { padding: 0 12px 12px; border-top: 1px solid var(--hairline); }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 0 8px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .meta code { font: 12px/1.2 var(--mono); color: var(--text); }
+
+  .alert {
+    margin: 0 0 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(242, 196, 109, 0.08);
+    color: var(--t-alert);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 11px 1fr;
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+  .step:last-child { padding-bottom: 0; }
+  .step::before {
+    content: "";
+    position: absolute;
+    left: 5px; top: 15px; bottom: 0;
+    width: 1px;
+    background: var(--hairline);
+  }
+  .step:last-child::before { display: none; }
+  .mark {
+    width: 11px; height: 11px;
+    margin-top: 3px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.28);
+    box-sizing: border-box;
+  }
+  .step.done .mark { background: #8e99ab; border-color: #8e99ab; }
+  .step.current .mark { background: var(--tone); border-color: var(--tone); }
+  .s-word { display: block; font-size: 12.5px; color: var(--text); }
+  .s-meta { display: block; font-size: 12px; color: var(--text-2); }
+  .step.pending .s-word { color: var(--text-2); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .act {
+    flex: 1 1 auto;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    background: var(--surface-2);
+    color: var(--text);
+    font: 500 12px/1 var(--font);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .act:hover { border-color: rgba(255, 255, 255, 0.2); }
+  .act.quiet { color: var(--text-2); }
+
+  /* edge tab: a way back after dismiss */
+  .reopen {
+    position: fixed;
+    right: 0;
+    bottom: 16px;
+    z-index: 9;
+    width: 32px;
+    height: 72px;
+    padding: 0;
+    border: 1px solid var(--hairline);
+    border-right: 0;
+    border-radius: 10px 0 0 10px;
+    background: var(--surface);
+    color: var(--text);
+    font: 600 12px/1 var(--font);
+    letter-spacing: 0.04em;
+    writing-mode: vertical-rl;
+    cursor: pointer;
+  }
+  .reopen:hover { background: var(--surface-2); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .toast *, .toast *::before, .toast *::after {
+      transition-duration: 0ms !important;
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <h1>Order A-20817</h1>
+  <p class="muted">Desk lamp, walnut base, 2 items. Shipped by UPS.</p>
+
+  <section class="card" aria-hidden="true">
+    <div class="skel"></div>
+    <div class="skel short"></div>
+    <div class="skel"></div>
+  </section>
+
+  <section class="card" aria-label="Demo controls">
+    <strong>Demo controls</strong>
+    <p class="muted" style="margin-top:4px">Step the carrier's statuses to see the panel respond.</p>
+    <div class="demo-row">
+      <button class="ctl" id="next" type="button">Next status</button>
+      <button class="ctl" id="exc" type="button">Raise exception</button>
+      <button class="ctl" id="reset" type="button">Reset</button>
+    </div>
+    <p id="demo-note"></p>
+  </section>
+</main>
+
+<section class="toast enter" id="toast" data-tone="out" aria-label="Package status, 1Z999AA10123456784">
+  <button class="head" id="toggle" type="button" aria-expanded="false" aria-controls="body">
+    <span class="glyph" id="glyph"></span>
+    <span class="txt">
+      <span class="word" id="word"></span>
+      <span class="eta" id="eta"></span>
+    </span>
+    <span class="chev" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="16" height="16" focusable="false"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </button>
+
+  <div class="body" id="body">
+    <div class="body-inner">
+      <div class="pad">
+        <div class="meta">
+          <span>UPS tracking</span>
+          <code>1Z999AA10123456784</code>
+        </div>
+        <p class="alert" id="alert" hidden></p>
+        <ol class="steps" id="steps"></ol>
+        <div class="actions">
+          <button class="act" id="copy" type="button">Copy number</button>
+          <a class="act" href="https://www.ups.com/track?tracknum=1Z999AA10123456784" target="_blank" rel="noopener noreferrer">Open carrier</a>
+          <button class="act quiet" id="dismiss" type="button">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<button class="reopen" id="reopen" type="button" aria-label="Show package status" hidden>Track</button>
+
+<div id="live" class="sr-only" aria-live="polite"></div>
+
+<script>
+(function () {
+  var TRACKING = '1Z999AA10123456784';
+
+  var STAGES = [
+    { word: 'Label Created',        tone: 'label',   glyph: 'ring',  eta: 'Expected Thu 5 Nov',   cp: 'Tue 3 Nov, 4:20 PM · Portland, OR' },
+    { word: 'Shipped / On the Way', tone: 'shipped', glyph: 'dot',   eta: 'Expected Thu 5 Nov',   cp: 'Wed 4 Nov, 2:14 AM · Sacramento, CA hub' },
+    { word: 'Out for Delivery',     tone: 'out',     glyph: 'arrow', eta: 'Today, 10 AM–2 PM',    cp: 'Thu 5 Nov, 6:48 AM · Oakland, CA' },
+    { word: 'Delivered',            tone: 'done',    glyph: 'check', eta: 'Delivered 1:37 PM',    cp: 'Thu 5 Nov, 1:37 PM · Front door, Oakland, CA' }
+  ];
+
+  var ALERT = {
+    word: 'Exception', tone: 'alert', glyph: 'triangle',
+    eta: 'Redelivery Fri 6 Nov',
+    cause: 'Recipient unavailable. The carrier will try again.'
+  };
+
+  var GLYPHS = {
+    ring: '<circle cx="8" cy="8" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/>',
+    dot: '<circle cx="8" cy="8" r="4" fill="currentColor"/>',
+    arrow: '<path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    check: '<path d="M3.5 8.5 6.5 11.5 12.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    triangle: '<path d="M8 2.8 14 13.2H2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 6.8v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.4" r="0.9" fill="currentColor"/>'
+  };
+
+  var state = { stage: 2, exception: false, expanded: false, dismissed: false };
+  var copyTimer = null;
+
+  function $(id) { return document.getElementById(id); }
+  var root = $('toast'), toggle = $('toggle'), wordEl = $('word'), etaEl = $('eta'),
+      glyphEl = $('glyph'), stepsEl = $('steps'), alertEl = $('alert'),
+      copyBtn = $('copy'), dismissBtn = $('dismiss'), reopenBtn = $('reopen'),
+      live = $('live'), nextBtn = $('next'), excBtn = $('exc'), resetBtn = $('reset'),
+      demoNote = $('demo-note');
+
+  function current() { return state.exception ? ALERT : STAGES[state.stage]; }
+
+  function svg(inner) {
+    return '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">' + inner + '</svg>';
+  }
+
+  function announce(msg) { live.textContent = msg; }
+
+  function render() {
+    var cur = current();
+    root.dataset.tone = cur.tone;
+    root.classList.toggle('is-open', state.expanded);
+    root.hidden = state.dismissed;
+    reopenBtn.hidden = !state.dismissed;
+
+    wordEl.textContent = cur.word;
+    etaEl.textContent = cur.eta;
+    glyphEl.innerHTML = svg(GLYPHS[cur.glyph]);
+    toggle.setAttribute('aria-expanded', String(state.expanded));
+
+    alertEl.hidden = !state.exception;
+    alertEl.textContent = ALERT.cause;
+
+    stepsEl.innerHTML = STAGES.map(function (s, i) {
+      var cls = i < state.stage ? 'done' : (i === state.stage ? 'current' : 'pending');
+      var meta = i <= state.stage ? s.cp : 'Pending';
+      return '<li class="step ' + cls + '"' + (cls === 'current' ? ' aria-current="step"' : '') + '>' +
+             '<span class="mark" aria-hidden="true"></span>' +
+             '<span><span class="s-word">' + s.word + '</span>' +
+             '<span class="s-meta">' + meta + '</span></span></li>';
+    }).join('');
+
+    nextBtn.disabled = !state.exception && state.stage >= STAGES.length - 1;
+    excBtn.textContent = state.exception ? 'Clear exception' : 'Raise exception';
+    excBtn.disabled = !state.exception && state.stage >= STAGES.length - 1;
+
+    demoNote.textContent = 'status: ' + cur.word +
+      ' | panel: ' + (state.dismissed ? 'dismissed' : (state.expanded ? 'expanded' : 'collapsed'));
+  }
+
+  function pulse() {
+    glyphEl.classList.remove('pulse');
+    void glyphEl.offsetWidth;
+    glyphEl.classList.add('pulse');
+  }
+
+  // A status change: the cue (pulse + polite announcement); a dismissed panel comes back.
+  function statusChanged() {
+    var wasDismissed = state.dismissed;
+    state.dismissed = false;
+    render();
+    pulse();
+    if (wasDismissed) {
+      root.classList.remove('enter');
+      void root.offsetWidth;
+      root.classList.add('enter');
+    }
+    var cur = current();
+    announce('Status: ' + cur.word + '. ' + cur.eta + '.');
+  }
+
+  toggle.addEventListener('click', function () {
+    state.expanded = !state.expanded;
+    render();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.expanded && !state.dismissed) {
+      state.expanded = false;
+      render();
+      toggle.focus();
+    }
+  });
+
+  function copyText(text) {
+    return navigator.clipboard.writeText(text).then(function () { return true; }, function () {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        ta.remove();
+        return ok;
+      } catch (err) {
+        return false;
+      }
+    });
+  }
+
+  copyBtn.addEventListener('click', function () {
+    copyText(TRACKING).then(function (ok) {
+      copyBtn.textContent = ok ? 'Copied' : 'Copy failed';
+      announce(ok ? 'Tracking number copied.' : 'Copy is not available here.');
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(function () { copyBtn.textContent = 'Copy number'; }, 1600);
+    });
+  });
+
+  dismissBtn.addEventListener('click', function () {
+    state.dismissed = true;
+    state.expanded = false;
+    render();
+    reopenBtn.focus();
+    announce('Tracking panel dismissed. Use the Track tab to bring it back.');
+  });
+
+  reopenBtn.addEventListener('click', function () {
+    state.dismissed = false;
+    render();
+    toggle.focus();
+    announce('Tracking panel shown.');
+  });
+
+  nextBtn.addEventListener('click', function () {
+    if (state.exception) {
+      state.exception = false;
+      statusChanged();
+      return;
+    }
+    if (state.stage < STAGES.length - 1) {
+      state.stage += 1;
+      statusChanged();
+    }
+  });
+
+  excBtn.addEventListener('click', function () {
+    state.exception = !state.exception;
+    statusChanged();
+  });
+
+  resetBtn.addEventListener('click', function () {
+    state = { stage: 2, exception: false, expanded: state.expanded, dismissed: false };
+    render();
+    announce('Demo reset.');
+  });
+
+  root.classList.add('enter');
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel Toast</title>
+<style>
+:root{
+  --bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--line:#2a2f3a;
+  --text:#e6e8ee;--muted:#8b93a7;--accent:#7aa2ff;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="light"]){color-scheme:dark}
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+  font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:48px 20px 160px}
+main h1{font-size:20px;margin:0 0 8px}
+main p{color:var(--muted);margin:0 0 10px}
+button,input{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.toast{position:fixed;right:16px;bottom:16px;width:340px;max-width:calc(100vw - 32px);
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.45);overflow:hidden;z-index:10}
+.bar{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;
+  padding:10px 12px;cursor:pointer}
+.bar-label{flex:1;min-width:0;display:flex;flex-direction:column}
+#barTitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#barStatus{color:var(--muted);font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.dot.warn{background:var(--warn)}
+.dot.ok{background:var(--ok)}
+.count{font-size:11px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:999px;padding:1px 7px;color:var(--muted)}
+.chev{color:var(--muted);transition:transform .2s}
+.toast.open .chev{transform:rotate(180deg)}
+
+.panel{border-top:1px solid var(--line);padding:10px 12px 12px;display:grid;gap:10px}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px;
+  border-radius:8px;cursor:pointer;color:var(--muted)}
+.row:hover{background:var(--panel2)}
+.row.sel{background:var(--panel2);color:var(--text)}
+.row .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini{font-size:11px;color:var(--muted);flex:none}
+.empty{color:var(--muted);padding:6px 8px}
+
+.detail{background:var(--panel2);border-radius:10px;padding:10px;display:grid;gap:6px}
+.detail:empty{display:none}
+.title{font-weight:600}
+.meta{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:4px 0}
+.seg{height:4px;border-radius:2px;background:var(--line)}
+.seg.past{background:var(--accent)}
+.seg.now{background:var(--warn)}
+.status{font-weight:600}
+.events{list-style:none;margin:0;padding:0;display:grid;gap:3px;color:var(--muted);font-size:12px}
+.events li{display:flex;gap:8px}
+.t{font-variant-numeric:tabular-nums;flex:none;min-width:92px}
+
+.add{display:grid;gap:6px;background:var(--panel2);border-radius:10px;padding:10px}
+input{background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--text);
+  padding:7px 9px;width:100%}
+.err{color:var(--bad);font-size:12px;min-height:1em}
+
+.foot{display:flex;gap:6px;flex-wrap:wrap}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--accent);color:#0b1020;border-color:transparent;font-weight:600}
+.spacer{flex:1}
+</style>
+</head>
+<body>
+<main>
+  <h1>Sample page</h1>
+  <p>The package tracker is the toast in the bottom-right corner. Click it to expand.</p>
+  <p>Nothing here is live. Packages, carriers and tracking numbers are invented for the demo, and "Check updates" advances them one step at a time.</p>
+</main>
+
+<div class="toast" id="toast">
+  <button class="bar" id="toggle" aria-expanded="false" aria-controls="panel">
+    <span class="dot" id="dot"></span>
+    <span class="bar-label">
+      <span id="barTitle"></span>
+      <span id="barStatus"></span>
+    </span>
+    <span class="count" id="count" title="Active packages">0</span>
+    <span class="chev" aria-hidden="true">&#9662;</span>
+  </button>
+
+  <div class="panel" id="panel" hidden>
+    <ul class="list" id="list" aria-label="Packages"></ul>
+    <div class="detail" id="detail"></div>
+
+    <form class="add" id="addForm" hidden novalidate>
+      <input id="addLabel" type="text" maxlength="40" placeholder="What is it? e.g. Coffee grinder" aria-label="Package name">
+      <input id="addTrack" type="text" maxlength="40" placeholder="Tracking number" aria-label="Tracking number" autocomplete="off" spellcheck="false">
+      <div class="err" id="addErr" role="alert"></div>
+      <div class="foot">
+        <button class="btn primary" type="submit">Start tracking</button>
+      </div>
+    </form>
+
+    <div class="foot">
+      <button class="btn" id="addToggle" type="button">+ Add</button>
+      <button class="btn" id="check" type="button">Check updates</button>
+      <span class="spacer"></span>
+      <button class="btn" id="archive" type="button">Archive</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STEPS = ["Label created","Picked up","In transit","Out for delivery","Delivered"];
+  const LAST = STEPS.length - 1;
+  const KEY = "parcel-toast-v1";
+  const LOCS = ["Sacramento hub","Denver sort","Local depot","Chicago hub","Front door"];
+  const $ = id => document.getElementById(id);
+
+  function seed(){
+    return {
+      collapsed: true,
+      adding: false,
+      selected: "p1",
+      packages: [
+        {id:"p1", label:"Mechanical keyboard", carrier:"Northwind Freight", tracking:"NW4820957316", step:2, archived:false,
+         events:[["Nov 3, 09:14","Label created"],["Nov 3, 17:40","Picked up · Reno, NV"],["Nov 4, 06:02","In transit · Sacramento hub"]]},
+        {id:"p2", label:"Desk lamp", carrier:"Harbor Post", tracking:"HP77310045281", step:3, archived:false,
+         events:[["Nov 2, 11:05","Label created"],["Nov 2, 16:20","Picked up · Portland, OR"],["Nov 3, 21:48","In transit · Seattle sort"],["Nov 5, 07:31","Out for delivery · Local depot"]]},
+        {id:"p3", label:"USB-C dock", carrier:"Northwind Freight", tracking:"NW1148830927", step:1, archived:false,
+         events:[["Nov 5, 08:12","Label created"],["Nov 5, 13:55","Picked up · Austin, TX"]]}
+      ]
+    };
+  }
+
+  function load(){
+    try{
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (s && Array.isArray(s.packages)) return s;
+    }catch(e){}
+    return seed();
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  let state = load();
+  let checking = false;
+
+  function now(){
+    return new Date().toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+  }
+  function active(){ return state.packages.filter(p => !p.archived); }
+  function current(){
+    const a = active();
+    return a.find(p => p.id === state.selected) || a[0] || null;
+  }
+  function el(tag, cls, text){
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function render(){
+    const a = active(), cur = current();
+    const isDone = cur && cur.step >= LAST;
+
+    $("toast").classList.toggle("open", !state.collapsed);
+    $("toggle").setAttribute("aria-expanded", String(!state.collapsed));
+    $("panel").hidden = state.collapsed;
+    $("count").textContent = a.length;
+
+    if (cur){
+      $("barTitle").textContent = cur.label;
+      $("barStatus").textContent = STEPS[cur.step];
+      $("dot").className = "dot" + (isDone ? " ok" : cur.step === 3 ? " warn" : "");
+    } else {
+      $("barTitle").textContent = "No active packages";
+      $("barStatus").textContent = "Add one to start tracking";
+      $("dot").className = "dot";
+    }
+
+    const list = $("list");
+    list.replaceChildren();
+    a.forEach(p => {
+      const li = el("li", "row" + (cur && p.id === cur.id ? " sel" : ""));
+      li.tabIndex = 0;
+      li.setAttribute("role", "button");
+      li.append(el("span", "name", p.label), el("span", "mini", STEPS[p.step]));
+      const select = () => { state.selected = p.id; state.adding = false; render(); save(); };
+      li.addEventListener("click", select);
+      li.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " "){ e.preventDefault(); select(); }
+      });
+      list.append(li);
+    });
+    if (!a.length) list.append(el("li", "empty", "Nothing in transit."));
+
+    const d = $("detail");
+    d.replaceChildren();
+    if (cur){
+      d.append(el("div", "title", cur.label));
+      d.append(el("div", "meta", cur.carrier + " · " + cur.tracking));
+      const bar = el("div", "steps");
+      STEPS.forEach((s, i) => {
+        const seg = el("span", "seg" + (i < cur.step ? " past" : i === cur.step ? " now" : ""));
+        seg.title = s;
+        bar.append(seg);
+      });
+      d.append(bar);
+      d.append(el("div", "status", STEPS[cur.step]));
+      const ev = el("ol", "events");
+      cur.events.slice().reverse().slice(0, 3).forEach(([t, txt]) => {
+        const li = el("li");
+        li.append(el("span", "t", t), el("span", "", txt));
+        ev.append(li);
+      });
+      d.append(ev);
+    }
+
+    $("addForm").hidden = !state.adding;
+    $("addToggle").textContent = state.adding ? "Cancel" : "+ Add";
+
+    $("check").textContent = checking ? "Checking…" : "Check updates";
+    $("check").disabled = checking || !cur || isDone;
+    $("archive").disabled = !cur;
+  }
+
+  $("toggle").addEventListener("click", () => {
+    state.collapsed = !state.collapsed;
+    render(); save();
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !state.collapsed){
+      state.collapsed = true;
+      render(); save();
+      $("toggle").focus();
+    }
+  });
+
+  $("addToggle").addEventListener("click", () => {
+    state.adding = !state.adding;
+    $("addErr").textContent = "";
+    render(); save();
+    if (state.adding) $("addLabel").focus();
+  });
+
+  $("addForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const label = $("addLabel").value.trim();
+    const tracking = $("addTrack").value.replace(/\s+/g, "").toUpperCase();
+    if (!label){ $("addErr").textContent = "Give it a name."; $("addLabel").focus(); return; }
+    if (!/^[A-Z0-9]{8,30}$/.test(tracking)){
+      $("addErr").textContent = "Tracking numbers are 8 to 30 letters or digits.";
+      $("addTrack").focus();
+      return;
+    }
+    const p = {id: "p" + Date.now(), label, carrier: "Unknown carrier", tracking, step: 0, archived: false,
+               events: [[now(), "Label created"]]};
+    state.packages.push(p);
+    state.selected = p.id;
+    state.adding = false;
+    $("addLabel").value = "";
+    $("addTrack").value = "";
+    $("addErr").textContent = "";
+    render(); save();
+  });
+
+  $("check").addEventListener("click", () => {
+    const cur = current();
+    if (!cur || checking || cur.step >= LAST) return;
+    const id = cur.id;
+    checking = true;
+    render();
+    setTimeout(() => {
+      checking = false;
+      const target = state.packages.find(p => p.id === id);
+      if (target && target.step < LAST){
+        target.step += 1;
+        const loc = LOCS[(target.step + target.tracking.length) % LOCS.length];
+        target.events.push([now(), STEPS[target.step] + " · " + loc]);
+      }
+      render(); save();
+    }, 600);
+  });
+
+  $("archive").addEventListener("click", () => {
+    const cur = current();
+    if (!cur) return;
+    cur.archived = true;
+    const next = active()[0];
+    state.selected = next ? next.id : null;
+    render(); save();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

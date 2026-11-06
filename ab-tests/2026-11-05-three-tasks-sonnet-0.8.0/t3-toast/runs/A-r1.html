@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package Toast</title>
+<style>
+:root{--bg:#0b0d10;--card:#14171c;--line:#222730;--tx:#e8ebf0;--mut:#8a93a2;--acc:#5eead4;--warn:#fbbf24;--r:14px}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(900px 500px at 70% 100%,#12202a 0,var(--bg) 60%);color:var(--tx);font:13px/1.3 -apple-system,system-ui,"Segoe UI",sans-serif;min-height:100vh}
+.hint{padding:24px;color:var(--mut);font-size:12px}
+.toast{position:fixed;right:16px;bottom:16px;width:min(300px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px #000a;overflow:hidden;animation:in .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{transform:translateY(16px);opacity:0}}
+.head{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.head:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 0 var(--acc);animation:p 2s infinite;flex:none}
+.done .dot{animation:none;background:#4ade80}
+@keyframes p{70%{box-shadow:0 0 0 6px #5eead400}0%{box-shadow:0 0 0 0 #5eead466}}
+.t{flex:1;min-width:0}
+.t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t small{color:var(--mut);font-size:12px}
+.chev{color:var(--mut);transition:transform .25s}
+.open .chev{transform:rotate(180deg)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden}
+.in{padding:2px 12px 12px;border-top:1px solid var(--line)}
+.bar{height:4px;background:var(--line);border-radius:4px;margin:12px 0 4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:4px;transition:width .4s}
+.eta{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-bottom:10px}
+.eta span:last-child{color:var(--tx)}
+ol{list-style:none;padding:0}
+li{display:flex;gap:9px;position:relative;padding-bottom:9px;color:var(--mut);font-size:12px}
+li:last-child{padding-bottom:0}
+li::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);margin-top:4px;flex:none;z-index:1}
+li::after{content:"";position:absolute;left:3px;top:12px;bottom:-4px;width:1px;background:var(--line)}
+li:last-child::after{display:none}
+li.d{color:var(--tx)}li.d::before{background:var(--acc);border-color:var(--acc)}
+li.c{color:var(--tx);font-weight:600}li.c::before{border-color:var(--acc)}
+li em{margin-left:auto;font-style:normal;font-size:12px;color:var(--mut)}
+.row{display:flex;gap:6px;margin-top:12px}
+button.b{flex:1;background:#1c2128;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:6px 4px;font:inherit;font-size:12px;cursor:pointer;transition:background .15s}
+button.b:hover{background:#262c35}
+button.b.on{border-color:var(--acc);color:var(--acc)}
+.note{margin-top:8px;font-size:12px;color:var(--warn);min-height:14px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<p class="hint">Tap the toast to expand. Try Refresh, Notify, Copy and the carrier tabs.</p>
+
+<section class="toast" id="toast" aria-label="Package tracking">
+  <button class="head" id="head" aria-expanded="false" aria-controls="body">
+    <span class="dot"></span>
+    <span class="t"><b id="status">Out for delivery</b><small id="sub">Arriving today, 2:10–4:10 PM</small></span>
+    <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10l5-5 5 5"/></svg>
+  </button>
+  <div class="body" id="body"><div><div class="in">
+    <div class="bar"><i id="fill"></i></div>
+    <div class="eta"><span id="pk">Order 1 of 1 · 3 stops away</span><span id="etat">2:40 PM</span></div>
+    <ol id="steps"></ol>
+    <div class="row">
+      <button class="b" id="refresh">Refresh</button>
+      <button class="b" id="notify">Notify me</button>
+      <button class="b" id="copy">Copy #</button>
+    </div>
+    <div class="note" id="note" role="status"></div>
+  </div></div></div>
+</section>
+
+<script>
+(function(){
+  var steps=[
+    {l:"Label created",t:"Mon 9:12 AM"},
+    {l:"Picked up · Oakland, CA",t:"Mon 6:40 PM"},
+    {l:"Departed hub · Sacramento",t:"Tue 3:05 AM"},
+    {l:"Arrived at local facility",t:"Wed 5:48 AM"},
+    {l:"Out for delivery",t:"Wed 8:21 AM"},
+    {l:"Delivered",t:""}
+  ];
+  var cur=4, tracking="1Z 999 AA1 01 2345 6784", notify=false;
+  var $=function(i){return document.getElementById(i)};
+  var toast=$("toast"),head=$("head"),note=$("note");
+
+  function say(m){note.textContent=m;clearTimeout(say.t);say.t=setTimeout(function(){note.textContent=""},2600)}
+
+  function render(){
+    var done=cur>=steps.length-1;
+    toast.classList.toggle("done",done);
+    $("status").textContent=steps[cur].l.split(" · ")[0];
+    $("sub").textContent=done?"Left at front door · "+steps[cur].t:"Arriving today, 2:10–4:10 PM";
+    $("fill").style.width=(cur/(steps.length-1)*100)+"%";
+    var left=steps.length-1-cur;
+    $("pk").textContent=done?"Package delivered":left+(left===1?" step":" steps")+" to go";
+    $("etat").textContent=done?"Done":"2:40 PM";
+    $("steps").innerHTML=steps.map(function(s,i){
+      var c=i<cur?"d":i===cur?"c":"";
+      if(done&&i===cur)c="d";
+      return '<li class="'+c+'">'+s.l+'<em>'+(i<=cur?s.t:"")+'</em></li>';
+    }).join("");
+  }
+
+  head.onclick=function(){
+    var o=toast.classList.toggle("open");
+    head.setAttribute("aria-expanded",o);
+  };
+  $("refresh").onclick=function(){
+    if(cur<steps.length-1){
+      cur++; steps[cur].t="Wed "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+      say(cur===steps.length-1?"Delivered!":"Updated just now");
+    } else {
+      cur=4; steps[5].t=""; say("Reset demo");
+    }
+    render();
+  };
+  $("notify").onclick=function(){
+    notify=!notify;
+    this.classList.toggle("on",notify);
+    this.textContent=notify?"Notifying":"Notify me";
+    say(notify?"We'll alert you on delivery":"Alerts off");
+  };
+  $("copy").onclick=function(){
+    var ok=function(){say("Copied "+tracking)};
+    try{navigator.clipboard.writeText(tracking).then(ok,function(){say(tracking)})}catch(e){say(tracking)}
+  };
+  render();
+  toast.classList.add("open");head.setAttribute("aria-expanded","true");
+})();
+</script>
+</body>
+</html>

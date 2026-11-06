@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamlike button</title>
+<style>
+  /* Tokens. Colours are variables so dark mode only redefines them. */
+  :root {
+    --page: #f2f0f8;
+    --wash: #e7e5fb;
+    --surface: #ffffff;
+    --ink: #1c1d33;
+    --muted: #5a5c76;
+    --line: rgba(28, 29, 51, 0.12);
+    --accent: #4a4fc4;
+    --on-accent: #ffffff;
+    --quiet-fill: rgba(255, 255, 255, 0.66);
+    --quiet-ink: #1c1d33;
+    --saved-fill: #2f7a62;
+    --glow-a: rgba(160, 170, 255, 0.95);
+    --glow-b: rgba(244, 184, 238, 0.6);
+    --ring: #3d3fb0;
+    --warn: #b3261e;
+
+    /* Motion dials (the panel changes the first three and the enter curve). */
+    --lift-px: 3px;
+    --enter-ms: 300ms;
+    --glow-delay: 40ms;
+    --press-depth: 2px;
+    --press-ms: 110ms;
+    --leave-ms: 170ms;
+    --curve-enter: cubic-bezier(0.23, 1, 0.32, 1);
+    --curve-leave: cubic-bezier(0.4, 0, 0.6, 1);
+    --curve-glow: cubic-bezier(0.165, 0.84, 0.44, 1);
+    --curve-press: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Reduced motion switches these: time scale, lift scale, sheen end point. */
+    --m: 1;
+    --lift-k: 1;
+    --sheen-end: 230%;
+
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: #14152a;
+      --wash: #1f2145;
+      --surface: #1d1f38;
+      --ink: #eceefe;
+      --muted: #aab0d6;
+      --line: rgba(236, 238, 254, 0.14);
+      --quiet-fill: rgba(236, 238, 254, 0.1);
+      --quiet-ink: #eceefe;
+      --ring: #c4c8ff;
+      --warn: #ffb4ab;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #14152a;
+    --wash: #1f2145;
+    --surface: #1d1f38;
+    --ink: #eceefe;
+    --muted: #aab0d6;
+    --line: rgba(236, 238, 254, 0.14);
+    --quiet-fill: rgba(236, 238, 254, 0.1);
+    --quiet-ink: #eceefe;
+    --ring: #c4c8ff;
+    --warn: #ffb4ab;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 15% -10%, var(--wash), transparent 60%), var(--page);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  main { overflow-x: clip; }
+
+  header.top {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+    padding: 20px 0; color: var(--muted); font-size: 0.95rem;
+  }
+  .brand { color: var(--ink); font-weight: 700; letter-spacing: 0.02em; }
+  header nav span { margin-left: 18px; }
+
+  .hero { position: relative; isolation: isolate; padding: 48px 0 32px; }
+  .eyebrow { margin: 0; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  h1 {
+    font-size: clamp(2.1rem, 6vw, 3.6rem); line-height: 1.05; letter-spacing: -0.025em;
+    margin: 0.35em 0 0.5em; max-width: 15ch; font-weight: 650;
+  }
+  .lede { max-width: 52ch; color: var(--muted); font-size: 1.05rem; margin: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: 18px 18px; align-items: center; margin-top: 28px; }
+  .hint { margin: 18px 0 0; font-size: 0.9rem; color: var(--muted); }
+
+  .notes {
+    display: grid; gap: 16px; grid-template-columns: 1fr; margin: 24px 0 8px; padding: 0; list-style: none;
+  }
+  .notes li {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px;
+  }
+  .notes h2 { font-size: 1rem; margin: 0 0 4px; }
+  .notes p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  @media (min-width: 720px) { .notes { grid-template-columns: repeat(3, 1fr); } }
+
+  /* ---------- The button ---------- */
+
+  .btn-wrap { position: relative; display: inline-flex; isolation: isolate; border-radius: 999px; }
+
+  /* Glow: a blurred radial halo behind the button, revealed by opacity only. */
+  .halo {
+    position: absolute; inset: -10px; border-radius: 999px;
+    background: radial-gradient(closest-side, var(--glow-a), var(--glow-b) 60%, transparent 100%);
+    filter: blur(14px); opacity: 0; z-index: -1; pointer-events: none;
+    transition: opacity 220ms var(--curve-leave);
+  }
+
+  .btn {
+    --fill: var(--accent);
+    --edge: rgba(255, 255, 255, 0.6);
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    min-height: 48px; padding: 0.85em 1.6em; margin: 0;
+    border: 1px solid var(--edge); border-radius: 999px;
+    background: var(--fill); color: var(--on-accent);
+    font: inherit; font-weight: 600; letter-spacing: 0.01em; line-height: 1.2;
+    cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transform: translateY(0);
+    transition: transform calc(var(--leave-ms) * var(--m)) var(--curve-leave);
+  }
+  .btn--quiet { --fill: var(--quiet-fill); --edge: var(--line); --on-accent: var(--quiet-ink); }
+  .btn--save[aria-pressed="true"] { --fill: var(--saved-fill); --edge: rgba(255, 255, 255, 0.6); }
+
+  .btn::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: #fff; opacity: 0; pointer-events: none;
+    transition: opacity var(--leave-ms) var(--curve-leave);
+  }
+  .label { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 0.5em; }
+
+  /* One pale pass of light across the face. Off to the left at rest. */
+  .clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+  .sheen {
+    position: absolute; top: -20%; bottom: -20%; left: 0; width: 45%;
+    background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%);
+    transform: translateX(-110%); transition: transform 0s;
+  }
+
+  /* Enter timings apply while hover or focus is on; leave timings are the default above. */
+  .btn:is(:hover, :focus-visible) {
+    transition: transform calc(var(--enter-ms) * var(--m)) var(--curve-enter);
+  }
+  .btn:is(:hover, :focus-visible) ~ .halo {
+    transition: opacity 360ms var(--curve-glow) var(--glow-delay);
+  }
+  .btn:is(:hover, :focus-visible) .sheen {
+    transition: transform calc(400ms * var(--m)) var(--curve-enter);
+  }
+  .btn:is(:hover, :focus-visible)::after {
+    transition: opacity calc(var(--enter-ms) * var(--m)) var(--curve-enter);
+  }
+
+  /* Hover rules sit inside a hover-capable query, so a tap leaves no sticky glow. */
+  @media (hover: hover) {
+    .btn:hover { transform: translateY(calc(var(--lift-px) * -1 * var(--lift-k))); }
+    .btn:hover ~ .halo { opacity: 1; }
+    .btn:hover .sheen { transform: translateX(var(--sheen-end)); }
+    .btn:hover::after { opacity: 0.14; }
+  }
+
+  /* Keyboard focus shows the same state as hover, plus a visible ring. */
+  .btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  .btn:focus-visible { transform: translateY(calc(var(--lift-px) * -1 * var(--lift-k))); }
+  .btn:focus-visible ~ .halo { opacity: 1; }
+  .btn:focus-visible .sheen { transform: translateX(var(--sheen-end)); }
+  .btn:focus-visible::after { opacity: 0.14; }
+
+  /* Pressed: a short sink and a colour change. This is the response touch gets. */
+  .btn:active {
+    transform: translateY(calc(var(--press-depth) * var(--lift-k)));
+    transition: transform var(--press-ms) var(--curve-press);
+    filter: brightness(0.94);
+  }
+  .btn:active ~ .halo { opacity: 0.5; transition: opacity var(--press-ms) var(--curve-press); }
+  .btn:active::after { opacity: 0.26; transition: opacity var(--press-ms) var(--curve-press); }
+
+  /* Reduced motion: lift, sheen and timings go; the colour change and glow fade stay. */
+  html.mm-reduced { --m: 0; --lift-k: 0; --sheen-end: -110%; }
+  @media (prefers-reduced-motion: reduce) {
+    html:not(.mm-full) { --m: 0; --lift-k: 0; --sheen-end: -110%; }
+  }
+
+  /* ---------- Panel ---------- */
+
+  .panel {
+    display: grid; gap: 28px; grid-template-columns: 1fr;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+    padding: 24px; margin: 24px 0 56px;
+  }
+  @media (min-width: 800px) { .panel { grid-template-columns: 1.1fr 0.9fr; padding: 30px; } }
+  .panel h2 { margin: 0 0 14px; font-size: 1.1rem; }
+  .field { display: grid; gap: 6px; margin-bottom: 16px; }
+  .field-head { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 0.92rem; }
+  .field-head output { color: var(--ink); font-variant-numeric: tabular-nums; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  select {
+    font: inherit; width: 100%; padding: 0.55em 0.7em; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--page); color: var(--ink);
+  }
+  .curve-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .plot { width: 120px; height: 120px; flex: none; border: 1px solid var(--line); border-radius: 12px; background: var(--page); }
+  .curve-code { font-size: 0.9rem; color: var(--muted); }
+  .curve-code code { color: var(--ink); }
+  .readout {
+    margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 0.92rem;
+  }
+  .readout .warn { color: var(--warn); }
+  .readout p { margin: 0 0 6px; }
+  .row-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .btn--ghost { --fill: transparent; --edge: var(--line); --on-accent: var(--ink); min-height: 44px; font-weight: 500; }
+  .btn--ghost::after { display: none; }
+
+  .state-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 18px; margin: 0; font-size: 0.95rem; }
+  .state-grid dt { color: var(--muted); }
+  .state-grid dd { margin: 0; font-variant-numeric: tabular-nums; text-transform: lowercase; }
+  .state-grid dd output { color: var(--ink); }
+  .log-title { margin: 20px 0 6px; font-size: 0.92rem; color: var(--muted); }
+  ol.log {
+    margin: 0; padding-left: 1.3em; font-size: 0.9rem; color: var(--muted);
+    max-height: 10em; overflow: auto;
+  }
+  ol.log li { margin: 0 0 4px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  footer { color: var(--muted); font-size: 0.88rem; padding: 0 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="brand">Lumen &amp; Moss</span>
+    <nav aria-label="Site sections (demo, not links)"><span>Collection</span><span>Journal</span><span>Fittings</span></nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">Spring 2027 &middot; Linen for slow mornings</p>
+      <h1 id="hero-title">Linen that feels like weather.</h1>
+      <p class="lede">Undyed European flax, cut in small runs at our studio near Ghent. Book a fitting and we will pin three pieces to your measurements, or browse the spring edit first.</p>
+
+      <div class="actions">
+        <span class="btn-wrap">
+          <button class="btn" id="btn-primary" type="button" data-key="primary">
+            <span class="clip" aria-hidden="true"><span class="sheen"></span></span>
+            <span class="label">Book a private fitting</span>
+          </button>
+          <span class="halo" aria-hidden="true"></span>
+        </span>
+
+        <span class="btn-wrap">
+          <button class="btn btn--quiet" id="btn-quiet" type="button" data-key="quiet">
+            <span class="clip" aria-hidden="true"><span class="sheen"></span></span>
+            <span class="label">Shop the spring edit</span>
+          </button>
+          <span class="halo" aria-hidden="true"></span>
+        </span>
+
+        <span class="btn-wrap">
+          <button class="btn btn--quiet btn--save" id="btn-save" type="button" data-key="save" aria-pressed="false">
+            <span class="clip" aria-hidden="true"><span class="sheen"></span></span>
+            <span class="label">Save to shortlist</span>
+          </button>
+          <span class="halo" aria-hidden="true"></span>
+        </span>
+      </div>
+      <p class="hint">Nothing moves until you hover, focus or press a button. Tab to them with the keyboard to see the same response.</p>
+    </section>
+
+    <ul class="notes">
+      <li>
+        <h2>Undyed flax</h2>
+        <p>Grown in Flanders, retted slowly and left in its natural grey. Each piece takes about six weeks to finish.</p>
+      </li>
+      <li>
+        <h2>Cut to order</h2>
+        <p>Every garment is cut after your fitting. Hems and sleeves can move by a centimetre without extra cost.</p>
+      </li>
+      <li>
+        <h2>Returns in 30 days</h2>
+        <p>If the linen does not soften the way the photographs suggested, post it back and we refund in full.</p>
+      </li>
+    </ul>
+
+    <section class="panel" aria-labelledby="panel-title">
+      <div>
+        <h2 id="panel-title">Tune the response</h2>
+
+        <div class="field">
+          <div class="field-head"><label for="lift">Lift</label><output id="lift-out"></output></div>
+          <input id="lift" type="range" min="0" max="6" step="0.5" value="3">
+        </div>
+
+        <div class="field">
+          <div class="field-head"><label for="enter">Arrival time</label><output id="enter-out"></output></div>
+          <input id="enter" type="range" min="150" max="600" step="10" value="300">
+        </div>
+
+        <div class="field">
+          <div class="field-head"><label for="delay">Glow delay behind the lift</label><output id="delay-out"></output></div>
+          <input id="delay" type="range" min="0" max="160" step="10" value="40">
+        </div>
+
+        <div class="field">
+          <label for="curve">Arrival curve</label>
+          <select id="curve">
+            <option value="0.23,1,0.32,1">Long tail: cubic-bezier(0.23, 1, 0.32, 1)</option>
+            <option value="0.165,0.84,0.44,1">Soft bloom: cubic-bezier(0.165, 0.84, 0.44, 1)</option>
+            <option value="0.2,0,0,1">Standard lift: cubic-bezier(0.2, 0, 0, 1)</option>
+            <option value="0.445,0.05,0.55,0.95">Gentle drift: cubic-bezier(0.445, 0.05, 0.55, 0.95)</option>
+          </select>
+          <div class="curve-row">
+            <svg class="plot" id="plot" viewBox="0 0 120 120" role="img" aria-label="Arrival curve plotted over time"></svg>
+            <p class="curve-code">Arrival: <code id="curve-code"></code><br>
+              Glow: <code>cubic-bezier(0.165, 0.84, 0.44, 1)</code><br>
+              Leave: <code>cubic-bezier(0.4, 0, 0.6, 1)</code><br>
+              Press: <code>cubic-bezier(0.2, 0, 0, 1)</code></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="motion">Motion</label>
+          <select id="motion">
+            <option value="system">Follow the system setting</option>
+            <option value="full">Full motion</option>
+            <option value="reduced">Reduced motion</option>
+          </select>
+        </div>
+
+        <div class="readout" aria-live="polite">
+          <p id="readout-longest"></p>
+          <p id="readout-warn" class="warn"></p>
+          <p id="readout-motion"></p>
+          <p>Animated properties: transform and opacity only. Nothing animates at rest. No transition: all.</p>
+        </div>
+
+        <div class="row-btns">
+          <button class="btn btn--ghost" id="btn-reset" type="button"><span class="label">Reset dials and counts</span></button>
+        </div>
+      </div>
+
+      <div>
+        <h2>Live state</h2>
+        <dl class="state-grid">
+          <dt>Book a fitting</dt><dd><output id="s-primary">rest</output></dd>
+          <dt>Shop the edit</dt><dd><output id="s-quiet">rest</output></dd>
+          <dt>Shortlist</dt><dd><output id="s-save">rest</output></dd>
+          <dt>Fittings booked</dt><dd><output id="n-bookings">0</output></dd>
+          <dt>Pieces shortlisted</dt><dd><output id="n-saves">0</output></dd>
+          <dt>Edit views</dt><dd><output id="n-clicks">0</output></dd>
+          <dt>Presses</dt><dd><output id="n-presses">0</output></dd>
+          <dt>Last event</dt><dd><output id="n-last">none yet</output></dd>
+        </dl>
+        <p class="log-title">Recent events</p>
+        <ol class="log" id="log"><li>Nothing yet. Hover, focus or press a button.</li></ol>
+      </div>
+    </section>
+  </main>
+
+  <p id="announce" class="sr-only" aria-live="polite"></p>
+  <footer>Demo page. Nothing here navigates or sends a request.</footer>
+</div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const el = (id) => document.getElementById(id);
+  const GLOW_MS = 360; // fixed in CSS; used only for the readout
+  const DEFAULTS = { lift: 3, enter: 300, delay: 40, curve: '0.23,1,0.32,1', motion: 'system' };
+
+  const dials = { ...DEFAULTS };
+  const counts = { bookings: 0, saves: 0, clicks: 0, presses: 0 };
+  let saved = false;
+  let lastEvent = 'none yet';
+  let log = [];
+
+  // Per-control interaction flags. The displayed state is derived from them.
+  const controls = {
+    primary: { node: el('btn-primary'), out: el('s-primary'), flags: { hover: false, focus: false, down: false } },
+    quiet:   { node: el('btn-quiet'),   out: el('s-quiet'),   flags: { hover: false, focus: false, down: false } },
+    save:    { node: el('btn-save'),    out: el('s-save'),    flags: { hover: false, focus: false, down: false } },
+  };
+
+  const stateOf = (f) => (f.down ? 'pressed' : f.focus ? 'focus' : f.hover ? 'hover' : 'rest');
+
+  function paint(key) {
+    const c = controls[key];
+    const s = stateOf(c.flags);
+    c.node.dataset.state = s;
+    c.out.textContent = s;
+  }
+
+  function announce(text) { el('announce').textContent = text; }
+
+  function renderCounts() {
+    el('n-bookings').textContent = counts.bookings;
+    el('n-saves').textContent = counts.saves;
+    el('n-clicks').textContent = counts.clicks;
+    el('n-presses').textContent = counts.presses;
+    el('n-last').textContent = lastEvent;
+  }
+
+  function renderLog() {
+    const list = el('log');
+    list.innerHTML = '';
+    if (!log.length) {
+      const li = document.createElement('li');
+      li.textContent = 'Nothing yet. Hover, focus or press a button.';
+      list.appendChild(li);
+      return;
+    }
+    for (const line of log) {
+      const li = document.createElement('li');
+      li.textContent = line;
+      list.appendChild(li);
+    }
+  }
+
+  function record(text) {
+    lastEvent = text;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    log = [`${time}  ${text}`, ...log].slice(0, 7);
+    renderCounts();
+    renderLog();
+  }
+
+  // Interaction wiring for each control.
+  for (const [key, c] of Object.entries(controls)) {
+    const n = c.node;
+    n.addEventListener('pointerenter', (e) => {
+      if (e.pointerType === 'touch') return;
+      c.flags.hover = true; paint(key);
+    });
+    n.addEventListener('pointerleave', () => {
+      c.flags.hover = false; c.flags.down = false; paint(key);
+    });
+    n.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      c.flags.down = true; counts.presses += 1; paint(key); renderCounts();
+    });
+    const release = () => { c.flags.down = false; paint(key); };
+    n.addEventListener('pointerup', release);
+    n.addEventListener('pointercancel', release);
+    n.addEventListener('focus', () => {
+      c.flags.focus = n.matches(':focus-visible'); paint(key);
+    });
+    n.addEventListener('blur', () => {
+      c.flags.focus = false; c.flags.down = false; paint(key);
+    });
+    paint(key);
+  }
+
+  controls.primary.node.addEventListener('click', () => {
+    counts.bookings += 1;
+    record(`Fitting requested (${counts.bookings} so far)`);
+    announce(`Fitting requested. ${counts.bookings} requested in this session.`);
+  });
+
+  controls.quiet.node.addEventListener('click', () => {
+    counts.clicks += 1;
+    record('Opened the spring edit (demo, no navigation)');
+    announce('Spring edit opened in the demo.');
+  });
+
+  controls.save.node.addEventListener('click', () => {
+    saved = !saved;
+    const btn = controls.save.node;
+    btn.setAttribute('aria-pressed', String(saved));
+    btn.querySelector('.label').textContent = saved ? 'Saved to shortlist' : 'Save to shortlist';
+    if (saved) counts.saves += 1; else counts.saves = Math.max(0, counts.saves - 1);
+    record(saved ? 'Saved a piece to the shortlist' : 'Removed a piece from the shortlist');
+    announce(saved ? 'Saved to shortlist.' : 'Removed from shortlist.');
+  });
+
+  // Dials.
+  function plot() {
+    const [x1, y1, x2, y2] = dials.curve.split(',').map(Number);
+    const X = (v) => 4 + v * 112;
+    const Y = (v) => 116 - v * 112;
+    el('plot').innerHTML = `
+      <rect x="4" y="4" width="112" height="112" fill="none" stroke="currentColor" stroke-opacity="0.12"/>
+      <line x1="${X(0)}" y1="${Y(0)}" x2="${X(x1)}" y2="${Y(y1)}" stroke="currentColor" stroke-opacity="0.35"/>
+      <line x1="${X(1)}" y1="${Y(1)}" x2="${X(x2)}" y2="${Y(y2)}" stroke="currentColor" stroke-opacity="0.35"/>
+      <path d="M${X(0)} ${Y(0)} C${X(x1)} ${Y(y1)} ${X(x2)} ${Y(y2)} ${X(1)} ${Y(1)}" fill="none" stroke="#7d82f0" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="${X(x1)}" cy="${Y(y1)}" r="3" fill="#7d82f0"/>
+      <circle cx="${X(x2)}" cy="${Y(y2)}" r="3" fill="#7d82f0"/>`;
+    el('curve-code').textContent = `cubic-bezier(${dials.curve.split(',').join(', ')})`;
+  }
+
+  function applyDials() {
+    root.style.setProperty('--lift-px', `${dials.lift}px`);
+    root.style.setProperty('--enter-ms', `${dials.enter}ms`);
+    root.style.setProperty('--glow-delay', `${dials.delay}ms`);
+    root.style.setProperty('--curve-enter', `cubic-bezier(${dials.curve.split(',').join(', ')})`);
+    el('lift-out').textContent = `${dials.lift} px`;
+    el('enter-out').textContent = `${dials.enter} ms`;
+    el('delay-out').textContent = `${dials.delay} ms`;
+    plot();
+    renderReadout();
+  }
+
+  function renderReadout() {
+    const longest = Math.max(dials.enter, dials.delay + GLOW_MS);
+    el('readout-longest').textContent = `Longest hover transition: ${longest} ms (band 150 to 400 ms). The glow runs ${dials.delay} ms delay plus ${GLOW_MS} ms fade.`;
+    const notes = [];
+    if (longest > 400) notes.push('Past 400 ms the hover starts to read as lag, not response.');
+    if (dials.delay > 100) notes.push('A glow later than 100 ms reads as late, not as following the lift.');
+    el('readout-warn').textContent = notes.join(' ');
+    const mode = el('motion').value;
+    const systemReduces = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let effective;
+    if (mode === 'full') effective = 'full motion (set here)';
+    else if (mode === 'reduced') effective = 'reduced motion (set here): lift and sheen off, colour and glow fade kept';
+    else effective = systemReduces ? 'reduced motion (from the system)' : 'full motion (from the system)';
+    el('readout-motion').textContent = `Effective motion: ${effective}.`;
+  }
+
+  function setMotionClass() {
+    root.classList.remove('mm-full', 'mm-reduced');
+    const mode = el('motion').value;
+    if (mode === 'full') root.classList.add('mm-full');
+    if (mode === 'reduced') root.classList.add('mm-reduced');
+    renderReadout();
+  }
+
+  el('lift').addEventListener('input', (e) => { dials.lift = Number(e.target.value); applyDials(); });
+  el('enter').addEventListener('input', (e) => { dials.enter = Number(e.target.value); applyDials(); });
+  el('delay').addEventListener('input', (e) => { dials.delay = Number(e.target.value); applyDials(); });
+  el('curve').addEventListener('change', (e) => {
+    dials.curve = e.target.value; applyDials();
+    record(`Arrival curve set to cubic-bezier(${dials.curve.split(',').join(', ')})`);
+  });
+  el('motion').addEventListener('change', () => {
+    setMotionClass();
+    record(`Motion set to ${el('motion').options[el('motion').selectedIndex].text.toLowerCase()}`);
+  });
+  matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', renderReadout);
+
+  el('btn-reset').addEventListener('click', () => {
+    Object.assign(dials, DEFAULTS);
+    el('lift').value = DEFAULTS.lift;
+    el('enter').value = DEFAULTS.enter;
+    el('delay').value = DEFAULTS.delay;
+    el('curve').value = DEFAULTS.curve;
+    el('motion').value = DEFAULTS.motion;
+    counts.bookings = counts.saves = counts.clicks = counts.presses = 0;
+    if (saved) controls.save.node.click();
+    controls.save.node.setAttribute('aria-pressed', 'false');
+    controls.save.node.querySelector('.label').textContent = 'Save to shortlist';
+    saved = false;
+    lastEvent = 'reset';
+    log = [];
+    applyDials();
+    setMotionClass();
+    renderCounts();
+    renderLog();
+    announce('Dials and counts reset.');
+  });
+
+  // Initial render.
+  applyDials();
+  setMotionClass();
+  renderCounts();
+  renderLog();
+})();
+</script>
+</body>
+</html>

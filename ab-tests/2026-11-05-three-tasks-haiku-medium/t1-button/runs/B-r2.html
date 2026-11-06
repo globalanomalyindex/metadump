@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Driftwood: dreamlike hover buttons</title>
+<style>
+/* ---------- tokens ---------- */
+:root {
+  --ink: #2a2650;
+  --ink-soft: #5d5a85;
+  --page-a: #ebe9f8;
+  --page-b: #e2edf4;
+  --accent: #3d2fb8;
+  --focus: #3d2fb8;
+  --line: rgba(42, 38, 80, 0.12);
+  --card: rgba(255, 255, 255, 0.58);
+  --radius: 14px;
+
+  /* leave: quick and out of the way */
+  --leave-dur: 180ms;
+  --leave-ease: cubic-bezier(0.4, 0, 0.6, 1);
+
+  /* enter: set by the tuner (defaults = drift reading) */
+  --enter-dur: 360ms;
+  --enter-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --lift-on: -2px;
+  --glow-blur: 16px;
+  --glow-dur: 460ms;
+  --glow-ease: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --sheen-name: none;
+  --sheen-dur: 900ms;
+  --sheen-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #ece9ff;
+    --ink-soft: #b9b5dd;
+    --page-a: #1d1b33;
+    --page-b: #14202a;
+    --accent: #c9bfff;
+    --focus: #c9bfff;
+    --line: rgba(236, 233, 255, 0.14);
+    --card: rgba(255, 255, 255, 0.05);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--page-a), var(--page-b));
+  background-color: #ebe9f8;
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.08; letter-spacing: -0.02em; font-weight: 650; max-width: 16ch; }
+h2 { font-size: 1.35rem; letter-spacing: -0.01em; }
+h3 { font-size: 1.02rem; }
+
+.muted { color: var(--ink-soft); }
+.eyebrow { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); font-weight: 600; }
+
+/* ---------- header ---------- */
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; flex-wrap: wrap; }
+.brand { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.brand-mark { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #b9a7ff 45%, #9fe3e0 90%); box-shadow: 0 0 14px rgba(185, 167, 255, 0.7); }
+.links { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.links a { color: var(--ink-soft); text-decoration: none; padding: 8px 10px; border-radius: 8px; }
+.links a:hover { color: var(--ink); }
+
+/* ---------- button ---------- */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.7rem 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius);
+  background-color: var(--fill, rgba(255, 255, 255, 0.78));
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(0);
+  transition:
+    transform var(--leave-dur) var(--leave-ease),
+    background-color var(--leave-dur) var(--leave-ease);
+}
+
+.btn--ghost {
+  --fill: rgba(255, 255, 255, 0.28);
+  --fill-hover: rgba(255, 255, 255, 0.5);
+  color: var(--ink);
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.btn--small { min-height: 40px; padding: 0.55rem 1rem; font-size: 0.95rem; }
+
+.btn > .label { position: relative; z-index: 1; }
+
+/* blurred copy behind the button: rendered once, revealed by opacity only */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: calc(var(--radius) + 8px);
+  z-index: -1;
+  background:
+    radial-gradient(60% 90% at 25% 50%, #b9a7ff, transparent 70%),
+    radial-gradient(60% 90% at 78% 50%, #9fe3e0, transparent 70%),
+    radial-gradient(50% 80% at 50% 100%, #f7c6d9, transparent 75%);
+  filter: blur(var(--glow-blur));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--leave-dur) var(--leave-ease);
+}
+
+/* one pale pass for the shimmer reading; runs once, then stops */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+  background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.8) 50%, transparent 68%);
+  opacity: 0;
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+/* hover: only on devices that really hover, so a tap cannot leave it stuck */
+@media (hover: hover) {
+  .btn:hover {
+    transform: translateY(var(--lift-on));
+    background-color: var(--fill-hover, rgba(255, 255, 255, 0.94));
+    transition:
+      transform var(--enter-dur) var(--enter-ease),
+      background-color var(--enter-dur) var(--enter-ease);
+  }
+  .btn:hover::before {
+    opacity: 1;
+    transition: opacity var(--glow-dur) var(--glow-ease);
+  }
+  .btn:hover::after {
+    animation: var(--sheen-name) var(--sheen-dur) var(--sheen-ease);
+  }
+}
+
+/* keyboard focus shows the same reveal as hover, without a pointer */
+.btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  transform: translateY(var(--lift-on));
+  background-color: var(--fill-hover, rgba(255, 255, 255, 0.94));
+  transition:
+    transform var(--enter-dur) var(--enter-ease),
+    background-color var(--enter-dur) var(--enter-ease);
+}
+.btn:focus-visible::before {
+  opacity: 1;
+  transition: opacity var(--glow-dur) var(--glow-ease);
+}
+.btn:focus-visible::after {
+  animation: var(--sheen-name) var(--sheen-dur) var(--sheen-ease);
+}
+
+/* pressed: a short sink, the glow dims back toward rest */
+.btn:active {
+  transform: translateY(1px);
+  transition:
+    transform 110ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 110ms cubic-bezier(0.2, 0, 0, 1);
+}
+.btn:active::before {
+  opacity: 0.35;
+  transition: opacity 110ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* reduced motion: lift, sheen and press sink stop; colour and glow fade stay */
+@media (prefers-reduced-motion: reduce) {
+  .btn { --lift-on: 0px; --sheen-name: none; }
+  .btn:active { transform: none; }
+}
+.sim-reduce .btn { --lift-on: 0px; --sheen-name: none; }
+.sim-reduce .btn:active { transform: none; }
+
+@keyframes sheen {
+  0%   { opacity: 0; transform: translateX(-100%); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+/* ---------- hero ---------- */
+.hero { padding: 56px 0 40px; display: grid; gap: 22px; }
+.hero p.lede { font-size: 1.12rem; color: var(--ink-soft); max-width: 52ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.meta-line { font-size: 0.9rem; color: var(--ink-soft); }
+
+.steps {
+  margin: 0 0 8px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.steps[hidden] { display: none; }
+.steps li { list-style: none; }
+.steps .n { font-size: 0.8rem; color: var(--ink-soft); font-weight: 600; }
+
+/* ---------- sections and cards ---------- */
+section.block { padding: 36px 0; border-top: 1px solid var(--line); }
+.section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 20px; margin-bottom: 20px; }
+
+.plans { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.plan {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+.plan.is-selected { border-color: rgba(185, 167, 255, 0.9); background: rgba(255, 255, 255, 0.78); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .plan.is-selected { background: rgba(255, 255, 255, 0.12); }
+}
+.price { font-size: 2.2rem; font-weight: 650; letter-spacing: -0.02em; }
+.price small { font-size: 0.95rem; font-weight: 500; color: var(--ink-soft); }
+.plan ul { margin: 0; padding-left: 1.1rem; color: var(--ink-soft); display: grid; gap: 4px; font-size: 0.95rem; }
+.plan .btn { width: 100%; }
+
+.summary {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline;
+}
+.summary strong { font-weight: 650; }
+
+/* ---------- tuner ---------- */
+.tuner { display: grid; gap: 22px; }
+@media (min-width: 900px) {
+  .tuner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.stage {
+  display: grid;
+  place-items: center;
+  gap: 26px;
+  padding: 44px 16px 36px;
+  min-height: 220px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px dashed var(--line);
+}
+.stage .row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+
+.state-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-size: 0.85rem;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.chip.on { background: var(--ink); color: var(--page-a); border-color: transparent; }
+.readout { font-size: 0.92rem; color: var(--ink-soft); }
+.readout code, .css-out code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; color: var(--ink); }
+
+.radios { display: flex; flex-wrap: wrap; gap: 8px; }
+.radios button {
+  font: inherit; font-size: 0.92rem;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: rgba(255, 255, 255, 0.4); color: var(--ink);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.radios button[aria-checked="true"] { background: var(--ink); color: var(--page-a); border-color: transparent; }
+.reading-note { font-size: 0.95rem; color: var(--ink-soft); }
+
+.slider { display: grid; gap: 6px; }
+.slider-head { display: flex; justify-content: space-between; font-size: 0.92rem; }
+.slider-head output { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+input[type="range"] { width: 100%; accent-color: #8c7cff; margin: 0; }
+.check { display: flex; gap: 10px; align-items: center; font-size: 0.95rem; }
+.check input { width: 18px; height: 18px; accent-color: #8c7cff; }
+
+.curve { width: 100%; height: auto; display: block; }
+.curve .grid { stroke: var(--line); stroke-width: 1; }
+.curve .guide { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.6; }
+.curve .curve-line { fill: none; stroke: #8c7cff; stroke-width: 2.5; stroke-linecap: round; }
+.curve .handle { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.7; }
+.curve .knob { fill: #8c7cff; }
+.curve text { fill: var(--ink-soft); font-size: 10px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+.css-out {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(42, 38, 80, 0.07);
+  border: 1px solid var(--line);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.checks li { display: grid; grid-template-columns: auto 1fr; gap: 10px; font-size: 0.93rem; align-items: start; }
+.badge {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 3px 8px; border-radius: 999px; min-width: 52px; text-align: center;
+  background: rgba(42, 38, 80, 0.08); color: var(--ink-soft);
+}
+.badge.pass { background: rgba(120, 220, 200, 0.35); color: #0f5e52; }
+.badge.warn { background: rgba(255, 196, 140, 0.45); color: #7a3d00; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .badge.pass { color: #bdf5e8; }
+  :root:not([data-theme="light"]) .badge.warn { color: #ffd9b3; }
+}
+
+.last-action { min-height: 1.5em; color: var(--ink); font-weight: 500; }
+
+footer { padding: 28px 0 48px; font-size: 0.88rem; color: var(--ink-soft); border-top: 1px solid var(--line); }
+
+:focus-visible { outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="nav">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Driftwood</div>
+    <nav class="links" aria-label="Main">
+      <a href="#pricing">Pricing</a>
+      <a href="#tuner">Button lab</a>
+      <button class="btn btn--ghost btn--small" type="button" data-action="login"><span class="label">Log in</span></button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">Scheduling for small teams</p>
+      <h1 id="hero-title">Plan the week without the scramble.</h1>
+      <p class="lede">Driftwood lines up calendars, rooms and handoffs in one quiet view, so Monday starts with a plan instead of a thread of messages.</p>
+      <div class="actions">
+        <button class="btn" type="button" id="hero-trial" data-trial><span class="label">Start free trial</span></button>
+        <button class="btn btn--ghost" type="button" id="how-toggle" aria-expanded="false" aria-controls="how-steps"><span class="label">See how it works</span></button>
+      </div>
+      <p class="meta-line">Trial requests so far: <strong id="trial-count">0</strong> &middot; No card needed for 14 days.</p>
+      <ol class="steps" id="how-steps" hidden>
+        <li><div class="n">01</div><h3>Connect calendars</h3><p class="muted">Pull in shared and personal calendars in under a minute.</p></li>
+        <li><div class="n">02</div><h3>Drop in the week</h3><p class="muted">Tasks, rooms and handoffs land in the right day on their own.</p></li>
+        <li><div class="n">03</div><h3>Share one view</h3><p class="muted">Everyone on the team reads the same plan, with no status meeting.</p></li>
+      </ol>
+      <p class="last-action" id="last-action" aria-live="polite"></p>
+    </section>
+
+    <section class="block" id="pricing" aria-labelledby="pricing-title">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Pricing</p>
+          <h2 id="pricing-title">Pick the seat count that fits</h2>
+        </div>
+        <p class="muted">Billed monthly. Change plans any time.</p>
+      </div>
+      <div class="plans" role="group" aria-label="Plans">
+        <article class="plan" data-plan="Solo" data-price="8">
+          <h3>Solo</h3>
+          <div class="price">$8 <small>/ seat / mo</small></div>
+          <ul><li>One calendar, unlimited tasks</li><li>Shared views with two guests</li></ul>
+          <button class="btn btn--ghost" type="button" aria-pressed="false"><span class="label">Choose Solo</span></button>
+        </article>
+        <article class="plan" data-plan="Team" data-price="24">
+          <h3>Team</h3>
+          <div class="price">$24 <small>/ seat / mo</small></div>
+          <ul><li>Room and handoff planning</li><li>Unlimited guests and views</li><li>Weekly digest for leads</li></ul>
+          <button class="btn" type="button" aria-pressed="true"><span class="label">Choose Team</span></button>
+        </article>
+        <article class="plan" data-plan="Studio" data-price="60">
+          <h3>Studio</h3>
+          <div class="price">$60 <small>/ seat / mo</small></div>
+          <ul><li>Everything in Team</li><li>Audit log and SSO</li><li>A named onboarding lead</li></ul>
+          <button class="btn btn--ghost" type="button" aria-pressed="false"><span class="label">Choose Studio</span></button>
+        </article>
+      </div>
+      <div class="summary" aria-live="polite">
+        <span class="muted">Selected:</span>
+        <strong id="plan-name">Team</strong>
+        <span id="plan-detail">$24 per seat per month, 14-day trial.</span>
+        <span class="muted" id="plan-total"></span>
+      </div>
+    </section>
+
+    <section class="block" id="tuner" aria-labelledby="tuner-title">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Button lab</p>
+          <h2 id="tuner-title">Tune the dreamlike hover</h2>
+        </div>
+        <p class="muted">Every button on this page follows these values.</p>
+      </div>
+
+      <div class="tuner">
+        <div class="stage" aria-label="Button preview">
+          <div class="row">
+            <button class="btn" type="button" id="tune-btn" data-trial data-state="rest"><span class="label">Start free trial</span></button>
+          </div>
+          <div class="row">
+            <button class="btn btn--ghost" type="button" data-noop><span class="label">See how it works</span></button>
+            <button class="btn btn--small" type="button" data-noop><span class="label">Add a room</span></button>
+          </div>
+          <div class="state-chips" aria-label="Interaction state of the main preview button">
+            <span class="chip" data-chip="rest">rest</span>
+            <span class="chip" data-chip="hover">hover</span>
+            <span class="chip" data-chip="focus">focus</span>
+            <span class="chip" data-chip="pressed">pressed</span>
+          </div>
+          <p class="readout">Preview state: <code id="state-now">rest</code> &middot; hover events: <strong id="hover-count">0</strong></p>
+        </div>
+
+        <div class="panel">
+          <div>
+            <p class="eyebrow">Reading</p>
+            <div class="radios" role="radiogroup" aria-label="Reading of dreamlike">
+              <button type="button" role="radio" aria-checked="true" data-reading="drift">Slow drift</button>
+              <button type="button" role="radio" aria-checked="false" data-reading="bloom">Soft bloom</button>
+              <button type="button" role="radio" aria-checked="false" data-reading="float">Gentle float</button>
+              <button type="button" role="radio" aria-checked="false" data-reading="shimmer">Faint shimmer</button>
+            </div>
+            <p class="reading-note" id="reading-note" style="margin-top:10px"></p>
+          </div>
+
+          <div class="slider">
+            <div class="slider-head"><label for="dur">Enter duration</label><output id="dur-out"></output></div>
+            <input type="range" id="dur" min="150" max="600" step="10">
+          </div>
+          <div class="slider">
+            <div class="slider-head"><label for="lift">Lift</label><output id="lift-out"></output></div>
+            <input type="range" id="lift" min="0" max="4" step="0.5">
+          </div>
+          <div class="slider">
+            <div class="slider-head"><label for="blur">Glow blur</label><output id="blur-out"></output></div>
+            <input type="range" id="blur" min="8" max="24" step="1">
+          </div>
+
+          <label class="check"><input type="checkbox" id="reduce"> Simulate reduced motion</label>
+          <p class="readout">System preference: <code id="sys-reduce">no-preference</code></p>
+
+          <div>
+            <p class="eyebrow" style="margin-bottom:8px">Curve</p>
+            <svg class="curve" viewBox="0 0 260 180" role="img" aria-label="Plot of the enter curve">
+              <line class="grid" x1="20" y1="20" x2="20" y2="160"/>
+              <line class="grid" x1="20" y1="160" x2="240" y2="160"/>
+              <line class="guide" x1="20" y1="51" x2="240" y2="51"/>
+              <line class="guide" x1="20" y1="129" x2="240" y2="129"/>
+              <text x="4" y="54">1</text>
+              <text x="4" y="132">0</text>
+              <line class="handle" id="h1" x1="20" y1="160" x2="20" y2="160"/>
+              <line class="handle" id="h2" x1="240" y2="51" x1="240" y2="51"/>
+              <path class="curve-line" id="curve" d="M20 160 L240 51"/>
+              <circle class="knob" id="k1" cx="20" cy="160" r="3.5"/>
+              <circle class="knob" id="k2" cx="240" cy="51" r="3.5"/>
+            </svg>
+            <p class="readout" style="margin-top:8px">Curve: <code id="bez-out"></code></p>
+          </div>
+
+          <div>
+            <p class="eyebrow" style="margin-bottom:8px">Hover rule for this setting</p>
+            <pre class="css-out" id="css-out"></pre>
+          </div>
+
+          <div>
+            <p class="eyebrow" style="margin-bottom:8px">Practical checks</p>
+            <ul class="checks" id="checks"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Driftwood is a made-up product for this button lab. Motion uses only transform and opacity; hover rules sit behind a hover-capable media query; the reduced-motion setting keeps the colour change.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var mqReduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+  // Readings of "dreamlike": each one is a curve, a duration and a glow pace, not a fixed default.
+  var READINGS = {
+    drift: {
+      label: "Slow drift", ease: [0.23, 1, 0.32, 1], dur: 360, lift: 2, blur: 16,
+      glowEase: [0.165, 0.84, 0.44, 1], glowDur: 460, sheen: false,
+      note: "The tail of the curve carries the feeling. The lift stays small and the glow follows it."
+    },
+    bloom: {
+      label: "Soft bloom", ease: [0.2, 0, 0, 1], dur: 320, lift: 1, blur: 18,
+      glowEase: [0.165, 0.84, 0.44, 1], glowDur: 480, sheen: false,
+      note: "The glow brightens evenly behind the label while the surface barely moves."
+    },
+    float: {
+      label: "Gentle float", ease: [0.2, 0.6, 0.3, 1.18], dur: 420, lift: 3, blur: 14,
+      glowEase: [0.2, 0.6, 0.3, 1], glowDur: 420, sheen: false,
+      note: "The button rises a few pixels, passes its rest point and settles back. The overshoot is kept small."
+    },
+    shimmer: {
+      label: "Faint shimmer", ease: [0.2, 0, 0, 1], dur: 260, lift: 1, blur: 12,
+      glowEase: [0.2, 0, 0, 1], glowDur: 360, sheen: true,
+      note: "One pale pass crosses the face on hover, focus or press. Nothing loops at rest."
+    }
+  };
+
+  var state = {
+    reading: "drift",
+    dur: READINGS.drift.dur,
+    lift: READINGS.drift.lift,
+    blur: READINGS.drift.blur,
+    reduce: false,
+    trials: 0,
+    plan: "Team",
+    howOpen: false,
+    hoverCount: 0
+  };
+
+  var el = {
+    dur: document.getElementById("dur"),
+    lift: document.getElementById("lift"),
+    blur: document.getElementById("blur"),
+    durOut: document.getElementById("dur-out"),
+    liftOut: document.getElementById("lift-out"),
+    blurOut: document.getElementById("blur-out"),
+    reduce: document.getElementById("reduce"),
+    sysReduce: document.getElementById("sys-reduce"),
+    note: document.getElementById("reading-note"),
+    bez: document.getElementById("bez-out"),
+    css: document.getElementById("css-out"),
+    checks: document.getElementById("checks"),
+    curve: document.getElementById("curve"),
+    h1: document.getElementById("h1"),
+    h2: document.getElementById("h2"),
+    k1: document.getElementById("k1"),
+    k2: document.getElementById("k2"),
+    trialCount: document.getElementById("trial-count"),
+    lastAction: document.getElementById("last-action"),
+    how: document.getElementById("how-toggle"),
+    steps: document.getElementById("how-steps"),
+    planName: document.getElementById("plan-name"),
+    planDetail: document.getElementById("plan-detail"),
+    planTotal: document.getElementById("plan-total"),
+    tune: document.getElementById("tune-btn"),
+    stateNow: document.getElementById("state-now"),
+    hoverCount: document.getElementById("hover-count")
+  };
+
+  function bez(a) { return "cubic-bezier(" + a.join(", ") + ")"; }
+
+  // ---- curve plot: x in 0..1 maps to 20..240, y in -0.4..1.4 maps to 160..20
+  function px(x) { return 20 + x * 220; }
+  function py(y) { return 160 - ((y + 0.4) / 1.8) * 140; }
+
+  function drawCurve(a) {
+    var x1 = a[0], y1 = a[1], x2 = a[2], y2 = a[3];
+    el.curve.setAttribute("d",
+      "M" + px(0) + " " + py(0) +
+      " C" + px(x1) + " " + py(y1) + " " + px(x2) + " " + py(y2) +
+      " " + px(1) + " " + py(1));
+    el.h1.setAttribute("x2", px(x1)); el.h1.setAttribute("y2", py(y1));
+    el.k1.setAttribute("cx", px(x1)); el.k1.setAttribute("cy", py(y1));
+    el.h2.setAttribute("x1", px(x2)); el.h2.setAttribute("y1", py(y2));
+    el.h2.setAttribute("x2", px(1));  el.h2.setAttribute("y2", py(1));
+    el.k2.setAttribute("cx", px(x2)); el.k2.setAttribute("cy", py(y2));
+  }
+
+  function systemReduce() { return !!(mqReduce && mqReduce.matches); }
+
+  function row(badge, text) {
+    return '<li><span class="badge ' + badge.cls + '">' + badge.text + "</span><span>" + text + "</span></li>";
+  }
+
+  function render() {
+    var r = READINGS[state.reading];
+    var ease = bez(r.ease);
+    var glowEase = bez(r.glowEase);
+    var liftPx = -state.lift;
+
+    // every value below is written to :root, so all buttons on the page follow the same settings
+    root.style.setProperty("--enter-dur", state.dur + "ms");
+    root.style.setProperty("--enter-ease", ease);
+    root.style.setProperty("--lift-on", liftPx + "px");
+    root.style.setProperty("--glow-blur", state.blur + "px");
+    root.style.setProperty("--glow-dur", r.glowDur + "ms");
+    root.style.setProperty("--glow-ease", glowEase);
+    root.style.setProperty("--sheen-name", r.sheen ? "sheen" : "none");
+    root.classList.toggle("sim-reduce", state.reduce);
+
+    el.dur.value = state.dur;
+    el.lift.value = state.lift;
+    el.blur.value = state.blur;
+    el.durOut.textContent = state.dur + " ms";
+    el.liftOut.textContent = state.lift + " px";
+    el.blurOut.textContent = state.blur + " px";
+    el.reduce.checked = state.reduce;
+    el.sysReduce.textContent = systemReduce() ? "reduce" : "no-preference";
+    el.note.textContent = r.label + ": " + r.note;
+    el.bez.textContent = ease;
+
+    document.querySelectorAll("[data-reading]").forEach(function (b) {
+      b.setAttribute("aria-checked", b.dataset.reading === state.reading ? "true" : "false");
+    });
+
+    drawCurve(r.ease);
+
+    el.css.textContent =
+      "/* enter: hover and focus-visible */\n" +
+      ".btn:hover {\n" +
+      "  transform: translateY(-" + state.lift + "px);\n" +
+      "  transition: transform " + state.dur + "ms " + ease + ",\n" +
+      "              background-color " + state.dur + "ms " + ease + ";\n" +
+      "}\n" +
+      ".btn:hover::before {\n" +
+      "  opacity: 1;\n" +
+      "  filter: blur(" + state.blur + "px);\n" +
+      "  transition: opacity " + r.glowDur + "ms " + glowEase + ";\n" +
+      "}\n" +
+      "/* leave: short, steep, out of the way */\n" +
+      ".btn {\n" +
+      "  transition: transform 180ms cubic-bezier(0.4, 0, 0.6, 1), opacity 180ms cubic-bezier(0.4, 0, 0.6, 1);\n" +
+      "}";
+
+    var rows = [];
+    var inBand = state.dur >= 150 && state.dur <= 400;
+    rows.push(row(inBand ? { cls: "pass", text: "pass" } : { cls: "warn", text: "check" },
+      inBand
+        ? "Hover finishes inside the 150 to 400 ms band (" + state.dur + " ms)."
+        : (state.dur > 400
+          ? state.dur + " ms is past 400 ms: the hover will read as slow."
+          : state.dur + " ms is under 150 ms: the change may read as instant.")));
+    var liftOk = state.lift < 4;
+    rows.push(row(liftOk ? { cls: "pass", text: "pass" } : { cls: "warn", text: "check" },
+      liftOk ? "Lift is " + state.lift + " px, under 4 px, so the button does not seem to jump."
+             : "A 4 px lift starts to read as jumping."));
+    rows.push(row({ cls: "pass", text: "pass" },
+      "Only transform and opacity animate. Nothing animates at rest: motion sits under hover, focus and press."));
+    var reduceOn = state.reduce || systemReduce();
+    rows.push(row(reduceOn ? { cls: "pass", text: "pass" } : { cls: "", text: "off" },
+      reduceOn
+        ? "Reduced motion is on: the lift and the sheen are reset to none; the colour change and the glow fade stay."
+        : "Turn on Simulate reduced motion to see the lift and sheen reset."));
+    rows.push(row({ cls: "pass", text: "pass" },
+      "Hover rules sit behind (hover: hover), so a tap does not leave the glow stuck on the button."));
+    el.checks.innerHTML = rows.join("");
+  }
+
+  // ---- live state for the preview button
+  var flags = { hover: false, focus: false, press: false };
+  function paintState() {
+    var s = flags.press ? "pressed" : flags.focus ? "focus" : flags.hover ? "hover" : "rest";
+    el.tune.setAttribute("data-state", s);
+    el.stateNow.textContent = s;
+    document.querySelectorAll("[data-chip]").forEach(function (c) {
+      c.classList.toggle("on", c.dataset.chip === s);
+    });
+  }
+
+  el.tune.addEventListener("pointerenter", function (e) {
+    if (e.pointerType === "touch") return;
+    flags.hover = true;
+    state.hoverCount++;
+    el.hoverCount.textContent = state.hoverCount;
+    paintState();
+  });
+  el.tune.addEventListener("pointerleave", function () {
+    flags.hover = false; flags.press = false; paintState();
+  });
+  el.tune.addEventListener("pointerdown", function () { flags.press = true; paintState(); });
+  window.addEventListener("pointerup", function () { flags.press = false; paintState(); });
+  window.addEventListener("pointercancel", function () { flags.press = false; paintState(); });
+  el.tune.addEventListener("focus", function () {
+    var fv = true;
+    try { fv = el.tune.matches(":focus-visible"); } catch (_) { fv = true; }
+    flags.focus = fv; paintState();
+  });
+  el.tune.addEventListener("blur", function () { flags.focus = false; paintState(); });
+
+  // ---- actions
+  function requestTrial(source) {
+    state.trials++;
+    el.trialCount.textContent = state.trials;
+    el.lastAction.textContent = "Trial requested from " + source + ". Requests so far: " + state.trials + ".";
+  }
+
+  document.querySelectorAll("[data-trial]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      requestTrial(b.id === "tune-btn" ? "the button lab" : "the hero");
+    });
+  });
+
+  document.querySelectorAll("[data-noop]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      el.lastAction.textContent = "“" + b.textContent.trim() + "” pressed in the button lab.";
+    });
+  });
+
+  document.querySelector('[data-action="login"]').addEventListener("click", function () {
+    el.lastAction.textContent = "Log in is a sample control; no account is opened on this page.";
+  });
+
+  el.how.addEventListener("click", function () {
+    state.howOpen = !state.howOpen;
+    el.steps.hidden = !state.howOpen;
+    el.how.setAttribute("aria-expanded", state.howOpen ? "true" : "false");
+    el.how.querySelector(".label").textContent = state.howOpen ? "Hide the steps" : "See how it works";
+  });
+
+  document.querySelectorAll(".plan").forEach(function (card) {
+    var btn = card.querySelector("button");
+    btn.addEventListener("click", function () {
+      selectPlan(card.dataset.plan);
+    });
+  });
+
+  function selectPlan(name) {
+    state.plan = name;
+    document.querySelectorAll(".plan").forEach(function (card) {
+      var on = card.dataset.plan === name;
+      var b = card.querySelector("button");
+      card.classList.toggle("is-selected", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.classList.toggle("btn--ghost", !on);
+      if (on) { el.planTotal.textContent = ""; }
+    });
+    var card = document.querySelector('.plan[data-plan="' + name + '"]');
+    var price = Number(card.dataset.price);
+    el.planName.textContent = name;
+    el.planDetail.textContent = "$" + price + " per seat per month, 14-day trial.";
+    el.planTotal.textContent = "Five seats: $" + (price * 5).toLocaleString("en-US") + " a month.";
+    el.lastAction.textContent = name + " plan selected.";
+  }
+
+  // ---- controls
+  document.querySelectorAll("[data-reading]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var r = READINGS[b.dataset.reading];
+      state.reading = b.dataset.reading;
+      state.dur = r.dur; state.lift = r.lift; state.blur = r.blur;
+      render();
+    });
+  });
+
+  el.dur.addEventListener("input", function () { state.dur = Number(el.dur.value); render(); });
+  el.lift.addEventListener("input", function () { state.lift = Number(el.lift.value); render(); });
+  el.blur.addEventListener("input", function () { state.blur = Number(el.blur.value); render(); });
+  el.reduce.addEventListener("change", function () { state.reduce = el.reduce.checked; render(); });
+
+  if (mqReduce && mqReduce.addEventListener) {
+    mqReduce.addEventListener("change", render);
+  }
+
+  selectPlan(state.plan);
+  render();
+})();
+</script>
+</body>
+</html>

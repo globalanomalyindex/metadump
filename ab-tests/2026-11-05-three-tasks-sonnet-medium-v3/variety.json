@@ -1,0 +1,74 @@
+{
+ "t1-button": {
+  "A_mean": 3.33,
+  "B_mean": 5.33,
+  "A": [
+   3.0,
+   3.0,
+   4.0
+  ],
+  "B": [
+   5.0,
+   5.0,
+   6.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P repeats one design: a purple-to-blue gradient pill (or pastel pearl) under a serif headline about quiet evenings or sleep, three of four on pastel lavender, with near-identical ease-out curves such as (.16,.84,.3,1) and (.6,.02,.2,.98). Q has more spread in button treatment (filled gradient, glowing outline with sparkle, pastel pill with inner chip, pearl) and page context (waitlist form, newsletter, glass card, wind-down app), though three of four are dark and the curve families overlap.",
+   "v2 (P=B): P shares Lumen/sleep-ritual copy, dark palettes (3 of 4) and a breathing loop with near-identical exhale curves, but the buttons differ visibly (pastel glass pill, lavender light-sweep, outlined glowing ghost, deep indigo pill) and so do the page contexts (glass card, hero, newsletter, waitlist). Q is mostly one design repeated: retreat/sleep booking copy, three of four with the same purple-to-blue gradient pill, two white rounded cards, and near-identical curves (.6,.02,.2,.98 / .34,1.4,.5,1), with only the iridescent pastel Q1 and dark Q2 offering some contrast.",
+   "v3 (P=A): P is mostly one idea: three light/pastel lavender-gradient pill buttons in centered cards or hero (P2, P3, P4 near-identical in palette, serif headline, and curve families) plus one dark variant (P1), all in a sleep/retreat context. Q mixes light glass card, two dark pages, and different button forms (pill-in-pill, deep indigo, outlined sparkle), with different page contexts (newsletter, journal waitlist, wind-down) and a few distinctive curves, though it still repeats the Lumen name, serif, and purple-dark mood."
+  ]
+ },
+ "t2-haiku": {
+  "A_mean": 1.33,
+  "B_mean": 6.0,
+  "A": [
+   1.0,
+   1.0,
+   2.0
+  ],
+  "B": [
+   6.0,
+   6.0,
+   6.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is one poem four times: nacreous/mother-of-pearl light at dusk or dawn with the sky holding something, with near-identical phrases repeated. Q covers different clouds (hole-punch cloud with ice fall and aircraft trail, pearl cloud, noctilucent streaks) and different moments, though several end on grey and the pearl-cloud poems overlap somewhat.",
+   "v2 (P=B): P mixes noctilucent streaks, nacreous pink fade, a watcher and a fallstreak hole with a plane, though three of four share a dusk-to-grey ending. Q is the same poem four times: nacreous mother-of-pearl glow, with the sky 'holding' something, near-identical wording.",
+   "v3 (P=A): P is one poem four times: nacreous/mother-of-pearl light at dusk or dawn on cold air, with near-identical wording and the same sky-holds-it ending. Q mixes a fallstreak hole with a plane line, noctilucent streaks, and a pink-to-grey fade, though Q1 and Q4 share the pearl-cloud-then-grey arc."
+  ]
+ },
+ "t3-toast": {
+  "A_mean": 3.0,
+  "B_mean": 6.33,
+  "A": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "B": [
+   6.0,
+   5.0,
+   8.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is one design four times: bottom-right rounded card, green/teal accent, progress bar under the header, vertical timeline and Copy/Refresh/Alerts buttons (only P1 swaps in a horizontal stepper). Q varies more in placement (top-center pill), accent (amber, blue), multi-package stacking and segmented bars, though Q1 and Q4 are close cousins.",
+   "v2 (P=B): P shares the vertical-timeline body but varies placement (one top-centre pill vs bottom-right cards), accent (blue, blue, green, amber), and extras (segmented bar, multi-package tabs, state demo, copy/open-carrier footer). Q is almost all bottom-right, green-on-near-black cards with the same header, progress bar and button row; only the horizontal stepper plus pager dots in Q4 and the compact Q2 header differ.",
+   "v3 (P=A): P is the same bottom-right dark rounded toast with a green accent, icon/dot header, progress bar and a vertical step list plus button row, varying only in details (P4 and P1 are near-twins). Q varies placement (top-center pill vs bottom-right), palette (blue, amber, green), form (segmented bar, full timeline, stacked multi-package with tabs) and information structure."
+  ]
+ }
+}

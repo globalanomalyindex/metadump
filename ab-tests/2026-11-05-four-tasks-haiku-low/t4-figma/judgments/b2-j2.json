@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"style": 6, "motion": 6, "loop": 9, "craft": 4, "originality": 4, "overall": 5, "note": "Pastel gradient with flat circle, square and starburst reads Figma-adjacent and loops cleanly on a 5 s ease-out/hold/ease-in-out cycle, but the starburst's CSS transform overrides its translate, so it sits clipped in the top-left corner in every frame and the composition looks sparse and broken."},
+"X": {"style": 5, "motion": 8, "loop": 9, "craft": 7, "originality": 6, "overall": 6, "note": "Staggered canvas pieces scatter, assemble with spin and eased easing, then disperse, with a wrap-based 5 s loop that returns exactly to its start, but the assembled frame reproduces the Figma mark's five-shape arrangement in its exact brand palette, which edges into copying the logo."},
+"Y": {"style": 6, "motion": 5, "loop": 9, "craft": 6, "originality": 3, "overall": 5, "note": "Clean pastel Figma-palette shapes with a periodic sinusoidal loop that is seamless by construction, but the motion is a generic wandering screensaver with no choreography and the purple circle awkwardly overlaps the red pill."},
+"Z": {"style": 7, "motion": 7, "loop": 9, "craft": 6, "originality": 6, "overall": 7, "note": "Bright Figma-palette shapes (quarter circle, semicircle, squircle, pill) staggered in and out over soft dark glows with a seamless 5 s wrap, giving the most energetic and brand-like result without copying the logo, though some mid-motion compositions look cramped."}
+},
+"ranking": ["Z", "X", "W", "Y"]}

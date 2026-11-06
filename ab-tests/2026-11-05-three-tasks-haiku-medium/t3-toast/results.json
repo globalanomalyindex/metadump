@@ -1,0 +1,202 @@
+{
+ "scores": {
+  "A": {
+   "compact": 5.42,
+   "collapsible": 5.25,
+   "tracking": 5.17,
+   "dark": 7.67,
+   "usability": 5.5,
+   "craft": 5.58,
+   "overall": 5.0,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "A-r1": 5.0,
+    "A-r2": 6.0,
+    "A-r3": 5.67,
+    "A-r4": 3.33
+   }
+  },
+  "B": {
+   "compact": 8.42,
+   "collapsible": 8.92,
+   "tracking": 8.67,
+   "dark": 8.58,
+   "usability": 8.58,
+   "craft": 8.33,
+   "overall": 8.58,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "B-r1": 8.67,
+    "B-r2": 8.33,
+    "B-r3": 8.67,
+    "B-r4": 8.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 24,
+  "losses": 0,
+  "ties": 0,
+  "win_rate": 1.0
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 462,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 38,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 474,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 39,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 329,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 38,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 238,
+   "surface_luminance": 0.01,
+   "dark_surface": true,
+   "expanded_height_px": 42,
+   "state_changes": true,
+   "works": false,
+   "js_errors": 6,
+   "js_error_text": [
+    "TypeError: Cannot read properties of undefined (reading 'slice')\n    at render (file:///Users/chrisfiore/metadump-skill/ab-tests/2026-11-05-three-tasks-haiku-me",
+    "TypeError: Cannot read properties of undefined (reading 'slice')\n    at render (file:///Users/chrisfiore/metadump-skill/ab-tests/2026-11-05-three-tasks-haiku-me"
+   ]
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 42,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 459,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 42,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 337,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 38,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 330,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 46,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 366,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 87334,
+   "mean_seconds": 57.0
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 138936,
+   "mean_seconds": 144.7
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 228261,
+   "ms": 1538112,
+   "tool_uses": 39,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.94,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "A 232px mint pill at rest that opens to a 296px card with a full six-checkpoint timeline, a plain next-step line, carrier, tracking number and actions, animated with grid-row and width transitions and a clear rotated chevron.",
+  "b1/j1/A-r1": "It rests open at about 300 by 460px, so it is not compact at rest, and it collapses with no body animation; the package rows are non-focusable divs so the event expansion cannot be reached by keyboard, and Next update re-renders the list and drops focus.",
+  "b1/j1/B-r2": "A small pill that opens smoothly into a dense card with a four-stage stepper, scan list, a shopper action line, labeled buttons, inert hidden body, Escape to collapse, a live region and a reduce-motion toggle, with tiny 10.5px stepper labels as the main weakness.",
+  "b1/j1/A-r2": "It rests expanded at about 330 by 470px with a multi-package list, collapses instantly with display none and no transition, and has a tiny glyph chevron and no explicit next-step guidance, though its row buttons carry aria-expanded and toasts announce via a live region.",
+  "b1/j2/B-r2": "A slim 300px bar opens with a smooth grid transition into a dense but readable card showing stages, timeline, ETA, carrier, tracking number, next-step advice, and copy/open/dismiss, with aria-expanded and inert body handling.",
+  "b1/j2/A-r2": "It rests fully expanded as a tall multi-package list that covers much of a phone screen, the collapse snaps with no transition, and the chevrons are tiny glyphs, though the per-package toggles are real buttons.",
+  "b1/j2/A-r1": "The panel rests fully expanded with a form and three packages, collapse is an abrupt snap, the per-package timeline opens from a non-focusable div so it is not keyboard reachable, and tracking numbers are cut to their last six digits.",
+  "b1/j2/B-r1": "The 232px pill rotates its chevron through a timed grid expansion into a clean checkpoint trail with status-tinted accents, action advice, copy/open/dismiss, labeled controls and reduced-motion handling, with only the ETA truncated in the header.",
+  "b1/j3/A-r2": "Multi-package list is dense and tall when expanded (about 470px at rest), collapse and expand are instant with no transition, and the tracking and carrier inputs rely on placeholders with no labels.",
+  "b1/j3/B-r2": "A 300px pill expands into a tight card with a stage stepper, ETA, full tracking number, recent scans and a next-step line, with a grid-rows transition, inert body, aria-expanded, Escape to collapse, and a dismiss tab.",
+  "b1/j3/B-r1": "The 232px pill animates width and height smoothly and the full six-checkpoint timeline with next-step advice is well organized, though the ETA truncates at rest and the expanded card is tall.",
+  "b1/j3/A-r1": "Package detail expands from a div with no tabindex or role, so keyboard users cannot reach it, the tracking number is cut to six digits, and the panel is tall at rest with no next-step guidance.",
+  "b2/j1/B-r3": "A tidy pill that opens into a card with status, ETA, carrier, tracking number, a four-step timeline and clear actions, with aria-expanded, inert body when closed and Escape to collapse; the two-line wrapping of step labels and the odd scale-in frame keep it from top marks.",
+  "b2/j1/A-r3": "A clean package list with labeled remove buttons and aria-expanded, but it starts expanded, collapses to a bare header, and gives no timeline, ETA, tracking number or next-step guidance.",
+  "b2/j1/B-r4": "The strongest response: a compact status pill that expands into a monospaced UPS tracking number, a dated timeline with locations, ETA and next-step actions, plus a labeled Track button to reopen after dismissal, aria-live and Escape handling.",
+  "b2/j1/A-r4": "The collapsed bar shows only a dot and a count with no status text, the expanded body shows skeleton placeholders and a literal 'Northwind Post · undefined', and the open frames render blank, so the state is hard to read and the carrier data is broken.",
+  "b2/j2/B-r4": "A tidy 44px collapsed bar that opens into a grid-rows panel with a UPS tracking number, dated timeline, ETA header, copy/open/dismiss actions, and correct aria-expanded, Escape and live-region wiring, though it has no explicit next-step guidance.",
+  "b2/j2/A-r4": "The captured states show empty titles, a literal 'undefined' carrier and a count of 4 against 3 seeded packages, the toggle state in the frames does not match the rest captures, and the stored-state loader does not validate package shape, so the panel reads as broken with no ETA or timeline.",
+  "b2/j2/A-r3": "A clean dark multi-package list with color-coded status pills that works, but it ships open by default, covers a large part of the phone screen, shows no tracking code or timeline in the UI, and has no Escape handling or clear label on the advance pills.",
+  "b2/j2/B-r3": "The collapsed pill is very small and the open panel carries status, ETA, carrier and number, a dated step list, a plain-language next action, and inert-when-collapsed body with Escape, aria-expanded, a live region and a dismiss-to-edge-tab path, making it the most complete and carefully built of the four.",
+  "b2/j3/A-r4": "Collapsed bar is clean and the toggle has aria-expanded and Escape, but the open panel swaps instantly with no transition, has no ETA, and the at-rest and open captures show a blank title and 'undefined' tracking that looks like shared localStorage pollution from another design under the same key, so judged mainly from source.",
+  "b2/j3/B-r4": "A 272px pill that morphs into a card, with status, ETA and a clear timeline, smooth grid and radius transitions in the frames, live-region announcements, aria-current on the active step, reduced-motion handling and a reopen tab after dismiss, though it lacks an explicit next-action line.",
+  "b2/j3/B-r3": "The pill grows upward with clean width and height transitions, inert on the collapsed body, status shown as word plus dot, the most complete tracking content including ETA, carrier, number, timeline and a concrete next-action hint, with only minor step-name wrapping on phones.",
+  "b2/j3/A-r3": "A dense, well-colored multi-package list with status pills and remove buttons, but the toggle is an instant display swap with no Escape handling, the advance status is not announced, the tracking number and timeline are missing, and it opens by default so the at-rest footprint is large."
+ }
+}

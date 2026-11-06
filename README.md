@@ -5,7 +5,7 @@ Make your agent eat a bunch of info and then... take a dump.
 
 A meta dump is what I call one big JSON file that's basically a giant chest of information for the model to use. It's filled with everything about whatever you're making: keywords, tiered keywords, associated words, anti-keywords, natural language descriptions, SEO and search vocabulary, inspiration, colors, patterns, references, sources, measurements, timings, transcripts, anything at all like that. You make it once from a prompt (plus reference photos, files, links or videos if you have them), and then the model, or any other skill, tool or subagent, can go back to it whenever it needs to.
 
-Think of it as an AI's version of a stream of consciousness, a brain dump. It's not a rulebook, and the model doesn't have to obey it. It's a seed. It holds the actual facts written down: exact values, real references, screenshots, measurements, timings, stuff with sources. It also holds everything the model knows or can think of around the task: how people describe it, associated brands and works, patterns, what people need, the different ways to read the request, and the decisions coming up with the options for each. It gives the model way more to work with and riff on, and it never shrinks what I asked for. My prompt and the model's own judgment still make the calls.
+Think of it as an AI's version of a stream of consciousness, a brain dump. It's not a rulebook or a bible, and the model doesn't have to obey it. It's more like "here's some stuff to work with": it brings things up from the depths of the model to the surface, where they can be tinkered and played with. It's a seed. It holds the actual facts written down: exact values, real references, screenshots, measurements, timings, stuff with sources. It also holds everything the model knows or can think of around the task: how people describe it, associated brands and works, patterns, what people need, the different ways to read the request, and the decisions coming up with the options for each. It gives the model way more to work with and riff on, and it never shrinks what I asked for. My prompt and the model's own judgment still make the calls.
 
 Making the dump is honestly half the point too, because it forces everything into structure and specifics. And it works the same for anything: a dump about TDD should help the model make actual TDD decisions, the same way a design dump helps with visual ones.
 
@@ -29,7 +29,7 @@ Before this, I was making meta dumps by asking an agent to make one from a text 
 
 ## Does it actually help?
 
-I A/B tested it: the same task built by Haiku with and without a dump, then graded blind by Haiku 5.5 graders. So far there are two tasks, a "compact, minimal, modern shopping component" and "a set of three custom bezier curves that are described as feeling 'sticky and punchy', present them as loops":
+I A/B tested it: the same task built with and without a dump, then graded blind. The early rounds ran everything on Haiku 5.5, builders and graders; the latest round builds and grades with Sonnet 5.5 at medium effort (the dumps themselves are always built by a swarm of Haiku agents). It started with two tasks, a "compact, minimal, modern shopping component" and "a set of three custom bezier curves that are described as feeling 'sticky and punchy', present them as loops". Then I added more tasks: four on 0.7.1 with every agent on Haiku at low effort (dump builders included), three on 0.8.0 at medium effort, and the same three again on 0.12.0 with Sonnet building and grading:
 
 | Version | Task | Prompt only | Prompt + meta dump | Dump wins head to head |
 |---|---|---|---|---|
@@ -38,12 +38,36 @@ I A/B tested it: the same task built by Haiku with and without a dump, then grad
 | 0.5.1 | shopping component | 6.42 | **7.50** | 75% |
 | 0.7.0, first try | sticky and punchy curves | 4.83 | **6.17** | 58% |
 | 0.7.0 | sticky and punchy curves | 4.50 | **7.67** | **100%** |
+| 0.7.1, all low effort | dreamlike bezier hover button | 6.42 | **7.08** | 62% |
+| 0.7.1, all low effort | 2D physics sandbox, drag the boxes | 6.33 | **6.83** | 65% |
+| 0.7.1, all low effort | short poem about rare clouds, ending with a question | 5.17 | **7.92** | **98%** |
+| 0.7.1, all low effort | 5 second loop in the style of Figma's brand visuals | **5.67** | 5.42 | 54% |
+| 0.8.0, all medium effort | dreamlike bezier hover button | 6.58 | **7.33** | 71% |
+| 0.8.0, all medium effort | haiku about rare clouds | **7.42** | 6.58 | 35% |
+| 0.8.0, all medium effort | dark mode, very compact collapsible package-tracking toast | 5.00 | **8.58** | **100%** |
+| 0.12.0, Sonnet 5.5 | dreamlike bezier hover button | 6.50 | **8.25** | **98%** |
+| 0.12.0, Sonnet 5.5 | haiku about rare clouds | 5.08 | **8.00** | **96%** |
+| 0.12.0, Sonnet 5.5 | dark mode, very compact collapsible package-tracking toast | 6.83 | **7.50** | 58% |
 
 The early versions lost. When a dump carried a wrong made-up number, the model followed it instead of what I asked for. Another time the dump decided on its own that "compact" meant one product and nothing else, so every build that read it made a bare little card with no cart. The fixes behind 0.4.0 to 0.5.1 came straight out of those losses. In the 0.5.1 round, the dump builds won on every criterion, including usability, and every one of them covered the whole shopping job: size, quantity, add to bag, a bag you can review, and checkout.
 
 The curves test caught the same kind of thing in a new form. On the first try the dump decided for itself what "sticky" meant and proposed a set of three curves, and every build that read it pasted that set, so the curves all came out nearly the same. 0.7.0 keeps every reading of words like "sticky" side by side (a slow start that grips, a settle that holds, an overshoot that snaps back) and never hands over the finished thing. On the rerun the dump builds won every single head-to-head (24 of 24), all 12 of their curves were different, none were copied from the dump, and they beat the prompt-only builds on every criterion.
 
+In the four-task round the dump side came out ahead on three of the four and won 61 of 96 blind head-to-heads (p = 0.02 across all four). Most of that is the poem, which won 23 of 24 on its own. The button and the sandbox lean toward the dump but are within noise. The Figma loop was the interesting one. Every prompt-only build just rebuilt Figma's logo (or came close), and the graders marked them down for it. None of the dump builds did, but they lost points on motion and one had a CSS bug, so that task came out about even. Also, all four dump poems picked the same cloud, because the dump's brief literally said "choose one formation" and described one cloud more than the rest. The dump was acting like a bible.
+
+So 0.8.0 changes how a dump talks. It's not a set of facts to follow anymore, it's "here's some stuff to work with": it brings things up from the depths of the model (the less obvious examples, the odd corners, the exact numbers) and puts them on the table to tinker and play with. It opens with a few different ways in instead of one recipe, numbers come as dials with a range, nothing gets star billing, and the model is told to mix things up, play, and even roll a dice when it's torn. On the rerun the dump side won the toast 24 of 24, led the button, and its builds came out more varied. The prompt-only haiku all reached for the same cloud this time, and the dump haiku used four different ones. It lost the haiku on form though, because the dump offered 5-7-5 as optional and most of its haiku dropped it, and all four dump buttons reused the exact curves from one part of the dump.
+
+Then I switched the builders and graders to Sonnet 5.5, and that was humbling. Sonnet on its own is good at UI, and for three versions in a row the dump side lost the button and tied or lost the toast while winning the haiku by a mile every time. Each version fixed something real: 0.8.1 stopped the dump from offering single values that get copied (every value is a spread now), 0.9.0 and 0.10.0 added a deal (real randomness picks where each session starts and which half of the material it gets, so four sessions reading the same dump don't all build the same thing), and 0.11.0 fixed the part that was annoying me most, where the dump had been calling glow and glass "worn paths" for a button I had literally asked to be ethereal. It isn't allowed to tame your adjectives anymore; it has to push them further. Variety went up every time. Quality didn't, and when I read the grader notes the reason was boring: the dump builds were cramming more into the design and shipping clipped timelines and overlapping icons that nobody had looked at. So 0.12.0 makes the model look. The last step of using a dump is now a script that renders the page headlessly, screenshots it at desktop and phone widths, hovers and clicks it, and lists what's clipped, overlapping or cut off, and the model reads the screenshots and fixes it before it finishes. With the same dumps and the same prompt-only builds as the round before, the dump side went from losing 27–39 to winning 57 of 72 blind head-to-heads (p = 0.0002): the button 23 of 24, the haiku 23 of 24, the toast 11 to 7 with 6 ties, and more varied on all three. One honest note on the numbers: the graders score four builds at a time, so the prompt-only scores dropped a little when the dump builds stopped breaking next to them. The head-to-heads are the comparison that holds.
+
 It's still small (4 runs per side per test), so read it as a direction and not proof. Everything is in [`ab-tests/`](ab-tests/README.md): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
+
+### See it side by side
+
+Live builds from the Sonnet round, left without a dump and right with one: **[globalanomalyindex.github.io/metadump/showcase](https://globalanomalyindex.github.io/metadump/showcase/)**
+
+| | | |
+|---|---|---|
+| [![Dreamlike button, prompt only vs prompt + MetaDump](docs/showcase/posters/t1-button.jpg)](https://globalanomalyindex.github.io/metadump/showcase/) | [![Rare-cloud haiku, prompt only vs prompt + MetaDump](docs/showcase/posters/t2-haiku.jpg)](https://globalanomalyindex.github.io/metadump/showcase/) | [![Dark package toast, prompt only vs prompt + MetaDump](docs/showcase/posters/t3-toast.jpg)](https://globalanomalyindex.github.io/metadump/showcase/) |
 
 ## What makes it work
 

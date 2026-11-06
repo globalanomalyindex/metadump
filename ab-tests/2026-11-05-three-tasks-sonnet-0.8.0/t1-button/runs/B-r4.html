@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dream Button</title>
+<style>
+:root{
+  --bg:#0f0d24; --ink:#f4f1ff; --muted:#b9b3dd;
+  --fill:#4a3fa6; --fill-hi:#6a58d0; --glow:#a98bff; --glow2:#6fd0ff;
+  /* curves: each property gets its own */
+  --drift:cubic-bezier(0.23,1,0.32,1);      /* long-tail ease-out: lift */
+  --bloom:cubic-bezier(0.165,0.84,0.44,1);  /* ease-out quart: glow, fill */
+  --leave:cubic-bezier(0.4,0,0.6,1);        /* release gets out of the way */
+  --press:cubic-bezier(0.2,0,0,1);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; background:
+    radial-gradient(60rem 40rem at 15% -10%, #2a1f6b55, transparent 60%),
+    radial-gradient(50rem 36rem at 95% 110%, #0b4a6b44, transparent 60%),
+    var(--bg);
+  color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:grid; place-items:center; padding:24px 16px;
+}
+main{width:min(100%,640px)}
+.eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--muted);margin:0 0 12px}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.15;margin:0 0 14px;font-weight:600;letter-spacing:-.01em}
+p.lede{color:var(--muted);margin:0 0 28px;max-width:46ch}
+.card{padding:28px;border-radius:20px;background:#ffffff08;border:1px solid #ffffff14}
+.row{display:flex;flex-wrap:wrap;gap:20px 18px;align-items:center}
+
+.dream{
+  --lift:0px;
+  position:relative; isolation:isolate; overflow:visible;
+  appearance:none; border:0; cursor:pointer; font:inherit; font-weight:600; letter-spacing:.01em;
+  color:#fff; padding:14px 28px; min-height:48px; border-radius:999px;
+  background:color-mix(in srgb,var(--fill) 82%, transparent);
+  box-shadow:inset 0 1px 0 #ffffff40;      /* 1px top edge light, no shadow at rest */
+  transform:translateY(0);
+  transition:
+    transform 160ms var(--leave),
+    background-color 180ms var(--leave);
+  -webkit-tap-highlight-color:transparent;
+}
+.dream .label{position:relative;z-index:2;display:inline-flex;gap:10px;align-items:center}
+/* pre-rendered glow: fixed blur, only opacity moves */
+.dream::before{
+  content:""; position:absolute; inset:-5px; z-index:-2; border-radius:inherit;
+  background:linear-gradient(120deg,var(--glow),var(--glow2));
+  filter:blur(20px); opacity:0;
+  transition:opacity 180ms var(--leave);
+}
+/* one pale light pass, revealed by a transition so it retargets */
+.dream::after{
+  content:""; position:absolute; inset:0; z-index:1; border-radius:inherit; overflow:hidden;
+  background:linear-gradient(100deg,transparent 30%,#ffffff40 50%,transparent 70%);
+  background-size:250% 100%; background-position:120% 0; background-repeat:no-repeat;
+  opacity:0; pointer-events:none;
+  transition:background-position 180ms var(--leave), opacity 180ms var(--leave);
+}
+.dream.ghost{
+  background:color-mix(in srgb,#2b2570 55%, transparent);
+  box-shadow:inset 0 1px 0 #ffffff2e, inset 0 0 0 1px #ffffff1c;
+}
+.dream[disabled]{opacity:.7;cursor:default}
+
+@media (hover:hover){
+  .dream:hover:not([disabled]){
+    transform:translateY(-3px);
+    background-color:color-mix(in srgb,var(--fill-hi) 88%, transparent);
+    transition:
+      transform 420ms var(--drift),
+      background-color 320ms var(--bloom);
+  }
+  .dream:hover:not([disabled])::before{opacity:.75;transition:opacity 480ms var(--bloom) 40ms}
+  .dream:hover:not([disabled])::after{opacity:1;background-position:-20% 0;
+    transition:background-position 900ms var(--bloom), opacity 200ms var(--bloom)}
+}
+/* focus-visible gets the same light as hover, plus a ring on top */
+.dream:focus-visible{
+  outline:2px solid #fff; outline-offset:4px;
+  transform:translateY(-3px);
+  background-color:color-mix(in srgb,var(--fill-hi) 88%, transparent);
+  transition:transform 420ms var(--drift), background-color 320ms var(--bloom);
+}
+.dream:focus-visible::before{opacity:.75;transition:opacity 480ms var(--bloom) 40ms}
+.dream:focus-visible::after{opacity:1;background-position:-20% 0;transition:background-position 900ms var(--bloom), opacity 200ms var(--bloom)}
+
+/* press: sinks, glow dims; the only response touch gets */
+.dream:active:not([disabled]){
+  transform:translateY(1px) scale(.985);
+  transition:transform 100ms var(--press), background-color 100ms var(--press);
+}
+.dream:active:not([disabled])::before{opacity:.35;transition:opacity 100ms var(--press)}
+
+.dream.done{background-color:color-mix(in srgb,#2c7a6a 85%, transparent)}
+.dream.done::before{background:linear-gradient(120deg,#6fe3c1,#6fd0ff)}
+
+.status{margin:22px 0 0;color:var(--muted);font-size:14px;min-height:1.5em}
+.status b{color:var(--ink);font-variant-numeric:tabular-nums}
+.meta{display:flex;gap:24px;margin:0 0 24px;padding:0;list-style:none;color:var(--muted);font-size:14px}
+.meta li strong{display:block;color:var(--ink);font-size:20px;font-weight:600}
+.tick{display:inline-block;width:14px;height:14px}
+
+@media (prefers-reduced-motion:reduce){
+  .dream,.dream:hover,.dream:focus-visible,.dream::before,.dream::after{transition-duration:1ms!important;transition-delay:0s!important}
+  .dream:hover:not([disabled]),.dream:focus-visible,.dream:active:not([disabled]){transform:none}
+  .dream::after{display:none}
+}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Lantern Sleep Studio</p>
+  <h1>Wind down with a guided evening drift</h1>
+  <p class="lede">Twenty minutes of soft soundscapes and breath pacing, tuned to the hour you usually fall asleep. Reserve a seat in this week's live session.</p>
+
+  <div class="card">
+    <ul class="meta">
+      <li><strong>Thu, 9:30 pm</strong>Next session</li>
+      <li><strong id="seats">12</strong>Seats left</li>
+      <li><strong>20 min</strong>Length</li>
+    </ul>
+    <div class="row">
+      <button class="dream" id="reserve" type="button" aria-pressed="false">
+        <span class="label"><span id="reserveText">Reserve my seat</span></span>
+      </button>
+      <button class="dream ghost" id="remind" type="button" aria-pressed="false">
+        <span class="label"><span id="remindText">Remind me by email</span></span>
+      </button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite">No seat reserved yet.</p>
+  </div>
+</main>
+
+<script>
+(function(){
+  var seats = 12, reserved = false, reminded = false;
+  var rBtn = document.getElementById('reserve'), mBtn = document.getElementById('remind');
+  var seatsEl = document.getElementById('seats'), status = document.getElementById('status');
+
+  function render(){
+    seatsEl.textContent = seats;
+    rBtn.classList.toggle('done', reserved);
+    rBtn.setAttribute('aria-pressed', reserved);
+    document.getElementById('reserveText').textContent = reserved ? 'Seat reserved – undo' : 'Reserve my seat';
+    mBtn.setAttribute('aria-pressed', reminded);
+    document.getElementById('remindText').textContent = reminded ? 'Reminder on' : 'Remind me by email';
+    status.innerHTML = (reserved ? 'Your seat is held for <b>Thursday 9:30 pm</b>. ' : 'No seat reserved yet. ') +
+      (reminded ? 'We will email you an hour before.' : '');
+  }
+  rBtn.addEventListener('click', function(){
+    reserved = !reserved; seats += reserved ? -1 : 1; render();
+  });
+  mBtn.addEventListener('click', function(){ reminded = !reminded; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

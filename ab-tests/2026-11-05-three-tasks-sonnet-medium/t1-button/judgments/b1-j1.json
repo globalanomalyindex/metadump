@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j1","scores":{
+"W":{"dreamlike":5,"practical":8,"motion":7,"craft":6,"overall":6,"note":"Careful opacity/transform-only glow with staggered curves and good focus/reduced-motion, but the demo button is a small secondary one and the effect is a modest blue smudge."},
+"X":{"dreamlike":8,"practical":6,"motion":7,"craft":8,"overall":7,"note":"Lovely full-width gradient button with slow lilac wash and drifting arrow, but 'transition: all', 1s+ timings and a whitened label at peak hurt legibility and snappiness."},
+"Y":{"dreamlike":7,"practical":9,"motion":8,"craft":8,"overall":8,"note":"Glass pill on a dark glow field with a fast clear hover-in, lingering soft glow on exit, strong focus and reduced-motion handling, cheap pre-blurred layers."},
+"Z":{"dreamlike":9,"practical":6,"motion":8,"craft":8,"overall":8,"note":"Most ethereal: blooming blurred halo with overshoot bezier, appearing arrow and slow exhale release, though infinite float/spin loops and blur filter transitions cost more to render."}},
+"ranking":["Y","Z","X","W"]}

@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"style": 6, "motion": 7, "loop": 9, "craft": 7, "originality": 4, "overall": 6, "note": "Dark glow field with a staggered assemble, burst and reassemble that loops cleanly from an invisible seam, but it redraws the Figma logo mark itself, which hurts originality."},
+"X": {"style": 6, "motion": 6, "loop": 9, "craft": 6, "originality": 5, "overall": 6, "note": "Flat spectrum shapes on a soft pastel gradient with a slow, exact periodic loop, though the motion is calm and the composition is sparse with a visible letterbox band on desktop."},
+"Y": {"style": 7, "motion": 7, "loop": 9, "craft": 7, "originality": 6, "overall": 7, "note": "Varied-easing shapes on a gradient field, with white selection-style handles that reference the Figma editor, and a clean seam and responsive card layout."},
+"Z": {"style": 5, "motion": 5, "loop": 7, "craft": 4, "originality": 3, "overall": 4, "note": "A literal Figma logo assemble-explode on flat gray, with pieces clipped at the viewBox edge mid-loop and a small velocity kink where the backOut segment starts at the seam."}
+},
+"ranking": ["Y", "W", "X", "Z"]}

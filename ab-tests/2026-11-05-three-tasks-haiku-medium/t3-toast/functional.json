@@ -1,0 +1,109 @@
+{
+ "A-r1": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 462,
+  "surface_luminance": 0.01,
+  "dark_surface": true,
+  "expanded_height_px": 38,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r2": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 474,
+  "surface_luminance": 0.01,
+  "dark_surface": true,
+  "expanded_height_px": 39,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r3": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 329,
+  "surface_luminance": 0.01,
+  "dark_surface": true,
+  "expanded_height_px": 38,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r4": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 238,
+  "surface_luminance": 0.01,
+  "dark_surface": true,
+  "expanded_height_px": 42,
+  "state_changes": true,
+  "works": false,
+  "js_errors": 6,
+  "js_error_text": [
+   "TypeError: Cannot read properties of undefined (reading 'slice')\n    at render (file:///Users/chrisfiore/metadump-skill/ab-tests/2026-11-05-three-tasks-haiku-me",
+   "TypeError: Cannot read properties of undefined (reading 'slice')\n    at render (file:///Users/chrisfiore/metadump-skill/ab-tests/2026-11-05-three-tasks-haiku-me"
+  ]
+ },
+ "B-r1": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 42,
+  "surface_luminance": 0.012,
+  "dark_surface": true,
+  "expanded_height_px": 459,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r2": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 42,
+  "surface_luminance": 0.009,
+  "dark_surface": true,
+  "expanded_height_px": 337,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r3": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 38,
+  "surface_luminance": 0.012,
+  "dark_surface": true,
+  "expanded_height_px": 330,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r4": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "toggle_found": true,
+  "collapsed_height_px": 46,
+  "surface_luminance": 0.012,
+  "dark_surface": true,
+  "expanded_height_px": 366,
+  "state_changes": true,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ }
+}

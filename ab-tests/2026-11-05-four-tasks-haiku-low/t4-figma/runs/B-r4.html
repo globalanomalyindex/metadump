@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figma-style loop, 5 s</title>
+<style>
+  /* One 5 s loop. Every animated property returns to its 0% value at 100%,
+     so the seam between the last and first frame is invisible. */
+  :root {
+    --loop: 5s;
+    --ground-top: #DCEBFF;
+    --ground-bottom: #FFE4D0;
+    --purple: #7B61FF;
+    --orange: #FF7A3D;
+    --yellow: #FFC93C;
+    --pink: #FF5FA2;
+    --ink: #1E1E1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ink: #1E1E1E; }
+  }
+  :root[data-theme="dark"] { --ink: #1E1E1E; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #F3EEFB;
+  }
+  body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  .stage {
+    width: min(100%, 880px);
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .shape {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* Circle: out on a 2 s ease-out, hold, back on a 2 s ease-in-out.
+     Beats: hold 0.5 s, out 2 s, hold 0.5 s, back 2 s = 5 s. */
+  .travel {
+    animation: travel var(--loop) infinite;
+  }
+  @keyframes travel {
+    0%   { transform: translate(0px, 0px);     animation-timing-function: linear; }
+    10%  { transform: translate(0px, 0px);     animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+    50%  { transform: translate(300px, 0px);   animation-timing-function: linear; }
+    60%  { transform: translate(300px, 0px);   animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+    100% { transform: translate(0px, 0px); }
+  }
+
+  /* Starburst: activates in step with the circle, then settles back. */
+  .burst {
+    animation: burst var(--loop) infinite;
+  }
+  @keyframes burst {
+    0%   { transform: scale(1);    animation-timing-function: linear; }
+    10%  { transform: scale(1);    animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+    50%  { transform: scale(1.3);  animation-timing-function: linear; }
+    60%  { transform: scale(1.3);  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+    100% { transform: scale(1); }
+  }
+
+  /* Selection-style corner handles on the square: shown while the circle is out. */
+  .handles {
+    animation: handles var(--loop) infinite;
+  }
+  @keyframes handles {
+    0%, 10%  { opacity: 0; }
+    14%, 58% { opacity: 1; }
+    64%, 100% { opacity: 0; }
+  }
+
+  /* Soft gradient field drifting slowly behind the shapes. */
+  .drift {
+    animation: drift var(--loop) infinite ease-in-out;
+  }
+  @keyframes drift {
+    0%   { transform: translate(0px, 0px); }
+    50%  { transform: translate(-36px, 22px); }
+    100% { transform: translate(0px, 0px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .travel, .burst, .handles, .drift {
+      animation: none !important;
+    }
+    .handles { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" role="img" aria-label="Flat geometric shapes on a soft gradient: a purple circle travels out and back while a starburst activates and selection handles appear on a yellow square.">
+  <svg viewBox="0 0 880 495" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#DCEBFF"/>
+        <stop offset="1" stop-color="#FFE4D0"/>
+      </linearGradient>
+      <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#FFD1F0" stop-opacity="0.9"/>
+        <stop offset="1" stop-color="#FFD1F0" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- ground -->
+    <rect x="0" y="0" width="880" height="495" fill="url(#ground)"/>
+
+    <!-- drifting soft field -->
+    <g class="drift">
+      <circle cx="660" cy="110" r="260" fill="url(#glow)"/>
+    </g>
+
+    <!-- orange blob, static anchor -->
+    <path fill="#FF7A3D"
+          d="M0,-78 C62,-88 98,-22 76,34 C54,90 -34,100 -68,52 C-100,8 -78,-68 0,-78 Z"
+          transform="translate(170 250)"/>
+
+    <!-- yellow square with selection handles -->
+    <rect x="430" y="90" width="120" height="120" rx="12" fill="#FFC93C"/>
+    <g class="handles">
+      <rect x="424" y="84" width="12" height="12" fill="#FFFFFF" stroke="#1E1E1E" stroke-width="2"/>
+      <rect x="544" y="84" width="12" height="12" fill="#FFFFFF" stroke="#1E1E1E" stroke-width="2"/>
+      <rect x="424" y="204" width="12" height="12" fill="#FFFFFF" stroke="#1E1E1E" stroke-width="2"/>
+      <rect x="544" y="204" width="12" height="12" fill="#FFFFFF" stroke="#1E1E1E" stroke-width="2"/>
+    </g>
+
+    <!-- starburst, activates on the outward beat -->
+    <g class="shape burst" transform="translate(700 320)">
+      <polygon fill="#FF5FA2"
+        points="60,0 31.4,13 42.4,42.4 13,31.4 0,60 -13,31.4 -42.4,42.4 -31.4,13 -60,0 -31.4,-13 -42.4,-42.4 -13,-31.4 0,-60 13,-31.4 42.4,-42.4 31.4,-13"/>
+    </g>
+
+    <!-- purple circle, the traveling shape -->
+    <g class="shape travel">
+      <circle cx="200" cy="350" r="44" fill="#7B61FF"/>
+    </g>
+  </svg>
+</div>
+</body>
+</html>

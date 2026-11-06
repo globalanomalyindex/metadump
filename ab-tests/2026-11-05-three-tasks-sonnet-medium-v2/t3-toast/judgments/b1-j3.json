@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j3","scores":{
+"W":{"compact":7,"collapsible":7,"tracking":7,"dark":8,"usability":6,"craft":7,"overall":7,"note":"Clean teal dark toast with status, ETA, carrier, number and steps, but defaults open, no reduced-motion handling, and the collapsed pill is tidy but the open state lacks locations."},
+"X":{"compact":6,"collapsible":6,"tracking":6,"dark":7,"usability":4,"craft":4,"overall":5,"note":"Very compact collapsed pill but the open state clips the timeline mid-row, the close icon overlaps the chevron, and leaves dead space below the buttons."},
+"Y":{"compact":6,"collapsible":8,"tracking":8,"dark":7,"usability":7,"craft":6,"overall":7,"note":"Rich tracking with carrier, number, ETA, locations and demo states, though the open card is tall with a wrapped action row and a duplicated 'Expected · Expected' glitch."},
+"Z":{"compact":8,"collapsible":8,"tracking":9,"dark":8,"usability":8,"craft":8,"overall":8.5,"note":"Compact collapsed toast with progress bar and arrival window opens to a complete, well-fitted timeline, tracking number with copy, and three clear actions with no layout glitches."}},
+"ranking":["Z","W","Y","X"]}

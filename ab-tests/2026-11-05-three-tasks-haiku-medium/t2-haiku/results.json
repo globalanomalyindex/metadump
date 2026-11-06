@@ -1,0 +1,181 @@
+{
+ "scores": {
+  "A": {
+   "imagery": 6.92,
+   "form": 9.42,
+   "specificity": 7.58,
+   "freshness": 6.25,
+   "resonance": 7.08,
+   "overall": 7.42,
+   "mean_rank": 2.33,
+   "per_run_overall": {
+    "A-r1": 6.33,
+    "A-r2": 8.67,
+    "A-r3": 8.33,
+    "A-r4": 6.33
+   }
+  },
+  "B": {
+   "imagery": 7.33,
+   "form": 5.58,
+   "specificity": 7.42,
+   "freshness": 6.5,
+   "resonance": 6.92,
+   "overall": 6.58,
+   "mean_rank": 2.67,
+   "per_run_overall": {
+    "B-r1": 6.33,
+    "B-r2": 5.33,
+    "B-r3": 6.67,
+    "B-r4": 8.0
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 7,
+  "losses": 14,
+  "ties": 3,
+  "win_rate": 0.35
+ },
+ "functional": {
+  "A-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "drifts past the mountain",
+   "words_total": 13,
+   "syllables_per_line": [
+    5,
+    8,
+    5
+   ]
+  },
+  "A-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "gone before we look.",
+   "words_total": 13,
+   "syllables_per_line": [
+    4,
+    7,
+    5
+   ]
+  },
+  "A-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "a cloud gone by dawn",
+   "words_total": 13,
+   "syllables_per_line": [
+    4,
+    7,
+    5
+   ]
+  },
+  "A-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "hang where no one looks.",
+   "words_total": 15,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "until the grey comes in",
+   "words_total": 16,
+   "syllables_per_line": [
+    6,
+    8,
+    7
+   ]
+  },
+  "B-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "stars still showing above",
+   "words_total": 12,
+   "syllables_per_line": [
+    6,
+    5,
+    6
+   ]
+  },
+  "B-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "then the blue takes it back",
+   "words_total": 15,
+   "syllables_per_line": [
+    5,
+    8,
+    7
+   ]
+  },
+  "B-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "the cloud does not move.",
+   "words_total": 17,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 71882,
+   "mean_seconds": 8.5
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 101515,
+   "mean_seconds": 24.3
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 213673,
+   "ms": 1585760,
+   "tool_uses": 35,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.58,
+ "permutation": {
+  "p": 0.4,
+  "extreme": 28,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Syllables are 6-8-6 (sun gone be-hind the ridge = 6; one cloud keeps its moth-er-of-pearl = 8; un-til the grey comes in = 6), so the 5-7-5 form is missed, though the sunset ridge and the grey closing in give a real turn and a plausible nacreous-twilight evocation.",
+  "b1/j1/A-r1": "Exact 5-7-5 (moth-er-of-pearl sky = 5; a cloud no one has named yet = 7; drifts past the moun-tain = 5), but \"mother-of-pearl sky\" is a stock phrase and \"no one has named yet\" tells rather than shows, and it is loosely accurate since nacreous clouds are a named phenomenon.",
+  "b1/j1/B-r2": "Syllables are 5-5-6 (the am-ber band fades = 5; a thin blue-white streak = 5; stars still show-ing a-bove = 6), a near-miss on 5-7-5 but with a tight short-short-long shape that works; the amber fade and blue-white streak read like noctilucent or twilight cloud, and the stars above close on a quiet turn.",
+  "b1/j1/A-r2": "Exact 5-7-5 (Nac-re-ous at dusk = 5; rain-bows bloom on a thin veil = 7; gone be-fore we look = 5), naming nacreous cloud and its iridescence accurately, with \"gone before we look\" landing the ephemerality; the reply is only the poem, with no padding.",
+  "b1/j2/B-r2": "Lines count 5-5-6 (\"the am-ber band fades\" 5, \"a thin blue-white streak\" 5, \"stars still show-ing a-bove\" 6), so the form is off, and the streak is never tied to a rare cloud, so the subject reads as generic dusk sky rather than a named phenomenon.",
+  "b1/j2/A-r2": "Exact 5-7-5 (\"Na-cre-ous at dusk\" 5, \"rain-bows bloom on a thin veil\" 7, \"gone be-fore we look\" 5), it names nacreous clouds, whose iridescence and brief dusk visibility are accurately evoked, and the ending on \"gone before we look\" turns on their ephemerality.",
+  "b1/j2/A-r1": "Exact 5-7-5 (\"Moth-er-of-pearl sky\" 5, \"a cloud no one has named yet\" 7, \"drifts past the moun-tain\" 5), and the unnamed-cloud conceit gestures at rarity, but the mother-of-pearl sky is a stock phrase and the mountain drift is generic.",
+  "b1/j2/B-r1": "Shape is 6-8-6 (\"sun gone be-hind the ridge\" 6, \"one cloud keeps its moth-er-of-pearl\" 8, \"un-til the grey comes in\" 6), a long-middle form that is only loosely 5-7-5, but the sunset timing and the cloud holding its colour after the sun drops match how nacreous clouds actually fade, and \"until the grey comes in\" gives a real turn.",
+  "b1/j3/A-r2": "Counts exactly 5-7-5 (Na-cre-ous at dusk / rain-bows bloom on a thin veil / gone be-fore we look), names nacreous clouds and evokes their iridescence accurately, though 'thin veil' is a soft stock image and 'gone before we look' is a familiar closing move.",
+  "b1/j3/B-r2": "Counts 5-5-6 (the am-ber band fades / a thin blue-white streak / stars still show-ing a-bove), so the middle line is short and the shape is loose; the amber band and streak are vivid but the cloud is never clearly identified as rare, and the double dash and trailing spaces add markdown clutter.",
+  "b1/j3/B-r1": "Counts 6-8-6 (sun gone be-hind the ridge / one cloud keeps its moth-er-of-pearl / un-til the grey comes in), so it misses 5-7-5 and is not a tight short-long-short; the nacreous mother-of-pearl image and the cloud holding its colour until the grey arrives land well.",
+  "b1/j3/A-r1": "Counts exactly 5-7-5 (moth-er-of-pearl sky / a cloud no one has named yet / drifts past the moun-tain); the unnamed-cloud conceit is a fresh turn on rarity, though the mountain image is sparse and the premise sits loosely against nacreous clouds being named.",
+  "b2/j1/B-r3": "Syllables run 5-8-6 (\"the cloud's edge turns mother-of-pearl\" is 8, \"then the blue takes it back\" is 6), so the form is loose, though the sun-below-ridge to pearl-edge to blue turn evokes iridescence well.",
+  "b2/j1/A-r3": "Exact 5-7-5 (Na-cre-ous light blooms / high above the frozen fjord / a cloud gone by dawn), and nacreous clouds over a polar fjord are an accurate real phenomenon, with the dawn fade giving a clean ending.",
+  "b2/j1/B-r4": "Exact 5-7-5 (lens cloud on the ridge / the wind pours through it all day / the cloud does not move), and the stationary lenticular cloud with wind passing through it is a true, well-chosen paradox that lands as the turn.",
+  "b2/j1/A-r4": "Exact 5-7-5 (sil-ver threads at dusk / clouds no com-mon sky can make / hang where no one looks), and the silver dusk threads accurately evoke noctilucent clouds, though \"no common sky\" stays vague and \"silver threads\" is a near-stock image.",
+  "b2/j2/B-r4": "Strict 5-7-5 (Lens cloud on the ridge = 5; the wind pours through it all day = 7; the cloud does not move = 5), and the lenticular cloud that stays put while wind runs through it is an accurate, well-chosen image with a real turn on stillness.",
+  "b2/j2/A-r4": "Strict 5-7-5 (Sil-ver threads at dusk = 5; clouds no com-mon sky can make = 7; hang where no one looks = 5), but the cloud type is never named or sharply seen, and 'silver threads' and 'sky can make' lean vague, though 'hang where no one looks' lands.",
+  "b2/j2/A-r3": "Strict 5-7-5 (Na-cre-ous light blooms = 5; high a-bove the fro-zen fjord = 7; a cloud gone by dawn = 5), and naming nacreous (polar stratospheric) clouds over a frozen fjord at the right hour is precise and true to the phenomenon, with ephemerality as the closing turn.",
+  "b2/j2/B-r3": "Counts 5-8-6 rather than 5-7-5 (Sun be-low the ridge = 5; the cloud's edge turns mo-ther-of-pearl = 8; then the blue takes it back = 6), so the shape is loose, but the sunset iridescence at the cloud edge is accurately evoked and 'the blue takes it back' gives a fine fading turn, with 'mother-of-pearl' a slightly stock phrase.",
+  "b2/j3/A-r4": "Lines count 5-7-5 exactly (Sil-ver threads at dusk / clouds no com-mon sky can make / hang where no one looks), and silver-at-dusk evokes noctilucent clouds, but 'no one looks' is a vague, generic turn and the imagery stays thin.",
+  "b2/j3/B-r4": "Counts are 5-7-5 exactly (Lens cloud on the ridge / the wind pours through it all day / the cloud does not move), and it names a lenticular cloud accurately: a stationary cloud over a ridge while wind streams through it, a fresh paradox that lands on its flat final line.",
+  "b2/j3/B-r3": "Line 1 is 5 syllables, but line 2 ('the cloud's edge turns mother-of-pearl') runs 8 and line 3 ('then the blue takes it back') runs 6, so the 5-7-5 shape is broken; the nacreous image after sunset is accurate and the closing turn is strong, though mother-of-pearl is a familiar simile.",
+  "b2/j3/A-r3": "Exact 5-7-5 (Na-cre-ous light blooms / high above the fro-zen fjord / a cloud gone by dawn), accurately evoking nacreous polar stratospheric clouds lit after sunset and gone by morning, with a clean ephemeral close; 'blooms' and 'frozen fjord' lean toward stock phrasing."
+ }
+}

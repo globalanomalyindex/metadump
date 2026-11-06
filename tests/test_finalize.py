@@ -159,6 +159,64 @@ class Validation(unittest.TestCase):
         _, report = finalize.build_dump(d)
         self.assertNotIn("narrowing_language", codes(report["warnings"]))
 
+    def test_rule_words_in_the_head_exports_and_review_prompts_warn(self):
+        # Test 11: the poem dump's brief said "Core: ... Choose one rare formation", and all four builds wrote about the
+        # same cloud. The head and the exports are what every consumer reads first, so they hand over material, not orders.
+        d = base_dump()
+        d["essence"]["one_sentence"] = "Every poster must keep to one light."
+        d["exports"]["llm_brief"] = {"compiled_from_version": 1, "from": ["c-amber"], "text": "Core: Choose one lamp and its light."}
+        d["checks"]["k-gloss"] = {"text": "The poster never shows gloss.", "from": ["c-amber"], "severity": "should",
+                                  "test": {"kind": "visual", "spec": "no gloss"}}
+        _, report = finalize.build_dump(d)
+        flagged = sorted(w["path"] for w in report["warnings"] if w["code"] == "directive_voice")
+        self.assertEqual(flagged, ["/checks/k-gloss/text", "/essence/one_sentence", "/exports/llm_brief/text"])
+
+    def test_material_written_as_observations_and_questions_does_not_warn(self):
+        d = base_dump()
+        d["essence"]["one_sentence"] = "Amber light makes matte paper feel warm and slow."
+        d["exports"]["llm_brief"] = {"compiled_from_version": 1, "from": ["c-amber"],
+                                     "text": "On the table: amber key light, matte stock. Ways in: a dusk window; a lamp-lit desk."}
+        d["checks"]["k-gloss"] = {"text": "Does any surface read as glossy?", "from": ["c-amber"], "severity": "should",
+                                  "test": {"kind": "visual", "spec": "gloss"}}
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("directive_voice", codes(report["warnings"]))
+
+    def test_a_head_with_a_single_way_in_warns(self):
+        # One thesis and one formula read as the recipe; every consumer takes the same road in (ADR 0012).
+        _, report = finalize.build_dump(base_dump())
+        self.assertIn("no_angles", codes(report["warnings"]))
+
+    def test_a_head_with_several_angles_does_not_warn(self):
+        d = base_dump()
+        d["essence"]["angles"] = [{"angle": "dusk window", "text": "Amber spills across a sill at the end of the day.", "draws_on": ["c-amber"]},
+                                  {"angle": "lamp-lit desk", "text": "A small warm pool of light on paper at night.", "draws_on": ["c-amber"]}]
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("no_angles", codes(report["warnings"]))
+
+    def test_one_curve_or_one_colour_offered_by_the_build_warns(self):
+        # Test 12: each curve facet held one value in tokens.curve, one facet per role; all four builds pasted the set (ADR 0013).
+        d = base_dump()
+        d["palette"]["mo-bloom"] = {"term": "bloom curve", "tier": 2, "prov": "inferred", "text": "A soft ease-out for the glow.",
+                                    "tokens": {"status": "illustrative", "curve": "cubic-bezier(0.165, 0.84, 0.44, 1)", "ms": "250 to 500"}}
+        d["palette"]["c-accent"] = {"term": "accent", "tier": 3, "prov": "proposed", "text": "A cool accent.",
+                                    "tokens": {"status": "illustrative", "accent": "#7aa2f7"}}
+        _, report = finalize.build_dump(d)
+        flagged = sorted(w["path"] for w in report["warnings"] if w["code"] == "single_setting")
+        self.assertEqual(flagged, ["/palette/c-accent", "/palette/mo-bloom"])
+
+    def test_spreads_ranges_and_collected_values_do_not_warn(self):
+        d = base_dump()
+        d["palette"]["mo-bloom"] = {"term": "bloom curves", "tier": 2, "prov": "inferred", "text": "Soft ease-outs for the glow.",
+                                    "tokens": {"status": "illustrative", "curves": ["cubic-bezier(0.165, 0.84, 0.44, 1)",
+                                               "cubic-bezier(0.33, 1, 0.68, 1)", "cubic-bezier(0.5, 0, 0.1, 1)"], "ms": "250 to 500"}}
+        d["palette"]["mo-standard"] = {"term": "standard curve", "tier": 2, "prov": "inferred", "text": "The platform's standard ease.",
+                                       "tokens": {"status": "sourced", "curve": "cubic-bezier(0.2, 0, 0, 1)"}}
+        d["sources"]["s-brand"] = {"kind": "web", "url": "https://brand.example/colours", "title": "Brand colours"}
+        d["palette"]["c-brand"] = {"term": "brand blue", "tier": 2, "prov": "researched", "src": ["s-brand"], "text": "The brand's blue.",
+                                   "tokens": {"status": "illustrative", "blue": "#1a5cff"}}
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("single_setting", codes(report["warnings"]))
+
     def test_a_group_left_with_only_its_note_is_still_a_group(self):
         d = base_dump()
         d["palette"]["options"] = {"_about": "options, not requirements"}
@@ -387,6 +445,19 @@ class IndexAndRouting(unittest.TestCase):
         joined = " ".join(out["manifest"]["how_to_read"])
         self.assertIn("demo.metadump.json", joined)
         self.assertIn(".index[", joined)
+
+    def test_the_first_lines_of_every_dump_say_to_deal_it_before_reading_on(self):
+        # Test 14: builders that opened the dump alongside SKILL.md never reached use mode's deal step (7 of 12).
+        text, out, _ = finalize.finish(base_dump())
+        top = "\n".join(text.splitlines()[:4])
+        self.assertIn("deal.py", top)
+        self.assertIn("demo.metadump.json", top)
+        self.assertIn("deal.py", out["manifest"]["how_to_read"][0])
+
+    def test_the_reading_steps_end_with_a_look_at_what_was_built(self):
+        # Tests 16 and 17: dump builds shipped clipping and overlap no builder saw; builders run the commands the dump names.
+        _, out, _ = finalize.finish(base_dump())
+        self.assertIn("look.py", out["manifest"]["how_to_read"][-1])
 
     def test_manifest_stats_count_entries_by_tier_and_prov(self):
         _, out, _ = finalize.finish(base_dump())
@@ -1027,6 +1098,12 @@ class AutoTier1Route(unittest.TestCase):
         self.assertTrue(auto["auto"])
         self.assertEqual(sorted(auto["paths"]), ["/palette/c-amber"])
 
+    def test_the_first_route_offers_material_rather_than_rules(self):
+        # "always first: the defining tier-1 entries" read as the rules to apply; consumers followed it (ADR 0012).
+        out, _ = finalize.build_dump(base_dump())
+        self.assertEqual(out["routing"][0]["job"], "start here: what the task is most about")
+        self.assertNotRegex(out["routing"][0]["when"], r"(?i)\b(always|defining|must)\b")
+
     def test_rebuilding_replaces_the_auto_route_instead_of_duplicating_it(self):
         out, _ = finalize.build_dump(base_dump())
         out2, _ = finalize.build_dump(out)
@@ -1191,6 +1268,23 @@ class MediaTicketsAndSources(unittest.TestCase):
             d["palette"]["c-amber"]["method"] = m
             _, report = finalize.build_dump(d)
             self.assertNotIn("unknown_method", codes(report["warnings"]), m)
+
+    def test_a_worn_path_whose_instead_only_turns_the_quality_down_warns(self):
+        # Test 15: "neon glow" became "a soft tinted glow only on hover, at low opacity", and the dump buttons came out quiet.
+        d = base_dump()
+        d["anti_keywords"]["ak-glow"] = {"term": "neon glow", "kind": "not_wanted", "tier": 2, "prov": "inferred",
+                                         "instead": "a faint tinted glow only on hover, at low opacity"}
+        _, report = finalize.build_dump(d)
+        self.assertIn("tamed_instead", codes(report["warnings"]))
+
+    def test_a_worn_path_whose_instead_also_goes_further_does_not_warn(self):
+        d = base_dump()
+        d["anti_keywords"]["ak-glow"] = {"term": "neon glow", "kind": "not_wanted", "tier": 2, "prov": "inferred",
+                                         "instead": "a faint halo, or a bloom that fills the whole card"}
+        d["anti_keywords"]["ak-users"] = {"term": "loud colour", "kind": "not_wanted", "tier": 1, "prov": "user_stated",
+                                          "anchor": "amber", "instead": "a subdued amber"}
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("tamed_instead", codes(report["warnings"]))
 
     def test_head_reads_as_relevance_not_obligation(self):
         _, out, _ = finalize.finish(base_dump())

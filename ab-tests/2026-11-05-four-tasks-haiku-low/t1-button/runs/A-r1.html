@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dream Button Demo</title>
+<style>
+  :root {
+    --ink: #1d1b2e;
+    --muted: #6b6883;
+    --paper: #f6f4fb;
+    --card: #ffffff;
+    --line: #e4e0f0;
+    --violet: #7c5cff;
+    --rose: #ff7ab6;
+    --sky: #6fd3ff;
+    --mint: #7ff0c8;
+
+    /* Custom bezier curves */
+    --ease-drift: cubic-bezier(0.22, 1, 0.36, 1);   /* long, soft settle for hover lift and glow */
+    --ease-haze: cubic-bezier(0.45, 0, 0.15, 1);    /* slow, misty shimmer across the surface */
+    --ease-bloom: cubic-bezier(0.16, 1.25, 0.3, 1); /* light overshoot for the halo bloom */
+    --ease-press: cubic-bezier(0.5, 0, 0.75, 0.9);  /* quick, decisive press-in */
+    --ease-release: cubic-bezier(0.2, 0.9, 0.3, 1.1); /* springy return on release */
+  }
+
+  :root:not([data-theme="light"]) { }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #efeaff;
+      --muted: #a39fbd;
+      --paper: #12101c;
+      --card: #1b1828;
+      --line: #2d2a40;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #efeaff;
+    --muted: #a39fbd;
+    --paper: #12101c;
+    --card: #1b1828;
+    --line: #2d2a40;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  header h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  header p { margin: 0 0 28px; color: var(--muted); }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card h2 { font-size: 18px; margin: 0; }
+  .card .price { font-size: 30px; font-weight: 700; margin: 0; }
+  .card .price span { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .card ul { margin: 0; padding-left: 18px; color: var(--muted); }
+  .card .actions { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  /* ---------- The dream button ---------- */
+  .dream {
+    --glow: var(--violet);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 1px solid color-mix(in srgb, var(--glow) 35%, transparent);
+    border-radius: 999px;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--glow) 88%, white) 0%, var(--glow) 100%);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow:
+      0 1px 2px rgba(20, 10, 60, 0.12),
+      0 6px 16px -8px color-mix(in srgb, var(--glow) 60%, transparent);
+    transform: translate3d(0, 0, 0);
+    transition:
+      transform 620ms var(--ease-drift),
+      box-shadow 820ms var(--ease-drift),
+      filter 620ms var(--ease-drift),
+      letter-spacing 620ms var(--ease-drift),
+      background-color 400ms var(--ease-haze);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Veil: a soft pearly sheen that drifts across the surface on hover */
+  .dream::before {
+    content: "";
+    position: absolute;
+    inset: -40% -10%;
+    z-index: -1;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.55) 48%,
+      rgba(255, 255, 255, 0.0) 62%
+    );
+    transform: translateX(-120%) rotate(8deg);
+    opacity: 0;
+    transition:
+      transform 1100ms var(--ease-haze),
+      opacity 600ms var(--ease-haze);
+  }
+
+  /* Halo: an aura that blooms outward and fades, like light through fog */
+  .dream::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    z-index: -2;
+    background: radial-gradient(circle, color-mix(in srgb, var(--glow) 55%, transparent) 0%, transparent 62%);
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+    transition:
+      transform 1200ms var(--ease-bloom),
+      opacity 900ms var(--ease-drift);
+    pointer-events: none;
+  }
+
+  .dream:hover,
+  .dream:focus-visible {
+    transform: translate3d(0, -3px, 0);
+    filter: saturate(1.15) brightness(1.04);
+    letter-spacing: 0.04em;
+    box-shadow:
+      0 2px 4px rgba(20, 10, 60, 0.12),
+      0 18px 36px -12px color-mix(in srgb, var(--glow) 70%, transparent),
+      0 0 40px -6px color-mix(in srgb, var(--glow) 45%, transparent);
+  }
+  .dream:hover::before,
+  .dream:focus-visible::before {
+    transform: translateX(120%) rotate(8deg);
+    opacity: 1;
+  }
+  .dream:hover::after,
+  .dream:focus-visible::after {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 1;
+  }
+
+  .dream:active {
+    transform: translate3d(0, 1px, 0) scale(0.97);
+    transition-duration: 140ms;
+    transition-timing-function: var(--ease-press);
+    box-shadow: 0 1px 2px rgba(20, 10, 60, 0.2);
+  }
+
+  .dream:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--glow) 70%, white);
+    outline-offset: 3px;
+  }
+
+  .dream[aria-pressed="true"] {
+    background: linear-gradient(135deg, var(--mint), color-mix(in srgb, var(--mint) 60%, var(--sky)));
+    color: #0b2a22;
+    --glow: var(--mint);
+  }
+
+  .dream .icon {
+    display: inline-block;
+    transition: transform 700ms var(--ease-release);
+  }
+  .dream:hover .icon { transform: rotate(-12deg) scale(1.1); }
+  .dream[aria-pressed="true"] .icon { transform: scale(1.15); }
+
+  .dream:disabled {
+    cursor: progress;
+    opacity: 0.85;
+  }
+  .dream.is-loading::before {
+    opacity: 1;
+    transform: translateX(120%) rotate(8deg);
+    transition: transform 1600ms var(--ease-haze) infinite;
+    animation: veil 1600ms var(--ease-haze) infinite;
+  }
+  @keyframes veil {
+    from { transform: translateX(-120%) rotate(8deg); }
+    to   { transform: translateX(120%) rotate(8deg); }
+  }
+
+  .dream.secondary {
+    --glow: var(--sky);
+    background: var(--card);
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--glow) 50%, var(--line));
+    box-shadow: 0 1px 2px rgba(20, 10, 60, 0.06);
+  }
+  .dream.secondary::before { background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--glow) 35%, transparent) 48%, transparent 62%); }
+  .dream.secondary::after { background: radial-gradient(circle, color-mix(in srgb, var(--glow) 35%, transparent) 0%, transparent 62%); }
+
+  .dream.rose { --glow: var(--rose); }
+
+  .count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    transition: transform 700ms var(--ease-bloom);
+  }
+  .count.bump { transform: scale(1.35); }
+
+  .status {
+    min-height: 1.5em;
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .panel {
+    margin-top: 28px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px;
+  }
+  .panel h2 { margin: 0 0 12px; font-size: 18px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .cart-list { list-style: none; padding: 0; margin: 14px 0 0; }
+  .cart-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .cart-list li:empty { display: none; }
+  .total { font-weight: 700; margin-top: 10px; }
+
+  .toggle-hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 24px);
+    opacity: 0;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    pointer-events: none;
+    transition: transform 700ms var(--ease-drift), opacity 500ms var(--ease-haze);
+    max-width: calc(100% - 32px);
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+  /* Respect reduced motion: keep feedback, drop drift and bloom */
+  @media (prefers-reduced-motion: reduce) {
+    .dream,
+    .dream::before,
+    .dream::after,
+    .dream .icon,
+    .count,
+    .toast {
+      transition-duration: 1ms !important;
+      animation: none !important;
+    }
+    .dream:hover, .dream:focus-visible { transform: none; letter-spacing: inherit; }
+    .dream::before, .dream::after { display: none; }
+    .dream:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lumen Studio</h1>
+    <p>Pick a plan, save a favorite, or book a session. Hover and press the buttons to see the glow.</p>
+  </header>
+
+  <section class="grid" aria-label="Plans">
+    <article class="card">
+      <h2>Sketch</h2>
+      <p class="price">$12 <span>/ month</span></p>
+      <ul>
+        <li>3 active projects</li>
+        <li>Shared moodboards</li>
+        <li>Email support</li>
+      </ul>
+      <div class="actions">
+        <button class="dream secondary" type="button" data-add="Sketch" data-price="12">
+          Add to cart <span class="count" data-count-for="Sketch">0</span>
+        </button>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Studio</h2>
+      <p class="price">$38 <span>/ month</span></p>
+      <ul>
+        <li>Unlimited projects</li>
+        <li>Brand kits and exports</li>
+        <li>Priority review</li>
+      </ul>
+      <div class="actions">
+        <button class="dream" type="button" data-add="Studio" data-price="38">
+          Add to cart <span class="count" data-count-for="Studio">0</span>
+        </button>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Atelier</h2>
+      <p class="price">$96 <span>/ month</span></p>
+      <ul>
+        <li>Team seats (10)</li>
+        <li>Custom motion library</li>
+        <li>Quarterly design sprint</li>
+      </ul>
+      <div class="actions">
+        <button class="dream rose" type="button" data-add="Atelier" data-price="96">
+          Add to cart <span class="count" data-count-for="Atelier">0</span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel" aria-labelledby="cart-title">
+    <h2 id="cart-title">Your cart</h2>
+    <div class="row">
+      <button class="dream secondary" type="button" id="save-btn" aria-pressed="false">
+        <span class="icon" aria-hidden="true">&#9825;</span>
+        <span class="label">Save for later</span>
+      </button>
+      <button class="dream" type="button" id="checkout-btn">
+        <span class="icon" aria-hidden="true">&#10024;</span>
+        <span class="label">Checkout</span>
+      </button>
+      <button class="dream secondary" type="button" id="clear-btn">
+        Clear cart
+      </button>
+    </div>
+    <ul class="cart-list" id="cart-list" aria-live="polite"></ul>
+    <p class="total" id="total">Total: $0 / month</p>
+    <p class="toggle-hint">Saved items: <span id="saved-count">0</span></p>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var cart = {};          // plan name -> { price, qty }
+  var savedPlans = {};    // plan name -> true
+  var toastTimer = null;
+
+  var statusEl = document.getElementById('status');
+  var listEl = document.getElementById('cart-list');
+  var totalEl = document.getElementById('total');
+  var savedCountEl = document.getElementById('saved-count');
+  var saveBtn = document.getElementById('save-btn');
+  var checkoutBtn = document.getElementById('checkout-btn');
+  var clearBtn = document.getElementById('clear-btn');
+  var toastEl = document.getElementById('toast');
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  function bump(el) {
+    el.classList.remove('bump');
+    void el.offsetWidth; // restart the transition
+    el.classList.add('bump');
+    setTimeout(function () { el.classList.remove('bump'); }, 320);
+  }
+
+  function render() {
+    var names = Object.keys(cart);
+    var total = 0;
+    listEl.innerHTML = '';
+
+    names.forEach(function (name) {
+      var item = cart[name];
+      total += item.price * item.qty;
+      var li = document.createElement('li');
+      var left = document.createElement('span');
+      left.textContent = name + ' x' + item.qty;
+      var right = document.createElement('span');
+      right.textContent = '$' + (item.price * item.qty) + ' / month';
+      li.appendChild(left);
+      li.appendChild(right);
+      listEl.appendChild(li);
+    });
+
+    document.querySelectorAll('[data-count-for]').forEach(function (el) {
+      var key = el.getAttribute('data-count-for');
+      var qty = cart[key] ? cart[key].qty : 0;
+      if (el.textContent !== String(qty)) {
+        el.textContent = String(qty);
+        bump(el);
+      }
+    });
+
+    totalEl.textContent = 'Total: $' + total + ' / month';
+    savedCountEl.textContent = String(Object.keys(savedPlans).length);
+    clearBtn.disabled = names.length === 0;
+    checkoutBtn.disabled = names.length === 0;
+    if (names.length === 0) checkoutBtn.setAttribute('aria-disabled', 'true');
+    else checkoutBtn.removeAttribute('aria-disabled');
+  }
+
+  document.querySelectorAll('[data-add]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var name = btn.getAttribute('data-add');
+      var price = Number(btn.getAttribute('data-price'));
+      if (!cart[name]) cart[name] = { price: price, qty: 0 };
+      cart[name].qty += 1;
+      statusEl.textContent = name + ' added. ' + cart[name].qty + ' in cart.';
+      showToast(name + ' is in your cart');
+      render();
+    });
+  });
+
+  saveBtn.addEventListener('click', function () {
+    var pressed = saveBtn.getAttribute('aria-pressed') === 'true';
+    var next = !pressed;
+    saveBtn.setAttribute('aria-pressed', String(next));
+    saveBtn.querySelector('.label').textContent = next ? 'Saved' : 'Save for later';
+    var target = 'Atelier';
+    if (next) savedPlans[target] = true; else delete savedPlans[target];
+    statusEl.textContent = next ? 'Saved the Atelier plan for later.' : 'Removed the saved plan.';
+    render();
+  });
+
+  clearBtn.addEventListener('click', function () {
+    cart = {};
+    statusEl.textContent = 'Cart cleared.';
+    showToast('Cart cleared');
+    render();
+  });
+
+  checkoutBtn.addEventListener('click', function () {
+    if (checkoutBtn.disabled) return;
+    var names = Object.keys(cart);
+    if (names.length === 0) return;
+    checkoutBtn.classList.add('is-loading');
+    checkoutBtn.disabled = true;
+    checkoutBtn.querySelector('.label').textContent = 'Placing order';
+    statusEl.textContent = 'Placing your order...';
+
+    setTimeout(function () {
+      checkoutBtn.classList.remove('is-loading');
+      checkoutBtn.disabled = false;
+      checkoutBtn.querySelector('.label').textContent = 'Checkout';
+      var count = names.reduce(function (n, k) { return n + cart[k].qty; }, 0);
+      cart = {};
+      statusEl.textContent = 'Order placed for ' + count + ' item' + (count === 1 ? '' : 's') + '.';
+      showToast('Thanks, your studio is ready');
+      render();
+    }, 1400);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

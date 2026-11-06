@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamlike button</title>
+<style>
+/* Timing curves. Each is one reading of the motion; the Motion lab picks which ones run. */
+:root {
+  --c-standard: cubic-bezier(0.2, 0, 0, 1);
+  --c-drift: cubic-bezier(0.23, 1, 0.32, 1);
+  --c-bloom: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --c-float: cubic-bezier(0.2, 0.6, 0.3, 1.08);
+  --c-leave: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: #f4f0ff; }
+body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+/* Surface tokens. Light is the default; dark is set by data-theme. */
+.stage {
+  --ink: #1d1636;
+  --muted: #5b5275;
+  --on-ink: #ffffff;
+  --hi: rgba(255, 255, 255, 0.8);
+  --card: rgba(255, 255, 255, 0.72);
+  --card-line: rgba(29, 22, 54, 0.12);
+  --face: rgba(255, 255, 255, 0.78);
+  --face-quiet: rgba(255, 255, 255, 0.3);
+  --edge: rgba(255, 255, 255, 0.95);
+  --glow-a: #b3a2ff;
+  --glow-b: #8fd2ff;
+  --focus: #4a3dc4;
+  --bg-1: #f4f0ff;
+  --bg-2: #dff3ff;
+  --curve-glow: #7c63ff;
+
+  /* Defaults. The data-mode blocks below override these. */
+  --lift: 2px;
+  --lift-dur: 380ms;
+  --lift-curve: var(--c-standard);
+  --lift-delay: 0ms;
+  --glow-dur: 440ms;
+  --glow-curve: var(--c-bloom);
+  --glow-delay: 40ms;
+  --glow-peak: 0.6;
+  --glow-scale: 1.04;
+  --glow-blur: 16px;
+  --wash: 0.2;
+  --sheen-dur: 900ms;
+
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(60% 50% at 15% 0%, var(--hi), transparent 70%),
+    linear-gradient(160deg, var(--bg-1), var(--bg-2));
+  padding-bottom: 48px;
+}
+.stage[data-theme="dark"] {
+  --ink: #f4f1ff;
+  --muted: #bdb4da;
+  --on-ink: #1c1640;
+  --hi: rgba(60, 44, 120, 0.5);
+  --card: rgba(30, 22, 60, 0.72);
+  --card-line: rgba(255, 255, 255, 0.12);
+  --face: rgba(78, 58, 140, 0.6);
+  --face-quiet: rgba(255, 255, 255, 0.08);
+  --edge: rgba(255, 255, 255, 0.22);
+  --glow-a: #8c77ff;
+  --glow-b: #55c2ff;
+  --focus: #cfc6ff;
+  --bg-1: #120e25;
+  --bg-2: #1c1640;
+  --curve-glow: #b7a8ff;
+}
+
+/* Feel presets. Each sets one reading of the dreamlike motion. */
+.stage[data-mode="drift"] {
+  --lift: 2px; --lift-dur: 420ms; --lift-curve: var(--c-drift); --lift-delay: 0ms;
+  --glow-dur: 460ms; --glow-curve: var(--c-standard); --glow-delay: 60ms;
+  --glow-peak: 0.6; --glow-scale: 1.02; --wash: 0.18;
+}
+.stage[data-mode="bloom"] {
+  --lift: 3px; --lift-dur: 340ms; --lift-curve: var(--c-standard); --lift-delay: 0ms;
+  --glow-dur: 520ms; --glow-curve: var(--c-bloom); --glow-delay: 40ms;
+  --glow-peak: 0.78; --glow-scale: 1.06; --wash: 0.26;
+}
+.stage[data-mode="float"] {
+  --lift: 3px; --lift-dur: 420ms; --lift-curve: var(--c-float); --lift-delay: 0ms;
+  --glow-dur: 380ms; --glow-curve: var(--c-standard); --glow-delay: 0ms;
+  --glow-peak: 0.6; --glow-scale: 1.03; --wash: 0.16;
+}
+.stage[data-mode="shimmer"] {
+  --lift: 1px; --lift-dur: 260ms; --lift-curve: var(--c-standard); --lift-delay: 0ms;
+  --glow-dur: 360ms; --glow-curve: var(--c-standard); --glow-delay: 0ms;
+  --glow-peak: 0.45; --glow-scale: 1; --wash: 0.14; --sheen-dur: 900ms;
+}
+
+/* ---------- The button ---------- */
+.db {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+  /* Leaving uses the short, steep curve, so release never lingers. */
+  transition: transform 170ms var(--c-leave);
+}
+.db:disabled { cursor: not-allowed; opacity: 0.45; }
+
+/* Blurred copy behind the face. Blur radius is fixed; only opacity and scale change. */
+.db__glow {
+  position: absolute;
+  z-index: 0;
+  inset: -6px -8px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, var(--glow-a), var(--glow-b));
+  filter: blur(var(--glow-blur));
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+  transition: opacity 170ms var(--c-leave), transform 170ms var(--c-leave);
+}
+/* Translucent face: the glow shows through near the rim, so the light reads as a haze. */
+.db__face {
+  position: relative;
+  z-index: 1;
+  display: block;
+  min-height: 44px;
+  padding: 0.8em 1.5em;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--face);
+  box-shadow: inset 0 1px 0 var(--edge), inset 0 0 0 1px var(--card-line);
+}
+.db--quiet .db__face { background: var(--face-quiet); }
+.db--sm .db__face { min-height: 40px; padding: 0.3em 0.9em; }
+/* Hover fill: a white wash on opacity, so the fill brightens without a paint. */
+.db__wash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 170ms var(--c-leave);
+}
+/* One pass of light, only in the shimmer preset. The base has no transition, so the sheen resets at once. */
+.db__sheen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  transform: translateX(-130%);
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+  pointer-events: none;
+  transition: none;
+}
+.db__label { position: relative; z-index: 2; display: block; }
+
+/* Hover is gated, so a tap on touch leaves no hover style behind. */
+@media (hover: hover) {
+  .db:hover:not(:disabled) {
+    transform: translate3d(0, calc(var(--lift) * -1), 0);
+    transition: transform var(--lift-dur) var(--lift-curve) var(--lift-delay);
+  }
+  .db:hover:not(:disabled) .db__glow {
+    opacity: var(--glow-peak);
+    transform: scale(var(--glow-scale));
+    transition: opacity var(--glow-dur) var(--glow-curve) var(--glow-delay),
+                transform var(--glow-dur) var(--glow-curve) var(--glow-delay);
+  }
+  .db:hover:not(:disabled) .db__wash {
+    opacity: var(--wash);
+    transition: opacity var(--glow-dur) var(--c-standard);
+  }
+  .stage[data-mode="shimmer"] .db:hover:not(:disabled) .db__sheen {
+    transform: translateX(240%);
+    transition: transform var(--sheen-dur) var(--c-drift);
+  }
+}
+
+/* Keyboard focus gets the same reveal as hover, plus a visible ring. */
+.db:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.db:focus-visible:not(:disabled) {
+  transform: translate3d(0, calc(var(--lift) * -1), 0);
+  transition: transform var(--lift-dur) var(--lift-curve) var(--lift-delay);
+}
+.db:focus-visible:not(:disabled) .db__glow {
+  opacity: var(--glow-peak);
+  transform: scale(var(--glow-scale));
+  transition: opacity var(--glow-dur) var(--glow-curve) var(--glow-delay),
+              transform var(--glow-dur) var(--glow-curve) var(--glow-delay);
+}
+.db:focus-visible:not(:disabled) .db__wash {
+  opacity: var(--wash);
+  transition: opacity var(--glow-dur) var(--c-standard);
+}
+.stage[data-mode="shimmer"] .db:focus-visible:not(:disabled) .db__sheen {
+  transform: translateX(240%);
+  transition: transform var(--sheen-dur) var(--c-drift);
+}
+
+/* A toggled-on button keeps a static, unanimated glow. */
+.db[aria-pressed="true"] .db__glow { opacity: calc(var(--glow-peak) * 0.5); transform: none; }
+.db[aria-pressed="true"] .db__wash { opacity: calc(var(--wash) * 0.5); }
+
+/* Press: a quick, small push. Placed after the hover rules so it wins. */
+.db:active:not(:disabled) {
+  transform: translate3d(0, 0, 0) scale(0.97);
+  transition: transform 110ms var(--c-standard);
+}
+
+/* Reduced motion: lift, sheen and press movement go; colour and glow opacity stay, on short fades. */
+.stage.is-reduced {
+  --lift: 0px; --lift-dur: 150ms; --lift-delay: 0ms;
+  --glow-dur: 150ms; --glow-delay: 0ms; --glow-scale: 1;
+}
+.stage.is-reduced .db__sheen { display: none; }
+.stage.is-reduced .db:active:not(:disabled) { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .stage[data-theme] {
+    --lift: 0px; --lift-dur: 150ms; --lift-delay: 0ms;
+    --glow-dur: 150ms; --glow-delay: 0ms; --glow-scale: 1;
+  }
+  .db__sheen { display: none; }
+  .db:active:not(:disabled) { transform: none; }
+}
+
+/* ---------- Page ---------- */
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+a:focus-visible, .seg button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 20px 0; }
+.brand { color: var(--ink); font-weight: 700; letter-spacing: 0.02em; text-decoration: none; }
+.top nav { display: flex; gap: 16px; }
+.top nav a { color: var(--muted); text-decoration: none; min-height: 40px; display: inline-flex; align-items: center; }
+
+.hero { padding: 40px 0 28px; }
+.eyebrow { margin: 0; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; color: var(--muted); }
+h1 { font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -0.02em; margin: 0.25em 0 0.4em; max-width: 16ch; }
+.lede { max-width: 52ch; color: var(--muted); margin: 0 0 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 0 0 20px;
+}
+.panel h2 { margin: 0 0 8px; font-size: 1.25rem; }
+.lab { display: grid; gap: 24px; }
+@media (min-width: 800px) { .lab { grid-template-columns: 1.2fr 0.8fr; } }
+
+.field { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.label { font-size: 0.85rem; color: var(--muted); }
+.seg {
+  display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px;
+  border-radius: 999px; background: var(--face-quiet); align-self: flex-start;
+}
+.seg button {
+  min-height: 40px; padding: 8px 14px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--ink); font: inherit; font-size: 0.92rem; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.check { display: flex; align-items: center; gap: 8px; min-height: 40px; margin: 8px 0 14px; }
+.check input { width: 18px; height: 18px; accent-color: var(--focus); }
+
+.readout {
+  display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px;
+  margin: 16px 0 0; font-size: 0.9rem;
+}
+.readout dt { color: var(--muted); }
+.readout dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.curve { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.curve svg { width: 100%; max-width: 260px; height: auto; color: var(--ink); }
+.curve figcaption { font-size: 0.85rem; color: var(--muted); text-align: center; }
+
+.products { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 680px) { .products { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.card {
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--card); border: 1px solid var(--card-line); border-radius: 20px; padding: 16px;
+}
+.card h3 { margin: 4px 0 0; font-size: 1.1rem; }
+.card p { margin: 0; }
+.price { font-weight: 700; font-variant-numeric: tabular-nums; }
+.thumb {
+  aspect-ratio: 4 / 3; border-radius: 14px; display: grid; place-items: center;
+  color: rgba(255, 255, 255, 0.9); font-weight: 700; letter-spacing: 0.08em; font-size: 1.3rem;
+}
+.thumb--linen { background: linear-gradient(135deg, #8f7bd6, #c9b8f2); }
+.thumb--candle { background: linear-gradient(135deg, #3f8fa3, #9fd6dc); }
+.thumb--carafe { background: linear-gradient(135deg, #a86f92, #e4bfd2); }
+.stepper { display: inline-flex; align-items: center; gap: 10px; }
+.stepper output { min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+.actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.plans { display: grid; gap: 16px; }
+@media (min-width: 680px) { .plans { grid-template-columns: 1fr 1fr; } }
+.plan {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  border: 1px solid var(--card-line); border-radius: 16px; padding: 18px;
+}
+.plan h3 { margin: 0; }
+.lines { margin: 8px 0; padding-left: 18px; }
+.total { margin: 8px 0 12px; }
+.log { margin: 0; padding-left: 20px; font-size: 0.92rem; color: var(--muted); }
+.log li { margin: 2px 0; overflow-wrap: anywhere; }
+footer { padding: 24px 0 0; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage" data-mode="drift" data-theme="light">
+<div class="wrap">
+
+  <header class="top">
+    <a class="brand" href="#top">Lumen Studio</a>
+    <nav aria-label="Main"><a href="#shop">Shop</a><a href="#pricing">Pricing</a></nav>
+    <button class="db db--quiet" id="cart-btn" aria-expanded="false" aria-controls="cart-panel">Cart (<span id="cart-count">0</span>)</button>
+  </header>
+
+  <section class="hero" id="top">
+    <p class="eyebrow">Spring collection 2026</p>
+    <h1>Slow objects, lit from within.</h1>
+    <p class="lede">Hand-finished goods for slow mornings. Free returns for 60 days, and a studio that answers the phone.</p>
+    <div class="row">
+      <button class="db" data-note="Walkthrough request opened. Demo only: nothing was sent.">Book a walkthrough</button>
+      <button class="db db--quiet" data-note="Jumped to pricing. Demo only.">See pricing</button>
+    </div>
+  </section>
+
+  <section class="panel lab" aria-labelledby="lab-h">
+    <div>
+      <h2 id="lab-h">Motion lab</h2>
+      <p class="muted">Every button on this page follows these choices. Hover a button, or Tab to one.</p>
+
+      <div class="field">
+        <span class="label" id="feel-l">Feel</span>
+        <div class="seg" id="mode-seg" role="group" aria-labelledby="feel-l">
+          <button type="button" data-value="drift" aria-pressed="true">Drift</button>
+          <button type="button" data-value="bloom" aria-pressed="false">Bloom</button>
+          <button type="button" data-value="float" aria-pressed="false">Float</button>
+          <button type="button" data-value="shimmer" aria-pressed="false">Shimmer</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label" id="theme-l">Surface</span>
+        <div class="seg" id="theme-seg" role="group" aria-labelledby="theme-l">
+          <button type="button" data-value="light" aria-pressed="true">Light</button>
+          <button type="button" data-value="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+
+      <label class="check"><input type="checkbox" id="reduce"> Preview reduced motion</label>
+
+      <dl class="readout">
+        <dt>Lift curve</dt><dd id="r-lift-curve"></dd>
+        <dt>Lift duration</dt><dd id="r-lift-dur"></dd>
+        <dt>Lift distance</dt><dd id="r-lift"></dd>
+        <dt>Glow curve</dt><dd id="r-glow-curve"></dd>
+        <dt>Glow duration</dt><dd id="r-glow-dur"></dd>
+        <dt>Glow delay</dt><dd id="r-glow-delay"></dd>
+        <dt>Glow peak opacity</dt><dd id="r-glow-peak"></dd>
+        <dt>Sheen</dt><dd id="r-sheen"></dd>
+        <dt>Reduced motion</dt><dd id="r-reduced"></dd>
+      </dl>
+    </div>
+
+    <figure class="curve">
+      <svg viewBox="0 0 120 120" role="img" aria-labelledby="curve-t curve-d">
+        <title id="curve-t">Timing curves</title>
+        <desc id="curve-d">The lift curve in ink and the glow curve in violet, drawn from 0,0 to 1,1.</desc>
+        <rect x="10" y="10" width="100" height="100" fill="none" stroke="currentColor" stroke-opacity="0.15"/>
+        <path d="M10 110 L110 10" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-dasharray="3 3"/>
+        <path id="curve-lift" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        <path id="curve-glow" fill="none" stroke="var(--curve-glow)" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <figcaption>Ink: lift. Violet: glow. Across is time, up is progress.</figcaption>
+    </figure>
+  </section>
+
+  <section id="shop" aria-labelledby="shop-h">
+    <h2 id="shop-h" style="font-size:1.4rem;margin:8px 0 12px;">Shop the edit</h2>
+    <div class="products">
+      <article class="card" data-id="linen">
+        <div class="thumb thumb--linen" aria-hidden="true">DL</div>
+        <h3>Dusk Linen Throw</h3>
+        <p class="muted">Washed linen, 150 x 200 cm.</p>
+        <p class="price">$48.00</p>
+        <div class="stepper">
+          <span class="muted small">Qty</span>
+          <button class="db db--quiet db--sm" data-qty="-1" aria-label="Decrease quantity, Dusk Linen Throw">-</button>
+          <output aria-label="Quantity">1</output>
+          <button class="db db--quiet db--sm" data-qty="1" aria-label="Increase quantity, Dusk Linen Throw">+</button>
+        </div>
+        <div class="actions">
+          <button class="db" data-add="linen">Add to cart</button>
+          <button class="db db--quiet" data-save="linen" aria-pressed="false">Save</button>
+        </div>
+      </article>
+
+      <article class="card" data-id="candle">
+        <div class="thumb thumb--candle" aria-hidden="true">TC</div>
+        <h3>Tidewater Candle</h3>
+        <p class="muted">Sea salt and cedar, about 60 hours of burn.</p>
+        <p class="price">$32.00</p>
+        <div class="stepper">
+          <span class="muted small">Qty</span>
+          <button class="db db--quiet db--sm" data-qty="-1" aria-label="Decrease quantity, Tidewater Candle">-</button>
+          <output aria-label="Quantity">1</output>
+          <button class="db db--quiet db--sm" data-qty="1" aria-label="Increase quantity, Tidewater Candle">+</button>
+        </div>
+        <div class="actions">
+          <button class="db" data-add="candle">Add to cart</button>
+          <button class="db db--quiet" data-save="candle" aria-pressed="false">Save</button>
+        </div>
+      </article>
+
+      <article class="card" data-id="carafe">
+        <div class="thumb thumb--carafe" aria-hidden="true">GC</div>
+        <h3>Glass Carafe</h3>
+        <p class="muted">Hand-blown, 1.2 litres, with a cork stopper.</p>
+        <p class="price">$60.00</p>
+        <div class="stepper">
+          <span class="muted small">Qty</span>
+          <button class="db db--quiet db--sm" data-qty="-1" aria-label="Decrease quantity, Glass Carafe">-</button>
+          <output aria-label="Quantity">1</output>
+          <button class="db db--quiet db--sm" data-qty="1" aria-label="Increase quantity, Glass Carafe">+</button>
+        </div>
+        <div class="actions">
+          <button class="db" data-add="carafe">Add to cart</button>
+          <button class="db db--quiet" data-save="carafe" aria-pressed="false">Save</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel" id="cart-panel" aria-label="Cart" hidden>
+    <h2>Your cart</h2>
+    <ul class="lines" id="cart-lines"></ul>
+    <p class="total">Subtotal <strong id="cart-total">$0.00</strong></p>
+    <div class="row">
+      <button class="db" id="checkout" disabled data-note="Checkout is a demo: nothing was charged.">Checkout</button>
+      <button class="db db--quiet" id="clear-cart">Empty cart</button>
+    </div>
+  </section>
+
+  <section class="panel" id="pricing" aria-labelledby="price-h">
+    <h2 id="price-h">Pricing</h2>
+    <div class="plans">
+      <div class="plan">
+        <h3>Studio</h3>
+        <p class="price">$0 a month</p>
+        <p class="muted">One seat, up to 20 orders a month.</p>
+        <button class="db db--quiet" data-note="Studio plan selected. Demo only.">Start free</button>
+      </div>
+      <div class="plan">
+        <h3>Atelier</h3>
+        <p class="price">$24 a month</p>
+        <p class="muted">Five seats, unlimited orders, and a named contact.</p>
+        <button class="db" data-note="Free trial requested. Demo only: nothing was sent.">Start free trial</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="log-h">
+    <h2 id="log-h">Activity</h2>
+    <ol class="log" id="log" aria-live="polite">
+      <li>Ready. Hover a button, then Tab to one, to see the light arrive after the lift.</li>
+    </ol>
+  </section>
+
+  <footer class="muted small">Lumen Studio is a sample page. Nothing on it sends a request.</footer>
+</div>
+</div>
+
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  // Give every .db a glow layer and a face, keeping its label.
+  $$('.db').forEach(function (b) {
+    var label = b.innerHTML.trim();
+    b.innerHTML =
+      '<span class="db__glow" aria-hidden="true"></span>' +
+      '<span class="db__face"><span class="db__wash" aria-hidden="true"></span>' +
+      '<span class="db__sheen" aria-hidden="true"></span>' +
+      '<span class="db__label">' + label + '</span></span>';
+  });
+  var labelOf = function (b) { return b.querySelector('.db__label'); };
+
+  var PRODUCTS = {
+    linen:  { name: 'Dusk Linen Throw', price: 48 },
+    candle: { name: 'Tidewater Candle', price: 32 },
+    carafe: { name: 'Glass Carafe', price: 60 }
+  };
+  var state = { qty: { linen: 1, candle: 1, carafe: 1 }, cart: {}, saved: {} };
+  var logEl = $('#log');
+  var money = function (n) { return '$' + n.toFixed(2); };
+
+  function log(msg) {
+    var li = document.createElement('li');
+    li.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '  ' + msg;
+    logEl.insertBefore(li, logEl.firstChild);
+    while (logEl.children.length > 7) logEl.removeChild(logEl.lastChild);
+  }
+
+  // ---- Motion lab ----
+  function prop(name) { return getComputedStyle(stage).getPropertyValue(name).trim(); }
+
+  function parseBezier(s) {
+    var m = /cubic-bezier\(([^)]+)\)/.exec(s);
+    if (!m) return [0.2, 0, 0, 1];
+    return m[1].split(',').map(Number);
+  }
+  function curvePath(p) {
+    var X = function (x) { return 10 + x * 100; };
+    var Y = function (y) { return 110 - y * 100; };
+    return 'M' + X(0) + ' ' + Y(0) + ' C' + X(p[0]) + ' ' + Y(p[1]) + ' ' + X(p[2]) + ' ' + Y(p[3]) + ' ' + X(1) + ' ' + Y(1);
+  }
+
+  function renderReadout() {
+    var lc = prop('--lift-curve');
+    var gc = prop('--glow-curve');
+    $('#r-lift-curve').textContent = lc;
+    $('#r-lift-dur').textContent = prop('--lift-dur');
+    $('#r-lift').textContent = prop('--lift');
+    $('#r-glow-curve').textContent = gc;
+    $('#r-glow-dur').textContent = prop('--glow-dur');
+    $('#r-glow-delay').textContent = prop('--glow-delay');
+    $('#r-glow-peak').textContent = prop('--glow-peak');
+    $('#r-sheen').textContent = stage.getAttribute('data-mode') === 'shimmer' ? 'one pass on hover or focus, 900 ms' : 'off';
+    var reduced = stage.classList.contains('is-reduced') || (reduceQuery && reduceQuery.matches);
+    $('#r-reduced').textContent = reduced ? 'on (colour and glow fade kept)' : 'off';
+    $('#curve-lift').setAttribute('d', curvePath(parseBezier(lc)));
+    $('#curve-glow').setAttribute('d', curvePath(parseBezier(gc)));
+  }
+
+  function setSegment(group, value) {
+    $$('button', group).forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-value') === value));
+    });
+  }
+
+  $('#mode-seg').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    stage.setAttribute('data-mode', b.getAttribute('data-value'));
+    setSegment($('#mode-seg'), b.getAttribute('data-value'));
+    renderReadout();
+    log('Feel set to ' + b.textContent + '.');
+  });
+
+  $('#theme-seg').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    stage.setAttribute('data-theme', b.getAttribute('data-value'));
+    setSegment($('#theme-seg'), b.getAttribute('data-value'));
+    log('Surface set to ' + b.textContent + '.');
+  });
+
+  $('#reduce').addEventListener('change', function (e) {
+    stage.classList.toggle('is-reduced', e.target.checked);
+    renderReadout();
+    log(e.target.checked
+      ? 'Reduced motion preview on: lift and sheen removed, colour change kept.'
+      : 'Reduced motion preview off.');
+  });
+
+  if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener('change', renderReadout);
+
+  // ---- Shop ----
+  function setQty(id, n) {
+    state.qty[id] = Math.min(9, Math.max(1, n));
+    var card = $('[data-id="' + id + '"]');
+    $('output', card).textContent = state.qty[id];
+    $('[data-qty="-1"]', card).disabled = state.qty[id] === 1;
+  }
+
+  $$('[data-qty]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var id = b.closest('[data-id]').getAttribute('data-id');
+      setQty(id, state.qty[id] + Number(b.getAttribute('data-qty')));
+    });
+  });
+
+  function renderCart() {
+    var ids = Object.keys(state.cart).filter(function (id) { return state.cart[id] > 0; });
+    var count = ids.reduce(function (s, id) { return s + state.cart[id]; }, 0);
+    var total = ids.reduce(function (s, id) { return s + state.cart[id] * PRODUCTS[id].price; }, 0);
+    $('#cart-count').textContent = count;
+    $('#cart-total').textContent = money(total);
+    var ul = $('#cart-lines');
+    ul.innerHTML = '';
+    if (!ids.length) {
+      var empty = document.createElement('li');
+      empty.className = 'muted';
+      empty.textContent = 'Your cart is empty.';
+      ul.appendChild(empty);
+    }
+    ids.forEach(function (id) {
+      var li = document.createElement('li');
+      li.textContent = state.cart[id] + ' x ' + PRODUCTS[id].name + ', ' + money(state.cart[id] * PRODUCTS[id].price);
+      ul.appendChild(li);
+    });
+    $('#checkout').disabled = !ids.length;
+  }
+
+  $$('[data-add]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var id = b.getAttribute('data-add');
+      var n = state.qty[id];
+      state.cart[id] = (state.cart[id] || 0) + n;
+      renderCart();
+      log('Added ' + n + ' x ' + PRODUCTS[id].name + ' to the cart.');
+      var lab = labelOf(b);
+      lab.textContent = 'Added';
+      clearTimeout(b._resetTimer);
+      b._resetTimer = setTimeout(function () { lab.textContent = 'Add to cart'; }, 1200);
+    });
+  });
+
+  $$('[data-save]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var id = b.getAttribute('data-save');
+      state.saved[id] = !state.saved[id];
+      var on = !!state.saved[id];
+      b.setAttribute('aria-pressed', String(on));
+      labelOf(b).textContent = on ? 'Saved' : 'Save';
+      log((on ? 'Saved ' : 'Removed ') + PRODUCTS[id].name + (on ? ' to your list.' : ' from your list.'));
+    });
+  });
+
+  $('#cart-btn').addEventListener('click', function () {
+    var btn = $('#cart-btn');
+    var open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    $('#cart-panel').hidden = !open;
+  });
+
+  $('#clear-cart').addEventListener('click', function () {
+    state.cart = {};
+    renderCart();
+    log('Cart emptied.');
+  });
+
+  // Other buttons log their note.
+  $$('[data-note]').forEach(function (b) {
+    b.addEventListener('click', function () { log(b.getAttribute('data-note')); });
+  });
+
+  // ---- Init ----
+  Object.keys(state.qty).forEach(function (id) { setQty(id, state.qty[id]); });
+  renderCart();
+  renderReadout();
+})();
+</script>
+</body>
+</html>

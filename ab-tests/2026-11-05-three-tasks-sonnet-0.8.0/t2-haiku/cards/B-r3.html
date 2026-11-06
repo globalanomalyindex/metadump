@@ -1,0 +1,14 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>B-r3</title><style>
+:root{color-scheme:light}html,body{margin:0;min-height:100%}body{background:#fbfaf7;font:18px/1.6 ui-serif,Georgia,serif;color:#1d1c1a}
+.card{max-width:680px;margin:0 auto;padding:30px 30px 40px;box-sizing:border-box}
+.card.short{min-height:100vh;display:flex;flex-direction:column;justify-content:center;font-size:26px;line-height:1.5;padding:36px 36px}
+.card.short p{margin:0 0 22px}.card.short p:last-child{margin:0}
+h1,h2,h3{font:600 20px/1.3 system-ui,sans-serif;margin:18px 0 8px}h1{font-size:23px}p{margin:0 0 12px}
+ol,ul{padding-left:24px;margin:0 0 12px}li{margin:0 0 12px}code{font:14px ui-monospace,monospace;background:#f1efe9;padding:1px 4px;border-radius:4px}
+blockquote{margin:0 0 12px;padding-left:12px;border-left:3px solid #ddd;color:#555}hr{border:0;border-top:1px solid #e6e3dc;margin:16px 0}a{color:#1d4ed8}
+</style><div class='card short'><p>Winter dusk, sun gone —<br>mother-of-pearl on thin cloud,<br>the lake ice holds it</p></div><script>(() => { const c = document.querySelector('.card'), base = parseFloat(getComputedStyle(c).fontSize)
+  const verse = [...c.querySelectorAll('p')].filter(p => p.innerHTML.includes('<br') || p.textContent.length < 70)
+  verse.forEach(p => { p.style.whiteSpace = 'nowrap' })
+  const fit = () => { let fs = base; c.style.fontSize = fs + 'px'
+    while (fs > 11 && verse.some(p => p.scrollWidth > p.clientWidth + 1)) { fs -= 0.5; c.style.fontSize = fs + 'px' } }
+  fit(); addEventListener('resize', fit) })()</script>

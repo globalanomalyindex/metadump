@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {"physics": 7, "interaction": 7, "stability": 7, "clarity": 3, "craft": 6, "overall": 5, "note": "Only build with true polygon (SAT) collisions and rotation, so the drag pile tumbles believably, but it offers only a Reset button and no instructions, and the floor is invisible at rest."},
+    "X": {"physics": 6, "interaction": 7, "stability": 7, "clarity": 8, "craft": 7, "overall": 7, "note": "Clean toolbar with Add, Reset, Clear and a live count plus a hint, and direct drag with throw, though boxes are axis-aligned only and the bottom hint overlaps boxes on phone."},
+    "Y": {"physics": 7, "interaction": 7, "stability": 8, "clarity": 9, "craft": 8, "overall": 8, "note": "Most polished: a floating control panel with Add, Gravity toggle, Reset and Clear, a status HUD, 8 substeps, spring drag with throw, and a steady stack; the HUD slightly overlaps boxes on phone."},
+    "Z": {"physics": 6, "interaction": 8, "stability": 7, "clarity": 3, "craft": 6, "overall": 5, "note": "Most literal drag (kinematic follow with throw on release) and a clear floor, but axis-aligned boxes, only a Reset button, no on-screen instructions, and adding boxes only works via an undiscoverable click on empty space."}
+  },
+  "ranking": ["Y", "X", "W", "Z"]
+}

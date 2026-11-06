@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hollowmere Stays</title>
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    --ink: #1d1a2e;
+    --muted: #5b5673;
+    --paper: #f7f5ff;
+    --card: #ffffff;
+    --line: rgba(29, 26, 46, 0.09);
+    --violet: #6f4ff2;
+    --rose: #ff7fb0;
+    --sky: #7fd8ff;
+    --mint: #2bb37a;
+    --focus: #3b2bd9;
+    --accent: #5a3ae0;
+    --glow-a: rgba(127, 216, 255, 0.35);
+    --glow-b: rgba(255, 127, 176, 0.3);
+
+    /* custom bezier curves */
+    --ease-drift: cubic-bezier(0.16, 1, 0.3, 1);     /* long, unhurried settle */
+    --ease-veil:  cubic-bezier(0.22, 0.61, 0.36, 1); /* soft fade and glow */
+    --ease-mist:  cubic-bezier(0.45, 0, 0.2, 1);     /* sheen sweep */
+    --ease-press: cubic-bezier(0.3, 0, 0.6, 1);      /* quick, grounded press */
+    --ease-bloom: cubic-bezier(0.34, 1.5, 0.64, 1);  /* gentle overshoot for the heart */
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #efeaff;
+      --muted: #b4accc;
+      --paper: #13111c;
+      --card: #1c1930;
+      --line: rgba(255, 255, 255, 0.08);
+      --accent: #b9a6ff;
+      --glow-a: rgba(60, 130, 170, 0.28);
+      --glow-b: rgba(150, 50, 100, 0.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #efeaff;
+    --muted: #b4accc;
+    --paper: #13111c;
+    --card: #1c1930;
+    --line: rgba(255, 255, 255, 0.08);
+    --accent: #b9a6ff;
+    --glow-a: rgba(60, 130, 170, 0.28);
+    --glow-b: rgba(150, 50, 100, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(60vw 40vw at 10% -10%, var(--glow-a), transparent 70%),
+      radial-gradient(50vw 40vw at 100% 0%, var(--glow-b), transparent 70%),
+      var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  /* ---------- Header ---------- */
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+  }
+  .brand { font-weight: 700; letter-spacing: -0.01em; font-size: 1.1rem; }
+  .chips { display: flex; gap: 8px; }
+  .chip {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .chip b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 40px 0 24px; }
+  .eyebrow {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+    max-width: 16ch;
+  }
+  .lede { color: var(--muted); max-width: 52ch; margin: 0 0 24px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .pick-line {
+    margin: 18px 0 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+    min-height: 1.5em;
+  }
+  .pick-line strong { color: var(--ink); }
+
+  /* ---------- Stays grid ---------- */
+  .stays {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    padding: 12px 0 28px;
+  }
+  .stay {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 2px rgba(29, 26, 46, 0.04), 0 12px 30px -20px rgba(60, 40, 120, 0.35);
+    transition:
+      transform 700ms var(--ease-drift),
+      box-shadow 900ms var(--ease-veil),
+      outline-color 600ms var(--ease-veil);
+    outline: 2px solid transparent;
+    outline-offset: 4px;
+  }
+  .stay.is-pick {
+    outline-color: rgba(111, 79, 242, 0.55);
+    box-shadow: 0 0 0 6px rgba(127, 216, 255, 0.16), 0 24px 48px -24px rgba(111, 79, 242, 0.55);
+  }
+  .art {
+    height: 150px;
+    position: relative;
+  }
+  .art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(20, 14, 40, 0.18));
+  }
+  .stay:nth-child(1) .art { background: linear-gradient(135deg, #8bd3c7, #3f7d8c 60%, #26394d); }
+  .stay:nth-child(2) .art { background: linear-gradient(135deg, #ffd3a8, #ff8fa3 55%, #7a5cc9); }
+  .stay:nth-child(3) .art { background: linear-gradient(135deg, #cfd9ff, #7fd8ff 45%, #2d4a7a); }
+  .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .stay h2 { font-size: 1.1rem; margin: 0; letter-spacing: -0.01em; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin: 0; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; padding: 0; list-style: none; }
+  .tags li {
+    font-size: 0.78rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(111, 79, 242, 0.08);
+    color: #5a3ae0;
+  }
+  .row {
+    margin-top: auto;
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .price { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .price span { font-weight: 400; color: var(--muted); font-size: 0.85rem; }
+  .actions { display: flex; gap: 8px; }
+
+  /* ---------- Button: dreamlike, but practical ---------- */
+  .dream {
+    --c1: #5b3bd9;
+    --c2: #c4386e;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    min-height: 44px;
+    padding: 0.7em 1.35em;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: linear-gradient(115deg, var(--c1), #7a57e8 50%, var(--c2));
+    background-size: 180% 180%;
+    background-position: 0% 50%;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 8px 18px -10px rgba(92, 64, 230, 0.7);
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transform: translate3d(0, 0, 0);
+    transition:
+      transform 520ms var(--ease-drift),
+      box-shadow 760ms var(--ease-veil),
+      background-position 1400ms var(--ease-mist),
+      filter 700ms var(--ease-veil),
+      opacity 300ms var(--ease-veil);
+  }
+  /* sheen that drifts across on hover */
+  .dream::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+    background-size: 250% 100%;
+    background-position: 130% 0;
+    opacity: 0;
+    transition:
+      background-position 1100ms var(--ease-drift),
+      opacity 400ms var(--ease-veil);
+  }
+  .dream > * { position: relative; z-index: 1; }
+  .label {
+    transition: text-shadow 800ms var(--ease-veil), letter-spacing 800ms var(--ease-veil);
+    white-space: nowrap;
+  }
+
+  .dream:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .dream:active {
+    transform: translate3d(0, 0, 0) scale(0.97);
+    transition-duration: 140ms, 260ms, 1400ms, 700ms, 300ms;
+    transition-timing-function: var(--ease-press);
+  }
+  .dream:disabled,
+  .dream[aria-disabled="true"] {
+    cursor: progress;
+    filter: saturate(0.6);
+  }
+
+  /* variants */
+  .dream--glass {
+    --ink-btn: #2a2450;
+    color: var(--ink-btn);
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4);
+    backdrop-filter: blur(10px) saturate(1.4);
+    box-shadow:
+      inset 0 0 0 1px rgba(111, 79, 242, 0.25),
+      0 8px 24px -16px rgba(40, 30, 90, 0.4);
+  }
+  .dream--outline {
+    color: var(--ink);
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px rgba(111, 79, 242, 0.35);
+  }
+  .dream--sm { min-height: 38px; padding: 0.55em 1.05em; font-size: 0.88rem; }
+  .dream--icon { width: 44px; min-width: 44px; padding: 0; }
+  .dream--save[aria-pressed="true"] {
+    color: #fff;
+    background: linear-gradient(115deg, #c4386e, #b5472a 60%, #8f6a10);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 10px 22px -12px rgba(196, 56, 110, 0.8);
+  }
+  .dream--reserved,
+  .dream[data-state="reserved"] {
+    background: linear-gradient(115deg, #1f7f55, #2a6fa0);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 8px 18px -10px rgba(43, 179, 122, 0.7);
+  }
+
+  /* heart icon */
+  .heart { width: 18px; height: 18px; flex: none; }
+  .heart path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    transition: fill 500ms var(--ease-veil);
+  }
+  .dream--save[aria-pressed="true"] .heart path { fill: currentColor; }
+  .dream.is-blooming .heart {
+    animation: bloom 620ms var(--ease-bloom);
+  }
+  @keyframes bloom {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+
+  /* busy spinner */
+  .spinner {
+    display: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+  }
+  .dream[aria-busy="true"] .spinner { display: inline-block; }
+  .dream[aria-busy="true"] .label { opacity: 0.9; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* hover states only on devices that really hover */
+  @media (hover: hover) and (pointer: fine) {
+    .stay:hover {
+      transform: translate3d(0, -4px, 0);
+      box-shadow: 0 1px 2px rgba(29, 26, 46, 0.04), 0 26px 46px -22px rgba(60, 40, 120, 0.45);
+    }
+    .dream:hover {
+      transform: translate3d(0, -2px, 0);
+      background-position: 100% 50%;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 18px 36px -14px rgba(111, 79, 242, 0.75),
+        0 0 0 6px rgba(127, 216, 255, 0.12),
+        0 0 46px -6px rgba(255, 127, 176, 0.55);
+      filter: saturate(1.08);
+    }
+    .dream:hover::after {
+      background-position: -30% 0;
+      opacity: 1;
+    }
+    .dream:hover .label {
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.7);
+      letter-spacing: 0.02em;
+    }
+    .dream--glass:hover {
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow:
+        inset 0 0 0 1px rgba(111, 79, 242, 0.5),
+        0 14px 32px -18px rgba(40, 30, 90, 0.5),
+        0 0 40px -10px rgba(127, 216, 255, 0.6);
+    }
+    .dream--glass:hover .label { text-shadow: none; }
+    .dream--outline:hover {
+      background: rgba(111, 79, 242, 0.08);
+      box-shadow: inset 0 0 0 1.5px var(--violet), 0 0 30px -12px rgba(255, 127, 176, 0.6);
+    }
+    .dream--outline:hover .label { text-shadow: none; }
+    .dream--save[aria-pressed="true"]:hover {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 18px 34px -14px rgba(255, 110, 150, 0.9),
+        0 0 42px -6px rgba(255, 194, 127, 0.7);
+    }
+    .dream[data-state="reserved"]:hover { filter: saturate(1.15) brightness(1.04); }
+    .stay:hover .dream--outline:not(:hover) { opacity: 0.9; }
+  }
+
+  /* pressed-but-not-hovered states for keyboard and touch are covered by :active */
+
+  /* ---------- Summary ---------- */
+  .summary {
+    margin: 8px 0 48px;
+    padding: 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .summary p { margin: 0; color: var(--muted); }
+  .summary strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 1ms !important;
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    .dream::after { display: none; }
+    .dream:hover,
+    .dream:active,
+    .stay:hover { transform: none; }
+    .spinner { animation: none; border-right-color: currentColor; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">Hollowmere</div>
+    <div class="chips" aria-live="off">
+      <span class="chip">Saved <b id="chip-saved">0</b></span>
+      <span class="chip">Reserved <b id="chip-reserved">0</b></span>
+    </div>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Quiet stays</p>
+    <h1 id="hero-title">Slow mornings, small towns, nothing on the calendar.</h1>
+    <p class="lede">Hand-picked cabins, lofts and cottages with woodstoves, long porches and good coffee within walking distance. Save the ones you like, then reserve when you are sure.</p>
+    <div class="hero-actions">
+      <button class="dream" type="button" id="browse">
+        <span class="label">Browse stays</span>
+      </button>
+      <button class="dream dream--glass" type="button" id="surprise">
+        <span class="label">Surprise me</span>
+      </button>
+    </div>
+    <p class="pick-line" id="pick-line" aria-live="polite">Tap "Surprise me" for a random pick.</p>
+  </section>
+
+  <main id="stays" class="stays" aria-label="Available stays">
+
+    <article class="stay" data-id="hollow-oak" data-name="Hollow Oak Cabin" data-price="180">
+      <div class="art" aria-hidden="true"></div>
+      <div class="body">
+        <h2>Hollow Oak Cabin</h2>
+        <p class="meta">Asheville, NC &middot; 4.9 (212 reviews)</p>
+        <ul class="tags">
+          <li>Woodstove</li>
+          <li>Creek access</li>
+        </ul>
+        <div class="row">
+          <p class="price">$180 <span>/ night</span></p>
+          <div class="actions">
+            <button class="dream dream--glass dream--sm dream--save" type="button" data-action="save" aria-pressed="false" aria-label="Save Hollow Oak Cabin to wishlist">
+              <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.4-9.3-8.9C1.6 8.7 3.4 5.5 6.8 5.5c2 0 3.5 1.1 4.2 2.5.7-1.4 2.2-2.5 4.2-2.5 3.4 0 5.2 3.2 4.1 6.1-1.8 4.5-9.3 8.9-9.3 8.9z"/></svg>
+              <span class="label">Save</span>
+            </button>
+            <button class="dream dream--sm" type="button" data-action="reserve" data-id="hollow-oak" aria-label="Reserve Hollow Oak Cabin">
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="label">Reserve</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="stay" data-id="tidewater" data-name="Tidewater Loft" data-price="142">
+      <div class="art" aria-hidden="true"></div>
+      <div class="body">
+        <h2>Tidewater Loft</h2>
+        <p class="meta">Astoria, OR &middot; 4.7 (98 reviews)</p>
+        <ul class="tags">
+          <li>Harbor view</li>
+          <li>Bikes included</li>
+        </ul>
+        <div class="row">
+          <p class="price">$142 <span>/ night</span></p>
+          <div class="actions">
+            <button class="dream dream--glass dream--sm dream--save" type="button" data-action="save" aria-pressed="false" aria-label="Save Tidewater Loft to wishlist">
+              <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.4-9.3-8.9C1.6 8.7 3.4 5.5 6.8 5.5c2 0 3.5 1.1 4.2 2.5.7-1.4 2.2-2.5 4.2-2.5 3.4 0 5.2 3.2 4.1 6.1-1.8 4.5-9.3 8.9-9.3 8.9z"/></svg>
+              <span class="label">Save</span>
+            </button>
+            <button class="dream dream--sm" type="button" data-action="reserve" data-id="tidewater" aria-label="Reserve Tidewater Loft">
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="label">Reserve</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="stay" data-id="fernlight" data-name="Fernlight Cottage" data-price="265">
+      <div class="art" aria-hidden="true"></div>
+      <div class="body">
+        <h2>Fernlight Cottage</h2>
+        <p class="meta">Big Sur, CA &middot; 4.95 (154 reviews)</p>
+        <ul class="tags">
+          <li>Hot tub</li>
+          <li>Ocean walk</li>
+        </ul>
+        <div class="row">
+          <p class="price">$265 <span>/ night</span></p>
+          <div class="actions">
+            <button class="dream dream--glass dream--sm dream--save" type="button" data-action="save" aria-pressed="false" aria-label="Save Fernlight Cottage to wishlist">
+              <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.4-9.3-8.9C1.6 8.7 3.4 5.5 6.8 5.5c2 0 3.5 1.1 4.2 2.5.7-1.4 2.2-2.5 4.2-2.5 3.4 0 5.2 3.2 4.1 6.1-1.8 4.5-9.3 8.9-9.3 8.9z"/></svg>
+              <span class="label">Save</span>
+            </button>
+            <button class="dream dream--sm" type="button" data-action="reserve" data-id="fernlight" aria-label="Reserve Fernlight Cottage">
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="label">Reserve</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <section class="summary" aria-live="polite">
+    <p id="summary-text">Nothing saved or reserved yet.</p>
+    <button class="dream dream--outline dream--sm" type="button" id="clear">
+      <span class="label">Clear all</span>
+    </button>
+  </section>
+
+  <p class="sr-only" id="announcer" role="status" aria-live="polite"></p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STAYS = {
+    "hollow-oak": { name: "Hollow Oak Cabin", price: 180 },
+    "tidewater":  { name: "Tidewater Loft",   price: 142 },
+    "fernlight":  { name: "Fernlight Cottage", price: 265 }
+  };
+  var RESERVE_MS = 1100;
+
+  var state = {
+    saved: {},      // id -> true
+    reserved: {},   // id -> true
+    pending: {},    // id -> timer handle while reserving
+    lastPick: null
+  };
+
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+
+  var announcer = $("#announcer");
+  function announce(msg) {
+    if (!announcer) return;
+    announcer.textContent = "";
+    // re-set on next frame so repeated messages are read again
+    requestAnimationFrame(function () { announcer.textContent = msg; });
+  }
+
+  function keys(obj) { return Object.keys(obj); }
+
+  function money(n) { return "$" + n.toLocaleString("en-US"); }
+
+  function renderSummary() {
+    var savedCount = keys(state.saved).length;
+    var reservedIds = keys(state.reserved);
+    var reservedCount = reservedIds.length;
+    var total = reservedIds.reduce(function (sum, id) { return sum + STAYS[id].price; }, 0);
+
+    $("#chip-saved").textContent = savedCount;
+    $("#chip-reserved").textContent = reservedCount;
+
+    var text;
+    if (savedCount === 0 && reservedCount === 0) {
+      text = "Nothing saved or reserved yet.";
+    } else {
+      text = "";
+      text += "<strong>" + savedCount + "</strong> saved";
+      text += " &middot; <strong>" + reservedCount + "</strong> reserved";
+      text += " &middot; <strong>" + money(total) + "</strong> per night for reserved stays";
+    }
+    $("#summary-text").innerHTML = text;
+    $("#clear").disabled = savedCount === 0 && reservedCount === 0 && keys(state.pending).length === 0;
+  }
+
+  function setSaveUI(card, on) {
+    var btn = $('[data-action="save"]', card);
+    var id = card.getAttribute("data-id");
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.querySelector(".label").textContent = on ? "Saved" : "Save";
+    btn.setAttribute("aria-label", (on ? "Remove " : "Save ") + STAYS[id].name + (on ? " from wishlist" : " to wishlist"));
+  }
+
+  function setReserveUI(card, state_) {
+    var btn = $('[data-action="reserve"]', card);
+    var label = btn.querySelector(".label");
+    var id = card.getAttribute("data-id");
+    if (state_ === "busy") {
+      btn.setAttribute("aria-busy", "true");
+      btn.setAttribute("aria-disabled", "true");
+      label.textContent = "Reserving";
+    } else if (state_ === "reserved") {
+      btn.removeAttribute("aria-busy");
+      btn.removeAttribute("aria-disabled");
+      btn.setAttribute("data-state", "reserved");
+      label.textContent = "Reserved";
+      btn.setAttribute("aria-label", "Reserved " + STAYS[id].name + ". Activate to cancel");
+    } else {
+      btn.removeAttribute("aria-busy");
+      btn.removeAttribute("aria-disabled");
+      btn.removeAttribute("data-state");
+      label.textContent = "Reserve";
+      btn.setAttribute("aria-label", "Reserve " + STAYS[id].name);
+    }
+  }
+
+  function cardFor(id) {
+    return document.querySelector('.stay[data-id="' + id + '"]');
+  }
+
+  function bloom(btn) {
+    btn.classList.remove("is-blooming");
+    // force reflow so the animation restarts on repeated toggles
+    void btn.offsetWidth;
+    btn.classList.add("is-blooming");
+    setTimeout(function () { btn.classList.remove("is-blooming"); }, 650);
+  }
+
+  function toggleSave(id) {
+    var card = cardFor(id);
+    var btn = $('[data-action="save"]', card);
+    if (state.saved[id]) {
+      delete state.saved[id];
+      setSaveUI(card, false);
+      announce(STAYS[id].name + " removed from wishlist.");
+    } else {
+      state.saved[id] = true;
+      setSaveUI(card, true);
+      bloom(btn);
+      announce(STAYS[id].name + " saved to wishlist.");
+    }
+    renderSummary();
+  }
+
+  function reserve(id) {
+    var card = cardFor(id);
+
+    // cancelling an existing reservation is immediate
+    if (state.reserved[id]) {
+      delete state.reserved[id];
+      setReserveUI(card, "idle");
+      announce("Reservation for " + STAYS[id].name + " cancelled.");
+      renderSummary();
+      return;
+    }
+
+    // already reserving: ignore extra clicks
+    if (state.pending[id]) return;
+
+    setReserveUI(card, "busy");
+    announce("Reserving " + STAYS[id].name + ".");
+    renderSummary();
+
+    state.pending[id] = setTimeout(function () {
+      delete state.pending[id];
+      // the card may have been cleared while pending
+      if (!cardFor(id)) return;
+      state.reserved[id] = true;
+      delete state.saved[id];
+      setSaveUI(card, false);
+      setReserveUI(card, "reserved");
+      announce(STAYS[id].name + " reserved.");
+      renderSummary();
+    }, RESERVE_MS);
+  }
+
+  function clearAll() {
+    keys(state.pending).forEach(function (id) {
+      clearTimeout(state.pending[id]);
+      delete state.pending[id];
+      setReserveUI(cardFor(id), "idle");
+    });
+    $$(".stay").forEach(function (card) {
+      var id = card.getAttribute("data-id");
+      delete state.saved[id];
+      delete state.reserved[id];
+      setSaveUI(card, false);
+      setReserveUI(card, "idle");
+      card.classList.remove("is-pick");
+    });
+    state.lastPick = null;
+    $("#pick-line").textContent = 'Tap "Surprise me" for a random pick.';
+    announce("Saved and reserved stays cleared.");
+    renderSummary();
+  }
+
+  function surprise() {
+    var ids = keys(STAYS);
+    var pool = ids.filter(function (id) { return id !== state.lastPick; });
+    var id = pool[Math.floor(Math.random() * pool.length)];
+    state.lastPick = id;
+    $$(".stay").forEach(function (card) { card.classList.remove("is-pick"); });
+    var card = cardFor(id);
+    card.classList.add("is-pick");
+    $("#pick-line").innerHTML = "Tonight's pick: <strong>" + STAYS[id].name + "</strong> at " + money(STAYS[id].price) + " a night.";
+    announce("Pick: " + STAYS[id].name + ".");
+  }
+
+  function browse() {
+    var grid = $("#stays");
+    grid.scrollIntoView({ behavior: "smooth", block: "start" });
+    var first = $(".stay .dream--sm");
+    if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 500);
+  }
+
+  // ---------- wiring ----------
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    var card = btn.closest(".stay");
+    var id = card ? card.getAttribute("data-id") : btn.getAttribute("data-id");
+    if (btn.getAttribute("data-action") === "save") toggleSave(id);
+    else if (btn.getAttribute("data-action") === "reserve") reserve(id);
+  });
+
+  $("#surprise").addEventListener("click", surprise);
+  $("#browse").addEventListener("click", browse);
+  $("#clear").addEventListener("click", clearAll);
+
+  // initial paint
+  $$(".stay").forEach(function (card) {
+    setSaveUI(card, false);
+    setReserveUI(card, "idle");
+  });
+  renderSummary();
+})();
+</script>
+</body>
+</html>

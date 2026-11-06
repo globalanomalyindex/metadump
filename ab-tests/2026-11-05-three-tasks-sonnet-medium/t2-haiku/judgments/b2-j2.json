@@ -1,0 +1,6 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"imagery": 6, "form": 9, "specificity": 7, "freshness": 7, "resonance": 6, "overall": 7, "note": "5-7-5 (Cold cup on the sill=5; the lens cloud over the ridge=7; holds still, wind running=5); the cup on the sill is a surprising cut and the stillness-with-wind paradox is true to lenticulars, though the link between cup and cloud is loose."},
+"X": {"imagery": 6, "form": 8, "specificity": 8, "freshness": 5, "resonance": 5, "overall": 6, "note": "5-7-5 (Mother-of-pearl sheets=5; nacreous light on cold air=7 with nacreous as 3; dawn the sky holds, brief=5); accurate to nacreous clouds but the last line is clumsy and the phrasing is stock."},
+"Y": {"imagery": 7, "form": 8, "specificity": 8, "freshness": 5, "resonance": 6, "overall": 6, "note": "5-7-5 (Nacreous glow burns=5; in the long dark before dawn=7; mother-of-pearl sky=5); evocative of polar stratospheric clouds glowing before dawn, but nacreous and mother-of-pearl say the same thing twice."},
+"Z": {"imagery": 8, "form": 9, "specificity": 8, "freshness": 7, "resonance": 8, "overall": 8, "note": "5-7-5 (Cloud lens on the ridge=5; all the wind pours through it, still=7; and the smell of snow=5); lenticular is accurately evoked, and the closing smell of snow adds a new sense and a quiet turn."}
+}, "ranking": ["Z", "W", "Y", "X"]}

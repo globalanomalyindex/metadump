@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"physics": 7, "interaction": 7, "stability": 8, "clarity": 8, "craft": 7, "overall": 7, "note": "Axis-aligned boxes at 240 Hz stack cleanly with throws and a full add/reset/clear set plus a visible hint, though boxes never rotate and floor friction is crude."},
+"X": {"physics": 9, "interaction": 8, "stability": 8, "clarity": 5, "craft": 8, "overall": 8, "note": "Rigid rotating bodies with SAT contacts, sleeping and a spring grab give the most believable stacking and tumbling, but there is no on-screen hint and only a Reset control."},
+"Y": {"physics": 7, "interaction": 8, "stability": 8, "clarity": 5, "craft": 7, "overall": 7, "note": "Direct kinematic drag with clean throws and a tidy floor that stays stable, but the boxes are axis-aligned and the only control is Reset with no instructions."},
+"Z": {"physics": 6, "interaction": 7, "stability": 5, "clarity": 8, "craft": 6, "overall": 6, "note": "Good controls and HUD instructions and a direct drag, but a neighbouring box was launched off the stack during a drag and one box looks unsupported in the desktop rest frame, and the HUD covers the stack on phone."}
+},
+"ranking": ["X", "W", "Y", "Z"]}

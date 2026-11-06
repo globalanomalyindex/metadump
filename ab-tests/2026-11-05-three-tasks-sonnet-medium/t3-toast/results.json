@@ -1,0 +1,199 @@
+{
+ "scores": {
+  "A": {
+   "compact": 6.75,
+   "collapsible": 7.5,
+   "tracking": 8.0,
+   "dark": 8.25,
+   "usability": 7.0,
+   "craft": 7.42,
+   "overall": 7.33,
+   "mean_rank": 2.33,
+   "per_run_overall": {
+    "A-r1": 8.0,
+    "A-r2": 7.33,
+    "A-r3": 8.33,
+    "A-r4": 5.67
+   }
+  },
+  "B": {
+   "compact": 7.83,
+   "collapsible": 7.92,
+   "tracking": 7.08,
+   "dark": 7.92,
+   "usability": 8.08,
+   "craft": 7.5,
+   "overall": 7.33,
+   "mean_rank": 2.67,
+   "per_run_overall": {
+    "B-r1": 7.67,
+    "B-r2": 6.33,
+    "B-r3": 8.0,
+    "B-r4": 7.33
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 8,
+  "losses": 10,
+  "ties": 6,
+  "win_rate": 0.46
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 53,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 362,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 241,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 50,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 56,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 280,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 53,
+   "surface_luminance": 0.008,
+   "dark_surface": true,
+   "expanded_height_px": 288,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 42,
+   "surface_luminance": 0.011,
+   "dark_surface": true,
+   "expanded_height_px": 259,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 46,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 358,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 56,
+   "surface_luminance": 0.012,
+   "dark_surface": true,
+   "expanded_height_px": 288,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "toggle_found": true,
+   "collapsed_height_px": 42,
+   "surface_luminance": 0.009,
+   "dark_surface": true,
+   "expanded_height_px": 258,
+   "state_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 78177,
+   "mean_seconds": 35.4
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 106810,
+   "mean_seconds": 62.3
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 216776,
+   "ms": 1425519,
+   "tool_uses": 49,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.74,
+ "permutation": {
+  "p": 1.0,
+  "extreme": 70,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Very slim collapsed pill with step dots and clean timeline, but ETA and carrier only appear once opened and the collapsed row is a bit sparse on what matters.",
+  "b1/j1/A-r1": "Collapsed row shows status plus ETA window with progress bar, and the open panel adds tracking number with copy, step locations and times, and clear actions in a polished dark UI.",
+  "b1/j1/B-r2": "Most complete controls (switches, dismiss, labeled region) and a very small collapsed bar, but the opened panel leaves a large empty gap and the ETA is vague.",
+  "b1/j1/A-r2": "Densest and most compact, with status, ETA, progress, tracking number and next-step buttons in a small footprint, though it rests open and has fewer labelled affordances.",
+  "b1/j2/B-r2": "Thin one-line collapsed bar with strong ARIA (switches, live region, Esc), but the opened card has a large dead gap above the footer and the collapsed row is cramped.",
+  "b1/j2/A-r2": "Clean header with progress bar, carrier and number, stops-away and action buttons, though the collapsed state shows no progress and keyboard and screen-reader support is lighter.",
+  "b1/j2/A-r1": "Richest tracking with ETA window, progress line, locations and timestamps, copy and alert actions, plus Esc and reduced-motion support, at the cost of a taller opened card.",
+  "b1/j2/B-r1": "Tightest footprint with a stepped dot meter, amber accent and check timeline, though the tracking number is shortened and no ETA shows when collapsed beyond 4 of 5.",
+  "b1/j3/A-r2": "Tidy teal toast with ETA, tracking number and action buttons, but no reduced-motion handling, no progress count and a floating-in animation that jumps.",
+  "b1/j3/B-r2": "Best accessibility (switch roles, region, status, reduced motion) and a very small collapsed bar, but the opened panel has a big empty gap and tiny type.",
+  "b1/j3/B-r1": "Compact amber toast with dot progress, check-mark timeline and clean connectors; lacks a copyable tracking number and a full ETA time but has the best density and polish.",
+  "b1/j3/A-r1": "Richest tracking (ETA window, progress bar, locations, copy number, actions) with a smooth expand, though the opened toast is taller than it needs to be.",
+  "b2/j1/B-r3": "Very tight collapsed pill with segmented progress and a clean timeline with tracking number, but no carrier name or next-action beyond Dismiss.",
+  "b2/j1/A-r3": "Richest and most polished tracker (progress stepper, scan log, copy/refresh/alerts, multi-package dots) though the collapsed subtitle truncates and the opened state is a bit denser.",
+  "b2/j1/B-r4": "Compact with carrier badge, ETA window and action buttons, but the Carrier page button wraps awkwardly and the collapsed state omits ETA.",
+  "b2/j1/A-r4": "Handsome collapsed row, but carrier tabs are confusing for one package, there is empty padding at the bottom, and it has less screen-reader support.",
+  "b2/j2/B-r4": "Very slim collapsed row with a clear step timeline, ETA, tracking number and actions, but the carrier is only a cryptic UP chip and the Carrier page button wraps awkwardly.",
+  "b2/j2/A-r4": "Pleasant green dark styling with progress bar and timeline, but the UPS/USPS/FedEx tabs are confusing for one package and the open card has dead space at the bottom.",
+  "b2/j2/A-r3": "Richest tracking (stepper, event log, carrier, masked number, copy, refresh, alerts, multi-package dots) in a dense dark card with good ARIA, though the subtitle truncates the ETA.",
+  "b2/j2/B-r3": "Tightest collapsed state with a segmented progress bar and polished timeline with locations, but no carrier name and only a Dismiss action for what to do next.",
+  "b2/j3/A-r4": "Clean dark look but the carrier tabs are confusing for one package, there is dead space at the bottom of the open toast, and there is no live region or reduced-motion handling.",
+  "b2/j3/B-r4": "Very slim collapsed row with a status dot, a clear timeline with ETA and tracking number, and good ARIA, though the wrapped Carrier page button is a little cramped.",
+  "b2/j3/B-r3": "Tiniest collapsed state with a segmented progress bar and a rich location timeline, but the carrier name and next-step actions are thin.",
+  "b2/j3/A-r3": "Most complete and polished tracker with a stepper, scan log, copy, refresh and alerts, but it is larger and the subtitle ETA truncates when open."
+ }
+}

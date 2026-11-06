@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"imagery":7,"form":10,"specificity":8,"freshness":7,"resonance":8,"overall":8,"note":"Counts 5 (na-cre-ous at dusk) / 7 / 5; names nacreous, pearl draining at dusk is true, and the 'we stay, in grey' turn lands."},
+"X":{"imagery":5,"form":4,"specificity":6,"freshness":4,"resonance":4,"overall":4,"note":"Counts 4 (Nacreous glow) / 7 / 5, so line one is short; 'mother-of-pearl' and 'holds its breath' are stock."},
+"Y":{"imagery":7,"form":8,"specificity":7,"freshness":5,"resonance":6,"overall":6,"note":"Counts 5 / 7 / 5 (6 if 'fire' takes two syllables); 'fire on frozen air' is strong but 'mother-of-pearl' and 'nacreous' repeat each other and the 'slow' dangle is awkward."},
+"Z":{"imagery":9,"form":9,"specificity":7,"freshness":9,"resonance":7,"overall":8,"note":"Counts 5 / 7 / 5; the palm-blocking-the-sun iridescence image is fresh and seen, though the cloud type is only evoked and the white ending is quiet."}
+},"ranking":["W","Z","Y","X"]}

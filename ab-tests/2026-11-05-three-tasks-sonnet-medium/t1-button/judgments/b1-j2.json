@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"dreamlike":6,"practical":9,"motion":7,"craft":8,"overall":7,"note":"Glass pill with a pre-blurred glow that arrives fast and lingers on release via custom curves; very safe, legible, and cheap (opacity/transform only), but the effect is modest and the CTA is a ghost button."},
+"X":{"dreamlike":9,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Gradient hero pill with blurred bloom, orbiting halo, overshoot and slow exhale curves feels the most ethereal, with reduced-motion and focus handled, though long filter transitions and infinite loops cost a bit."},
+"Y":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Full-width light-theme CTA with drifting gradient wash, arrow slide and long soft settle looks lovely, but the white label loses contrast mid-hover as the surface washes pale."},
+"Z":{"dreamlike":5,"practical":8,"motion":7,"craft":7,"overall":6,"note":"Careful layered timing with delayed glow tail and good focus/reduced-motion, but the showcased hover is a small secondary button with a faint blue smudge that reads more tidy than dreamlike."}},
+"ranking":["X","Y","W","Z"]}

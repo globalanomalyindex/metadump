@@ -464,7 +464,9 @@ test('a verify result whose narrowings are all constraint findings does not star
   }
   const { calls } = await runWith({ ...ARGS, depth: 'lite' }, verifyFinds(CONSTRAINT_ONLY))
   const narrowing = calls.find(c => c.label.startsWith('verify')).opts.schema.properties.narrowings.items
-  assert.deepEqual([...narrowing.properties.kind.enum].sort(), ['constraint', 'copy', 'definition', 'job', 'quality', 'scope'])
+  // `directive` (ADR 0012): the head or an export reads as orders, or funnels every consumer to the same pick.
+  // `tamed` (ADR 0016): a worn path, default or constraint that turns the user's quality words down.
+  assert.deepEqual([...narrowing.properties.kind.enum].sort(), ['constraint', 'copy', 'definition', 'directive', 'job', 'quality', 'scope', 'tamed'])
   assert.ok(narrowing.required.includes('kind'))
 })
 

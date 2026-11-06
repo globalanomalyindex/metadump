@@ -1,0 +1,74 @@
+{
+ "2026-11-05-three-tasks-sonnet-medium:t1-button": {
+  "offered": 10,
+  "offered_curves": 10,
+  "builds": {
+   "A-r1": {
+    "dump_values_reused": 1
+   },
+   "A-r2": {
+    "dump_values_reused": 0
+   },
+   "A-r3": {
+    "dump_values_reused": 0
+   },
+   "A-r4": {
+    "dump_values_reused": 0
+   },
+   "B-r1": {
+    "dump_values_reused": 2
+   },
+   "B-r2": {
+    "dump_values_reused": 2
+   },
+   "B-r3": {
+    "dump_values_reused": 0
+   },
+   "B-r4": {
+    "dump_values_reused": 3
+   }
+  },
+  "A_builds_reusing_any": 1,
+  "A_mean_reused": 0.25,
+  "A_curves_shared_by_all": 0,
+  "B_builds_reusing_any": 3,
+  "B_mean_reused": 1.75,
+  "B_curves_shared_by_all": 0
+ },
+ "2026-11-05-three-tasks-sonnet-medium:t3-toast": {
+  "offered": 17,
+  "offered_curves": 1,
+  "builds": {
+   "A-r1": {
+    "dump_values_reused": 1
+   },
+   "A-r2": {
+    "dump_values_reused": 1
+   },
+   "A-r3": {
+    "dump_values_reused": 1
+   },
+   "A-r4": {
+    "dump_values_reused": 1
+   },
+   "B-r1": {
+    "dump_values_reused": 2
+   },
+   "B-r2": {
+    "dump_values_reused": 3
+   },
+   "B-r3": {
+    "dump_values_reused": 5
+   },
+   "B-r4": {
+    "dump_values_reused": 4
+   }
+  },
+  "A_builds_reusing_any": 4,
+  "A_mean_reused": 1.0,
+  "A_curves_shared_by_all": 0,
+  "B_builds_reusing_any": 4,
+  "B_mean_reused": 3.5,
+  "B_curves_shared_by_all": 0
+ }
+}

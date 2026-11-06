@@ -1,0 +1,43 @@
+{
+  "block": "b2",
+  "judge": "j3",
+  "scores": {
+    "W": {
+      "imagery": 8,
+      "form": 9,
+      "specificity": 8,
+      "freshness": 6,
+      "resonance": 8,
+      "overall": 9,
+      "note": "Exact 5-7-5 (Night's edge pearl-thin cloud 5 / lit from beneath by the sun 7 / seen by no one else 5) and accurately evokes a nacreous cloud lit from below after sunset, with the solitary witness giving it a clear turn."
+    },
+    "X": {
+      "imagery": 8,
+      "form": 9,
+      "specificity": 8,
+      "freshness": 5,
+      "resonance": 6,
+      "overall": 6,
+      "note": "Exact 5-7-5 (Midwinter's late dusk 5 / a veil keeps the sun's last light 7 / the sheen of a shell 5) with a seasonally precise nacreous setting, but veil, last light and shell-sheen lean on familiar pearl imagery and the ending lands softer."
+    },
+    "Y": {
+      "imagery": 6,
+      "form": 9,
+      "specificity": 9,
+      "freshness": 7,
+      "resonance": 5,
+      "overall": 8,
+      "note": "Exact 5-7-5 (midwinter, the wind 5 / a lens of cloud, not drifting 7 / above the ridge crest 5) and the most precise phenomenon in the set, a stationary lenticular over a ridge, though its imagery is sparser and its feeling less earned."
+    },
+    "Z": {
+      "imagery": 6,
+      "form": 9,
+      "specificity": 6,
+      "freshness": 5,
+      "resonance": 8,
+      "overall": 7,
+      "note": "Exact 5-7-5 (Rare cloud, mother-pearl 5 / blooms where the sky holds no sun 7 / gone before the name 5) with the strongest turn in the set, but opening on a stated 'Rare cloud' and 'mother-pearl' makes the imagery thinner and more generic."
+    }
+  },
+  "ranking": ["W", "Y", "Z", "X"]
+}

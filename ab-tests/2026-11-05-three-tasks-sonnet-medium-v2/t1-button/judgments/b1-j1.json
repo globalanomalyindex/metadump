@@ -1,0 +1,6 @@
+{"block": "b1", "judge": "j1", "scores": {
+"W": {"dreamlike": 7, "practical": 8, "motion": 8, "craft": 8, "overall": 8, "note": "Restrained warm glow, slow drift and long-tail curves, solid focus and reduced-motion handling, but the glass button is a bit low-contrast at rest and the effect is subtle."},
+"X": {"dreamlike": 7, "practical": 6, "motion": 7, "craft": 8, "overall": 6, "note": "Pretty pastel aurora sweep with overshoot, but the white label washes out against the pale gradient mid-hover, hurting legibility; blur layers and transition:all add cost."},
+"Y": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 7, "overall": 7, "note": "Cheap, well-built cloud glow with a clear focus ring and tap fallback, but the hover change is modest and the small dark button reads as understated."},
+"Z": {"dreamlike": 9, "practical": 8, "motion": 9, "craft": 8, "overall": 9, "note": "Richest hover with a bloom halo, drifting blurred color and arrow reveal using gentle overshoot and slow release, while the label stays legible and reduced motion is handled."}},
+"ranking": ["Z", "W", "Y", "X"]}

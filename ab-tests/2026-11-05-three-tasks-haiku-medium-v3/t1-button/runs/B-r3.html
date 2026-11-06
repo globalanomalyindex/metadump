@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamlike Button Lab</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --page: #f5f4fa;
+  --card: #ffffff;
+  --ink: #1c1934;
+  --muted: #5d5878;
+  --line: #e2dff0;
+  --field: #faf9fe;
+  --accent: #5a4bf0;
+  --link: #4b3fd8;
+  --ok: #17704a;
+  --flag: #a4441a;
+  --note: #5d5878;
+
+  /* motion defaults, overwritten by the lab on .stage */
+  --lift: -2px;
+  --ease-face: cubic-bezier(0.33, 1, 0.68, 1);
+  --dur-face: 220ms;
+  --ease-tail: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-tail: 600ms;
+  --press: 0.98;
+
+  /* surface tokens */
+  --face: #5a4bf0;
+  --glow: rgba(170, 150, 255, 0.85);
+  --halo: rgba(200, 190, 255, 0.95);
+  --sheen: rgba(255, 255, 255, 0.10);
+  --ring: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #120f26;
+    --card: #1b1836;
+    --ink: #ece9ff;
+    --muted: #aca6cc;
+    --line: #312b55;
+    --field: #211d40;
+    --link: #b3abff;
+    --ok: #6fd3a0;
+    --flag: #ffb08a;
+    --note: #aca6cc;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #120f26;
+  --card: #1b1836;
+  --ink: #ece9ff;
+  --muted: #aca6cc;
+  --line: #312b55;
+  --field: #211d40;
+  --link: #b3abff;
+  --ok: #6fd3a0;
+  --flag: #ffb08a;
+  --note: #aca6cc;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 48px; }
+
+header.top {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap; padding: 8px 0 24px;
+}
+.brand { font-weight: 700; letter-spacing: 0.02em; }
+.top nav a { color: var(--muted); text-decoration: none; margin-left: 18px; font-size: 14px; }
+
+.grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 900px) {
+  .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 20px; padding: 24px; min-width: 0;
+}
+.eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; letter-spacing: -0.01em; }
+h2 { margin: 0 0 6px; font-size: 22px; line-height: 1.2; }
+.muted { color: var(--muted); }
+.price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin: 18px 0 4px; }
+.price strong { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.features { list-style: none; padding: 0; margin: 20px 0 24px; display: grid; gap: 10px; }
+.features li { display: flex; gap: 10px; align-items: flex-start; }
+.features li::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); margin-top: 8px; flex: none;
+}
+
+/* ---------- the stage: backdrop + curve variables live here ---------- */
+.stage {
+  position: relative;
+  isolation: isolate;
+  display: grid; justify-items: center; gap: 14px; text-align: center;
+  padding: 48px 24px 44px;
+  border-radius: 20px;
+  background: var(--stage-bg, #17133a);
+}
+.stage[data-backdrop="dark"] {
+  --stage-bg: radial-gradient(70% 90% at 30% 15%, #3a2d8a 0%, rgba(58, 45, 138, 0) 60%), #17133a;
+}
+.stage[data-backdrop="saturated"] {
+  --stage-bg: linear-gradient(118deg, #ff7ab8 0%, #7c5cff 48%, #2fb8ff 100%);
+}
+.stage[data-backdrop="light"] { --stage-bg: #f4f1fb; }
+.stage .cap { margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.85); }
+.stage[data-backdrop="light"] .cap { color: #3a3560; }
+.cta-row { display: flex; justify-content: center; width: 100%; }
+
+/* ---------- the button ---------- */
+.btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-width: min(100%, 220px); min-height: 48px; max-width: 100%;
+  padding: 0 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font: inherit; font-size: 16px; font-weight: 600; letter-spacing: 0.01em;
+  color: #ffffff;
+  background: var(--face);
+  box-shadow: 0 1px 2px rgba(12, 8, 40, 0.3);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(0);
+  transition: transform var(--dur-face) var(--ease-face), opacity var(--dur-face) linear;
+}
+.btn .label { position: relative; z-index: 1; }
+.btn .sheen {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: var(--sheen); opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-face) linear;
+}
+/* glow: a pre-blurred layer behind the face, faded by opacity only */
+.btn::before {
+  content: ""; position: absolute; inset: -24px; border-radius: 32px;
+  background: radial-gradient(closest-side, var(--glow), rgba(170, 150, 255, 0));
+  filter: blur(12px);
+  opacity: 0; z-index: -1; pointer-events: none;
+  transition: opacity var(--dur-tail) var(--ease-tail);
+}
+/* halo: a thin ring of light at the rim, faded by opacity */
+.btn::after {
+  content: ""; position: absolute; inset: -5px; border-radius: 19px;
+  border: 1.5px solid var(--halo);
+  opacity: 0; z-index: -1; pointer-events: none;
+  transition: opacity var(--dur-tail) var(--ease-tail);
+}
+.btn[data-surface="glass"] {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+/* hover only where a fine pointer exists, so touch never sticks */
+@media (hover: hover) and (pointer: fine) {
+  .btn:not(:disabled):hover { transform: translateY(var(--lift)); }
+  .btn:not(:disabled):hover .sheen { opacity: 1; }
+  .btn[data-surface="glow"]:not(:disabled):hover::before { opacity: 1; }
+  .btn[data-surface="halo"]:not(:disabled):hover::after { opacity: 1; }
+}
+
+/* keyboard: the same response at half the lift, with a ring */
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+  transform: translateY(calc(var(--lift) / 2));
+}
+.btn[data-surface="glow"]:focus-visible::before { opacity: 0.5; }
+.btn[data-surface="halo"]:focus-visible::after { opacity: 0.5; }
+
+/* press: answered at once, no overshoot */
+.btn:not(:disabled):active {
+  transform: translateY(0) scale(var(--press));
+  transition: transform 90ms ease-out, opacity var(--dur-face) linear;
+}
+
+/* disabled keeps a legible label and drops hover, focus and press response */
+.btn:disabled {
+  background: #d9d5ea; color: #2a2456; border-color: transparent;
+  box-shadow: none; cursor: not-allowed;
+}
+.btn[data-surface="glass"]:disabled { backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+/* a quiet secondary control, no glow */
+.btn--quiet {
+  --sheen: rgba(75, 63, 216, 0.08);
+  min-width: 0; min-height: 44px; padding: 0 18px;
+  background: transparent; color: var(--ink);
+  border: 1px solid #8d86b8; box-shadow: none;
+}
+.btn--quiet:focus-visible { outline-color: var(--ink); }
+.btn--quiet[aria-pressed="true"] { background: var(--chip); }
+.btn--quiet:disabled { background: transparent; color: var(--muted); }
+
+/* reduced motion: lift, drift and press scale go; fades stay at 150 ms */
+:root.rm .btn,
+:root:not(.motion-full) .btn {
+  --lift: 0px;
+  --dur-face: 150ms;
+  --dur-tail: 150ms;
+  --ease-face: linear;
+  --ease-tail: linear;
+  --press: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not(.motion-full) .btn {
+    --lift: 0px;
+    --dur-face: 150ms;
+    --dur-tail: 150ms;
+    --ease-face: linear;
+    --ease-tail: linear;
+    --press: 1;
+  }
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; margin-top: 18px; }
+.row a { color: var(--link); font-size: 15px; }
+#status { min-height: 1.5em; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+
+/* ---------- lab controls ---------- */
+.controls { display: grid; gap: 16px; margin-top: 16px; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+legend { font-size: 13px; color: var(--muted); padding: 0; margin-bottom: 6px; }
+.seg-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg {
+  min-height: 36px; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--field); color: var(--ink);
+  font: inherit; font-size: 14px; cursor: pointer;
+}
+.seg[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.toggle { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+.readout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; font-size: 14px; margin: 0; }
+.readout dt { color: var(--muted); }
+.readout dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.readout code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+.plot {
+  width: 100%; max-width: 300px; height: auto; display: block;
+  background: var(--field); border: 1px solid var(--line); border-radius: 12px;
+}
+.plot .rest { stroke: var(--muted); stroke-dasharray: 3 3; stroke-width: 1; }
+.plot path { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; }
+.plot circle { fill: var(--accent); }
+.plot text { fill: var(--muted); font-size: 9px; font-family: system-ui, sans-serif; }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.checks li { display: flex; gap: 10px; align-items: flex-start; }
+.checks .tag { font-weight: 700; min-width: 54px; flex: none; }
+.checks .ok .tag { color: var(--ok); }
+.checks .flag .tag { color: var(--flag); }
+.checks .note .tag { color: var(--note); }
+
+.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--muted); max-height: 170px; overflow: auto; }
+.log li { font-variant-numeric: tabular-nums; }
+.log time { color: var(--ink); margin-right: 6px; }
+
+section.sub { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+
+@media (max-width: 420px) {
+  .wrap { padding-left: 16px; padding-right: 16px; }
+  .card { padding: 20px; }
+  .stage { padding: 40px 16px 36px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Northline</div>
+    <nav aria-label="Primary">
+      <a href="#pricing">Pricing</a>
+      <a href="#lab">Button lab</a>
+    </nav>
+  </header>
+
+  <main class="grid">
+    <section class="card" id="pricing" aria-labelledby="plan-title">
+      <p class="eyebrow">Most teams choose this</p>
+      <h1 id="plan-title">Team</h1>
+      <p class="muted">Shared boards for design and product teams of up to 50 people, with guest reviewers and an audit log.</p>
+
+      <div class="price">
+        <strong id="price">$24</strong>
+        <span class="muted" id="priceNote">per seat, per month, billed monthly</span>
+      </div>
+
+      <ul class="features">
+        <li>Unlimited shared boards and version history</li>
+        <li>Guest reviewers with links that expire</li>
+        <li>Single sign-on and a 90-day audit log</li>
+        <li>Priority support, first reply within 4 hours</li>
+      </ul>
+
+      <div class="stage" id="stage" data-backdrop="dark">
+        <p class="cap">14 days free. No card needed to start.</p>
+        <div class="cta-row">
+          <button class="btn" id="primary" type="button" data-surface="glow">
+            <span class="label" id="primaryLabel">Start 14-day trial</span>
+            <span class="sheen" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="cap">Hover it with a mouse, or press Tab to reach it from the keyboard.</p>
+      </div>
+
+      <div class="row">
+        <button class="btn btn--quiet" id="save" type="button" aria-pressed="false">
+          <span class="label">Save as draft</span>
+          <span class="sheen" aria-hidden="true"></span>
+        </button>
+        <a href="#compare">Compare plans</a>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="lab" aria-labelledby="lab-title">
+      <p class="eyebrow">Button lab</p>
+      <h2 id="lab-title">Change the feel, keep it usable</h2>
+      <p class="muted" style="margin:0">Each choice changes the live button on the left. The readouts and checks below it update with it.</p>
+
+      <div class="controls">
+        <fieldset>
+          <legend>Motion curve</legend>
+          <div class="seg-row" role="group" aria-label="Motion curve">
+            <button class="seg" type="button" data-group="curve" data-value="settle" aria-pressed="true">Settle</button>
+            <button class="seg" type="button" data-group="curve" data-value="float" aria-pressed="false">Float</button>
+            <button class="seg" type="button" data-group="curve" data-value="rebound" aria-pressed="false">Rebound</button>
+            <button class="seg" type="button" data-group="curve" data-value="drift" aria-pressed="false">Drift</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Surface</legend>
+          <div class="seg-row" role="group" aria-label="Surface">
+            <button class="seg" type="button" data-group="surface" data-value="glow" aria-pressed="true">Glow</button>
+            <button class="seg" type="button" data-group="surface" data-value="halo" aria-pressed="false">Halo</button>
+            <button class="seg" type="button" data-group="surface" data-value="glass" aria-pressed="false">Glass</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Backdrop behind the stage</legend>
+          <div class="seg-row" role="group" aria-label="Backdrop">
+            <button class="seg" type="button" data-group="backdrop" data-value="dark" aria-pressed="true">Dark</button>
+            <button class="seg" type="button" data-group="backdrop" data-value="saturated" aria-pressed="false">Saturated</button>
+            <button class="seg" type="button" data-group="backdrop" data-value="light" aria-pressed="false">Light</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Motion setting</legend>
+          <div class="seg-row" role="group" aria-label="Motion setting">
+            <button class="seg" type="button" data-group="motion" data-value="auto" aria-pressed="true">Follow system</button>
+            <button class="seg" type="button" data-group="motion" data-value="reduce" aria-pressed="false">Reduce</button>
+            <button class="seg" type="button" data-group="motion" data-value="full" aria-pressed="false">Full</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Billing</legend>
+          <div class="seg-row" role="group" aria-label="Billing">
+            <button class="seg" type="button" data-group="billing" data-value="monthly" aria-pressed="true">Monthly</button>
+            <button class="seg" type="button" data-group="billing" data-value="annual" aria-pressed="false">Annual</button>
+          </div>
+        </fieldset>
+
+        <label class="toggle"><input type="checkbox" id="disabledToggle"> Disable the primary button</label>
+      </div>
+
+      <section class="sub" aria-label="Readouts">
+        <dl class="readout">
+          <dt>Button state</dt><dd id="out-state">rest</dd>
+          <dt>Face curve</dt><dd><code id="out-curve"></code></dd>
+          <dt>Glow tail</dt><dd><code id="out-tail"></code></dd>
+          <dt>Timing</dt><dd id="out-durations"></dd>
+          <dt>Passes the end</dt><dd id="out-passes"></dd>
+          <dt>Label contrast</dt><dd id="out-label"></dd>
+          <dt>Edge contrast</dt><dd id="out-edge"></dd>
+          <dt>Focus ring</dt><dd id="out-ring"></dd>
+          <dt>Backdrop blur</dt><dd id="out-backdrops"></dd>
+          <dt>Trials started</dt><dd id="out-trials">0</dd>
+        </dl>
+        <svg class="plot" viewBox="0 0 200 120" role="img" aria-label="Plot of the face curve over time. Dashed line marks rest.">
+          <line class="rest" x1="10" y1="47.5" x2="190" y2="47.5"></line>
+          <text x="150" y="42">rest</text>
+          <path id="curvePath" d=""></path>
+          <circle cx="190" cy="47.5" r="2.5"></circle>
+        </svg>
+      </section>
+
+      <section class="sub" aria-label="Practical checks">
+        <p class="eyebrow" style="margin-bottom:10px">Practical checks</p>
+        <ul class="checks" id="checks"></ul>
+      </section>
+
+      <section class="sub" aria-label="Event log">
+        <p class="eyebrow" style="margin-bottom:10px">Event log</p>
+        <ol class="log" id="log"></ol>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    Sample content only. The page makes no network requests. Motion uses transform and opacity; glow and halo are pre-drawn layers that fade by opacity.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var stage = document.getElementById("stage");
+  var primary = document.getElementById("primary");
+  var primaryLabel = document.getElementById("primaryLabel");
+  var saveBtn = document.getElementById("save");
+  var statusEl = document.getElementById("status");
+  var priceEl = document.getElementById("price");
+  var priceNote = document.getElementById("priceNote");
+  var logEl = document.getElementById("log");
+  var checksEl = document.getElementById("checks");
+  var curvePath = document.getElementById("curvePath");
+  var disabledToggle = document.getElementById("disabledToggle");
+
+  var mq = null;
+  try { mq = window.matchMedia("(prefers-reduced-motion: reduce)"); } catch (e) { mq = null; }
+
+  // Curves: four control values each. y2 above 1 is the only way the face passes its end.
+  var CURVES = {
+    settle:  { face: [0.33, 1, 0.68, 1],   faceMs: 220, tail: [0.22, 1, 0.36, 1], tailMs: 600, lift: -2 },
+    float:   { face: [0.34, 1.2, 0.64, 1], faceMs: 320, tail: [0.22, 1, 0.36, 1], tailMs: 600, lift: -3 },
+    rebound: { face: [0.34, 1.56, 0.64, 1], faceMs: 380, tail: [0.22, 1, 0.36, 1], tailMs: 600, lift: -4 },
+    drift:   { face: [0.33, 1, 0.68, 1],   faceMs: 220, tail: [0.45, 0, 0.55, 1], tailMs: 750, lift: -2 }
+  };
+  var PLANS = {
+    monthly: { price: "$24", note: "per seat, per month, billed monthly" },
+    annual:  { price: "$19", note: "per seat, per month, billed yearly ($228)" }
+  };
+  // Sample backdrop colours: the stage gradient is checked at each of these, worst case wins.
+  var BACKDROPS = {
+    dark:       [[58, 45, 138], [23, 19, 58]],
+    saturated:  [[255, 122, 184], [124, 92, 255], [47, 184, 255]],
+    light:      [[244, 241, 251]]
+  };
+  var WHITE = [255, 255, 255];
+  var INK = [28, 25, 52];
+  var FACE = [90, 75, 240];
+
+  var state = {
+    curve: "settle", surface: "glow", backdrop: "dark",
+    motion: "auto", billing: "monthly",
+    trials: 0, saved: false, hovering: false, pressing: false
+  };
+
+  // ---------- colour maths ----------
+  function over(fg, a, bg) {
+    return [0, 1, 2].map(function (i) { return fg[i] * a + bg[i] * (1 - a); });
+  }
+  function lum(c) {
+    function f(v) { v = v / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+  }
+  function ratio(a, b) {
+    var la = lum(a), lb = lum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+
+  function surfaceStats() {
+    var bgs = BACKDROPS[state.backdrop];
+    var solid = state.surface !== "glass";
+    var edgeA = solid ? 0.4 : 0.6;
+    var ringColor = WHITE, ringWorst = -1;
+    [WHITE, INK].forEach(function (cand) {
+      var worst = Infinity;
+      bgs.forEach(function (b) { worst = Math.min(worst, ratio(cand, b)); });
+      if (worst > ringWorst) { ringWorst = worst; ringColor = cand; }
+    });
+    var label = Infinity, edge = Infinity;
+    bgs.forEach(function (b) {
+      var base = solid ? FACE : over(WHITE, 0.14, b);      // rest fill
+      var face = over(WHITE, 0.10, base);                  // at peak hover (sheen on top)
+      label = Math.min(label, ratio(WHITE, face));
+      edge = Math.min(edge, ratio(over(WHITE, edgeA, face), b));
+    });
+    return {
+      label: label,
+      edge: edge,
+      ring: ringWorst,
+      ringCss: ringColor === WHITE ? "#ffffff" : "#1c1934"
+    };
+  }
+
+  // ---------- curve maths ----------
+  function bezierPoint(p, t) {
+    var u = 1 - t;
+    var x = 3 * u * u * t * p[0] + 3 * u * t * t * p[2] + t * t * t;
+    var y = 3 * u * u * t * p[1] + 3 * u * t * t * p[3] + t * t * t;
+    return { x: x, y: y };
+  }
+  function overshoot(p) {
+    var maxY = 0;
+    for (var i = 0; i <= 1000; i++) {
+      var y = bezierPoint(p, i / 1000).y;
+      if (y > maxY) maxY = y;
+    }
+    return maxY;
+  }
+  function pathFor(p) {
+    var d = "";
+    for (var i = 0; i <= 100; i++) {
+      var pt = bezierPoint(p, i / 100);
+      d += (i ? "L" : "M") + (10 + pt.x * 180).toFixed(1) + " " + (110 - (pt.y / 1.6) * 100).toFixed(1) + " ";
+    }
+    return d;
+  }
+
+  // ---------- state helpers ----------
+  function reducedNow() {
+    return state.motion === "reduce" || (state.motion === "auto" && !!(mq && mq.matches));
+  }
+  function focusVisible() {
+    try { return primary.matches(":focus-visible"); } catch (e) { return false; }
+  }
+  function visualState() {
+    if (primary.disabled) return "disabled";
+    if (state.pressing) return "pressed";
+    if (focusVisible()) return "focus-visible";
+    if (state.hovering) return "hover";
+    return "rest";
+  }
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+  function log(msg) {
+    var li = document.createElement("li");
+    var t = document.createElement("time");
+    t.textContent = new Date().toTimeString().slice(0, 8);
+    li.appendChild(t);
+    li.appendChild(document.createTextNode(msg));
+    logEl.insertBefore(li, logEl.firstChild);
+    while (logEl.children.length > 8) logEl.removeChild(logEl.lastChild);
+  }
+
+  // ---------- render ----------
+  function render() {
+    var c = CURVES[state.curve];
+    var red = reducedNow();
+
+    root.classList.toggle("rm", red);
+    root.classList.toggle("motion-full", state.motion === "full");
+
+    stage.style.setProperty("--ease-face", "cubic-bezier(" + c.face.join(", ") + ")");
+    stage.style.setProperty("--ease-tail", "cubic-bezier(" + c.tail.join(", ") + ")");
+    stage.style.setProperty("--dur-face", c.faceMs + "ms");
+    stage.style.setProperty("--dur-tail", c.tailMs + "ms");
+    stage.style.setProperty("--lift", c.lift + "px");
+
+    var st = surfaceStats();
+    stage.style.setProperty("--ring", st.ringCss);
+    stage.dataset.backdrop = state.backdrop;
+    primary.dataset.surface = state.surface;
+
+    var plan = PLANS[state.billing];
+    priceEl.textContent = plan.price;
+    priceNote.textContent = plan.note;
+    primaryLabel.textContent = "Start 14-day trial";
+
+    saveBtn.setAttribute("aria-pressed", String(state.saved));
+    saveBtn.querySelector(".label").textContent = state.saved ? "Saved as draft" : "Save as draft";
+
+    var maxY = overshoot(c.face);
+    var passes = Math.max(0, maxY - 1) * 100;
+    curvePath.setAttribute("d", pathFor(c.face));
+
+    setText("out-curve", "cubic-bezier(" + c.face.join(", ") + ")");
+    setText("out-tail", "cubic-bezier(" + c.tail.join(", ") + ")");
+    setText("out-durations", red
+      ? "150 ms fades, no lift or press scale"
+      : c.faceMs + " ms face, " + c.tailMs + " ms glow tail");
+    setText("out-passes", passes.toFixed(1) + "% past rest");
+    setText("out-label", st.label.toFixed(1) + ":1 (4.5 needed, worst backdrop)");
+    setText("out-edge", st.edge.toFixed(1) + ":1 (3 needed, against the stage)");
+    setText("out-ring", st.ring.toFixed(1) + ":1 (3 needed)");
+    setText("out-backdrops", (state.surface === "glass" ? 1 : 0) + " element with backdrop blur");
+    setText("out-trials", String(state.trials));
+
+    renderChecks(c, passes, st, red);
+    refreshState();
+  }
+
+  function renderChecks(c, passes, st, red) {
+    var items = [];
+    items.push([c.faceMs <= 400 ? "ok" : "flag",
+      "Face lands in " + c.faceMs + " ms (400 ms or less keeps the click answered)."]);
+    items.push([c.tailMs <= 750 ? "ok" : "flag",
+      "Glow tail is " + c.tailMs + " ms (750 ms or less, on a layer with no pointer events)."]);
+    if (passes < 2) {
+      items.push(["ok", "Settles: passes the end by " + passes.toFixed(1) + "%, under the 2% check."]);
+    } else {
+      items.push(["note", "Visible rebound: passes the end by " + passes.toFixed(1) + "%. A different reading, outside the 2% check."]);
+    }
+    items.push([st.label >= 4.5 ? "ok" : "flag",
+      "Label at peak hover is " + st.label.toFixed(1) + ":1 on the worst backdrop sample" + (st.label >= 4.5 ? "." : ". Use a darker fill or a scrim.")]);
+    items.push([st.edge >= 3 ? "ok" : "flag",
+      "Button edge is " + st.edge.toFixed(1) + ":1 against the stage" + (st.edge >= 3 ? "." : ". The shape may not read as a control here.")]);
+    items.push([st.ring >= 3 ? "ok" : "flag",
+      "Focus ring is " + st.ring.toFixed(1) + ":1 against the stage."]);
+    items.push([state.surface === "glass" ? "note" : "ok",
+      state.surface === "glass"
+        ? "Glass blurs what is behind this one focal button. Keep blur off the other buttons."
+        : "No backdrop blur: the glow and halo are opacity-only layers."]);
+    items.push([red ? "ok" : "note",
+      red ? "Reduced motion is on: lift, drift and press scale are removed; fades remain."
+          : "Full motion is on: lift, drift and press scale run."]);
+    items.push(["ok", "Hover applies only to fine pointers; touch gets press feedback, never a stuck hover."]);
+    items.push(["ok", "Animated properties are transform and opacity. Width, height, padding and shadows do not move."]);
+
+    checksEl.textContent = "";
+    items.forEach(function (it) {
+      var li = document.createElement("li");
+      li.className = it[0];
+      var tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = it[0] === "ok" ? "pass" : it[0] === "flag" ? "check" : "note";
+      li.appendChild(tag);
+      li.appendChild(document.createTextNode(it[1]));
+      checksEl.appendChild(li);
+    });
+  }
+
+  function refreshState() {
+    setText("out-state", visualState());
+  }
+
+  // ---------- interactions ----------
+  primary.addEventListener("pointerenter", function (e) {
+    if (e.pointerType !== "touch") { state.hovering = true; refreshState(); }
+  });
+  primary.addEventListener("pointerleave", function () {
+    state.hovering = false; state.pressing = false; refreshState();
+  });
+  primary.addEventListener("pointerdown", function () {
+    state.pressing = true; refreshState();
+  });
+  function release() { state.pressing = false; refreshState(); }
+  primary.addEventListener("pointerup", release);
+  primary.addEventListener("pointercancel", release);
+  primary.addEventListener("focus", refreshState);
+  primary.addEventListener("blur", refreshState);
+
+  primary.addEventListener("click", function () {
+    state.trials += 1;
+    var plan = PLANS[state.billing];
+    var label = state.billing === "annual" ? "annual" : "monthly";
+    statusEl.textContent = "Trial started (" + label + ", " + plan.price + " per seat after 14 days). Trials this session: " + state.trials + ".";
+    log("Trial started, " + label + " plan.");
+    render();
+  });
+
+  saveBtn.addEventListener("click", function () {
+    state.saved = !state.saved;
+    statusEl.textContent = state.saved ? "Draft saved." : "Draft cleared.";
+    log(state.saved ? "Saved as draft." : "Draft cleared.");
+    render();
+  });
+
+  disabledToggle.addEventListener("change", function () {
+    primary.disabled = disabledToggle.checked;
+    log(primary.disabled ? "Primary button disabled." : "Primary button enabled.");
+    render();
+  });
+
+  var GROUP_LABEL = {
+    curve: "Curve", surface: "Surface", backdrop: "Backdrop",
+    motion: "Motion setting", billing: "Billing"
+  };
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button[data-group]") : null;
+    if (!b) return;
+    var group = b.dataset.group;
+    state[group] = b.dataset.value;
+    document.querySelectorAll('button[data-group="' + group + '"]').forEach(function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    log(GROUP_LABEL[group] + ": " + b.textContent.trim() + ".");
+    render();
+  });
+
+  if (mq) {
+    var onMotionChange = function () { render(); };
+    if (mq.addEventListener) mq.addEventListener("change", onMotionChange);
+    else if (mq.addListener) mq.addListener(onMotionChange);
+  }
+
+  log("Ready: settle curve, glow surface, dark backdrop.");
+  render();
+})();
+</script>
+</body>
+</html>

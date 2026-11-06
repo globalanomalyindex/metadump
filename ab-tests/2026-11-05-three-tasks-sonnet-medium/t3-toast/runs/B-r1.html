@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel toast</title>
+<style>
+:root{
+  --page:#0e0e11;
+  --card:#1a1a1f;
+  --card-2:#222228;
+  --line:#2f2f37;
+  --text:#ececf0;
+  --muted:#a0a0ab;   /* 6.9:1 on --card */
+  --faint:#6d6d78;
+  --status:#f5a524;  /* the one colour: amber while moving */
+  --ok:#3ecf8e;
+  --bad:#f87171;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--page);color:var(--text);
+  font:13px/1.35 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid #8ab4ff;outline-offset:2px;border-radius:6px}
+
+/* demo page behind the toast */
+.page{max-width:640px;margin:0 auto;padding:40px 20px 120px}
+.page h1{font-size:15px;font-weight:600;margin:0 0 4px}
+.page p{color:var(--muted);margin:0 0 20px;max-width:46ch}
+.sim{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px}
+.sim button{padding:5px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted);background:#15151a}
+.sim button:hover{color:var(--text);border-color:#44444f}
+.ghost{height:10px;border-radius:5px;background:#17171c;margin:10px 0}
+
+/* toast */
+.toast{
+  position:fixed;right:16px;bottom:16px;width:288px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;
+  transition:opacity .2s ease,transform .2s ease;
+}
+.toast.gone{opacity:0;transform:translateY(8px);pointer-events:none}
+.toast[hidden]{display:none}
+.row{
+  display:flex;align-items:center;gap:8px;width:100%;
+  height:40px;padding:0 6px 0 12px;text-align:left;
+}
+.row:hover{background:var(--card-2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--status);flex:none}
+.stage{font-weight:600;white-space:nowrap}
+.bar{display:flex;gap:3px;margin-left:2px}
+.bar i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.bar i.on{background:var(--status)}
+.count{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px}
+.chev{width:28px;height:28px;display:grid;place-items:center;flex:none;color:var(--muted)}
+.chev svg{transition:transform .18s var(--ease-out)}
+.toast.open .chev svg{transform:rotate(180deg)}
+
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .15s ease-in}
+.toast.open .panel{grid-template-rows:1fr;transition:grid-template-rows .28s var(--ease-out)}
+.panel>div{overflow:hidden;min-height:0}
+.inner{padding:2px 12px 10px;border-top:1px solid var(--line)}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;padding:8px 0 4px}
+.meta b{color:var(--text);font-weight:500}
+
+ol{list-style:none;margin:0;padding:0;position:relative}
+li{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:center;min-height:28px;color:var(--muted);position:relative}
+li::before{ /* rail */
+  content:"";position:absolute;left:7px;top:-14px;height:28px;width:2px;background:var(--line)
+}
+li:first-child::before{display:none}
+li.done::before,li.cur::before{background:var(--status)}
+li .m{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;position:relative;z-index:1}
+li.done .m{background:var(--status);border-color:var(--status)}
+li.done .m::after{content:"";width:4px;height:7px;border:solid #1a1a1f;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+li.cur{color:var(--text);font-weight:600}
+li.cur .m{border-color:var(--status);box-shadow:0 0 0 3px rgba(245,165,36,.18)}
+li time{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums;font-weight:400}
+li.done time,li.cur time{color:var(--muted)}
+li.done{color:var(--text)}
+
+.exc{margin:8px 0 2px;padding:8px 10px;border-radius:8px;background:var(--card-2);border:1px solid var(--line)}
+.exc p{margin:0 0 6px;color:var(--text)}
+.exc p span{color:var(--muted)}
+.acts{display:flex;flex-wrap:wrap;gap:4px}
+.acts button{min-height:28px;padding:0 9px;border-radius:6px;border:1px solid #3a3a44;color:var(--text);font-size:12px}
+.acts button:hover{background:#2c2c34}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.foot button{min-height:28px;padding:0 8px;border-radius:6px;color:var(--muted);font-size:12px}
+.foot button:hover{color:var(--text);background:var(--card-2)}
+.foot button[aria-pressed="true"]{color:var(--status)}
+
+/* states: one colour changes */
+.toast[data-state="exception"]{--status:var(--bad)}
+.toast[data-state="delivered"]{--status:var(--ok)}
+.toast[data-state="snoozed"] .dot{opacity:.45}
+
+.pill{ /* shown after dismiss */
+  position:fixed;right:16px;bottom:16px;height:32px;padding:0 12px;border-radius:16px;
+  background:var(--card);border:1px solid var(--line);color:var(--muted);display:none;align-items:center;gap:6px
+}
+.pill.show{display:inline-flex}
+.pill:hover{color:var(--text)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:360px){.toast{left:12px;right:12px;width:auto}}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Orders</h1>
+  <p>Your parcel toast sits in the corner. Use the buttons to simulate carrier updates.</p>
+  <div class="sim" role="group" aria-label="Simulate carrier events">
+    <button data-sim="next">Next scan</button>
+    <button data-sim="exception">Delivery exception</button>
+    <button data-sim="reset">Reset</button>
+  </div>
+  <div class="ghost" style="width:80%"></div><div class="ghost" style="width:60%"></div>
+  <div class="ghost" style="width:72%"></div><div class="ghost" style="width:44%"></div>
+</main>
+
+<section class="toast" id="toast" data-state="transit" aria-label="Package tracking">
+  <button class="row" id="hdr" aria-expanded="false" aria-controls="panel">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="stage" id="stage">Out for delivery</span>
+    <span class="bar" id="bar" aria-hidden="true"></span>
+    <span class="count" id="count">4 of 5</span>
+    <span class="chev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"/></svg></span>
+  </button>
+  <div class="panel" id="panel">
+    <div>
+      <div class="inner">
+        <div class="meta"><span>Parcel <b>1Z84F7</b> &middot; Northline</span><span id="eta">Arrives today</span></div>
+        <ol id="steps"></ol>
+        <div class="exc" id="exc" hidden>
+          <p>Nobody home <span>&middot; second attempt tomorrow</span></p>
+          <div class="acts">
+            <button data-act="carrier">Carrier page</button>
+            <button data-act="contact">Contact</button>
+            <button data-act="seen">Mark seen</button>
+            <button data-act="snooze">Snooze 1h</button>
+          </div>
+        </div>
+        <div class="foot">
+          <button id="pin" aria-pressed="false">Keep open</button>
+          <button id="dismiss">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<button class="pill" id="pill"><span class="dot" aria-hidden="true" style="background:var(--status)"></span>Show tracking</button>
+<div class="sr" id="live" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var STEPS=[
+    {n:"Ordered",t:"Mon 9:12"},
+    {n:"Packed",t:"Mon 15:40"},
+    {n:"Handed to carrier",t:"Tue 6:05"},
+    {n:"Out for delivery",t:"Today 8:31"},
+    {n:"Delivered",t:""}
+  ];
+  var s={cur:3,open:false,exception:false,seen:false,snoozed:false,pinned:false,gone:false,timer:null,dismissT:null};
+  var $=function(i){return document.getElementById(i)};
+  var toast=$("toast"),hdr=$("hdr"),live=$("live");
+
+  function say(m){live.textContent="";setTimeout(function(){live.textContent=m},30)}
+
+  function render(){
+    var st=s.cur===4?"delivered":(s.exception&&!s.seen?"exception":(s.snoozed?"snoozed":"transit"));
+    toast.dataset.state=st;
+    $("stage").textContent=st==="exception"?"Delivery exception":STEPS[s.cur].n;
+    $("count").textContent=(s.cur+1)+" of 5";
+    $("eta").textContent=s.cur===4?"Delivered":(st==="exception"?"Delayed to tomorrow":"Arrives today");
+    var b="";for(var i=0;i<5;i++)b+='<i class="'+(i<=s.cur?"on":"")+'"></i>';
+    $("bar").innerHTML=b;
+    var h="";
+    STEPS.forEach(function(x,i){
+      var c=i<s.cur||s.cur===4?"done":(i===s.cur?"cur":"");
+      h+='<li class="'+c+'"'+(i===s.cur?' aria-current="step"':'')+'><span class="m"></span><span>'+x.n+'</span><time>'+(i<=s.cur?x.t:"")+'</time></li>';
+    });
+    $("steps").innerHTML=h;
+    $("exc").hidden=!(s.exception&&!s.seen);
+    $("pin").setAttribute("aria-pressed",s.pinned);
+    $("pin").textContent=s.pinned?"Keeping open":"Keep open";
+    hdr.setAttribute("aria-expanded",s.open);
+    toast.classList.toggle("open",s.open);
+    toast.classList.toggle("gone",s.gone);
+    $("pill").classList.toggle("show",s.gone);
+    toast.hidden=false;
+  }
+
+  function setOpen(v){s.open=v;render();arm()}
+  // routine updates leave after ~6s when collapsed; exceptions and pinned ones wait
+  function arm(){
+    clearTimeout(s.dismissT);
+    if(s.open||s.pinned||(s.exception&&!s.seen)||s.gone)return;
+    s.dismissT=setTimeout(function(){
+      if(!s.open&&!s.pinned&&!(s.exception&&!s.seen)){s.gone=true;render()}
+    },6000);
+  }
+  function show(){s.gone=false;render();arm()}
+
+  hdr.addEventListener("click",function(){setOpen(!s.open)});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&s.open)setOpen(false)});
+  toast.addEventListener("mouseenter",function(){clearTimeout(s.dismissT)});
+  toast.addEventListener("mouseleave",arm);
+
+  $("pin").addEventListener("click",function(){s.pinned=!s.pinned;render();arm();say(s.pinned?"Toast will stay open":"Toast may close on its own")});
+  $("dismiss").addEventListener("click",function(){s.gone=true;s.open=false;render();say("Tracking hidden")});
+  $("pill").addEventListener("click",function(){show()});
+
+  toast.addEventListener("click",function(e){
+    var a=e.target.getAttribute&&e.target.getAttribute("data-act");if(!a)return;
+    if(a==="carrier"){say("Opening Northline tracking page");flash(e.target,"Opened")}
+    if(a==="contact"){flash(e.target,"1-800-555-0142");say("Carrier phone 1-800-555-0142")}
+    if(a==="seen"){s.seen=true;render();say("Marked seen. Still tracking.");arm()}
+    if(a==="snooze"){s.seen=true;s.snoozed=true;render();say("Snoozed for one hour");
+      setTimeout(function(){s.seen=false;s.snoozed=false;render();say("Exception is back")},12000);arm()}
+  });
+  function flash(btn,t){var o=btn.textContent;btn.textContent=t;setTimeout(function(){btn.textContent=o},1600)}
+
+  document.querySelector(".sim").addEventListener("click",function(e){
+    var k=e.target.getAttribute("data-sim");if(!k)return;
+    if(k==="next"&&s.cur<4){
+      s.cur++;s.exception=false;s.seen=false;s.snoozed=false;
+      if(s.cur===3)STEPS[3].t="Today 8:31";
+      if(s.cur===4)STEPS[4].t="Today 14:18";
+      s.gone=false;render();arm();
+      say(s.cur===4?"Delivered. Step 5 of 5.":"Update: "+STEPS[s.cur].n+", step "+(s.cur+1)+" of 5");
+    }
+    if(k==="exception"&&s.cur<4){
+      s.cur=3;s.exception=true;s.seen=false;s.snoozed=false;s.gone=false;s.open=true;
+      render();arm();say("Delivery exception. Nobody home. Second attempt tomorrow.");
+    }
+    if(k==="reset"){
+      s.cur=1;s.exception=false;s.seen=false;s.snoozed=false;s.gone=false;s.open=false;s.pinned=false;
+      STEPS[3].t="Today 8:31";render();arm();say("Reset to Packed, step 2 of 5");
+    }
+  });
+
+  render();arm();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MetaDump side by side</title>
+<meta name="description" content="Same model, same prompt: left without a meta dump, right with one. Live builds from the MetaDump A/B tests.">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--muted:#6b6862;--line:#e4e1da;--a:#8a857c;--b:#2d5bd7;--chip:#efede7}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141413;--card:#1d1d1b;--ink:#ecebe7;--muted:#a19d95;--line:#2e2d2a;--a:#9b968c;--b:#7d9cff;--chip:#272724}}
+:root[data-theme="dark"]{--bg:#141413;--card:#1d1d1b;--ink:#ecebe7;--muted:#a19d95;--line:#2e2d2a;--a:#9b968c;--b:#7d9cff;--chip:#272724}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1240px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:clamp(26px,4vw,40px);line-height:1.15;margin:0 0 10px;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:760px;margin:0 0 8px}.lede a{color:inherit}
+.meta{font-size:13px;color:var(--muted);margin:0 0 14px}.pooled{font-size:16px;margin:0 0 30px}.pooled b{color:var(--b)}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:0 0 28px}
+.head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+h2{font-size:20px;margin:0}.prompt{font:15px/1.5 ui-serif,Georgia,serif;margin:0 0 14px;color:var(--ink)}
+.prompt::before{content:"Prompt: ";font:600 12px system-ui,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.score{font-size:14px;color:var(--muted);white-space:nowrap}.score b{color:var(--ink)}.score .bb{color:var(--b)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){.pair{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.tag{font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip)}
+.side.b .tag{color:#fff;background:var(--b)}
+.runs{display:flex;gap:4px;margin-left:auto}
+.runs button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:2px 8px;cursor:pointer}
+.runs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.runs button:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+.runscore{font-size:12px;color:var(--muted)}
+iframe{width:100%;height:520px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.text iframe{height:440px}
+.open{font-size:12px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}.finding{font-size:14px;margin:12px 0 0}
+footer{font-size:13px;color:var(--muted)}footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+<h1>Same model, same prompt. Left without a meta dump, right with one.</h1>
+<p class="lede">Every pair below was built by Haiku 5.5 at low effort from the exact prompt shown. The right side also got a meta dump of the task, made by <a href="https://github.com/globalanomalyindex/metadump">MetaDump</a>. Blind Haiku graders scored all 8 builds per task without knowing which side was which. Every agent here, including the ones that made the dumps, ran on Haiku at low effort.</p>
+<p class="meta">Run 1 of each side is shown by default; it was picked before grading. Switch runs to see all four. Full method, grades and every file: <a href="https://github.com/globalanomalyindex/metadump/tree/main/ab-tests/2026-11-05-four-tasks-haiku-low">ab-tests/2026-11-05-four-tasks-haiku-low</a>.</p>
+<p class="pooled" id="pooled"></p>
+<div id="tasks"></div>
+<footer>MetaDump is free and open source: <a href="https://github.com/globalanomalyindex/metadump">github.com/globalanomalyindex/metadump</a>. Small samples (4 builds per side per task) and AI graders, so read these as a direction, not proof.</footer>
+</main>
+<script>
+const DATA = /*__DATA__*/[];
+const POOLED = /*__POOLED__*/null;
+if (POOLED) document.getElementById('pooled').innerHTML = `Across all four tasks the right side won <b>${POOLED.pooled_wins}</b> of ${POOLED.pooled_wins + POOLED.pooled_losses + POOLED.pooled_ties} blind head-to-heads, lost ${POOLED.pooled_losses} and tied ${POOLED.pooled_ties}. Pooled over the four tasks, an exact permutation test on the score gap gives p = ${POOLED.p_two_sided.toFixed(2)}.`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hint = { hover: 'Hover the buttons.', drag: 'Drag the boxes around.', watch: 'Each side loops every 5 seconds.' };
+const root = document.getElementById('tasks');
+for (const t of DATA) {
+  const s = t.scores;
+  const score = s ? `<span class="score">Blind score <b>${s.A}</b> vs <b class="bb">${s.B}</b> · right side won ${s.wins} of ${s.wins + s.losses + s.ties} head-to-heads</span>` : '<span class="score">grading in progress</span>';
+  const side = (arm, label) => {
+    const runs = t.runs[arm];
+    return `<div class="side ${arm.toLowerCase()}" data-arm="${arm}">
+      <div class="bar"><span class="tag">${label}</span><span class="runscore"></span>
+        <span class="runs" role="group" aria-label="${label} runs">${runs.map((r, i) => `<button type="button" data-run="${r}" aria-pressed="${i === 0}">run ${i + 1}</button>`).join('')}</span></div>
+      <iframe title="${esc(t.title)}, ${label}, run 1" src="${t.slug}/${runs[0]}.html" sandbox="allow-scripts"></iframe>
+      <a class="open" href="${t.slug}/${runs[0]}.html" target="_blank" rel="noopener">open on its own ↗</a></div>`;
+  };
+  const sec = document.createElement('section');
+  sec.className = t.kind;
+  sec.innerHTML = `<div class="head"><h2>${esc(t.title)}</h2>${score}</div><p class="prompt">${esc(t.prompt)}</p>
+    <div class="pair">${side('A', 'Prompt only')}${side('B', 'Prompt + MetaDump')}</div>${t.note ? `<p class="finding">${esc(t.note)}</p>` : ''}${hint[t.interaction] ? `<p class="hint">${hint[t.interaction]}</p>` : ''}`;
+  root.appendChild(sec);
+  sec.querySelectorAll('.side').forEach(el => {
+    const arm = el.dataset.arm, frame = el.querySelector('iframe'), open = el.querySelector('.open'), rs = el.querySelector('.runscore');
+    const show = run => {
+      frame.src = `${t.slug}/${run}.html`; open.href = frame.src; frame.title = `${t.title}, ${arm === 'A' ? 'prompt only' : 'prompt + MetaDump'}, ${run}`;
+      el.querySelectorAll('.runs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.run === run)));
+      const v = s && s[arm + '_runs'] && s[arm + '_runs'][run]; rs.textContent = v != null ? `score ${v}` : '';
+    };
+    el.querySelectorAll('.runs button').forEach(b => b.addEventListener('click', () => show(b.dataset.run)));
+    show(t.runs[arm][0]);
+  });
+}
+</script>
+</body>
+</html>

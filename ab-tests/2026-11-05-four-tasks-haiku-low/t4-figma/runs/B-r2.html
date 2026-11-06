@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figma-style 5 s loop</title>
+<style>
+  :root {
+    --ground-a: #f6f2ff;
+    --ground-b: #fff7ec;
+    --ink: #1b1733;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground-a: #1d1838;
+      --ground-b: #2a1d33;
+      --ink: #f4f1ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground-a: #1d1838;
+    --ground-b: #2a1d33;
+    --ink: #f4f1ff;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--ground-a);
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  svg {
+    width: min(100vw, 177.78vh);
+    height: auto;
+    max-height: 100vh;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<svg id="stage" viewBox="0 0 1600 900" role="img" aria-label="Flat primitive shapes in spectrum colors move, morph and rotate in a seamless five second loop">
+  <defs>
+    <linearGradient id="ground" x1="0.35" y1="0" x2="0.65" y2="1">
+      <stop offset="0" stop-color="var(--ground-a)"/>
+      <stop offset="1" stop-color="var(--ground-b)"/>
+    </linearGradient>
+    <pattern id="stripes" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <rect width="22" height="22" fill="#7b5cff"/>
+      <rect width="11" height="22" fill="#ffd23f"/>
+    </pattern>
+  </defs>
+
+  <rect id="ground-rect" width="1600" height="900" fill="url(#ground)"/>
+
+  <!-- A: blue circle, out and back (beat plan: hold 0.5, out 2.0, hold 0.5, back 2.0) -->
+  <circle id="shapeA" cx="520" cy="470" r="110" fill="#1e88ff"/>
+
+  <!-- B: purple blob that activates into a pattern fill and back -->
+  <path id="shapeB" d="M0 -95 C 70 -105, 110 -40, 95 20 C 80 85, 20 110, -35 95 C -95 80, -115 15, -95 -40 C -80 -95, -40 -85, 0 -95 Z"
+        transform="translate(1100 300)" fill="#7b5cff"/>
+  <path id="shapeBPattern" d="M0 -95 C 70 -105, 110 -40, 95 20 C 80 85, 20 110, -35 95 C -95 80, -115 15, -95 -40 C -80 -95, -40 -85, 0 -95 Z"
+        transform="translate(1100 300)" fill="url(#stripes)" opacity="0"/>
+
+  <!-- C: orange square handle that becomes a circle while being edited, then back -->
+  <rect id="shapeC" x="768" y="218" width="64" height="64" rx="8" fill="#ff6b3d"/>
+
+  <!-- D: eight-point starburst that turns a quarter turn across the loop -->
+  <g id="shapeD" transform="translate(300 650)">
+    <path id="burst" d="M0 -120 L26 -44 L100 -70 L58 0 L100 70 L26 44 L0 120 L-26 44 L-100 70 L-58 0 L-100 -70 L-26 -44 Z" fill="#14c38e"/>
+  </g>
+
+  <!-- E: small dot that rides the outward path of A and is layered above it at mid-loop -->
+  <circle id="shapeE" cx="1300" cy="650" r="36" fill="#ff3d7f"/>
+</svg>
+
+<script>
+(function () {
+  // One 5 second timeline. Every property is a function of e in [0, 5) built from
+  // segments that start and end at rest, so value(0) === value(5): the seam is exact.
+  var LOOP = 5;
+  var svgNS = 'http://www.w3.org/2000/svg';
+  var $ = function (id) { return document.getElementById(id); };
+  var A = $('shapeA'), B = $('shapeB'), BP = $('shapeBPattern'), C = $('shapeC'),
+      D = $('burst'), DG = $('shapeD'), E = $('shapeE'), G = $('ground');
+
+  function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+  function seg(e, a, b) { return clamp01((e - a) / (b - a)); }
+  function eOut(p) { return 1 - Math.pow(1 - p, 3); }
+  function eIO(p) { return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; }
+
+  function frame(e) {
+    // A: hold 0-0.5, move out 0.5-2.5 (ease-out), hold 2.5-3.0, return 3.0-5.0 (ease-in-out)
+    var ax = 520 + 560 * eOut(seg(e, 0.5, 2.5)) - 560 * eIO(seg(e, 3.0, 5.0));
+    A.setAttribute('cx', ax.toFixed(2));
+
+    // B: activation. Pattern fades in 1.0-1.5, holds, fades out 3.5-4.0.
+    var act = eIO(seg(e, 1.0, 1.5)) - eIO(seg(e, 3.5, 4.0));
+    BP.setAttribute('opacity', clamp01(act).toFixed(3));
+    B.setAttribute('transform', 'translate(1100 300) scale(' + (1 + 0.06 * clamp01(act)).toFixed(4) + ')');
+
+    // C: the handle morphs toward a circle (rx 8 -> 32) and back. Value 0 at 0 and 5.
+    var morph = eIO(seg(e, 1.5, 2.0)) - eIO(seg(e, 3.5, 4.0));
+    C.setAttribute('rx', (8 + 24 * clamp01(morph)).toFixed(2));
+
+    // D: starburst turns a quarter turn over the whole loop, eased so velocity is zero at the seam.
+    // Eight points repeat every 45 degrees, so 90 degrees reads as no change at the seam.
+    DG.setAttribute('transform', 'translate(300 650) rotate(' + (90 * eIO(e / LOOP)).toFixed(3) + ')');
+
+    // E: rides a closed path (out and back), dipping left and rising in an arc. Periodic in 5 s.
+    var ex = 1300 + 0 * e;
+    var ey = 650 - 180 * Math.sin(Math.PI * clamp01(e / LOOP)) * Math.sin(Math.PI * clamp01(e / LOOP));
+    E.setAttribute('cx', ex.toFixed(2));
+    E.setAttribute('cy', ey.toFixed(2));
+
+    // Ground: a soft gradient axis that sways and returns, sin over exactly one loop.
+    var sway = 0.5 + 0.15 * Math.sin(2 * Math.PI * e / LOOP);
+    G.setAttribute('x1', (sway - 0.15).toFixed(4));
+    G.setAttribute('x2', (sway + 0.15).toFixed(4));
+  }
+
+  var reduce = false;
+  try {
+    reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (err) { reduce = false; }
+
+  if (reduce) {
+    // Reduced motion: hold the seam frame (e = 0) as a still composition.
+    frame(0);
+    return;
+  }
+
+  var start = null;
+  function tick(now) {
+    if (start === null) start = now;
+    var e = ((now - start) / 1000) % LOOP;
+    frame(e);
+    requestAnimationFrame(tick);
+  }
+  frame(0);
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

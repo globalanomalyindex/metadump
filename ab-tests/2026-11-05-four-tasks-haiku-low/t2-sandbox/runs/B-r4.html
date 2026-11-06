@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Physics Sandbox</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #101318; color: #8b95a7;
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  canvas { display: block; position: fixed; left: 0; top: 0; touch-action: none; cursor: grab; }
+  canvas.grabbing { cursor: grabbing; }
+  #reset { position: fixed; top: 12px; right: 12px; background: #1b2028; color: #d8dee9;
+    border: 1px solid #2e3642; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  #reset:hover { background: #242b36; }
+  #reset:focus-visible { outline: 2px solid #7aa2f7; outline-offset: 2px; }
+  #hint { position: fixed; left: 14px; bottom: 12px; color: #aab4c5; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="Physics sandbox. Drag the boxes."></canvas>
+<button id="reset" type="button">Reset</button>
+<div id="hint">Drag a box. Let go to throw it.</div>
+<script>
+(() => {
+'use strict';
+
+// ---- constants (world units are CSS pixels; +y is down) ----
+const STEP = 1 / 60;          // fixed time step, s
+const SUBSTEPS = 4;           // solver sub-steps per step
+const ITERATIONS = 8;         // contact solver passes per sub-step
+const GRAVITY = 900;          // px/s^2
+const MAX_SPEED = 3000;       // px/s, keeps fast boxes from tunneling
+const MAX_SPIN = 30;          // rad/s
+const DENSITY = 0.01;
+const SLOP = 0.5;             // px of overlap tolerated before correction
+const BAUMGARTE = 0.2;        // fraction of overlap pushed out per sub-step
+const MAX_PUSH = 200;         // px/s cap on the push-out velocity
+const RESTITUTION = 0.15;
+const REST_THRESHOLD = 40;    // px/s; slower impacts do not bounce
+const FRICTION = 0.5;
+const SLEEP_SPEED = 4;        // px/s
+const SLEEP_SPIN = 0.05;      // rad/s
+const SLEEP_TIME = 0.5;       // s at rest before a body sleeps
+const GRAB_HZ = 6;            // grab spring stiffness (cycles/s)
+const GRAB_ZETA = 0.8;        // grab damping ratio
+const GRAB_MAX_ACCEL = 9000;  // px/s^2 cap on the grab pull
+const SAMPLE_WINDOW = 0.1;    // s of pointer history used for release velocity
+const BG = '#101318';
+const PALETTE = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e', '#bb9af7', '#7dcfff', '#ff9e64', '#73daca'];
+// [fx, fy, w, h, angle]: x as a fraction of width, y as a fraction of height (top edge)
+const SPAWN = [
+  [0.10, 0.18,  96, 48,  0.00],
+  [0.24, 0.10,  64, 64,  0.25],
+  [0.36, 0.30, 120, 40, -0.05],
+  [0.50, 0.12,  52, 52,  0.40],
+  [0.62, 0.34,  84, 36,  0.00],
+  [0.74, 0.14,  70, 70, -0.35],
+  [0.87, 0.26, 100, 44,  0.10],
+  [0.44, 0.44,  48, 48,  0.60],
+];
+
+// ---- DOM ----
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const resetBtn = document.getElementById('reset');
+
+let W = 0, H = 0, dpr = 1;
+let bodies = [];   // dynamic boxes
+let statics = [];  // floor, ceiling, walls
+let grab = null;   // { b, lx, ly, px, py, pid, samples }
+
+const now = () => performance.now() / 1000;
+
+// ---- bodies ----
+function makeBox(x, y, w, h, a, i) {
+  const m = w * h * DENSITY;
+  const I = m * (w * w + h * h) / 12;
+  return { x, y, a, vx: 0, vy: 0, spin: 0, w, h, m, I, invM: 1 / m, invI: 1 / I,
+           static: false, asleep: false, sleep: 0, color: PALETTE[i % PALETTE.length] };
+}
+
+function makeStatic(x, y, w, h) {
+  return { x, y, a: 0, vx: 0, vy: 0, spin: 0, w, h, m: Infinity, I: Infinity, invM: 0, invI: 0,
+           static: true, asleep: true, sleep: 0 };
+}
+
+function buildStatics() {
+  statics = [
+    makeStatic(W / 2, H + 50, W + 400, 100),   // floor: top edge at y = H
+    makeStatic(W / 2, -50, W + 400, 100),      // ceiling
+    makeStatic(-50, H / 2, 100, H + 400),      // left wall
+    makeStatic(W + 50, H / 2, 100, H + 400),   // right wall
+  ];
+}
+
+function wake(b) { if (!b.static) { b.asleep = false; b.sleep = 0; } }
+
+function reset() {
+  grab = null;
+  canvas.classList.remove('grabbing');
+  const s = Math.min(Math.max(W / 1000, 0.55), 1.2);
+  bodies = SPAWN.map(([fx, fy, w, h, a], i) => {
+    const bw = w * s, bh = h * s;
+    const x = Math.min(Math.max(fx * W, bw / 2 + 2), W - bw / 2 - 2);
+    return makeBox(x, fy * H, bw, bh, a, i);
+  });
+}
+
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  buildStatics();
+  for (const b of bodies) {
+    b.x = Math.min(Math.max(b.x, b.w / 2), W - b.w / 2);
+    if (b.y > H - b.h / 2) b.y = H - b.h / 2;
+  }
+}
+
+// ---- geometry ----
+function corners(b) {
+  const c = Math.cos(b.a), s = Math.sin(b.a);
+  const hx = b.w / 2, hy = b.h / 2;
+  return [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([lx, ly]) =>
+    [b.x + lx * c - ly * s, b.y + lx * s + ly * c]);
+}
+
+function axesOf(b) {
+  const c = Math.cos(b.a), s = Math.sin(b.a);
+  return [[c, s], [-s, c]];
+}
+
+function range(pts, n) {
+  let mn = Infinity, mx = -Infinity;
+  for (const p of pts) {
+    const d = p[0] * n[0] + p[1] * n[1];
+    if (d < mn) mn = d;
+    if (d > mx) mx = d;
+  }
+  return [mn, mx];
+}
+
+// Oriented-box overlap (separating axis test). Returns null when apart, else
+// { nAB, contacts } with nAB pointing from A to B and each contact { x, y, depth }.
+function collide(A, B) {
+  const ca = corners(A), cb = corners(B);
+  const axes = [];
+  for (const n of axesOf(A)) axes.push({ n, owner: 'A' });
+  for (const n of axesOf(B)) axes.push({ n, owner: 'B' });
+  let best = null;
+  for (const ax of axes) {
+    const [a0, a1] = range(ca, ax.n);
+    const [b0, b1] = range(cb, ax.n);
+    const ov = Math.min(a1, b1) - Math.max(a0, b0);
+    if (ov <= 0) return null;
+    if (!best || ov < best.ov) best = { n: ax.n, owner: ax.owner, ov };
+  }
+  const dir = ((B.x - A.x) * best.n[0] + (B.y - A.y) * best.n[1]) >= 0 ? 1 : -1;
+  const nAB = [best.n[0] * dir, best.n[1] * dir];
+  // Reference face belongs to the owner of the separating axis; m points ref -> incident.
+  const refIsA = best.owner === 'A';
+  const m = refIsA ? nAB : [-nAB[0], -nAB[1]];
+  const ref = refIsA ? ca : cb;
+  const inc = refIsA ? cb : ca;
+  let refMax = -Infinity;
+  for (const p of ref) refMax = Math.max(refMax, p[0] * m[0] + p[1] * m[1]);
+  const ds = inc.map(p => p[0] * m[0] + p[1] * m[1]);
+  const minD = Math.min(...ds);
+  const contacts = [];
+  inc.forEach((p, i) => {
+    if (ds[i] <= minD + 0.5) {
+      const depth = refMax - ds[i];
+      if (depth > 0) contacts.push({ x: p[0], y: p[1], depth });
+    }
+  });
+  return contacts.length ? { nAB, contacts } : null;
+}
+
+// ---- contact solver (sequential impulses, velocity bias for push-out) ----
+function relVel(c) {
+  const A = c.A, B = c.B;
+  const vax = A.vx - A.spin * c.ray, vay = A.vy + A.spin * c.rax;
+  const vbx = B.vx - B.spin * c.rby, vby = B.vy + B.spin * c.rbx;
+  return [vbx - vax, vby - vay];
+}
+
+function effMass(c, nx, ny) {
+  const A = c.A, B = c.B;
+  const ra = c.rax * ny - c.ray * nx;
+  const rb = c.rbx * ny - c.rby * nx;
+  return A.invM + B.invM + A.invI * ra * ra + B.invI * rb * rb;
+}
+
+function applyImpulse(c, Px, Py) {
+  const A = c.A, B = c.B;
+  A.vx -= Px * A.invM;
+  A.vy -= Py * A.invM;
+  A.spin -= A.invI * (c.rax * Py - c.ray * Px);
+  B.vx += Px * B.invM;
+  B.vy += Py * B.invM;
+  B.spin += B.invI * (c.rbx * Py - c.rby * Px);
+}
+
+function prepareContact(c, h) {
+  const A = c.A, B = c.B;
+  c.rax = c.px - A.x; c.ray = c.py - A.y;
+  c.rbx = c.px - B.x; c.rby = c.py - B.y;
+  const [rx, ry] = relVel(c);
+  const vn0 = rx * c.nx + ry * c.ny;
+  const rest = vn0 < -REST_THRESHOLD ? -RESTITUTION * vn0 : 0;
+  const push = Math.min(Math.max(c.depth - SLOP, 0) * BAUMGARTE / h, MAX_PUSH);
+  c.target = Math.max(rest, push);
+  c.kN = effMass(c, c.nx, c.ny);
+  c.tx = -c.ny; c.ty = c.nx;
+  c.kT = effMass(c, c.tx, c.ty);
+  c.jn = 0; c.jt = 0;
+}
+
+function solveContact(c) {
+  let [rx, ry] = relVel(c);
+  const vn = rx * c.nx + ry * c.ny;
+  let lam = (c.target - vn) / c.kN;
+  const oldN = c.jn;
+  c.jn = Math.max(oldN + lam, 0);
+  lam = c.jn - oldN;
+  applyImpulse(c, lam * c.nx, lam * c.ny);
+
+  [rx, ry] = relVel(c);
+  const vt = rx * c.tx + ry * c.ty;
+  let lt = -vt / c.kT;
+  const maxF = FRICTION * c.jn;
+  const oldT = c.jt;
+  c.jt = Math.min(Math.max(oldT + lt, -maxF), maxF);
+  lt = c.jt - oldT;
+  applyImpulse(c, lt * c.tx, lt * c.ty);
+}
+
+// ---- grab: a spring-damper pulls the grabbed point toward the pointer ----
+function applyGrab(h) {
+  if (!grab) return;
+  const b = grab.b;
+  const c = Math.cos(b.a), s = Math.sin(b.a);
+  const rx = grab.lx * c - grab.ly * s;
+  const ry = grab.lx * s + grab.ly * c;
+  const wx = b.x + rx, wy = b.y + ry;
+  const vpx = b.vx - b.spin * ry, vpy = b.vy + b.spin * rx;
+  const w = 2 * Math.PI * GRAB_HZ;
+  const damp = 2 * GRAB_ZETA * w;
+  let ax = w * w * (grab.px - wx) - damp * vpx;
+  let ay = w * w * (grab.py - wy) - damp * vpy;
+  const mag = Math.hypot(ax, ay);
+  if (mag > GRAB_MAX_ACCEL) { const k = GRAB_MAX_ACCEL / mag; ax *= k; ay *= k; }
+  b.vx += ax * h;
+  b.vy += ay * h;
+  b.spin += b.invI * b.m * (rx * ay - ry * ax) * h;
+  b.spin = Math.min(Math.max(b.spin, -MAX_SPIN), MAX_SPIN);
+}
+
+function clampSpeed(b) {
+  const sp = Math.hypot(b.vx, b.vy);
+  if (sp > MAX_SPEED) { const k = MAX_SPEED / sp; b.vx *= k; b.vy *= k; }
+  b.spin = Math.min(Math.max(b.spin, -MAX_SPIN), MAX_SPIN);
+}
+
+function substep(h) {
+  for (const b of bodies) {
+    if (b.asleep) continue;
+    b.vy += GRAVITY * h;
+  }
+  applyGrab(h);
+  for (const b of bodies) {
+    if (b.asleep) continue;
+    clampSpeed(b);
+    b.x += b.vx * h;
+    b.y += b.vy * h;
+    b.a += b.spin * h;
+  }
+
+  const all = bodies.concat(statics);
+  const contacts = [];
+  for (let i = 0; i < all.length; i++) {
+    for (let j = i + 1; j < all.length; j++) {
+      const A = all[i], B = all[j];
+      if (A.asleep && B.asleep) continue;   // statics are always asleep
+      const res = collide(A, B);
+      if (!res) continue;
+      wake(A);                               // a touching awake body wakes sleepers
+      wake(B);
+      for (const p of res.contacts) {
+        contacts.push({ A, B, nx: res.nAB[0], ny: res.nAB[1], px: p.x, py: p.y, depth: p.depth,
+                        rax: 0, ray: 0, rbx: 0, rby: 0, kN: 1, kT: 1, tx: 0, ty: 0,
+                        target: 0, jn: 0, jt: 0 });
+      }
+    }
+  }
+  for (const c of contacts) prepareContact(c, h);
+  for (let it = 0; it < ITERATIONS; it++) {
+    for (const c of contacts) solveContact(c);
+  }
+}
+
+function step(dt) {
+  const h = dt / SUBSTEPS;
+  for (let s = 0; s < SUBSTEPS; s++) substep(h);
+  for (const b of bodies) {
+    if (b.asleep) continue;
+    if (grab && grab.b === b) { b.sleep = 0; continue; }
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp < SLEEP_SPEED && Math.abs(b.spin) < SLEEP_SPIN) {
+      b.sleep += dt;
+      if (b.sleep >= SLEEP_TIME) {
+        b.asleep = true;
+        b.vx = 0; b.vy = 0; b.spin = 0;
+      }
+    } else {
+      b.sleep = 0;
+    }
+  }
+}
+
+// ---- pointer ----
+function pointerWorld(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+function pick(px, py) {
+  for (let i = bodies.length - 1; i >= 0; i--) {
+    const b = bodies[i];
+    const dx = px - b.x, dy = py - b.y;
+    const c = Math.cos(b.a), s = Math.sin(b.a);
+    const lx = c * dx + s * dy;
+    const ly = -s * dx + c * dy;
+    if (Math.abs(lx) <= b.w / 2 && Math.abs(ly) <= b.h / 2) return { b, lx, ly };
+  }
+  return null;
+}
+
+function release() {
+  const g = grab;
+  grab = null;
+  canvas.classList.remove('grabbing');
+  const t = now();
+  const recent = g.samples.filter(s => t - s.t <= SAMPLE_WINDOW);
+  if (recent.length >= 2) {
+    const a = recent[0], z = recent[recent.length - 1];
+    const dt = z.t - a.t;
+    if (dt > 0 && t - z.t < 0.05) {
+      let vx = (z.x - a.x) / dt, vy = (z.y - a.y) / dt;
+      const sp = Math.hypot(vx, vy);
+      if (sp > MAX_SPEED) { const k = MAX_SPEED / sp; vx *= k; vy *= k; }
+      g.b.vx = vx;   // the box keeps the hand's velocity
+      g.b.vy = vy;
+    }
+  }
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (grab || e.button !== 0) return;
+  const p = pointerWorld(e);
+  const hit = pick(p.x, p.y);
+  if (!hit) return;
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* capture is best effort */ }
+  wake(hit.b);
+  grab = { b: hit.b, lx: hit.lx, ly: hit.ly, px: p.x, py: p.y, pid: e.pointerId,
+           samples: [{ x: p.x, y: p.y, t: now() }] };
+  canvas.classList.add('grabbing');
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!grab || e.pointerId !== grab.pid) return;
+  const p = pointerWorld(e);
+  grab.px = p.x;
+  grab.py = p.y;
+  const t = now();
+  grab.samples.push({ x: p.x, y: p.y, t });
+  while (grab.samples.length && t - grab.samples[0].t > SAMPLE_WINDOW) grab.samples.shift();
+});
+
+const endGrab = e => {
+  if (!grab || e.pointerId !== grab.pid) return;
+  release();
+};
+canvas.addEventListener('pointerup', endGrab);
+canvas.addEventListener('pointercancel', endGrab);
+canvas.addEventListener('lostpointercapture', endGrab);
+
+resetBtn.addEventListener('click', reset);
+
+// ---- render ----
+function render() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 0.5; x < W; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+  for (let y = 0.5; y < H; y += 40) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+  ctx.stroke();
+
+  ctx.strokeStyle = '#3b4452';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, H + 0.5); ctx.lineTo(W, H + 0.5);
+  ctx.stroke();
+
+  for (const b of bodies) {
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(b.a);
+    ctx.globalAlpha = b.asleep ? 0.8 : 1;
+    ctx.fillStyle = b.color;
+    ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+    ctx.lineWidth = grab && grab.b === b ? 3 : 2;
+    ctx.strokeStyle = grab && grab.b === b ? '#ffffff' : 'rgba(0,0,0,0.35)';
+    ctx.strokeRect(-b.w / 2, -b.h / 2, b.w, b.h);
+    ctx.restore();
+  }
+
+  if (grab) {
+    const c = Math.cos(grab.b.a), s = Math.sin(grab.b.a);
+    const wx = grab.b.x + grab.lx * c - grab.ly * s;
+    const wy = grab.b.y + grab.lx * s + grab.ly * c;
+    ctx.globalAlpha = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(grab.px, grab.py);
+    ctx.lineTo(wx, wy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(grab.px, grab.py, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fill();
+  }
+}
+
+// ---- loop: fixed step with an accumulator ----
+let last = performance.now();
+let acc = 0;
+function frame(t) {
+  let dt = (t - last) / 1000;
+  last = t;
+  if (dt < 0) dt = 0;
+  if (dt > 0.25) dt = 0.25;
+  acc += dt;
+  while (acc >= STEP) {
+    step(STEP);
+    acc -= STEP;
+  }
+  render();
+  requestAnimationFrame(frame);
+}
+
+// ---- test seam: current boxes, centers and sizes in CSS px ----
+window.boxes = () => bodies.map(b => ({ x: b.x, y: b.y, w: b.w, h: b.h }));
+
+window.addEventListener('resize', resize);
+resize();
+reset();
+requestAnimationFrame(t => { last = t; requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>

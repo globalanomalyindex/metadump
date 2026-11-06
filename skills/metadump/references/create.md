@@ -161,13 +161,16 @@ How to choose the section plan for any domain:
 6. Plan for breadth as well as specifics: readings, decision points (with options and tradeoffs), exemplars, associations and candidate pools are sections or groups too, routed to an "explore options" job. For a task that asks for N existing items, the pool of verified candidates is routed to the job that makes the deliverable too.
 
 7. Write every section as facets. A dump reads like the owner's hand-made ones when it has, in some form:
-   - a **thesis** and a one-line **summary** (`essence.one_sentence`, `essence.summary`);
+   - a **thesis** (what's interesting about the subject, never a recipe for the deliverable) and a one-line **summary** (`essence.one_sentence`, `essence.summary`);
+   - 2 to 5 **angles**: contrasting ways in, each a move and what it draws on, none the default (`essence.angles`);
    - an **identity** facet: descriptors and principles;
    - one section per **facet area**, named in the domain's words (geometry, color, materials, motion; or seams, test list, error model), each holding a few facets with properties, behaviors and a principle;
    - a **keyword taxonomy** across registers, and **influences** with what each contributes;
-   - a **formula** with the role of each element, and **tensions** as pairs (`essence.formula`, `essence.tensions`);
+   - a **formula** naming the ingredients and the role of each, as one combination among several, and **tensions** as pairs (`essence.formula`, `essence.tensions`);
    - **signals** for recognizing the result, **search queries** by focus, a **descriptor** per reference;
-   - numbers labeled as measured, sourced or illustrative;
+   - numbers labeled as measured, sourced or illustrative, the illustrative ones as **spreads** (a range, or several values far apart, each with what it does; never a single curve or colour, which builds copy: ADR 0013);
+   - **deep cuts** in every pool: the less obvious exemplar, the specialist's term, the odd corner, with no item given star billing;
+   - material voice throughout: observations, options side by side and questions, never orders (ADR 0012; finalize warns: `directive_voice`);
    - anti-keywords with their `instead`, and a ready prompt with a negative prompt in `exports`.
 
    Most dumps don't need every part, and the task's own words decide the names.

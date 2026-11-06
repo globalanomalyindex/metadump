@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j2",
+  "scores": {
+    "W": {"compact": 9, "collapsible": 9, "tracking": 8, "dark": 9, "usability": 8, "craft": 8, "overall": 8, "note": "A tidy 44px collapsed bar that opens into a grid-rows panel with a UPS tracking number, dated timeline, ETA header, copy/open/dismiss actions, and correct aria-expanded, Escape and live-region wiring, though it has no explicit next-step guidance."},
+    "X": {"compact": 5, "collapsible": 5, "tracking": 3, "dark": 7, "usability": 5, "craft": 3, "overall": 3, "note": "The captured states show empty titles, a literal 'undefined' carrier and a count of 4 against 3 seeded packages, the toggle state in the frames does not match the rest captures, and the stored-state loader does not validate package shape, so the panel reads as broken with no ETA or timeline."},
+    "Y": {"compact": 6, "collapsible": 6, "tracking": 4, "dark": 8, "usability": 5, "craft": 6, "overall": 5, "note": "A clean dark multi-package list with color-coded status pills that works, but it ships open by default, covers a large part of the phone screen, shows no tracking code or timeline in the UI, and has no Escape handling or clear label on the advance pills."},
+    "Z": {"compact": 8, "collapsible": 9, "tracking": 9, "dark": 9, "usability": 9, "craft": 9, "overall": 9, "note": "The collapsed pill is very small and the open panel carries status, ETA, carrier and number, a dated step list, a plain-language next action, and inert-when-collapsed body with Escape, aria-expanded, a live region and a dismiss-to-edge-tab path, making it the most complete and carefully built of the four."}
+  },
+  "ranking": ["Z", "W", "Y", "X"]
+}

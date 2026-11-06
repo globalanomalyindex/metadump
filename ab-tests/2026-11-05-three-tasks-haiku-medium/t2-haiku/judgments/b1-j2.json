@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {
+      "imagery": 6,
+      "form": 3,
+      "specificity": 3,
+      "freshness": 6,
+      "resonance": 5,
+      "overall": 4,
+      "note": "Lines count 5-5-6 (\"the am-ber band fades\" 5, \"a thin blue-white streak\" 5, \"stars still show-ing a-bove\" 6), so the form is off, and the streak is never tied to a rare cloud, so the subject reads as generic dusk sky rather than a named phenomenon."
+    },
+    "X": {
+      "imagery": 8,
+      "form": 10,
+      "specificity": 9,
+      "freshness": 7,
+      "resonance": 8,
+      "overall": 9,
+      "note": "Exact 5-7-5 (\"Na-cre-ous at dusk\" 5, \"rain-bows bloom on a thin veil\" 7, \"gone be-fore we look\" 5), it names nacreous clouds, whose iridescence and brief dusk visibility are accurately evoked, and the ending on \"gone before we look\" turns on their ephemerality."
+    },
+    "Y": {
+      "imagery": 6,
+      "form": 10,
+      "specificity": 6,
+      "freshness": 6,
+      "resonance": 6,
+      "overall": 6,
+      "note": "Exact 5-7-5 (\"Moth-er-of-pearl sky\" 5, \"a cloud no one has named yet\" 7, \"drifts past the moun-tain\" 5), and the unnamed-cloud conceit gestures at rarity, but the mother-of-pearl sky is a stock phrase and the mountain drift is generic."
+    },
+    "Z": {
+      "imagery": 8,
+      "form": 6,
+      "specificity": 8,
+      "freshness": 6,
+      "resonance": 8,
+      "overall": 7,
+      "note": "Shape is 6-8-6 (\"sun gone be-hind the ridge\" 6, \"one cloud keeps its moth-er-of-pearl\" 8, \"un-til the grey comes in\" 6), a long-middle form that is only loosely 5-7-5, but the sunset timing and the cloud holding its colour after the sun drops match how nacreous clouds actually fade, and \"until the grey comes in\" gives a real turn."
+    }
+  },
+  "ranking": ["X", "Z", "Y", "W"]
+}

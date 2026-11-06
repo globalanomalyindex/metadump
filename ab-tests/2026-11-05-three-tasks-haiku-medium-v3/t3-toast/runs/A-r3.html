@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Package Tracker Toast</title>
+<style>
+:root{
+  --bg:#0b0c0f; --panel:#16181e; --panel-2:#1e222b; --line:#2a2f3a;
+  --text:#e6e8ee; --muted:#8a92a3; --accent:#5eead4; --accent-ink:#04211c;
+  --ok:#4ade80; --warn:#fbbf24; --danger:#f87171; --focus:#7dd3fc;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.page{padding:24px;max-width:560px}
+.page h1{font-size:15px;margin:0 0 6px;color:var(--text)}
+.page p{color:var(--muted);margin:0 0 10px}
+.page .ghost{height:44px;border:1px dashed var(--line);border-radius:8px;margin-bottom:8px}
+
+#root{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);z-index:10}
+.toast{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px rgba(0,0,0,.5);overflow:hidden}
+.head{display:flex;align-items:stretch;gap:2px;padding-right:6px}
+.toggle{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:9px 10px;cursor:pointer}
+.toggle .title{font-weight:600}
+.toggle .count{color:var(--muted)}
+.toggle .chev{margin-left:auto;color:var(--muted);font-size:10px}
+.icon{all:unset;box-sizing:border-box;align-self:center;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
+.icon:hover{background:var(--panel-2);color:var(--text)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none}
+.dot.ok{background:var(--ok)}
+.dot.idle{background:var(--muted)}
+.peek{padding:0 10px 9px 26px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-4px}
+
+.body{padding:8px 8px 8px;border-top:1px solid var(--line)}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:2px;margin-bottom:6px}
+.seg button{all:unset;box-sizing:border-box;flex:1;text-align:center;padding:4px 0;border-radius:5px;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--panel-2);color:var(--text)}
+.list{list-style:none;margin:0;padding:0;max-height:188px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.row{all:unset;box-sizing:border-box;position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;padding:7px 8px 9px;border-radius:7px;cursor:pointer}
+.row:hover{background:var(--panel-2)}
+.row[aria-current=true]{background:#1c2430;box-shadow:inset 2px 0 0 var(--accent)}
+.name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.sub{display:block;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eta{font-size:11px;color:var(--muted);white-space:nowrap}
+.bar{position:absolute;left:8px;right:8px;bottom:3px;height:2px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
+.empty{color:var(--muted);text-align:center;padding:14px 0}
+
+.detail{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.track{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps{position:relative;display:grid;grid-template-columns:repeat(5,1fr);margin:10px 0 4px}
+.steps::before{content:"";position:absolute;left:10%;right:10%;top:4px;height:2px;background:var(--line)}
+.steps .fill{position:absolute;left:10%;top:4px;height:2px;background:var(--accent);transition:width .3s ease}
+.step{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);font-size:10px}
+.step::before{content:"";width:10px;height:10px;border-radius:50%;border:2px solid var(--line);background:var(--panel);z-index:1}
+.step.done{color:var(--text)}
+.step.done::before{background:var(--accent);border-color:var(--accent)}
+.step.cur::before{border-color:var(--accent);box-shadow:0 0 0 3px rgba(94,234,212,.22)}
+.lastev{color:var(--muted);font-size:11px;margin:6px 0 8px;min-height:15px}
+.actions{display:flex;gap:6px}
+.btn{all:unset;box-sizing:border-box;flex:1;text-align:center;padding:6px 8px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);cursor:pointer;font-weight:500}
+.btn:hover{border-color:#3d4453}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.quiet{flex:none;color:var(--danger)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.add{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.add form{display:grid;gap:6px}
+.add input,.add select{font:inherit;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:100%;min-width:0}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:6px}
+.err{color:var(--danger);font-size:11px;min-height:14px}
+.restore{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.45);cursor:pointer;margin-left:auto;width:max-content}
+.restore:hover{border-color:#3d4453}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Orders</h1>
+  <p>Your packages are tracked in the corner. Collapse it, pick a package, or add a new tracking number.</p>
+  <div class="ghost"></div>
+  <div class="ghost"></div>
+  <div class="ghost"></div>
+</div>
+
+<div id="root" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STEPS = [
+    ["Label created", "Label"],
+    ["Picked up", "Pickup"],
+    ["In transit", "Transit"],
+    ["Out for delivery", "Out"],
+    ["Delivered", "Done"]
+  ];
+  var EVENT_TEXT = [
+    "Label created",
+    "Picked up by carrier",
+    "In transit to next facility",
+    "Out for delivery",
+    "Delivered"
+  ];
+  var CARRIERS = ["UPS", "FedEx", "USPS", "DHL"];
+
+  // Fake clock for simulated scans, starts at Nov 5 09:42.
+  var minutes = 9 * 60 + 42;
+  function clock() {
+    minutes += 17;
+    var h = Math.floor(minutes / 60) % 24;
+    var m = minutes % 60;
+    return "Nov 5 · " + pad(h) + ":" + pad(m);
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  var state = {
+    open: true,
+    hidden: false,
+    filter: "all",
+    selected: "p1",
+    adding: false,
+    error: "",
+    draft: { tracking: "", carrier: "UPS", name: "" },
+    nextId: 5,
+    packages: [
+      {
+        id: "p1", carrier: "UPS", tracking: "1Z999AA10123456784",
+        name: "Standing desk converter", step: 3, eta: "Today",
+        events: [
+          { t: "Nov 3 · 08:12", text: "Label created, Ontario CA" },
+          { t: "Nov 3 · 19:40", text: "Picked up by carrier" },
+          { t: "Nov 4 · 06:05", text: "Arrived at Sacramento hub" },
+          { t: "Nov 5 · 05:50", text: "Out for delivery" }
+        ]
+      },
+      {
+        id: "p2", carrier: "USPS", tracking: "9405511206213300441762",
+        name: "Ceramic pour-over set", step: 2, eta: "Nov 7",
+        events: [
+          { t: "Nov 2 · 11:03", text: "Label created, Portland OR" },
+          { t: "Nov 3 · 16:27", text: "Picked up by carrier" },
+          { t: "Nov 4 · 14:20", text: "In transit, Fresno CA" }
+        ]
+      },
+      {
+        id: "p3", carrier: "FedEx", tracking: "789456123012",
+        name: "Monitor arm", step: 0, eta: "Est. Nov 9",
+        events: [
+          { t: "Nov 5 · 06:55", text: "Label created" }
+        ]
+      },
+      {
+        id: "p4", carrier: "DHL", tracking: "JD014600006279",
+        name: "Lens hood", step: 4, eta: "Delivered",
+        events: [
+          { t: "Oct 30 · 09:14", text: "Label created" },
+          { t: "Nov 1 · 13:40", text: "In transit" },
+          { t: "Nov 2 · 14:18", text: "Delivered, front door" }
+        ]
+      }
+    ]
+  };
+
+  var root = document.getElementById("root");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function find(id) {
+    for (var i = 0; i < state.packages.length; i++) {
+      if (state.packages[i].id === id) return state.packages[i];
+    }
+    return null;
+  }
+
+  function current() {
+    return find(state.selected) || state.packages[0] || null;
+  }
+
+  function visible() {
+    return state.packages.filter(function (p) {
+      if (state.filter === "active") return p.step < 4;
+      if (state.filter === "delivered") return p.step === 4;
+      return true;
+    });
+  }
+
+  function activeCount() {
+    return state.packages.filter(function (p) { return p.step < 4; }).length;
+  }
+
+  function render() {
+    if (state.hidden) {
+      root.innerHTML =
+        '<button class="restore" data-act="show" aria-label="Show package tracker">' +
+        '<span class="dot"></span>Packages <span style="color:var(--muted)">' + activeCount() + ' active</span></button>';
+      return;
+    }
+
+    var sel = current();
+    var rows = visible().map(function (p) {
+      var dotCls = p.step === 4 ? "ok" : (p.step === 0 ? "idle" : "");
+      return '<li><button class="row" data-act="select" data-id="' + p.id + '" aria-current="' +
+        (sel && sel.id === p.id) + '">' +
+        '<span class="dot ' + dotCls + '"></span>' +
+        '<span style="min-width:0"><span class="name">' + esc(p.name) + '</span>' +
+        '<span class="sub">' + esc(p.carrier) + ' · ' + esc(STEPS[p.step][0]) + '</span></span>' +
+        '<span class="eta">' + esc(p.eta) + '</span>' +
+        '<span class="bar"><i style="width:' + (p.step * 25) + '%"></i></span></button></li>';
+    }).join("") || '<li class="empty">Nothing in this view.</li>';
+
+    var filterBtn = function (key, label) {
+      return '<button data-act="filter" data-filter="' + key + '" aria-pressed="' + (state.filter === key) + '">' + label + '</button>';
+    };
+
+    var detail = "";
+    if (sel) {
+      var steps = STEPS.map(function (s, i) {
+        var cls = (i < sel.step ? " done" : "") + (i === sel.step ? " cur" : "");
+        return '<div class="step' + cls + '">' + s[1] + '</div>';
+      }).join("");
+      var last = sel.events[sel.events.length - 1];
+      detail =
+        '<div class="detail">' +
+        '<div class="track" title="' + esc(sel.tracking) + '">' + esc(sel.carrier) + ' ' + esc(sel.tracking) + '</div>' +
+        '<div class="steps"><span class="fill" style="width:' + (sel.step * 20) + '%"></span>' + steps + '</div>' +
+        '<div class="lastev">' + (last ? esc(last.t) + ' — ' + esc(last.text) : '') + '</div>' +
+        '<div class="actions">' +
+        '<button class="btn primary" data-act="advance" data-id="' + sel.id + '"' + (sel.step === 4 ? ' disabled' : '') + '>' +
+        (sel.step === 4 ? 'Delivered' : 'Next scan') + '</button>' +
+        '<button class="btn quiet" data-act="remove" data-id="' + sel.id + '">Remove</button>' +
+        '</div></div>';
+    }
+
+    var addPart;
+    if (state.adding) {
+      var d = state.draft;
+      var opts = CARRIERS.map(function (c) {
+        return '<option value="' + c + '"' + (d.carrier === c ? ' selected' : '') + '>' + c + '</option>';
+      }).join("");
+      addPart =
+        '<form data-form="add" novalidate>' +
+        '<input data-draft="tracking" placeholder="Tracking number" autocomplete="off" spellcheck="false" value="' + esc(d.tracking) + '">' +
+        '<div class="pair"><input data-draft="name" placeholder="Label (optional)" autocomplete="off" value="' + esc(d.name) + '">' +
+        '<select data-draft="carrier" aria-label="Carrier">' + opts + '</select></div>' +
+        '<div class="err">' + esc(state.error) + '</div>' +
+        '<div class="actions"><button type="button" class="btn" data-act="toggle-add">Cancel</button>' +
+        '<button type="submit" class="btn primary">Add</button></div>' +
+        '</form>';
+    } else {
+      addPart = '<button class="btn" data-act="toggle-add">+ Add package</button>';
+    }
+
+    var peekText = sel ? esc(sel.name) + ' · ' + esc(STEPS[sel.step][0]) + ' · ' + esc(sel.eta) : 'No packages yet';
+    var count = activeCount() + ' active';
+
+    root.innerHTML =
+      '<section class="toast" aria-label="Package tracker">' +
+      '<header class="head">' +
+      '<button class="toggle" data-act="toggle" aria-expanded="' + state.open + '">' +
+      '<span class="dot ' + (activeCount() ? '' : 'ok') + '"></span>' +
+      '<span class="title">Packages</span>' +
+      '<span class="count">' + count + '</span>' +
+      '<span class="chev">' + (state.open ? '▾' : '▴') + '</span>' +
+      '</button>' +
+      '<button class="icon" data-act="hide" aria-label="Dismiss tracker" title="Dismiss">×</button>' +
+      '</header>' +
+      (state.open
+        ? '<div class="body">' +
+          '<div class="seg" role="group" aria-label="Filter">' +
+          filterBtn("all", "All") + filterBtn("active", "Active") + filterBtn("delivered", "Delivered") +
+          '</div>' +
+          '<ul class="list">' + rows + '</ul>' +
+          detail +
+          '<div class="add">' + addPart + '</div>' +
+          '</div>'
+        : '<div class="peek">' + peekText + '</div>') +
+      '</section>';
+  }
+
+  function advance(id) {
+    var p = find(id);
+    if (!p || p.step >= 4) return;
+    p.step += 1;
+    p.events.push({ t: clock(), text: EVENT_TEXT[p.step] });
+    if (p.step === 3) p.eta = "Today";
+    if (p.step === 4) p.eta = "Delivered";
+  }
+
+  function remove(id) {
+    state.packages = state.packages.filter(function (p) { return p.id !== id; });
+    if (state.selected === id) state.selected = state.packages.length ? state.packages[0].id : null;
+  }
+
+  function submitAdd() {
+    var d = state.draft;
+    var tracking = d.tracking.replace(/[\s-]/g, "").toUpperCase();
+    if (!/^[A-Z0-9]{8,30}$/.test(tracking)) {
+      state.error = "Enter 8 to 30 letters or digits.";
+      return;
+    }
+    var dup = state.packages.some(function (p) { return p.tracking === tracking; });
+    if (dup) {
+      state.error = "That tracking number is already here.";
+      return;
+    }
+    var id = "p" + (state.nextId++);
+    state.packages.unshift({
+      id: id,
+      carrier: d.carrier,
+      tracking: tracking,
+      name: d.name.trim() || "Untitled package",
+      step: 0,
+      eta: "Est. Nov 10",
+      events: [{ t: clock(), text: EVENT_TEXT[0] }]
+    });
+    state.selected = id;
+    state.filter = "all";
+    state.adding = false;
+    state.error = "";
+    state.draft = { tracking: "", carrier: d.carrier, name: "" };
+  }
+
+  root.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-act]");
+    if (!el) return;
+    var act = el.getAttribute("data-act");
+    var id = el.getAttribute("data-id");
+
+    if (act === "toggle") state.open = !state.open;
+    else if (act === "hide") state.hidden = true;
+    else if (act === "show") { state.hidden = false; state.open = true; }
+    else if (act === "select") { state.selected = id; }
+    else if (act === "filter") { state.filter = el.getAttribute("data-filter"); }
+    else if (act === "advance") { advance(id); }
+    else if (act === "remove") { remove(id); }
+    else if (act === "toggle-add") { state.adding = !state.adding; state.error = ""; }
+    else return;
+
+    render();
+  });
+
+  root.addEventListener("input", function (e) {
+    var f = e.target.getAttribute("data-draft");
+    if (f) state.draft[f] = e.target.value;
+  });
+
+  root.addEventListener("change", function (e) {
+    var f = e.target.getAttribute("data-draft");
+    if (f) state.draft[f] = e.target.value;
+  });
+
+  root.addEventListener("submit", function (e) {
+    e.preventDefault();
+    submitAdd();
+    render();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && state.open && !state.hidden) {
+      state.open = false;
+      render();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

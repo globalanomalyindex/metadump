@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package toast</title>
+<style>
+:root{
+  --page:#0b0c0e; --card:#17181b; --lift:#1f2024; --edge:rgba(255,255,255,.10);
+  --text:#e8e8ea; --muted:#9ca3af; --accent:#f59e0b; --ok:#34d399; --bad:#f87171;
+  --dur:220ms;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.page{padding:28px;max-width:560px;color:var(--muted)}
+.page h1{font-size:15px;color:var(--text);margin:0 0 6px;font-weight:600}
+.page p{margin:0 0 14px}
+.demo{display:flex;gap:8px;flex-wrap:wrap}
+.demo button{background:var(--lift);color:var(--text);border:1px solid var(--edge);border-radius:6px;min-height:32px;padding:0 12px;font:inherit;cursor:pointer}
+.demo button:hover{background:#2a2b31}
+button:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+
+.toast{position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);background:var(--card);border:1px solid var(--edge);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.45);overflow:hidden;
+  transition:opacity var(--dur) ease,transform var(--dur) ease}
+.toast.gone{opacity:0;transform:translateY(12px);pointer-events:none}
+.toast[hidden]{display:none}
+
+.head{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:9px;width:100%;min-height:40px;padding:6px 8px 6px 10px;cursor:pointer}
+.head:hover{background:rgba(255,255,255,.03)}
+.head:focus-visible{outline:2px solid #93c5fd;outline-offset:-2px}
+.mark{flex:none;width:22px;height:22px;border-radius:6px;background:var(--lift);border:1px solid var(--edge);display:grid;place-items:center;font-size:10px;font-weight:700;letter-spacing:.02em}
+.stage{font-weight:600;font-size:13px;white-space:nowrap}
+.count{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.sp{flex:1}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.dot.live{animation:pulse 2s ease-in-out infinite}
+.state-ok .dot{background:var(--ok)}
+.state-bad .dot{background:var(--bad)}
+@keyframes pulse{50%{opacity:.35}}
+.chev{width:16px;height:16px;flex:none;color:var(--muted);transition:transform var(--dur) ease}
+.open .chev{transform:rotate(180deg)}
+
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--dur) ease}
+.open .body{grid-template-rows:1fr}
+.inner{overflow:hidden;min-height:0}
+.pad{padding:2px 10px 10px;border-top:1px solid var(--edge);margin-top:0}
+.meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px;padding:8px 0 6px}
+.meta b{color:var(--text);font-weight:500}
+
+.alert{display:none;background:rgba(248,113,113,.10);border:1px solid rgba(248,113,113,.35);border-radius:8px;padding:7px 9px;margin:2px 0 6px;font-size:12px}
+.state-bad .alert{display:block}
+.alert strong{color:var(--bad);font-weight:600}
+
+ol{list-style:none;margin:0;padding:0}
+li{position:relative;display:grid;grid-template-columns:16px 1fr auto;column-gap:9px;align-items:center;min-height:26px;font-size:12.5px;color:var(--muted)}
+li .m{width:14px;height:14px;border-radius:50%;border:1.5px solid #4b5160;display:grid;place-items:center;position:relative;z-index:1;background:var(--card)}
+li::before{content:"";position:absolute;left:7px;top:-13px;height:26px;border-left:1.5px dashed #3d4250}
+li:first-child::before{display:none}
+li.done::before,li.cur::before{border-left-style:solid;border-left-color:#6b7280}
+li.done{color:var(--text)}
+li.done .m{background:var(--ok);border-color:var(--ok)}
+li.done .m::after{content:"";width:6px;height:3px;border-left:1.6px solid #08130e;border-bottom:1.6px solid #08130e;transform:rotate(-45deg) translate(0,-1px)}
+li.cur{color:var(--text);font-weight:600}
+li.cur .m{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.18)}
+.state-bad li.cur .m{border-color:var(--bad);box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+li.cur .m::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.state-bad li.cur .m::after{background:var(--bad)}
+li time{font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:400}
+
+.acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.acts button{background:var(--lift);color:var(--text);border:1px solid var(--edge);border-radius:6px;min-height:28px;min-width:28px;padding:0 10px;font:inherit;font-size:12px;cursor:pointer}
+.acts button:hover{background:#2a2b31}
+.acts .grow{flex:1}
+.acts .quiet{background:transparent;color:var(--muted)}
+.live-note{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.snooze{display:none;color:var(--muted);font-size:11.5px;padding-top:6px}
+.snoozed .snooze{display:block}
+
+@media (prefers-reduced-motion:reduce){
+  .toast,.body,.chev{transition:none}
+  .dot.live{animation:none}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Orders</h1>
+  <p>Your parcel toast sits bottom right. Click its row to open the steps. These buttons stand in for carrier updates.</p>
+  <div class="demo">
+    <button id="adv">Next carrier scan</button>
+    <button id="exc">Simulate delay</button>
+    <button id="reset">Reset</button>
+  </div>
+</main>
+
+<section class="toast" id="toast" aria-label="Package tracking">
+  <button class="head" id="head" aria-expanded="false" aria-controls="panel">
+    <span class="mark" aria-hidden="true">UP</span>
+    <span class="stage" id="stage">In transit</span>
+    <span class="count" id="count">3 of 5</span>
+    <span class="sp"></span>
+    <span class="dot live" id="dot" aria-hidden="true"></span>
+    <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+  </button>
+  <div class="body" id="panel" role="region" aria-label="Delivery steps">
+    <div class="inner"><div class="pad">
+      <div class="meta"><span>1Z84F7 0A2 91 5530</span><span id="eta">Arrives <b>Thu, 2 to 6 pm</b></span></div>
+      <div class="alert" role="status"><strong>Delayed.</strong> Held at Reno depot, weather. Expect +1 day.</div>
+      <ol id="steps"></ol>
+      <div class="snooze" id="snz">Snoozed for 1 hour.</div>
+      <div class="acts">
+        <button class="grow" id="open">Carrier page</button>
+        <button id="seen">Mark seen</button>
+        <button id="snooze" class="quiet">Snooze</button>
+        <button id="close" class="quiet" aria-label="Dismiss">&#10005;</button>
+      </div>
+    </div></div>
+  </div>
+  <div class="live-note" id="live" aria-live="polite"></div>
+</section>
+
+<script>
+(function(){
+  var STEPS=[
+    {n:"Label created",t:"Mon 9:12 am"},
+    {n:"Picked up",t:"Mon 5:40 pm"},
+    {n:"In transit",t:"Tue 8:05 am"},
+    {n:"Out for delivery",t:"Exp. Thu"},
+    {n:"Delivered",t:"Exp. Thu"}
+  ];
+  var stampsDone=["Mon 9:12 am","Mon 5:40 pm","Tue 8:05 am","Thu 7:48 am","Thu 2:31 pm"];
+  var $=function(i){return document.getElementById(i)};
+  var toast=$("toast"),head=$("head"),live=$("live");
+  var S={cur:2,open:false,exception:false,snoozed:false,seen:false};
+
+  function say(m){live.textContent="";setTimeout(function(){live.textContent=m},30)}
+
+  function render(){
+    var last=STEPS.length-1;
+    var delivered=S.cur===last;
+    $("stage").textContent=S.exception?"Delayed":(S.cur===last?"Delivered":STEPS[S.cur].n);
+    $("count").textContent=(S.cur+1)+" of "+STEPS.length;
+    toast.classList.toggle("state-ok",delivered&&!S.exception);
+    toast.classList.toggle("state-bad",S.exception);
+    toast.classList.toggle("open",S.open);
+    toast.classList.toggle("snoozed",S.snoozed);
+    $("dot").classList.toggle("live",!delivered&&!S.exception&&!S.snoozed);
+    head.setAttribute("aria-expanded",S.open);
+    $("eta").innerHTML=delivered?"Delivered <b>Thu, 2:31 pm</b>":S.exception?"Now <b>Fri, 2 to 6 pm</b>":"Arrives <b>Thu, 2 to 6 pm</b>";
+    $("seen").textContent=S.seen?"Seen":"Mark seen";
+    $("seen").disabled=S.seen||!S.exception;
+    $("seen").style.opacity=$("seen").disabled?".5":"1";
+    $("exc").disabled=delivered;
+    var ol=$("steps");ol.innerHTML="";
+    STEPS.forEach(function(s,i){
+      var li=document.createElement("li");
+      li.className=i<S.cur||delivered&&i<=S.cur?"done":i===S.cur?"cur":"";
+      if(delivered&&i===last)li.className="done";
+      var t=i<=S.cur?stampsDone[i]:s.t;
+      li.innerHTML='<span class="m"></span><span>'+s.n+'</span><time>'+t+'</time>';
+      if(i===S.cur&&!delivered)li.setAttribute("aria-current","step");
+      ol.appendChild(li);
+    });
+  }
+
+  head.addEventListener("click",function(){S.open=!S.open;render()});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.open){S.open=false;render();head.focus()}});
+
+  $("adv").onclick=function(){
+    if(toast.classList.contains("gone")){toast.classList.remove("gone");toast.hidden=false}
+    if(S.cur<STEPS.length-1){S.cur++;S.exception=false;S.seen=false;S.snoozed=false;render();say("Package update: "+$("stage").textContent)}
+  };
+  $("exc").onclick=function(){
+    if(toast.hidden){toast.hidden=false;toast.classList.remove("gone")}
+    S.exception=true;S.seen=false;S.snoozed=false;S.open=true;render();say("Package delayed. Held at Reno depot.");
+  };
+  $("reset").onclick=function(){S={cur:2,open:false,exception:false,snoozed:false,seen:false};toast.hidden=false;toast.classList.remove("gone");render()};
+
+  $("open").onclick=function(){say("Opening carrier page");$("open").textContent="Opening…";setTimeout(function(){$("open").textContent="Carrier page"},1200)};
+  $("seen").onclick=function(){S.seen=true;S.exception=false;S.open=false;render();say("Marked seen, still watching")};
+  $("snooze").onclick=function(){S.snoozed=!S.snoozed;$("snooze").textContent=S.snoozed?"Unsnooze":"Snooze";render();say(S.snoozed?"Snoozed for one hour":"Snooze off")};
+  $("close").onclick=function(){
+    toast.classList.add("gone");
+    setTimeout(function(){toast.hidden=true},230);
+    say("Dismissed");
+  };
+  render();
+})();
+</script>
+</body>
+</html>

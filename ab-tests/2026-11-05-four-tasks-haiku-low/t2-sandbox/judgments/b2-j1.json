@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"physics": 7, "interaction": 7, "stability": 8, "clarity": 4, "craft": 6, "overall": 6, "note": "Rotating boxes with impulse friction, sleeping and a spring grab that keeps release velocity give believable stacks, but there are no add or gravity controls and no on-screen instructions beyond the Reset button."},
+"X": {"physics": 4, "interaction": 6, "stability": 5, "clarity": 8, "craft": 5, "overall": 5, "note": "Clear Add, Gravity and Reset controls and a hint, but boxes are axis-aligned and never rotate, the drag sets velocity directly, and bottom-edge boxes look clipped and overlapped in the captures."},
+"Y": {"physics": 8, "interaction": 8, "stability": 8, "clarity": 6, "craft": 8, "overall": 8, "note": "Oriented-box SAT with sequential impulses, Baumgarte push-out, sleeping and a spring grab with throw gives the most convincing physics, and the dark grid look reads well, though the hint text overlaps boxes at the floor and there is no add control."},
+"Z": {"physics": 5, "interaction": 6, "stability": 6, "clarity": 7, "craft": 6, "overall": 6, "note": "Add by click, Backspace and R are usable and touch works through pointer events, but the boxes are non-rotating AABBs with a lagging proportional drag, so stacks look like blocks and the HUD is wordy."}
+},
+"ranking": ["Y", "W", "Z", "X"]}

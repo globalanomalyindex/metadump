@@ -1,0 +1,38 @@
+{
+ "tasks": [
+  "t1-button",
+  "t2-sandbox",
+  "t3-poem",
+  "t4-figma"
+ ],
+ "per_task": {
+  "t1-button": {
+   "A_mean": 6.42,
+   "B_mean": 7.08,
+   "diff": 0.67
+  },
+  "t2-sandbox": {
+   "A_mean": 6.33,
+   "B_mean": 6.83,
+   "diff": 0.5
+  },
+  "t3-poem": {
+   "A_mean": 5.17,
+   "B_mean": 7.92,
+   "diff": 2.75
+  },
+  "t4-figma": {
+   "A_mean": 5.67,
+   "B_mean": 5.42,
+   "diff": -0.25
+  }
+ },
+ "pooled_mean_diff": 0.918,
+ "p_two_sided": 0.0237,
+ "p_one_sided_B_better": 0.0118,
+ "splits": 24010000,
+ "pooled_wins": 61,
+ "pooled_losses": 23,
+ "pooled_ties": 12,
+ "pooled_win_rate": 0.7
+}

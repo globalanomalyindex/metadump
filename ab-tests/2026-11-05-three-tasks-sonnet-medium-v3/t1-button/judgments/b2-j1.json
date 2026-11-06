@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j1","scores":{
+"W":{"dreamlike":9,"practical":8,"motion":9,"craft":8,"overall":9,"note":"Slow 1.5s exhale-out and a pointer-following bloom make a rich, lingering glow on dark, with focus ring, active state and a thorough reduced-motion block."},
+"X":{"dreamlike":7,"practical":8,"motion":7,"craft":8,"overall":7,"note":"Gradient sweep with soft overshoot and glow is pleasant and legible, but the effect is more of a polished shift than a truly ethereal bloom."},
+"Y":{"dreamlike":9,"practical":8,"motion":8,"craft":8,"overall":8,"note":"Pink-to-cyan aurora halo blooms behind a white pill and fades slowly, very ethereal, with good focus and reduced-motion handling, though the glow is heavy at rest-to-hover contrast."},
+"Z":{"dreamlike":6,"practical":7,"motion":7,"craft":7,"overall":6,"note":"Subtle pastel veil with overshoot bloom is tasteful and legible but the change is faint, and reduced-motion just shortens durations."}},
+"ranking":["W","Y","X","Z"]}

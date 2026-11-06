@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ethereal Button</title>
+<style>
+  :root {
+    --ink: #1d1838;
+    --mist: #f4f0ff;
+    --lilac: #b9a7ff;
+    --rose: #ffb8d9;
+    --aqua: #9fe8ff;
+    --pearl: #fff8f2;
+    /* custom curves: slow-in, long floating settle */
+    --drift: cubic-bezier(.22, .61, .12, 1);
+    --bloom: cubic-bezier(.16, 1.12, .3, 1);
+    --exhale: cubic-bezier(.65, .02, .2, .98);
+    --haze: cubic-bezier(.4, 0, .1, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    color: var(--ink);
+    background:
+      radial-gradient(60vmax 40vmax at 15% 10%, #e6dcff 0, transparent 60%),
+      radial-gradient(50vmax 40vmax at 90% 90%, #ffe0ee 0, transparent 60%),
+      radial-gradient(40vmax 30vmax at 80% 5%, #d6f3ff 0, transparent 60%),
+      #f7f3ff;
+    display: grid; place-items: center; padding: 24px;
+  }
+  .card {
+    width: min(480px, 100%);
+    background: rgba(255,255,255,.62);
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 28px;
+    padding: 36px 32px 28px;
+    box-shadow: 0 30px 80px -30px rgba(90,70,170,.35);
+    backdrop-filter: blur(14px);
+  }
+  .eyebrow { font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #5a49a8; margin: 0 0 14px; }
+  h1 { font-weight: 400; font-size: clamp(28px, 6vw, 36px); line-height: 1.12; margin: 0 0 12px; }
+  p.lede { font: 16px/1.6 ui-sans-serif, system-ui, sans-serif; color: #4d4670; margin: 0 0 22px; }
+  label { display: block; font: 600 13px ui-sans-serif, system-ui, sans-serif; margin-bottom: 8px; }
+  input[type=email] {
+    width: 100%; padding: 14px 16px; border-radius: 14px;
+    border: 1px solid #d8cff5; background: rgba(255,255,255,.8);
+    font: 16px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+    transition: border-color .5s var(--drift), box-shadow .6s var(--drift);
+    margin-bottom: 16px;
+  }
+  input[type=email]:focus { outline: none; border-color: var(--lilac); box-shadow: 0 0 0 4px rgba(185,167,255,.35); }
+  input[aria-invalid=true] { border-color: #e0709a; }
+  .err { min-height: 18px; margin: -8px 0 10px; font: 13px ui-sans-serif, system-ui, sans-serif; color: #b03a6a; }
+
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  /* ---------- the button ---------- */
+  .ether {
+    --mx: 50%; --my: 50%;
+    position: relative; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 52px; padding: 0 30px;
+    border: 0; border-radius: 999px; cursor: pointer;
+    color: #2a2250;
+    font: 600 16px/1 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: .02em;
+    background: linear-gradient(135deg, #efe8ff, #ffe9f3 55%, #e3f6ff);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 10px 24px -12px rgba(120,95,220,.55),
+      0 0 0 1px rgba(185,167,255,.55);
+    transform: translateY(0) scale(1);
+    transition:
+      transform .9s var(--bloom),
+      box-shadow 1.1s var(--drift),
+      letter-spacing 1s var(--drift),
+      color .8s var(--haze);
+    -webkit-tap-highlight-color: transparent;
+    overflow: visible;
+  }
+  /* drifting aurora layer, revealed on hover */
+  .ether::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+    background:
+      radial-gradient(120px 80px at var(--mx) var(--my), rgba(255,255,255,.95), transparent 70%),
+      linear-gradient(120deg, var(--lilac), var(--rose), var(--aqua), var(--lilac));
+    background-size: 100% 100%, 300% 100%;
+    background-position: 0 0, 0% 0;
+    opacity: 0;
+    transform: scale(.94);
+    filter: blur(.2px);
+    transition: opacity 1s var(--drift), transform 1.1s var(--bloom), background-position 2.4s var(--exhale);
+  }
+  /* soft halo that blooms outward */
+  .ether::after {
+    content: ""; position: absolute; inset: -6px; border-radius: inherit; z-index: -2;
+    background: radial-gradient(closest-side, rgba(185,167,255,.55), rgba(255,184,217,.25) 60%, transparent 100%);
+    filter: blur(14px);
+    opacity: 0; transform: scale(.8);
+    transition: opacity 1.2s var(--drift), transform 1.4s var(--bloom);
+    pointer-events: none;
+  }
+  .ether .label { position: relative; display: inline-block; transition: transform .9s var(--bloom), opacity .5s var(--haze); }
+  .ether .spark { width: 16px; height: 16px; flex: none; transition: transform 1.2s var(--bloom), opacity .8s var(--drift); opacity: .7; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .ether:hover:not([disabled]) {
+      transform: translateY(-3px) scale(1.025);
+      letter-spacing: .06em;
+      color: #20184a;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,1) inset,
+        0 18px 38px -14px rgba(150,110,240,.6),
+        0 0 0 1px rgba(255,255,255,.8);
+    }
+    .ether:hover:not([disabled])::before { opacity: .85; transform: scale(1); background-position: 0 0, 100% 0; }
+    .ether:hover:not([disabled])::after  { opacity: 1; transform: scale(1.2); }
+    .ether:hover:not([disabled]) .spark  { transform: rotate(90deg) scale(1.25); opacity: 1; }
+  }
+  .ether:focus-visible { outline: 2px solid #5b46c9; outline-offset: 4px; }
+  /* press: quick, soft inhale */
+  .ether:active:not([disabled]) { transform: translateY(0) scale(.975); transition-duration: .22s; transition-timing-function: var(--haze); }
+
+  .ether[data-state=loading] { cursor: progress; }
+  .ether[data-state=loading]::before { opacity: .9; transform: scale(1); animation: flow 1.8s linear infinite; }
+  .ether[data-state=loading] .spark { animation: breathe 1.6s var(--exhale) infinite; opacity: 1; }
+  .ether[data-state=done]::before { opacity: .75; transform: scale(1); background: linear-gradient(120deg, #c8f3e0, #e9ffd9); }
+  .ether[data-state=done]::after { opacity: 1; transform: scale(1.15); background: radial-gradient(closest-side, rgba(140,230,190,.55), transparent); }
+  @keyframes flow { to { background-position: 0 0, 300% 0; } }
+  @keyframes breathe { 50% { transform: scale(.55) rotate(180deg); opacity: .4; } }
+
+  /* quiet ghost variant, same language */
+  .ghost {
+    position: relative; min-height: 52px; padding: 0 20px; border: 0; border-radius: 999px; cursor: pointer;
+    background: transparent; color: #5a4aa8; font: 600 15px ui-sans-serif, system-ui, sans-serif;
+    transition: background-color .9s var(--drift), color .6s var(--haze), box-shadow 1s var(--drift);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ghost:hover { background: rgba(185,167,255,.2); box-shadow: 0 0 28px rgba(185,167,255,.45); }
+  }
+  .ghost:focus-visible { outline: 2px solid #5b46c9; outline-offset: 3px; }
+  .ghost[aria-pressed=true] { background: rgba(255,184,217,.35); color: #8d2f63; }
+
+  .status { margin: 20px 0 0; font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; color: #5d557f; min-height: 21px; }
+  .meta { display: flex; gap: 18px; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(120,100,200,.18); font: 13px ui-sans-serif, system-ui, sans-serif; color: #6c6490; }
+  .meta strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ether, .ether::before, .ether::after, .ether .label, .ether .spark, .ghost, input { transition-duration: .01s !important; }
+    .ether[data-state=loading]::before, .ether[data-state=loading] .spark { animation: none !important; }
+    .ether:hover:not([disabled]) { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <p class="eyebrow">The Lumen Letter</p>
+    <h1>Slow stories for quiet mornings.</h1>
+    <p class="lede">One short essay on light, design and attention, every other Sunday. No tracking pixels, no noise.</p>
+
+    <form id="form" novalidate>
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@studio.com" aria-describedby="err">
+      <div class="err" id="err" role="alert"></div>
+      <div class="row">
+        <button class="ether" id="go" type="submit" data-state="idle">
+          <svg class="spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0c.6 4.6 3.4 7.4 8 8-4.6.6-7.4 3.4-8 8-.6-4.6-3.4-7.4-8-8 4.6-.6 7.4-3.4 8-8z" fill="currentColor"/></svg>
+          <span class="label" id="lbl">Subscribe</span>
+        </button>
+        <button class="ghost" id="save" type="button" aria-pressed="false">Save for later</button>
+      </div>
+    </form>
+
+    <p class="status" id="status" aria-live="polite">Join 12,408 readers.</p>
+    <div class="meta"><span>Subscribers <strong id="count">12,408</strong></span><span>Saved <strong id="saved">0</strong></span></div>
+  </main>
+
+<script>
+(function () {
+  var form = document.getElementById('form'), btn = document.getElementById('go'),
+      lbl = document.getElementById('lbl'), email = document.getElementById('email'),
+      err = document.getElementById('err'), status = document.getElementById('status'),
+      count = document.getElementById('count'), save = document.getElementById('save'),
+      savedEl = document.getElementById('saved');
+  var n = 12408, saved = 0, timer;
+
+  // light follows the pointer across the button
+  btn.addEventListener('pointermove', function (e) {
+    var r = btn.getBoundingClientRect();
+    btn.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    btn.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+  btn.addEventListener('pointerleave', function () {
+    btn.style.setProperty('--mx', '50%'); btn.style.setProperty('--my', '50%');
+  });
+
+  function set(state, text) { btn.dataset.state = state; lbl.textContent = text; btn.disabled = state === 'loading'; }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (btn.dataset.state === 'done') {           // second click resets
+      set('idle', 'Subscribe'); email.value = ''; status.textContent = 'Join ' + n.toLocaleString() + ' readers.'; return;
+    }
+    var v = email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+      email.setAttribute('aria-invalid', 'true');
+      err.textContent = 'Please enter a valid email, like you@studio.com.';
+      email.focus(); return;
+    }
+    email.removeAttribute('aria-invalid'); err.textContent = '';
+    set('loading', 'Sending light…');
+    status.textContent = 'Adding ' + v + '…';
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      n += 1; count.textContent = n.toLocaleString();
+      set('done', 'You are in');
+      status.textContent = 'Welcome. First letter arrives this Sunday. Click again to reset.';
+    }, 1600);
+  });
+
+  email.addEventListener('input', function () {
+    if (email.getAttribute('aria-invalid')) { email.removeAttribute('aria-invalid'); err.textContent = ''; }
+  });
+
+  save.addEventListener('click', function () {
+    var on = save.getAttribute('aria-pressed') !== 'true';
+    save.setAttribute('aria-pressed', String(on));
+    save.textContent = on ? 'Saved' : 'Save for later';
+    saved += on ? 1 : -1; savedEl.textContent = saved;
+  });
+})();
+</script>
+</body>
+</html>

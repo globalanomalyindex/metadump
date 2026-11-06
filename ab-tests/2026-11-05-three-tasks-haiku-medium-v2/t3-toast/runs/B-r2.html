@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel status toast</title>
+<style>
+:root{
+  color-scheme: dark;
+  --page:#121212;
+  --card:#1F1B24;
+  --line:rgba(255,255,255,.10);
+  --text:#E5E5E5;
+  --muted:#9CA3AF;
+  --pending:#4B5563;
+  --ok:#22C55E;
+  --warn:#F59E0B;
+  --ease-out:cubic-bezier(0.22,1,0.36,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0;background:var(--page);color:var(--text)}
+body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;overflow-x:hidden}
+button{font:inherit;color:inherit}
+
+/* demo page */
+.page{max-width:720px;margin:0 auto;padding:24px 16px 240px}
+h1{font-size:20px;margin:0 0 4px}
+h2{font-size:14px;margin:0 0 10px}
+.muted{color:var(--muted)}
+.orders{list-style:none;padding:0;margin:16px 0 24px;display:grid;gap:8px}
+.order{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.o-name{font-weight:600}
+.o-sub{font-size:12px;color:var(--muted)}
+.pill{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:rgba(34,197,94,.45)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.btn{min-height:28px;padding:4px 10px;background:transparent;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:12px}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.06)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.icon:focus-visible,.reopen:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:13px}
+.readout dt{color:var(--muted)}
+.readout dd{margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* the toast */
+.toast{
+  position:fixed;right:16px;bottom:16px;
+  width:300px;max-width:calc(100vw - 32px);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+  overflow:hidden;
+  z-index:10;
+}
+.row{
+  display:flex;align-items:center;gap:10px;
+  width:100%;min-height:52px;padding:8px 12px;
+  background:none;border:0;text-align:left;cursor:pointer;
+}
+.row:hover{background:rgba(255,255,255,.04)}
+.row:focus-visible{outline:2px solid var(--text);outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--text)}
+.dot[data-tone="ok"]{background:var(--ok)}
+.dot[data-tone="warn"]{background:var(--warn)}
+.dot[data-tone="progress"]{background:var(--text)}
+.row-text{flex:1;min-width:0;display:flex;flex-direction:column}
+.stage{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.chev{width:14px;height:14px;flex:none;color:var(--muted);transition:transform 200ms var(--ease-out)}
+.toast.open .chev{transform:rotate(180deg)}
+
+.flash{padding:0 12px 10px;font-size:12px;color:var(--muted)}
+.bar{display:block;height:2px;margin-top:6px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--muted)}
+
+.panel{
+  display:grid;grid-template-rows:0fr;visibility:hidden;
+  transition:grid-template-rows 180ms ease-in,visibility 0s linear 180ms;
+}
+.toast.open .panel{
+  grid-template-rows:1fr;visibility:visible;
+  transition:grid-template-rows 300ms var(--ease-out),visibility 0s;
+}
+.panel > .inner{min-height:0;overflow:hidden}
+.panel .body{padding:0 0 4px}
+
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:4px 8px 8px 12px}
+.pkg{font-weight:600}
+.trk{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.icon{width:28px;height:28px;flex:none;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--muted)}
+.icon:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.icon svg{width:14px;height:14px}
+
+.exc{margin:0 12px 10px;padding:10px;border:1px solid rgba(245,158,11,.5);border-radius:8px;background:rgba(245,158,11,.07)}
+.exc.seen{border-color:var(--line);background:none}
+.exc-label{color:var(--warn);font-weight:600;font-size:12px}
+.exc.seen .exc-label{color:var(--muted)}
+.exc-detail{margin:2px 0 8px}
+.exc-actions{display:flex;flex-wrap:wrap;gap:6px}
+.exc-note{margin-top:8px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.snz{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+
+.steps{list-style:none;margin:0;padding:4px 12px 2px}
+.step{position:relative;display:grid;grid-template-columns:20px 1fr;gap:10px;padding:0 0 12px}
+.step::after{content:"";position:absolute;left:9px;top:24px;bottom:0;border-left:2px solid var(--muted)}
+.step.seg-dash::after{border-left-style:dashed;border-left-color:var(--pending)}
+.step:last-child::after{display:none}
+.mark{position:relative;width:20px;height:20px;border-radius:50%;box-sizing:border-box;border:2px solid var(--pending);background:var(--card);display:flex;align-items:center;justify-content:center}
+.step.done .mark{background:var(--ok);border-color:var(--ok)}
+.step.done .mark::after{content:"";width:5px;height:9px;border:solid var(--page);border-width:0 2px 2px 0;transform:translate(-1px,-1px) rotate(45deg)}
+.step.current .mark{border-color:var(--text)}
+.step.current .mark::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--text)}
+.lbl{font-size:13px}
+.step.current .lbl{font-weight:600}
+.step.pending .lbl{color:var(--muted)}
+.meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.exp{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-right:4px}
+.foot{padding:4px 12px 12px;font-size:12px;color:var(--muted)}
+
+.reopen{position:fixed;right:16px;bottom:16px;z-index:9;min-height:28px;padding:4px 12px;background:var(--card);border:1px solid var(--line);border-radius:999px;cursor:pointer;font-size:12px}
+
+/* reduced motion: keep every state change, drop the travel and the timing */
+@media (prefers-reduced-motion: reduce){
+  .panel,.panel.open,.toast.open .panel,.chev{transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <h1>Orders</h1>
+  <p class="muted">Your parcel status sits in the corner. Open it to see the steps.</p>
+
+  <ul class="orders">
+    <li class="order">
+      <div><div class="o-name">Ceramic pour-over set</div><div class="o-sub">Order A-20417 &middot; placed 2 Nov</div></div>
+      <span class="pill" id="orderPill">Handed to the carrier</span>
+    </li>
+    <li class="order">
+      <div><div class="o-name">Linen throw, oat</div><div class="o-sub">Order A-20391 &middot; delivered 28 Oct</div></div>
+      <span class="pill ok">Delivered</span>
+    </li>
+    <li class="order">
+      <div><div class="o-name">Desk lamp, brass</div><div class="o-sub">Order A-20356 &middot; placed 30 Oct</div></div>
+      <span class="pill">Packed</span>
+    </li>
+  </ul>
+
+  <section class="card" aria-labelledby="ctlTitle">
+    <h2 id="ctlTitle">Demo controls</h2>
+    <div class="ctl">
+      <button class="btn" id="btnNext" type="button">Next update</button>
+      <button class="btn" id="btnExc" type="button">Trigger exception</button>
+      <button class="btn" id="btnClear" type="button">Clear exception</button>
+      <button class="btn" id="btnReset" type="button">Reset demo</button>
+    </div>
+    <dl class="readout">
+      <dt>Stage</dt><dd id="rdStage"></dd>
+      <dt>Steps reached</dt><dd id="rdReached"></dd>
+      <dt>Exception</dt><dd id="rdExc"></dd>
+      <dt>Panel</dt><dd id="rdPanel"></dd>
+      <dt>Dismissed</dt><dd id="rdDismissed"></dd>
+    </dl>
+  </section>
+</main>
+
+<aside class="toast" id="toast" aria-label="Parcel status for Ceramic pour-over set">
+  <button class="row" id="rowBtn" type="button" aria-expanded="false" aria-controls="panel">
+    <span class="dot" id="dot" data-tone="progress"></span>
+    <span class="row-text">
+      <span class="stage" id="stage">Handed to the carrier</span>
+      <span class="sub" id="sub">Ceramic pour-over set</span>
+    </span>
+    <span class="count" id="count">3 of 5</span>
+    <svg class="chev" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <div class="flash" id="flash" hidden>
+    <span id="flashText"></span>
+    <span class="bar"><i id="flashBar"></i></span>
+  </div>
+
+  <div class="panel" id="panel" inert>
+    <div class="inner">
+      <div class="body">
+        <div class="head">
+          <div>
+            <div class="pkg">Ceramic pour-over set</div>
+            <div class="trk">NX 4831 0957 2216 &middot; Northwind Express</div>
+          </div>
+          <button class="icon" id="dismiss" type="button" aria-label="Dismiss tracking">
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="exc" id="exc" hidden>
+          <div class="exc-label" id="excLabel">Delivery Exception</div>
+          <div class="exc-detail">Held at depot: the address needs a unit number.</div>
+          <div class="exc-actions" id="excActions">
+            <button class="btn" id="actOpen" type="button">Open carrier page</button>
+            <button class="btn" id="actContact" type="button">Contact carrier</button>
+            <button class="btn" id="actSeen" type="button">Mark seen, keep watching</button>
+            <button class="btn" id="actSnooze" type="button">Snooze 1 hour</button>
+          </div>
+          <div class="snz" id="snz" hidden>
+            <span>Snoozed for 1 hour. It comes back then.</span>
+            <button class="btn" id="actShow" type="button">Show now</button>
+          </div>
+          <div class="exc-note" id="excNote" hidden></div>
+        </div>
+
+        <ol class="steps" id="steps">
+          <li class="step done seg-solid"><span class="mark"></span><div><div class="lbl">Ordered</div><div class="meta"></div></div></li>
+          <li class="step done seg-solid"><span class="mark"></span><div><div class="lbl">Packed</div><div class="meta"></div></div></li>
+          <li class="step current seg-dash"><span class="mark"></span><div><div class="lbl">Handed to the carrier</div><div class="meta"></div></div></li>
+          <li class="step pending seg-dash"><span class="mark"></span><div><div class="lbl">Out for delivery</div><div class="meta"></div></div></li>
+          <li class="step pending seg-dash"><span class="mark"></span><div><div class="lbl">Delivered</div><div class="meta"></div></div></li>
+        </ol>
+
+        <div class="foot" id="foot"></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<button class="reopen" id="reopen" type="button" hidden>Show tracking</button>
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var FLASH_MS = 4000;
+
+  // Five milestone words in order. "when" is the time a step was reached;
+  // "expected" is the window shown on a step still to come.
+  var STEP_LABELS = ['Ordered', 'Packed', 'Handed to the carrier', 'Out for delivery', 'Delivered'];
+  var REACHED = ['Mon 2 Nov, 09:12', 'Mon 2 Nov, 16:40', 'Tue 3 Nov, 08:05', 'Thu 5 Nov, 07:30', 'Thu 5 Nov, 12:48'];
+  var EXPECTED = [null, null, null, 'Thu 5 Nov', 'Thu 5 Nov, 10:00 to 14:00'];
+  var NOTES = {
+    carrier: 'Carrier tracking page: nxexpress.example/track/NX483109572216',
+    contact: 'Northwind Express: 0800 555 0142, Mon to Sat 08:00 to 20:00. Quote NX 4831 0957 2216.',
+    seen: 'Marked seen. Still tracking this parcel.'
+  };
+  var LAST = STEP_LABELS.length - 1;
+
+  function initialState() {
+    return { current: 2, expanded: false, dismissed: false, flash: null, note: null, exception: null };
+  }
+  var state = initialState();
+
+  function $(id) { return document.getElementById(id); }
+  var toast = $('toast'), rowBtn = $('rowBtn'), panel = $('panel'), dot = $('dot'),
+      stage = $('stage'), sub = $('sub'), count = $('count'), flash = $('flash'),
+      flashText = $('flashText'), flashBar = $('flashBar'), excBox = $('exc'),
+      excLabel = $('excLabel'), excActions = $('excActions'), excNote = $('excNote'),
+      snz = $('snz'), actSeen = $('actSeen'), actSnooze = $('actSnooze'),
+      actContact = $('actContact'), actOpen = $('actOpen'), actShow = $('actShow'),
+      steps = $('steps'), stepEls = Array.prototype.slice.call(steps.querySelectorAll('.step')),
+      foot = $('foot'), live = $('live'), reopen = $('reopen'), orderPill = $('orderPill'),
+      dismissBtn = $('dismiss'), btnNext = $('btnNext'), btnExc = $('btnExc'),
+      btnClear = $('btnClear'), btnReset = $('btnReset'),
+      rdStage = $('rdStage'), rdReached = $('rdReached'), rdExc = $('rdExc'),
+      rdPanel = $('rdPanel'), rdDismissed = $('rdDismissed');
+
+  function announce(msg) {
+    live.textContent = '';
+    setTimeout(function () { live.textContent = msg; }, 30);
+  }
+
+  function render() {
+    var cur = state.current;
+    var delivered = cur === LAST;
+    var exc = state.exception;
+    var alerting = !!exc && !exc.seen && !exc.snoozed;
+    var tone = delivered ? 'ok' : (alerting ? 'warn' : 'progress');
+
+    // closed row
+    toast.classList.toggle('open', state.expanded);
+    toast.hidden = state.dismissed;
+    rowBtn.setAttribute('aria-expanded', String(state.expanded));
+    panel.inert = !state.expanded;
+    dot.setAttribute('data-tone', tone);
+    stage.textContent = STEP_LABELS[cur];
+    count.textContent = (cur + 1) + ' of ' + STEP_LABELS.length;
+    if (exc) {
+      sub.textContent = exc.snoozed ? 'Exception snoozed' : (exc.seen ? 'Exception seen, still tracking' : 'Delivery exception');
+    } else {
+      sub.textContent = 'Ceramic pour-over set';
+    }
+
+    // routine update line, timed by a thin bar
+    if (state.flash) {
+      flash.hidden = false;
+      flashText.textContent = state.flash.text;
+      flashBar.style.width = (state.flash.left / FLASH_MS * 100).toFixed(1) + '%';
+    } else {
+      flash.hidden = true;
+    }
+
+    // exception block
+    excBox.hidden = !exc;
+    if (exc) {
+      excBox.classList.toggle('seen', exc.seen);
+      excLabel.textContent = exc.seen ? 'Delivery Exception (seen)' : 'Delivery Exception';
+      excActions.hidden = exc.snoozed;
+      actSeen.hidden = exc.seen;
+      snz.hidden = !exc.snoozed;
+    }
+    excNote.textContent = NOTES[state.note] || '';
+    excNote.hidden = !state.note;
+
+    // steps
+    stepEls.forEach(function (li, i) {
+      var done = delivered || i < cur;
+      var isCur = !delivered && i === cur;
+      li.classList.toggle('done', done);
+      li.classList.toggle('current', isCur);
+      li.classList.toggle('pending', !done && !isCur);
+      li.classList.toggle('seg-dash', i >= cur);
+      var meta = li.querySelector('.meta');
+      meta.textContent = '';
+      if (i <= cur) {
+        meta.textContent = REACHED[i];
+      } else {
+        var tag = document.createElement('span');
+        tag.className = 'exp';
+        tag.textContent = 'Expected';
+        meta.appendChild(tag);
+        meta.appendChild(document.createTextNode(EXPECTED[i]));
+      }
+    });
+    foot.textContent = 'Last change: ' + REACHED[cur];
+
+    // controls, the order list, the readout
+    btnNext.disabled = delivered;
+    btnExc.disabled = delivered || alerting;
+    btnClear.disabled = !exc;
+    orderPill.textContent = STEP_LABELS[cur];
+    orderPill.classList.toggle('ok', delivered);
+    reopen.hidden = !state.dismissed;
+
+    rdStage.textContent = STEP_LABELS[cur];
+    rdReached.textContent = (cur + 1) + ' of ' + STEP_LABELS.length;
+    rdExc.textContent = !exc ? 'none' : (exc.snoozed ? 'snoozed' : (exc.seen ? 'seen, still tracking' : 'active'));
+    rdPanel.textContent = state.expanded ? 'open' : 'closed';
+    rdDismissed.textContent = state.dismissed ? 'yes' : 'no';
+  }
+
+  function advance() {
+    if (state.current >= LAST) return;
+    state.current += 1;
+    state.flash = { left: FLASH_MS, text: 'Updated: ' + STEP_LABELS[state.current] + ', ' + REACHED[state.current] };
+    announce('Status: ' + STEP_LABELS[state.current]);
+    render();
+  }
+
+  // Timer for the routine update line. It pauses while the pointer or keyboard
+  // focus is on the toast, and while the document is hidden.
+  var hovering = false, focusInside = false, last = performance.now();
+  function frame(now) {
+    var dt = Math.min(now - last, 100);
+    last = now;
+    if (state.flash && !hovering && !focusInside && !document.hidden) {
+      state.flash.left -= dt;
+      if (state.flash.left <= 0) {
+        state.flash = null;
+        render();
+      } else {
+        flashBar.style.width = (state.flash.left / FLASH_MS * 100).toFixed(1) + '%';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // closed row toggles the panel
+  rowBtn.addEventListener('click', function () {
+    state.expanded = !state.expanded;
+    if (!state.expanded) state.note = null;
+    render();
+  });
+
+  toast.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.expanded) {
+      state.expanded = false;
+      state.note = null;
+      render();
+      rowBtn.focus();
+    }
+  });
+  toast.addEventListener('mouseenter', function () { hovering = true; });
+  toast.addEventListener('mouseleave', function () { hovering = false; });
+  toast.addEventListener('focusin', function () { focusInside = true; });
+  toast.addEventListener('focusout', function (e) {
+    if (!toast.contains(e.relatedTarget)) focusInside = false;
+  });
+
+  dismissBtn.addEventListener('click', function () {
+    state.dismissed = true;
+    state.expanded = false;
+    state.note = null;
+    render();
+    reopen.focus();
+    announce('Tracking hidden. Show tracking brings it back.');
+  });
+  reopen.addEventListener('click', function () {
+    state.dismissed = false;
+    render();
+    rowBtn.focus();
+    announce('Tracking shown.');
+  });
+
+  // exception next steps
+  actOpen.addEventListener('click', function () {
+    state.note = 'carrier';
+    render();
+    announce('Carrier page address shown.');
+  });
+  actContact.addEventListener('click', function () {
+    state.note = state.note === 'contact' ? null : 'contact';
+    render();
+  });
+  actSeen.addEventListener('click', function () {
+    if (!state.exception) return;
+    state.exception.seen = true;
+    state.note = 'seen';
+    render();
+    announce('Marked seen. Still tracking.');
+  });
+  actSnooze.addEventListener('click', function () {
+    if (!state.exception) return;
+    state.exception.snoozed = true;
+    state.note = null;
+    render();
+    announce('Exception snoozed for one hour.');
+  });
+  actShow.addEventListener('click', function () {
+    if (!state.exception) return;
+    state.exception.snoozed = false;
+    render();
+    announce('Exception showing again.');
+  });
+
+  // demo controls
+  btnNext.addEventListener('click', advance);
+  btnExc.addEventListener('click', function () {
+    state.exception = { seen: false, snoozed: false };
+    state.note = null;
+    state.expanded = true;
+    state.dismissed = false;
+    render();
+    announce('Delivery exception: held at depot. The address needs a unit number.');
+  });
+  btnClear.addEventListener('click', function () {
+    state.exception = null;
+    state.note = null;
+    render();
+    announce('Exception cleared.');
+  });
+  btnReset.addEventListener('click', function () {
+    state = initialState();
+    render();
+    announce('Demo reset.');
+  });
+
+  render();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

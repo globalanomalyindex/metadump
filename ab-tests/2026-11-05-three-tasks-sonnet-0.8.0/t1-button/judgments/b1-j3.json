@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j3","scores":{
+"W":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Slow fog-like bezier gradient bloom with rising motes feels ethereal, though the pale white rest state is low-affordance and the long 1-2.4s timings plus blur layers are heavier."},
+"X":{"dreamlike":4,"practical":9,"motion":6,"craft":7,"overall":6,"note":"Clean dark button with a soft glow and light pass, fast 180ms leave and good focus and reduced motion, but the hover is too subtle to read as dreamlike."},
+"Y":{"dreamlike":3,"practical":9,"motion":6,"craft":7,"overall":5,"note":"Well-engineered, realistic hero page with solid states and documented curves, but the hover change is barely visible and not ethereal."},
+"Z":{"dreamlike":9,"practical":7,"motion":8,"craft":9,"overall":9,"note":"Pastel iridescent gradient drift with a spinning sparkle and soft overshoot is the most dreamlike and polished, with legible dark label, focus ring and reduced-motion handling."}},
+"ranking":["Z","W","X","Y"]}

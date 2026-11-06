@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j1", "scores": {
+"W": {"dreamlike": 5, "practical": 8, "motion": 6, "craft": 8, "overall": 6, "note": "Cream-on-navy hero is well composed and the glow is a cheap pre-blurred layer with a 1.2-overshoot lift and a 700ms tail, but the glow is faint, the hover capture shows the disabled Saturday button instead of an enabled one, and the lab copy (\"Rebound ... a different reading\") is confusing."},
+"X": {"dreamlike": 7, "practical": 6, "motion": 7, "craft": 7, "overall": 7, "note": "Four distinct curves drive a violet-rose aura that breathes while hovered plus a 1.2s sheen sweep over a lavender palette, which reads dreamy, though the infinite aura animation and the glossy sweep cost more and the Save pills are small on tiles."},
+"Y": {"dreamlike": 5, "practical": 9, "motion": 6, "craft": 7, "overall": 7, "note": "Best-practice build: a 240ms ease-land face, 680ms ease-tail glow, hover gated to hover-capable pointers, keyboard parity at half lift, a real reduced-motion path and a visible dreamlike toggle, but the violet glow is restrained and the duplicated id attribute and demo lab add clutter."},
+"Z": {"dreamlike": 9, "practical": 6, "motion": 7, "craft": 8, "overall": 8, "note": "The gradient that slides from violet to rose with a 1.4s drift, a sky-and-rose halo, a text glow and a heart bloom gives the most ethereal hover, while animating letter-spacing, background-position and filter makes it heavier to render and the focus state has no lift."}
+},
+"ranking": ["Z", "X", "Y", "W"]}

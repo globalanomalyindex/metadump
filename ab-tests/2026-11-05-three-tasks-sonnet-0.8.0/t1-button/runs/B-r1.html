@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Observatory - Dreamlike Button</title>
+<style>
+:root{
+  --ink:#1d2140;
+  --ink-soft:#4b5078;
+  --bg-a:#f4f1fb;
+  --bg-b:#e4e9fa;
+  --glow:200 190 255;           /* one pale hue family */
+  --btn-fill:#2a2f5e;
+  --btn-label:#ffffff;
+  /* motion tokens */
+  --drift:cubic-bezier(0.23,1,0.32,1);       /* long tail: fast arrival, lingering settle */
+  --bloom:cubic-bezier(0.165,0.84,0.44,1);   /* even brightening, no flash */
+  --leave:cubic-bezier(0.4,0,0.6,1);         /* departure gets out of the way */
+  --t-enter:380ms;
+  --t-bloom:420ms;
+  --t-leave:180ms;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  min-height:100vh;
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--ink);
+  background:radial-gradient(1200px 700px at 20% -10%,#fbf8ff 0,transparent 60%),
+             radial-gradient(900px 600px at 90% 110%,#d9e2fb 0,transparent 60%),
+             linear-gradient(160deg,var(--bg-a),var(--bg-b));
+}
+header{display:flex;justify-content:space-between;align-items:center;max-width:960px;margin:0 auto;padding:24px 20px}
+.brand{font-weight:600;letter-spacing:.04em}
+nav a{color:var(--ink-soft);text-decoration:none;margin-left:20px;font-size:.95rem}
+nav a:hover{color:var(--ink)}
+main{max-width:960px;margin:0 auto;padding:40px 20px 80px;display:grid;gap:56px}
+.hero{max-width:560px}
+.eyebrow{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:.4em 0 .5em;font-weight:600;letter-spacing:-.02em}
+.lede{color:var(--ink-soft);margin:0 0 32px}
+
+form{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+input[type=email]{
+  flex:1 1 230px;min-width:0;height:52px;padding:0 18px;border-radius:999px;
+  border:1px solid #b9bde0;background:rgba(255,255,255,.7);color:var(--ink);font:inherit;
+}
+input[type=email]:focus-visible{outline:2px solid #5b5fc7;outline-offset:2px}
+
+/* ---------- the button ---------- */
+.btn{
+  position:relative;isolation:isolate;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:52px;min-width:180px;padding:0 30px;
+  border:0;border-radius:999px;cursor:pointer;
+  font:600 1rem/1 inherit;font-family:inherit;letter-spacing:.02em;
+  color:var(--btn-label);background-color:var(--btn-fill);
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  /* leave: shorter, ease-in-leaning */
+  transform:translateY(0);
+  transition:transform var(--t-leave) var(--leave);
+}
+/* surface: dense centre that thins toward the rim */
+.btn::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:-2;
+  background:radial-gradient(120% 140% at 50% 35%,#3a407f 0,var(--btn-fill) 55%,#242852 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 1px 2px rgba(29,33,64,.18);
+}
+/* glow layer: fixed blur, revealed only by opacity */
+.btn::after{
+  content:"";position:absolute;inset:-9px;border-radius:inherit;z-index:-3;
+  background:radial-gradient(closest-side,rgb(var(--glow)/.95),rgb(var(--glow)/.55) 60%,rgb(var(--glow)/0) 100%);
+  filter:blur(14px);
+  opacity:0;
+  transition:opacity var(--t-leave) var(--leave);
+  pointer-events:none;
+}
+/* one pale light pass across the face */
+.btn .sheen{
+  position:absolute;inset:0;border-radius:inherit;z-index:-1;overflow:hidden;pointer-events:none;
+}
+.btn .sheen::before{
+  content:"";position:absolute;top:-20%;bottom:-20%;left:0;width:55%;
+  background:linear-gradient(100deg,transparent 0,rgb(255 255 255/.28) 50%,transparent 100%);
+  transform:translateX(-130%) skewX(-14deg);
+  opacity:0;
+  transition:opacity var(--t-leave) var(--leave);
+}
+.btn .label{position:relative;display:inline-flex;align-items:center;gap:10px}
+.btn .dot{
+  width:8px;height:8px;border-radius:50%;background:rgb(var(--glow));
+  transition:transform var(--t-leave) var(--leave);
+}
+
+/* enter state shared by hover, focus-visible */
+@media (hover:hover){
+  .btn:hover:not(:disabled){
+    transform:translateY(-3px);
+    transition:transform var(--t-enter) var(--drift);
+  }
+  .btn:hover:not(:disabled)::after{opacity:.85;transition:opacity var(--t-bloom) var(--bloom)}
+  .btn:hover:not(:disabled) .sheen::before{
+    opacity:1;
+    animation:pass 900ms var(--drift) 1 both;
+  }
+  .btn:hover:not(:disabled) .dot{transform:scale(1.35);transition:transform var(--t-enter) var(--drift)}
+}
+.btn:focus-visible{
+  outline:2px solid #fff;outline-offset:3px;
+  box-shadow:0 0 0 5px #4a4fb5;
+  transform:translateY(-3px);
+  transition:transform var(--t-enter) var(--drift);
+}
+.btn:focus-visible::after{opacity:.85;transition:opacity var(--t-bloom) var(--bloom)}
+.btn:focus-visible .sheen::before{opacity:1;animation:pass 900ms var(--drift) 1 both}
+.btn:focus-visible .dot{transform:scale(1.35);transition:transform var(--t-enter) var(--drift)}
+
+/* press: settles back down, glow tightens */
+.btn:active:not(:disabled){
+  transform:translateY(0) scale(.98);
+  transition:transform 120ms var(--leave);
+}
+.btn:active:not(:disabled)::after{opacity:1;transition:opacity 120ms var(--leave)}
+
+@keyframes pass{
+  from{transform:translateX(-130%) skewX(-14deg)}
+  to{transform:translateX(330%) skewX(-14deg)}
+}
+
+/* busy and done states */
+.btn[data-state=busy]{cursor:progress}
+.btn[data-state=busy] .dot{animation:breathe 1.1s var(--drift) infinite}
+@keyframes breathe{0%,100%{opacity:.4}50%{opacity:1}}
+.btn[data-state=done]{cursor:default}
+.btn[data-state=done]::before{background:radial-gradient(120% 140% at 50% 35%,#3f6f78 0,#2d5a63 55%,#204650 100%)}
+.btn:disabled{cursor:default}
+
+/* touch / no-hover: tap gets a pressed response only, no stuck hover */
+@media (hover:none){
+  .btn:active{transform:scale(.97);transition:transform 120ms var(--leave)}
+  .btn:active::after{opacity:.8;transition:opacity 120ms var(--leave)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .btn,.btn:hover,.btn:focus-visible,.btn:active{transform:none !important;transition:none}
+  .btn .sheen::before,.btn:hover .sheen::before,.btn:focus-visible .sheen::before{animation:none !important;opacity:0 !important}
+  .btn .dot,.btn[data-state=busy] .dot{animation:none;transform:none !important}
+  /* feedback stays, as a colour/opacity change with no movement */
+  .btn::after{transition:opacity 1ms}
+  .btn:hover:not(:disabled)::after,.btn:focus-visible::after{opacity:.6}
+}
+
+/* ---------- sample content ---------- */
+.status{min-height:1.5em;margin:14px 0 0;color:var(--ink-soft);font-size:.95rem}
+.status b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.card{background:rgba(255,255,255,.6);border:1px solid #d3d6f0;border-radius:18px;padding:22px}
+.card h3{margin:0 0 6px;font-size:1.05rem}
+.card p{margin:0;color:var(--ink-soft);font-size:.95rem}
+.panel{background:rgba(255,255,255,.55);border:1px solid #d3d6f0;border-radius:18px;padding:22px}
+.panel h2{margin:0 0 4px;font-size:1.1rem}
+.readout{display:flex;flex-wrap:wrap;gap:8px 24px;font:.85rem/1.4 ui-monospace,Menlo,monospace;color:var(--ink-soft);margin-top:14px}
+.readout span b{color:var(--ink);font-weight:600}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.btn.alt{--btn-fill:#3b3f78}
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">Lumen Observatory</span>
+  <nav><a href="#visit">Visit</a><a href="#sky">Tonight's sky</a><a href="#about">About</a></nav>
+</header>
+
+<main>
+  <section class="hero" id="visit">
+    <div class="eyebrow">Dark-sky evenings, spring season</div>
+    <h1>Watch the Milky Way come into focus.</h1>
+    <p class="lede">Guided telescope nights on the hilltop, limited to 24 guests. Leave your email and we will hold a place for the next clear evening.</p>
+
+    <form id="join" novalidate>
+      <input id="email" type="email" placeholder="you@example.com" aria-label="Email address" autocomplete="email" required>
+      <button class="btn" id="joinBtn" type="submit" data-state="rest">
+        <span class="sheen" aria-hidden="true"></span>
+        <span class="label"><span class="dot" aria-hidden="true"></span><span id="joinLabel">Reserve my place</span></span>
+      </button>
+    </form>
+    <p class="status" id="status" role="status" aria-live="polite"><b id="count">137</b> guests already on the list.</p>
+  </section>
+
+  <section class="grid" id="sky" aria-label="Highlights">
+    <div class="card"><h3>Saturn's rings</h3><p>Visible from 9:40 pm through the 14-inch refractor.</p></div>
+    <div class="card"><h3>Orion Nebula</h3><p>A slow look at the stellar nursery, with warm drinks.</p></div>
+    <div class="card"><h3>Meteor watch</h3><p>Blankets provided. Bring a thermos and patience.</p></div>
+  </section>
+
+  <section class="panel" id="about">
+    <h2>Try the states</h2>
+    <p style="margin:0;color:var(--ink-soft)">Hover, tab to, or press the button. The readout reports what it is doing.</p>
+    <div class="row">
+      <button class="btn alt" id="demoBtn" type="button">
+        <span class="sheen" aria-hidden="true"></span>
+        <span class="label"><span class="dot" aria-hidden="true"></span>Light the lamp</span>
+      </button>
+      <span id="lamp" aria-live="polite">Lamp is off.</span>
+    </div>
+    <div class="readout" aria-live="off">
+      <span>state: <b id="rState">rest</b></span>
+      <span>hovers: <b id="rHover">0</b></span>
+      <span>presses: <b id="rPress">0</b></span>
+      <span>enter: <b>380ms cubic-bezier(.23,1,.32,1)</b></span>
+      <span>glow: <b>420ms cubic-bezier(.165,.84,.44,1)</b></span>
+      <span>leave: <b>180ms cubic-bezier(.4,0,.6,1)</b></span>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var form=document.getElementById('join'),
+      email=document.getElementById('email'),
+      btn=document.getElementById('joinBtn'),
+      label=document.getElementById('joinLabel'),
+      status=document.getElementById('status'),
+      count=137;
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(btn.dataset.state==='busy'||btn.dataset.state==='done')return;
+    var v=email.value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){
+      status.textContent='Please enter a valid email address.';
+      email.setAttribute('aria-invalid','true');
+      email.focus();return;
+    }
+    email.removeAttribute('aria-invalid');
+    btn.dataset.state='busy';btn.setAttribute('aria-busy','true');
+    label.textContent='Saving your place';
+    setTimeout(function(){
+      count++;
+      btn.dataset.state='done';btn.removeAttribute('aria-busy');
+      label.textContent='You are on the list';
+      status.innerHTML='Saved. <b>'+count+'</b> guests are on the list, including '+v.replace(/</g,'&lt;')+'.';
+      btn.disabled=true;
+      setTimeout(function(){
+        btn.disabled=false;btn.dataset.state='rest';
+        label.textContent='Reserve my place';email.value='';
+      },4000);
+    },900);
+  });
+
+  var demo=document.getElementById('demoBtn'),
+      lamp=document.getElementById('lamp'),
+      rState=document.getElementById('rState'),
+      rHover=document.getElementById('rHover'),
+      rPress=document.getElementById('rPress'),
+      hovers=0,presses=0,on=false,isHover=false,isFocus=false,isDown=false;
+
+  function render(){
+    rState.textContent=isDown?'pressed':isFocus?'focus-visible':isHover?'hover':'rest';
+  }
+  demo.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch'){isHover=true;hovers++;rHover.textContent=hovers;render();}});
+  demo.addEventListener('pointerleave',function(){isHover=false;isDown=false;render();});
+  demo.addEventListener('pointerdown',function(){isDown=true;render();});
+  demo.addEventListener('pointerup',function(){isDown=false;render();});
+  demo.addEventListener('focus',function(){isFocus=demo.matches(':focus-visible');render();});
+  demo.addEventListener('blur',function(){isFocus=false;render();});
+  demo.addEventListener('click',function(){
+    presses++;rPress.textContent=presses;on=!on;
+    lamp.textContent=on?'Lamp is on.':'Lamp is off.';
+    demo.lastElementChild.lastChild.textContent=on?'Dim the lamp':'Light the lamp';
+  });
+})();
+</script>
+</body>
+</html>

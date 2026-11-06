@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"compact":8,"collapsible":7,"tracking":7,"dark":7,"usability":6,"craft":6,"overall":6,"note":"Tidy pill with segmented progress and ETA, but the opened panel crams tiny buttons, a dim timeline and a visibly clipped bottom."},
+"X":{"compact":8,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":7,"overall":7,"note":"Clean teal-on-slate toast with clear status, ETA, carrier, number and full timeline, though collapsed state lacks the tracking number."},
+"Y":{"compact":9,"collapsible":8,"tracking":9,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Very compact collapsed card with ETA window and progress bar, and the open view packs carrier, number, copy, timeline with locations and actions at a readable size."},
+"Z":{"compact":6,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":8,"overall":7,"note":"Polished multi-package pill with tabs, switch and ETA, but the open panel is crowded and the timeline is cut off at the fold."}},
+"ranking":["Y","X","Z","W"]}

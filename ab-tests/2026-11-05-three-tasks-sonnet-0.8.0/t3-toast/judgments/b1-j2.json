@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"compact":7,"collapsible":7,"tracking":8,"dark":7,"usability":7,"craft":6,"overall":6,"note":"Pill collapses nicely with dismiss and status announcements, but the ETA is truncated when collapsed and the opened header row has an overlapping, cramped tracking-number line."},
+"X":{"compact":8,"collapsible":8,"tracking":7,"dark":8,"usability":6,"craft":8,"overall":8,"note":"Very small collapsed bar with progress strip and a polished opened timeline with ETA, carrier and tracking tail, though it lacks a live region and a clear next-action line and adds an unneeded package select."},
+"Y":{"compact":6,"collapsible":7,"tracking":7,"dark":8,"usability":7,"craft":7,"overall":7,"note":"Clean teal-on-dark with progress bar, step count, ETA time and right-aligned timestamps, but empty padding at the bottom when opened and no tracking number or carrier shown."},
+"Z":{"compact":7,"collapsible":7,"tracking":8,"dark":7,"usability":7,"craft":6,"overall":6,"note":"Covers status, carrier link, number, timeline and a no-action note in a tight panel, but the collapsed ETA is truncated and the footer buttons wrap awkwardly."}},
+"ranking":["X","Y","Z","W"]}

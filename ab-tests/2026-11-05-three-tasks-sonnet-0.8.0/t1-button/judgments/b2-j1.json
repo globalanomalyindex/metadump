@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j1","scores":{
+"W":{"dreamlike":4,"practical":9,"motion":6,"craft":8,"overall":6,"note":"Polished, accessible and cheap (opacity-only glow, focus mirrors hover, reduced motion), but the hover is a faint glow and sheen pass that barely reads as ethereal, and the resting sheen band looks like a rendering artifact."},
+"X":{"dreamlike":9,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Slow multi-layer bloom with pointer-following mist, halo breathing and sheen on four distinct curves is the most ethereal, with good focus ring and reduced motion, though 1-2s timings and animated blur filters cost some practicality."},
+"Y":{"dreamlike":6,"practical":9,"motion":7,"craft":7,"overall":7,"note":"Clean dark UI where the hover lifts and blooms with a soft violet-to-blue glow over fast 180ms exit and 480ms entry curves; practical and well made but restrained, more polished than dreamy."},
+"Z":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Pastel aura with an overshoot bloom, drifting gradient and letter-spacing breathe feels genuinely dreamlike on a coherent soft page, with focus and reduced-motion handled; the letter-spacing animation and small label are minor practical costs."}},
+"ranking":["X","Z","Y","W"]}

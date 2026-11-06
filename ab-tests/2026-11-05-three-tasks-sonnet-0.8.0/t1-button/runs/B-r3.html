@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halcyon - Sleep sounds, waitlist</title>
+<style>
+  :root {
+    --ink: #1b1740;
+    --ink-soft: #4a4577;
+    --page: #eae7fb;
+    --fill: 62, 52, 156;          /* rest fill rgb */
+    --glow: 150, 130, 255;
+    /* curves: each property gets its own */
+    --c-drift: cubic-bezier(0.23, 1, 0.32, 1);     /* long-tail settle, lift */
+    --c-bloom: cubic-bezier(0.165, 0.84, 0.44, 1); /* glow opacity */
+    --c-leave: cubic-bezier(0.4, 0, 0.6, 1);       /* quick release */
+    --c-press: cubic-bezier(0.2, 0, 0, 1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    background:
+      radial-gradient(60rem 36rem at 15% -10%, #d9d2ff 0%, transparent 60%),
+      radial-gradient(50rem 30rem at 95% 10%, #ffe3f1 0%, transparent 55%),
+      var(--page);
+  }
+  .sans { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header, main, footer { max-width: 62rem; margin: 0 auto; padding: 0 1.5rem; }
+  header { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .logo { font-size: 1.25rem; letter-spacing: .04em; }
+  nav a { font: 500 .9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); text-decoration: none; margin-left: 1.5rem; }
+  nav a:hover { color: var(--ink); }
+  nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
+
+  .hero { padding: 4rem 0 2.5rem; max-width: 40rem; }
+  .eyebrow { font: 600 .75rem ui-sans-serif, system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 { font-weight: 400; font-size: clamp(2.3rem, 6vw, 3.8rem); line-height: 1.08; margin: .75rem 0 1rem; }
+  .lede { font: 1.1rem/1.6 ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); margin: 0 0 2rem; }
+
+  .cta-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+  /* ---------- the button ---------- */
+  .btn {
+    position: relative; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+    min-height: 3rem; padding: .8rem 1.75rem;
+    font: 600 1rem/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .01em; color: #fff;
+    background: rgba(var(--fill), .86);
+    border: 0; border-radius: 999px; cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35);   /* edge light; no shadow at rest */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    /* leave: short, steeper */
+    transition:
+      transform 180ms var(--c-leave),
+      background-color 180ms var(--c-leave);
+    will-change: auto;
+  }
+  /* glow: pre-rendered blurred sibling layer, revealed by opacity only */
+  .btn::before {
+    content: ""; position: absolute; inset: -5px; z-index: -2;
+    border-radius: inherit;
+    background: radial-gradient(120% 160% at 50% 0%, rgba(var(--glow), 1), rgba(255,170,220,.9));
+    filter: blur(20px);
+    opacity: 0;
+    transition: opacity 200ms var(--c-leave);
+  }
+  /* one pale light pass across the face; it rests off to the left */
+  .btn::after {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    border-radius: inherit; overflow: hidden;
+    background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.34) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 180ms var(--c-leave);
+    clip-path: inset(0 round 999px);
+  }
+  .btn > span { position: relative; }
+  .btn svg { width: 1.1em; height: 1.1em; flex: none; }
+
+  .btn--ghost {
+    --fill: 255, 255, 255; --glow: 190, 175, 255;
+    color: var(--ink); background: rgba(255,255,255,.55);
+    box-shadow: inset 0 0 0 1px rgba(62,52,156,.22), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .btn--ghost::after { background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.8) 50%, transparent 70%); }
+
+  /* hover: enter is slow and long-tailed. Only on pointer devices. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      background-color: rgba(var(--fill), .94);
+      transition:
+        transform 380ms var(--c-drift),
+        background-color 380ms var(--c-drift);
+    }
+    .btn--ghost:hover:not(:disabled) { background-color: rgba(255,255,255,.8); }
+    .btn:hover:not(:disabled)::before { opacity: .62; transition: opacity 460ms var(--c-bloom) 40ms; }
+    .btn:hover:not(:disabled)::after  { transform: translateX(120%); transition: transform 900ms var(--c-drift); }
+  }
+  /* keyboard focus gets the same state, ring on top */
+  .btn:focus-visible {
+    transform: translateY(-3px);
+    outline: 3px solid var(--ink); outline-offset: 4px;
+    background-color: rgba(var(--fill), .94);
+    transition: transform 380ms var(--c-drift), background-color 380ms var(--c-drift);
+  }
+  .btn--ghost:focus-visible { background-color: rgba(255,255,255,.8); }
+  .btn:focus-visible::before { opacity: .62; transition: opacity 460ms var(--c-bloom) 40ms; }
+  .btn:focus-visible::after  { transform: translateX(120%); transition: transform 900ms var(--c-drift); }
+
+  /* press: sinks 1px past rest, glow dims; this is touch's response too */
+  .btn:active:not(:disabled) {
+    transform: translateY(1px) scale(.985);
+    transition: transform 100ms var(--c-press), background-color 100ms var(--c-press);
+  }
+  .btn:active:not(:disabled)::before { opacity: .3; transition: opacity 120ms var(--c-press); }
+
+  .btn:disabled { cursor: progress; opacity: .8; }
+  .btn[data-state="done"] { --fill: 28, 112, 96; --glow: 120, 230, 200; }
+
+  .spinner { width: 1em; height: 1em; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; display: none; animation: spin .8s linear infinite; }
+  .btn[data-state="loading"] .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- page content ---------- */
+  .signup { margin-top: 1.25rem; font: .9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); min-height: 1.4em; }
+  .signup strong { color: var(--ink); }
+  .field { display: flex; flex-direction: column; gap: .35rem; margin: 0 0 1.25rem; max-width: 24rem; }
+  .field label { font: 600 .8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); }
+  .field input {
+    font: 1rem ui-sans-serif, system-ui, sans-serif; padding: .8rem 1rem; border-radius: 12px;
+    border: 1px solid rgba(62,52,156,.3); background: rgba(255,255,255,.7); color: var(--ink);
+  }
+  .field input:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .field .err { color: #9b1c3a; font: .8rem ui-sans-serif, system-ui, sans-serif; min-height: 1.1em; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin: 3rem 0; }
+  .card { padding: 1.4rem; border-radius: 20px; background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(62,52,156,.1); }
+  .card h2 { font-size: 1.15rem; font-weight: 400; margin: 0 0 .4rem; }
+  .card p { font: .92rem/1.55 ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); margin: 0; }
+  .plans { display: flex; flex-wrap: wrap; gap: .75rem; margin: 0 0 3rem; }
+  .plan { font: 500 .9rem ui-sans-serif, system-ui, sans-serif; }
+  footer { padding-bottom: 3rem; font: .8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-soft); }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* reduced motion: no lift, no sweep; colour and glow fade stay as a quiet state change */
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .btn:hover, .btn:focus-visible, .btn:active { transform: none !important; }
+    .btn::after { display: none; }
+    .btn, .btn::before { transition-duration: 1ms !important; transition-delay: 0s !important; }
+    .btn::before { transition: opacity 200ms linear !important; }
+    .spinner { animation-duration: 2s; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Halcyon</div>
+  <nav><a href="#how">How it works</a><a href="#plans">Plans</a><a href="#faq">FAQ</a></nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">Early access, autumn cohort</div>
+    <h1>Sleep sounds that follow you down.</h1>
+    <p class="lede">Halcyon layers rain, low tones and slow breathing that fade as you drift off, so the night ends quietly instead of with an alarm. Join the waitlist for early access.</p>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+        <div class="err" id="err" role="alert"></div>
+      </div>
+      <div class="cta-row">
+        <button class="btn" id="join" type="submit" data-state="idle">
+          <i class="spinner" aria-hidden="true"></i>
+          <span id="joinLabel">Join the waitlist</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn btn--ghost" id="preview" type="button" aria-pressed="false">
+          <span id="previewLabel">Preview a night</span>
+        </button>
+      </div>
+    </form>
+    <p class="signup" id="status" aria-live="polite"><strong id="count">2,418</strong> people are waiting for the autumn cohort.</p>
+  </section>
+
+  <section class="cards" id="how">
+    <article class="card"><h2>Fades with you</h2><p>Sounds thin out over 40 minutes as your breathing slows, then stop on their own.</p></article>
+    <article class="card"><h2>Works offline</h2><p>Every soundscape is stored on your phone, so flights and cabins are fine.</p></article>
+    <article class="card"><h2>Gentle mornings</h2><p>A 6-minute sunrise of birdsong replaces the alarm tone.</p></article>
+  </section>
+
+  <section id="plans">
+    <div class="plans">
+      <button class="btn btn--ghost plan" type="button" data-plan="Monthly"><span>Monthly, $6</span></button>
+      <button class="btn btn--ghost plan" type="button" data-plan="Yearly"><span>Yearly, $48</span></button>
+    </div>
+    <p class="signup" id="planStatus" aria-live="polite">No plan chosen yet.</p>
+  </section>
+</main>
+<footer>Hover, Tab to, or press the buttons. Touch devices get the press response only.</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('form');
+  var email = document.getElementById('email');
+  var err = document.getElementById('err');
+  var join = document.getElementById('join');
+  var label = document.getElementById('joinLabel');
+  var count = document.getElementById('count');
+  var status = document.getElementById('status');
+  var n = 2418, joined = false;
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (joined) {                       // second click undoes: state really changes
+      n--; joined = false;
+      join.dataset.state = 'idle'; label.textContent = 'Join the waitlist';
+      count.textContent = n.toLocaleString('en-US');
+      status.innerHTML = 'Removed from the list. <strong id="count">' + n.toLocaleString('en-US') + '</strong> people are waiting.';
+      count = document.getElementById('count');
+      return;
+    }
+    var v = email.value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
+      err.textContent = 'Enter a valid email, like you@example.com.';
+      email.setAttribute('aria-invalid', 'true'); email.focus(); return;
+    }
+    err.textContent = ''; email.removeAttribute('aria-invalid');
+    join.dataset.state = 'loading'; join.disabled = true; label.textContent = 'Saving your place';
+    setTimeout(function () {
+      n++; joined = true; join.disabled = false;
+      join.dataset.state = 'done'; label.textContent = "You're on the list";
+      status.innerHTML = 'Thanks. We will write to <strong>' + v.replace(/[<>&]/g, '') + '</strong>. You are <strong>#' + n.toLocaleString('en-US') + '</strong>. Click again to leave.';
+      count = { textContent: '' };
+    }, 900);
+  });
+
+  var pv = document.getElementById('preview'), pl = document.getElementById('previewLabel');
+  pv.addEventListener('click', function () {
+    var on = pv.getAttribute('aria-pressed') !== 'true';
+    pv.setAttribute('aria-pressed', String(on));
+    pl.textContent = on ? 'Previewing, tap to stop' : 'Preview a night';
+    document.body.style.setProperty('--page', on ? '#d9d6f5' : '#eae7fb');
+  });
+
+  var ps = document.getElementById('planStatus');
+  document.querySelectorAll('.plan').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.plan').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); o.querySelector('span').textContent = o.dataset.plan + (o === b ? ' selected' : (o.dataset.plan === 'Monthly' ? ', $6' : ', $48')); });
+      ps.textContent = b.dataset.plan + ' plan chosen. You will not be charged until launch.';
+    });
+  });
+})();
+</script>
+</body>
+</html>

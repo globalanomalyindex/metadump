@@ -1,0 +1,39 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {
+      "dreamlike": 8,
+      "practical": 9,
+      "motion": 8,
+      "craft": 8,
+      "overall": 9,
+      "note": "Face lifts 3px over 220ms on a cubic-bezier(0.33,1,0.68,1) while a pre-blurred glow fades in over 180ms and lingers on a 620ms (0.22,1,0.36,1) tail, with full focus-visible and reduced-motion handling and a contrast check, so it is the most complete answer to both halves of the brief."
+    },
+    "X": {
+      "dreamlike": 8,
+      "practical": 5,
+      "motion": 6,
+      "craft": 8,
+      "overall": 7,
+      "note": "The aura, sheen, drifting gradient and floating motes are the most dreamlike, but hover durations run 900 to 1600ms, background-position and box-shadow repaint on every frame, and white label text on the sky end of the gradient is weak for legibility."
+    },
+    "Y": {
+      "dreamlike": 6,
+      "practical": 8,
+      "motion": 8,
+      "craft": 7,
+      "overall": 7,
+      "note": "Transform and opacity only, with a 180ms settle lift, a 420ms glow-in and a 700ms tail and a clean reduced-motion fallback, but the pale lavender face makes the primary button look like the ghost and the glow is faint."
+    },
+    "Z": {
+      "dreamlike": 6,
+      "practical": 5,
+      "motion": 6,
+      "craft": 6,
+      "overall": 6,
+      "note": "The gradient drift and halo are pleasant, but letter-spacing animates on hover and reflows neighbouring buttons, reduced-motion users get no hover feedback at all, and the shimmer pseudo-element is not clipped so a white sheen is visible beside the button at rest."
+    }
+  },
+  "ranking": ["W", "X", "Y", "Z"]
+}

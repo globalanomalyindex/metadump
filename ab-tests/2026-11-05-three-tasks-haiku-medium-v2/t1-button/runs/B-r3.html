@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Lantern and Lake: dreamlike reserve button</title>
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --ink:#141b36;
+  --paper:#f4f0e6;
+  --card:#fffdf8;
+  --line:rgba(20,27,54,.14);
+  --muted:#5a6078;
+  --hero-a:#0f1733;
+  --hero-b:#1d2f63;
+  --focus:#2f54d6;
+
+  /* motion scale: 1 = full drift, 0 = reduced (colour and opacity still answer) */
+  --m:1;
+
+  /* custom bezier curves */
+  --ease-land:cubic-bezier(0.33, 1, 0.68, 1);     /* face landing, no overshoot */
+  --ease-tail:cubic-bezier(0.22, 1, 0.36, 1);     /* long glow tail */
+  --ease-float:cubic-bezier(0.34, 1.2, 0.64, 1);  /* lift, return about 1.25 percent */
+
+  /* durations, collapsed to short fades when m = 0 */
+  --t-face:calc(260ms * var(--m) + 120ms);
+  --t-in:calc(420ms * var(--m) + 140ms);
+  --t-tail:calc(700ms * var(--m) + 160ms);
+}
+@media (prefers-reduced-motion: reduce){
+  :root{ --m:0; }
+}
+:root[data-motion="full"]{ --m:1; }
+:root[data-motion="reduced"]{ --m:0; }
+
+/* ---------- page ---------- */
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+.wrap{ max-width:1040px; margin:0 auto; padding:0 16px; }
+.top{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:12px; padding:20px 0; flex-wrap:wrap;
+}
+.brand{ font-weight:700; letter-spacing:.02em; }
+.nav{ display:flex; gap:18px; font-size:.95rem; color:var(--muted); }
+.nav span{ white-space:nowrap; }
+
+.hero{
+  background-color:var(--hero-a);
+  background-image:
+    radial-gradient(900px 420px at 85% -12%, #2c4689 0%, rgba(44,70,137,0) 60%),
+    linear-gradient(160deg, var(--hero-a), var(--hero-b));
+  color:#f6f1e6;
+  border-radius:24px;
+  padding:56px 32px 52px;
+  margin-top:8px;
+}
+.eyebrow{ font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:#aebbe6; margin:0; }
+.hero h1{
+  font-size:clamp(2rem, 5.2vw, 3.3rem);
+  line-height:1.08; letter-spacing:-.01em;
+  font-weight:650; margin:.35em 0 .45em; max-width:16ch;
+}
+.hero p.lede{ max-width:52ch; color:#d6dbef; margin:0 0 30px; }
+.cta{ display:flex; flex-wrap:wrap; gap:26px 20px; align-items:center; }
+.hours{ font-size:.9rem; color:#aebbe6; margin:0; }
+
+.menu-preview{
+  margin:22px 0 0; padding:18px 20px; max-width:440px;
+  background:rgba(255,255,255,.08); border-radius:16px;
+  list-style:none;
+}
+.menu-preview[hidden]{ display:none; }
+.menu-preview li{ display:flex; justify-content:space-between; gap:16px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.12); }
+.menu-preview li:last-child{ border-bottom:0; }
+.menu-preview small{ color:#aebbe6; }
+
+/* ---------- the button ---------- */
+.dl-wrap{
+  position:relative;
+  display:inline-block;
+  isolation:isolate;
+  border-radius:999px;
+  vertical-align:middle;
+}
+
+/* glow: a pre-blurred layer that only changes opacity and transform */
+.dl-glow{
+  position:absolute;
+  inset:-18px -22px;
+  border-radius:999px;
+  background:radial-gradient(closest-side, var(--glow, rgba(170,195,255,.65)), rgba(170,195,255,0));
+  filter:blur(12px);
+  opacity:0;
+  transform:translateY(calc(6px * var(--m))) scale(.94);
+  pointer-events:none;
+  z-index:-1;
+  /* leaving: the tail is slower and waits a beat, so the light lingers */
+  transition:
+    opacity var(--t-tail) var(--ease-tail) 60ms,
+    transform var(--t-tail) var(--ease-tail) 60ms;
+}
+
+.dl-btn{
+  position:relative;
+  z-index:1;
+  display:inline-flex;
+  align-items:center;
+  gap:.6em;
+  min-height:48px;
+  padding:.85em 1.6em;
+  border:0;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:1rem;
+  font-weight:600;
+  line-height:1.2;
+  letter-spacing:.01em;
+  color:var(--label, #141b36);
+  background:var(--fill, #f3ecdc);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transform:translateY(0) scale(1);
+  transition:
+    transform var(--t-face) var(--ease-land),
+    background-color 260ms var(--ease-land);
+}
+/* a thin edge of light; drawn once, faded by opacity */
+.dl-btn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  border:1px solid var(--ring, rgba(255,255,255,.7));
+  opacity:0;
+  pointer-events:none;
+  transition:opacity var(--t-tail) var(--ease-tail) 60ms;
+}
+
+/* pointer hover: only on devices that can hover, so touch never sticks */
+@media (hover:hover){
+  .dl-btn:hover:not(:disabled){
+    transform:translateY(calc(-3px * var(--m)));
+    background:var(--fill-hover, #ffffff);
+    transition:
+      transform var(--t-in) var(--ease-float),
+      background-color 260ms var(--ease-land);
+  }
+  .dl-btn:hover:not(:disabled)::after{
+    opacity:1;
+    transition-duration:var(--t-in);
+    transition-delay:0s;
+  }
+  .dl-btn:hover:not(:disabled) ~ .dl-glow{
+    opacity:1;
+    transform:none;
+    transition-duration:var(--t-in);
+    transition-delay:0s;
+  }
+}
+
+/* keyboard focus gets the same family of motion at about half the lift */
+.dl-btn:focus-visible{
+  outline:2px solid var(--focus);
+  outline-offset:3px;
+  transform:translateY(calc(-1.5px * var(--m)));
+}
+.dl-btn:focus-visible::after{ opacity:.6; }
+.dl-btn:focus-visible ~ .dl-glow{ opacity:.5; transform:none; }
+
+/* press: answers at once, releases to rest */
+.dl-btn:active:not(:disabled){
+  transform:translateY(calc(1px * var(--m))) scale(calc(1 - .02 * var(--m)));
+  background:var(--fill-press, #e4dac3);
+  transition-duration:calc(90ms * var(--m) + 90ms);
+  transition-timing-function:var(--ease-land);
+}
+
+/* disabled: stops answering input, so its motion stops too */
+.dl-btn:disabled{
+  cursor:not-allowed;
+  color:#4a5064;
+  background:#d9dce6;
+  transform:none;
+}
+.dl-btn:disabled::after{ display:none; }
+.dl-btn:disabled ~ .dl-glow{ display:none; }
+
+/* variants */
+.dl-ghost{
+  --label:var(--ink);
+  --fill:rgba(20,27,54,.06);
+  --fill-hover:rgba(20,27,54,.12);
+  --fill-press:rgba(20,27,54,.2);
+  --ring:rgba(20,27,54,.28);
+  --glow:rgba(120,150,255,.5);
+  box-shadow:inset 0 0 0 1px rgba(20,27,54,.22);
+}
+.dl-glass{
+  --label:#ffffff;
+  --fill:rgba(255,255,255,.12);
+  --fill-hover:rgba(255,255,255,.22);
+  --fill-press:rgba(255,255,255,.3);
+  --ring:rgba(255,255,255,.4);
+  --glow:rgba(150,180,255,.55);
+  -webkit-backdrop-filter:blur(10px) saturate(1.1);
+  backdrop-filter:blur(10px) saturate(1.1);
+}
+
+/* ---------- demo panel ---------- */
+.panel{ margin:40px 0 64px; }
+.panel h2{ font-size:1.4rem; margin:0 0 6px; }
+.panel .intro{ color:var(--muted); margin:0 0 22px; max-width:62ch; }
+.grid{ display:grid; gap:18px; grid-template-columns:1fr; }
+@media (min-width:820px){ .grid{ grid-template-columns:1.2fr .8fr; } }
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:24px;
+}
+.card h3{ font-size:1rem; margin:0 0 10px; }
+.row{ display:flex; flex-wrap:wrap; gap:24px 18px; align-items:center; margin-bottom:26px; }
+.status{
+  min-height:3em; margin:4px 0 18px; color:var(--ink);
+  background:#f4f0e6; border-radius:12px; padding:10px 14px;
+}
+.curve-box{ margin-top:6px; }
+.curve-box svg{ width:100%; max-width:360px; height:auto; display:block; }
+.curve-box .axis{ stroke:var(--line); fill:none; }
+.curve-box .path{ stroke:var(--focus); stroke-width:2.5; fill:none; }
+.curve-box .ctrl{ stroke:rgba(20,27,54,.25); stroke-dasharray:3 4; fill:none; }
+.curve-box .dot{ fill:var(--focus); }
+.readout{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.85rem; color:var(--muted); margin:8px 0 0; }
+
+.field{ display:grid; gap:6px; margin-bottom:16px; }
+.field label, .field legend{ font-size:.9rem; color:var(--muted); }
+select{
+  font:inherit; color:var(--ink);
+  padding:9px 12px; border-radius:10px;
+  border:1px solid var(--line); background:#fff;
+  max-width:100%;
+}
+fieldset{ border:0; padding:0; margin:0 0 16px; }
+fieldset label{ display:inline-flex; align-items:center; gap:6px; margin:0 14px 6px 0; font-size:.95rem; color:var(--ink); }
+.check{ display:flex; gap:8px; align-items:center; font-size:.95rem; margin-bottom:16px; }
+.kv{ margin:0 0 14px; font-size:.95rem; }
+.kv strong{ font-weight:600; }
+.log{ margin:0; padding:0 0 0 18px; font-size:.88rem; color:var(--muted); max-height:220px; overflow:auto; }
+.log li{ margin:2px 0; }
+
+.foot{ font-size:.85rem; color:var(--muted); margin-top:28px; }
+
+@media (max-width:520px){
+  .hero{ padding:40px 22px 40px; }
+  .nav{ display:none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">Lantern &amp; Lake</div>
+    <nav class="nav" aria-label="Site">
+      <span>Menu</span><span>Rooms</span><span>Harbour walk</span><span>Contact</span>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Harbour kitchen &middot; eight tables</p>
+    <h1 id="hero-title">Dinner that lingers past the last light.</h1>
+    <p class="lede">A long window over the water, a short menu that changes with the tide, and tables held for twelve days ahead. Reservations for Friday and Saturday open at nine each morning.</p>
+
+    <div class="cta">
+      <span class="dl-wrap">
+        <button class="dl-btn" id="reserve" type="button" data-name="Reserve a table" style="--fill:#f3ecdc;--fill-hover:#ffffff;--fill-press:#e4dac3;--label:#141b36;--ring:rgba(255,255,255,.8);--glow:rgba(170,195,255,.7)">Reserve a table</button>
+        <span class="dl-glow" aria-hidden="true"></span>
+      </span>
+
+      <span class="dl-wrap">
+        <button class="dl-btn dl-glass" id="menu-toggle" type="button" data-name="View the menu" aria-expanded="false" aria-controls="menu-list">View the menu</button>
+        <span class="dl-glow" aria-hidden="true"></span>
+      </span>
+    </div>
+
+    <ul class="menu-preview" id="menu-list" hidden>
+      <li><span>Charred leeks, brown butter, sea salt</span><small>14</small></li>
+      <li><span>Line-caught hake, samphire, lemon oil</span><small>26</small></li>
+      <li><span>Burnt honey custard, black sesame</span><small>9</small></li>
+    </ul>
+
+    <p class="hours" style="margin-top:26px">Open Wednesday to Sunday, 17:30 to 22:00. Step-free entrance on the harbour side.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="panel-title">
+    <h2 id="panel-title">Try the response</h2>
+    <p class="intro">Hover, tab, or press each button. Settings change the lift curve and the motion. The log and the counters update as you go.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <span class="dl-wrap">
+            <button class="dl-btn dl-ghost" id="save" type="button" data-name="Save to shortlist" aria-pressed="false">Save to shortlist</button>
+            <span class="dl-glow" aria-hidden="true"></span>
+          </span>
+
+          <span class="dl-wrap">
+            <button class="dl-btn" id="sat" type="button" data-name="Reserve Saturday 20:00" disabled style="--fill:#f3ecdc;--fill-hover:#ffffff;--fill-press:#e4dac3;--label:#141b36;--ring:rgba(20,27,54,.35);--glow:rgba(120,150,255,.6)">Fully booked Saturday</button>
+            <span class="dl-glow" aria-hidden="true"></span>
+          </span>
+        </div>
+
+        <p class="status" id="status" aria-live="polite">Nothing requested yet.</p>
+
+        <div class="curve-box">
+          <svg viewBox="0 -60 200 180" role="img" aria-labelledby="curve-title curve-desc">
+            <title id="curve-title">Lift curve</title>
+            <desc id="curve-desc">The chosen cubic-bezier easing for the lift, drawn from (0,0) to (1,1) with its two control points.</desc>
+            <line class="axis" x1="10" y1="110" x2="190" y2="110"></line>
+            <line class="axis" x1="10" y1="110" x2="10" y2="-40"></line>
+            <line class="axis" x1="10" y1="30" x2="190" y2="30" stroke-dasharray="2 4"></line>
+            <line class="ctrl" id="ctrl1" x1="10" y1="110" x2="10" y2="110"></line>
+            <line class="ctrl" id="ctrl2" x1="190" y1="10" x2="190" y2="10"></line>
+            <path class="path" id="curve" d="M10 110 C 10 110, 190 10, 190 10"></path>
+            <circle class="dot" cx="10" cy="110" r="3.5"></circle>
+            <circle class="dot" cx="190" cy="10" r="3.5"></circle>
+          </svg>
+          <p class="readout" id="readout">cubic-bezier(0.34, 1.2, 0.64, 1)</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label for="curve">Lift curve</label>
+          <select id="curve">
+            <option value="0.34,1.2,0.64,1" selected>Settle: return about 1.25 percent</option>
+            <option value="0.33,1,0.68,1">Soft landing: no return</option>
+            <option value="0.34,2,0.64,1">Rebound: about 25 percent return (a different reading)</option>
+          </select>
+        </div>
+
+        <fieldset>
+          <legend>Motion</legend>
+          <label><input type="radio" name="motion" value="auto" checked> Follow system</label>
+          <label><input type="radio" name="motion" value="full"> Dreamlike</label>
+          <label><input type="radio" name="motion" value="reduced"> Reduced</label>
+        </fieldset>
+
+        <label class="check"><input type="checkbox" id="sat-open"> Release a Saturday table</label>
+
+        <p class="kv"><strong>Reservations requested:</strong> <span id="count">0</span></p>
+        <p class="kv"><strong>Saved to shortlist:</strong> <span id="saved-state">no</span></p>
+        <p class="kv"><strong>Last input:</strong> <span id="last-input">none yet</span></p>
+
+        <h3>Events</h3>
+        <ol class="log" id="log" aria-live="off"></ol>
+      </div>
+    </div>
+
+    <p class="foot">Motion uses transform and opacity only. The glow is one pre-blurred layer that fades in. Without hover, a tap still gets the press response.</p>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var state = {
+    reservations: 0,
+    saved: false,
+    menuOpen: false,
+    satOpen: false,
+    last: 'none yet',
+    events: []
+  };
+
+  function $(sel) { return document.querySelector(sel); }
+
+  function stamp() {
+    try {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function log(text) {
+    state.events.unshift(stamp() + '  ' + text);
+    state.events = state.events.slice(0, 12);
+    renderLog();
+  }
+
+  function renderLog() {
+    var list = $('#log');
+    list.textContent = '';
+    state.events.forEach(function (line) {
+      var li = document.createElement('li');
+      li.textContent = line;
+      list.appendChild(li);
+    });
+  }
+
+  function setStatus(text) {
+    $('#status').textContent = text;
+  }
+
+  function setLast(kind) {
+    state.last = kind;
+    render();
+  }
+
+  function render() {
+    $('#count').textContent = String(state.reservations);
+    $('#saved-state').textContent = state.saved ? 'yes' : 'no';
+    $('#last-input').textContent = state.last;
+    $('#menu-toggle').setAttribute('aria-expanded', String(state.menuOpen));
+    $('#menu-toggle').textContent = state.menuOpen ? 'Hide the menu' : 'View the menu';
+    $('#menu-list').hidden = !state.menuOpen;
+    var save = $('#save');
+    save.setAttribute('aria-pressed', String(state.saved));
+    save.textContent = state.saved ? 'Saved to shortlist' : 'Save to shortlist';
+    var sat = $('#sat');
+    sat.disabled = !state.satOpen;
+    sat.textContent = state.satOpen ? 'Reserve Saturday 20:00' : 'Fully booked Saturday';
+  }
+
+  /* ----- hover, focus and press are logged for every button ----- */
+  var buttons = document.querySelectorAll('.dl-btn');
+  buttons.forEach(function (btn) {
+    var name = btn.getAttribute('data-name') || btn.textContent.trim();
+    btn.addEventListener('pointerenter', function (e) {
+      if (e.pointerType === 'mouse' && !btn.disabled) log('hover in: ' + name);
+    });
+    btn.addEventListener('pointerleave', function (e) {
+      if (e.pointerType === 'mouse' && !btn.disabled) log('hover out: ' + name);
+    });
+    btn.addEventListener('pointerdown', function (e) {
+      if (btn.disabled) return;
+      setLast(e.pointerType === 'touch' ? 'touch' : e.pointerType === 'pen' ? 'pen' : 'pointer');
+      log('press: ' + name);
+    });
+    btn.addEventListener('focus', function () {
+      try {
+        if (btn.matches(':focus-visible')) log('keyboard focus: ' + name);
+      } catch (e) { /* older browsers: skip the focus log */ }
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') setLast('keyboard');
+  });
+
+  /* ----- actions update state ----- */
+  $('#reserve').addEventListener('click', function () {
+    state.reservations += 1;
+    setStatus('Table requested for Friday, 20:00. Requests in this demo: ' + state.reservations + '.');
+    log('activated: Reserve a table');
+    render();
+  });
+
+  $('#menu-toggle').addEventListener('click', function () {
+    state.menuOpen = !state.menuOpen;
+    log(state.menuOpen ? 'menu opened' : 'menu closed');
+    render();
+  });
+
+  $('#save').addEventListener('click', function () {
+    state.saved = !state.saved;
+    setStatus(state.saved ? 'Saved to your shortlist for this visit.' : 'Removed from your shortlist.');
+    log(state.saved ? 'saved to shortlist' : 'removed from shortlist');
+    render();
+  });
+
+  $('#sat').addEventListener('click', function () {
+    state.reservations += 1;
+    setStatus('Saturday 20:00 requested. Requests in this demo: ' + state.reservations + '.');
+    log('activated: Reserve Saturday 20:00');
+    render();
+  });
+
+  $('#sat-open').addEventListener('change', function (e) {
+    state.satOpen = e.target.checked;
+    log(state.satOpen ? 'Saturday table released' : 'Saturday table held');
+    render();
+  });
+
+  document.querySelectorAll('input[name="motion"]').forEach(function (radio) {
+    radio.addEventListener('change', function (e) {
+      var value = e.target.value;
+      if (value === 'auto') {
+        delete root.dataset.motion;
+      } else {
+        root.dataset.motion = value;
+      }
+      log('motion: ' + (value === 'auto' ? 'follow system' : value));
+    });
+  });
+
+  /* ----- lift curve: one value drives the CSS and the plot ----- */
+  var curveSelect = $('#curve');
+  function applyCurve(value) {
+    var parts = value.split(',').map(Number);
+    var x1 = parts[0], y1 = parts[1], x2 = parts[2], y2 = parts[3];
+    root.style.setProperty('--ease-float', 'cubic-bezier(' + x1 + ', ' + y1 + ', ' + x2 + ', ' + y2 + ')');
+    // plot: x maps to 10..190, y maps to 110 (0) .. 30 (1); y above 1 rises past the top line (overshoot)
+    var P0 = [10, 110], P3 = [190, 10];
+    var C1 = [10 + 180 * x1, 110 - 80 * y1];
+    var C2 = [10 + 180 * x2, 110 - 80 * y2];
+    var d = 'M' + P0[0] + ' ' + P0[1] + ' C ' + C1[0] + ' ' + C1[1] + ', ' + C2[0] + ' ' + C2[1] + ', ' + P3[0] + ' ' + P3[1];
+    document.getElementById('curve').setAttribute('d', d);
+    var c1 = document.getElementById('ctrl1');
+    c1.setAttribute('x2', C1[0]); c1.setAttribute('y2', C1[1]);
+    var c2 = document.getElementById('ctrl2');
+    c2.setAttribute('x1', C2[0]); c2.setAttribute('y1', C2[1]);
+    c2.setAttribute('x2', P3[0]); c2.setAttribute('y2', P3[1]);
+    $('#readout').textContent = 'cubic-bezier(' + x1 + ', ' + y1 + ', ' + x2 + ', ' + y2 + ')';
+  }
+  curveSelect.addEventListener('change', function (e) {
+    applyCurve(e.target.value);
+    log('lift curve: cubic-bezier(' + e.target.value.split(',').join(', ') + ')');
+  });
+
+  applyCurve(curveSelect.value);
+  renderLog();
+  render();
+  log('ready');
+})();
+</script>
+</body>
+</html>

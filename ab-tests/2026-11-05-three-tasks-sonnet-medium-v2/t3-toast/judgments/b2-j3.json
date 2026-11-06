@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j3","scores":{
+"W":{"compact":7,"collapsible":7,"tracking":7,"dark":8,"usability":7,"craft":7,"overall":7,"note":"Clean collapsed card with progress bar and a tidy opened timeline, but a carrier tab row duplicates the number and the opened card has dead space at the bottom."},
+"X":{"compact":8,"collapsible":7,"tracking":5,"dark":7,"usability":6,"craft":4,"overall":5,"note":"The collapsed pill is the smallest, but the opened timeline is misaligned (right-aligned text, timestamps below, stray dots) and the package item is never named."},
+"Y":{"compact":5,"collapsible":7,"tracking":8,"dark":8,"usability":5,"craft":6,"overall":6,"note":"Rich multi-package tracking with the Now badge, ETA and actions, but it is the tallest, the tab labels are truncated and the tracking number wraps."},
+"Z":{"compact":8,"collapsible":8,"tracking":9,"dark":9,"usability":8,"craft":8,"overall":9,"note":"Compact card with a stepper, timestamped scans, a masked tracking number and labeled actions, polished with a green accent, though the collapsed subtitle truncates on mobile."}},
+"ranking":["Z","W","Y","X"]}

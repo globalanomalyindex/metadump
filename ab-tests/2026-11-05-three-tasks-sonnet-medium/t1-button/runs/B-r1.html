@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Letters, dreamlike button</title>
+<style>
+:root{
+  --bg:#0e0c1d; --bg2:#1b1636; --ink:#f4f1ff; --muted:#b4acd6;
+  --face:#4b3fb8; --face-hi:#6a58e0; --glow:#b9a6ff; --glow2:#7fd6ff; --ring:#d9ceff;
+  /* custom curves: each does a different job */
+  --land:cubic-bezier(.16,.84,.3,1);      /* quick answer on the face */
+  --drift:cubic-bezier(.22,.61,.1,1);     /* long soft tail for the light */
+  --rise:cubic-bezier(.34,1.2,.64,1);     /* tiny settle, return ~1% */
+  --leave:cubic-bezier(.37,0,.63,1);      /* gentle exit */
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f3f0ff;--bg2:#e4ddff;--ink:#1d1740;--muted:#4f4883;--face:#4132b0;--face-hi:#5b49d6;--glow:#8d77f5;--glow2:#52b6e6;--ring:#4132b0}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  min-height:100vh;font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
+  background:radial-gradient(900px 500px at 70% -10%,var(--bg2),transparent 70%),var(--bg);
+  display:grid;place-items:center;padding:32px 16px;
+}
+main{width:100%;max-width:560px}
+.eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:.75rem;color:var(--muted);margin:0 0 .5rem}
+h1{font-size:clamp(1.8rem,5vw,2.4rem);line-height:1.15;margin:0 0 .75rem;font-weight:650}
+p.lead{color:var(--muted);margin:0 0 1.5rem}
+.card{background:color-mix(in srgb,var(--bg2) 70%,transparent);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:20px;padding:clamp(20px,5vw,32px)}
+form{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+label.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+input[type=email]{
+  flex:1 1 220px;min-height:48px;padding:0 16px;border-radius:14px;font:inherit;color:var(--ink);
+  background:color-mix(in srgb,var(--bg) 60%,transparent);border:1px solid color-mix(in srgb,var(--ink) 25%,transparent)
+}
+input[type=email]:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+input[aria-invalid=true]{border-color:#ff8aa0}
+.err{flex-basis:100%;margin:0;min-height:1.4em;font-size:.875rem;color:#ff9db0}
+
+/* ---------- the button ---------- */
+.dream{
+  position:relative;isolation:isolate;min-height:48px;min-width:44px;padding:0 26px;border:0;border-radius:14px;
+  font:600 1rem/1 inherit;font-family:inherit;color:#fff;cursor:pointer;background:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:transform .32s var(--leave);
+}
+.dream>.face,.dream::before,.dream::after{position:absolute;border-radius:inherit;pointer-events:none}
+/* face: a solid, always-legible fill; only transform moves */
+.dream>.face{
+  inset:0;z-index:-1;background:linear-gradient(160deg,var(--face-hi),var(--face));
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset;
+  transition:transform .28s var(--land);
+}
+/* glow: pre-blurred gradient, fades by opacity and drifts on a longer tail after the face */
+.dream::before{
+  content:"";inset:-14px -22px;z-index:-2;border-radius:28px;
+  background:radial-gradient(60% 90% at var(--mx,50%) var(--my,60%),var(--glow),transparent 70%),
+             radial-gradient(50% 80% at calc(100% - var(--mx,50%)) 100%,var(--glow2),transparent 75%);
+  filter:blur(14px);opacity:0;transform:translate3d(0,6px,0) scale(.92);
+  transition:opacity .75s var(--leave) .09s,transform .75s var(--drift) .09s;
+}
+/* rim: a ring of light, opacity only */
+.dream::after{
+  content:"";inset:-1px;z-index:1;padding:1.5px;
+  background:linear-gradient(135deg,var(--ring),transparent 45%,var(--glow2));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:.35;transition:opacity .6s var(--drift) .05s;
+}
+.dream .label{position:relative;display:inline-flex;align-items:center;gap:.6em;text-shadow:0 1px 2px rgba(10,5,40,.45)}
+
+@media (hover:hover) and (pointer:fine){
+  .dream:hover:not(:disabled){transition:transform .3s var(--rise);transform:translate3d(0,-3px,0)}
+  .dream:hover:not(:disabled)>.face{transform:scale(1.025);transition-duration:.3s}
+  .dream:hover:not(:disabled)::before{opacity:.85;transform:translate3d(0,0,0) scale(1);transition-delay:0s,0s;transition-duration:.45s,.9s}
+  .dream:hover:not(:disabled)::after{opacity:1}
+}
+/* keyboard parity: half the lift, same light, solid ring */
+.dream:focus-visible{outline:2px solid var(--ring);outline-offset:4px;transform:translate3d(0,-1.5px,0);transition:transform .3s var(--rise)}
+.dream:focus-visible::before{opacity:.6;transform:none;transition-delay:0s}
+.dream:focus-visible::after{opacity:1}
+/* press: answered at once */
+.dream:active:not(:disabled){transform:translate3d(0,0,0) scale(.97);transition:transform .12s var(--land)}
+.dream:active:not(:disabled)>.face{transform:scale(1)}
+/* touch: tap flare driven by class, no hover needed */
+.dream.tapped::before{opacity:.8;transform:none;transition-delay:0s}
+.dream:disabled{cursor:not-allowed;opacity:.55}
+.dream:disabled::before{opacity:0}
+.dream[aria-busy=true]{cursor:progress}
+.spinner{width:1em;height:1em;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* secondary quiet variant for the group demo */
+.dream.ghost>.face{background:color-mix(in srgb,var(--face) 22%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 28%,transparent) inset}
+.dream.ghost{color:var(--ink);text-shadow:none}
+.dream.ghost .label{text-shadow:none}
+
+.status{margin:1.25rem 0 0;padding:12px 16px;border-radius:12px;background:color-mix(in srgb,var(--glow) 16%,transparent);display:none}
+.status.show{display:block}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.count{font-variant-numeric:tabular-nums}
+
+@media (prefers-reduced-motion: reduce){
+  .dream,.dream>.face,.dream::before,.dream::after{transition-duration:.01s!important;transition-delay:0s!important}
+  .dream:hover:not(:disabled),.dream:focus-visible{transform:none!important}
+  .dream:hover:not(:disabled)>.face{transform:none!important}
+  .dream::before{transform:none!important}
+  .spinner{animation-duration:2.4s}
+}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Lumen Letters</p>
+  <h1>One quiet email, every Sunday.</h1>
+  <p class="lead">Essays on light, slow design and the web. 6,284 readers. Unsubscribe whenever.</p>
+
+  <div class="card">
+    <form id="f" novalidate>
+      <label class="sr" for="em">Email address</label>
+      <input id="em" type="email" placeholder="you@example.com" autocomplete="email" required>
+      <button class="dream" id="go" type="submit"><span class="face"></span><span class="label" id="lbl">Subscribe</span></button>
+      <p class="err" id="err" role="alert"></p>
+    </form>
+    <p class="status" id="ok" role="status"></p>
+
+    <div class="row" role="group" aria-label="Reader actions">
+      <button class="dream ghost" id="like" type="button" aria-pressed="false"><span class="face"></span><span class="label">Save for later <span class="count" id="n">0</span></span></button>
+      <button class="dream ghost" id="reset" type="button"><span class="face"></span><span class="label">Reset demo</span></button>
+      <button class="dream ghost" type="button" disabled><span class="face"></span><span class="label">Archive (soon)</span></button>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  var f=document.getElementById('f'),em=document.getElementById('em'),go=document.getElementById('go'),
+      lbl=document.getElementById('lbl'),err=document.getElementById('err'),ok=document.getElementById('ok'),
+      like=document.getElementById('like'),n=document.getElementById('n'),reset=document.getElementById('reset');
+  var count=0,timer=null;
+
+  // the glow leans toward the pointer (custom properties on a layer that only fades/transforms)
+  document.querySelectorAll('.dream').forEach(function(b){
+    b.addEventListener('pointermove',function(e){
+      var r=b.getBoundingClientRect();
+      b.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+      b.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+    });
+    // touch has no hover: flare briefly on tap
+    b.addEventListener('pointerdown',function(e){
+      if(e.pointerType==='touch'){b.classList.add('tapped');setTimeout(function(){b.classList.remove('tapped')},700)}
+    });
+  });
+
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(go.getAttribute('aria-busy')==='true')return;
+    var v=em.value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v)){
+      em.setAttribute('aria-invalid','true');err.textContent='Please enter a valid email, like you@example.com.';em.focus();return;
+    }
+    em.removeAttribute('aria-invalid');err.textContent='';
+    go.setAttribute('aria-busy','true');go.disabled=false;
+    lbl.innerHTML='<span class="spinner" aria-hidden="true"></span>Subscribing';
+    timer=setTimeout(function(){
+      go.removeAttribute('aria-busy');go.disabled=true;lbl.textContent='Subscribed';
+      ok.textContent='Welcome. The next letter lands this Sunday at '+v+'.';ok.classList.add('show');
+    },1200);
+  });
+  em.addEventListener('input',function(){em.removeAttribute('aria-invalid');err.textContent=''});
+
+  like.addEventListener('click',function(){
+    var on=like.getAttribute('aria-pressed')!=='true';
+    like.setAttribute('aria-pressed',on);count+=on?1:-1;n.textContent=count;
+    like.querySelector('.label').firstChild.nodeValue=on?'Saved ':'Save for later ';
+  });
+  reset.addEventListener('click',function(){
+    clearTimeout(timer);em.value='';err.textContent='';em.removeAttribute('aria-invalid');
+    go.disabled=false;go.removeAttribute('aria-busy');lbl.textContent='Subscribe';
+    ok.classList.remove('show');count=0;n.textContent=0;like.setAttribute('aria-pressed','false');
+    like.querySelector('.label').firstChild.nodeValue='Save for later ';
+  });
+})();
+</script>
+</body>
+</html>

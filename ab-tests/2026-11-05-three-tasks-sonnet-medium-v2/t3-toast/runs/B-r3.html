@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parcel pill</title>
+<style>
+:root{
+  --bg:#0e0f13; --base:#17181d; --raised:#1f2027; --top:#272830; --line:#34363f;
+  --t1:#eceef2; --t2:#b9bdc7; --t3:#959ba6;
+  --blue:#5aa3ff; --amber:#f5a524; --green:#4fdc99; --red:#f87171; --idle:#6b7080;
+  --ease:cubic-bezier(.2,.9,.25,1);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--t1);font:13px/1.35 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background-image:radial-gradient(900px 500px at 20% 10%,#171922 0,transparent 70%);}
+.page{max-width:560px;padding:28px 20px;color:var(--t3)}
+.page h1{font-size:15px;font-weight:600;color:var(--t2);margin-bottom:6px}
+.page p{margin-bottom:10px;max-width:46ch}
+.page .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.page button{background:var(--base);color:var(--t2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font:inherit;cursor:pointer}
+.page button:hover{background:var(--raised)}
+
+/* ---------- widget ---------- */
+#w{position:fixed;right:16px;bottom:16px;width:min(300px,calc(100vw - 32px));z-index:10;
+  transition:transform .3s var(--ease),opacity .2s ease}
+#w.gone{transform:translateY(16px) scale(.96);opacity:0;pointer-events:none;transition-duration:.18s}
+#w.pre{transform:translateY(20px) scale(.96);opacity:0}
+
+.stack{position:relative}
+.ghost{position:absolute;left:0;right:0;bottom:0;height:34px;border-radius:999px;background:var(--base);
+  border:1px solid var(--line);transform-origin:bottom center;transition:transform .3s var(--ease),opacity .2s;pointer-events:none}
+.g1{transform:translateY(-6px) scale(.95);opacity:.85}
+.g2{transform:translateY(-12px) scale(.9);opacity:.55}
+#w.open .ghost{transform:translateY(0) scale(.9);opacity:0}
+.ghost i{position:absolute;left:12px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--c,var(--idle))}
+
+.surface{position:relative;background:var(--base);border:1px solid var(--line);border-radius:999px;
+  overflow:hidden;transition:border-radius .3s var(--ease),background .25s;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+#w.open .surface{border-radius:14px;background:var(--raised)}
+
+.pill{display:flex;align-items:center;gap:8px;width:100%;height:34px;padding:0 10px 0 12px;background:none;border:0;color:inherit;
+  font:inherit;cursor:pointer;text-align:left}
+.pill:focus-visible,.btn:focus-visible,.tab:focus-visible,.x:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 0 0 var(--c)}
+.moving .dot{animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 60%,transparent)}70%,100%{box-shadow:0 0 0 6px transparent}}
+.stage{font-weight:600;color:var(--t1);white-space:nowrap}
+.eta{color:var(--t2);white-space:nowrap;margin-left:auto;font-variant-numeric:tabular-nums}
+.count{font-size:11px;color:var(--t3);border:1px solid var(--line);border-radius:999px;padding:0 5px;line-height:15px}
+.chev{width:12px;height:12px;flex:none;color:var(--t3);transition:transform .3s var(--ease)}
+#w.open .chev{transform:rotate(180deg)}
+
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
+#w.open .panel{grid-template-rows:1fr}
+.inner{overflow:hidden;min-height:0}
+.body{padding:2px 12px 12px;opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s}
+#w.open .body{opacity:1;transform:none;transition:opacity .22s .1s,transform .25s .1s var(--ease)}
+
+.tabs{display:flex;gap:4px;margin-bottom:8px;padding:2px 0 0}
+.tab{flex:1;min-width:0;background:var(--base);border:1px solid transparent;color:var(--t3);border-radius:8px;padding:4px 6px;font:inherit;font-size:12px;
+  cursor:pointer;display:flex;align-items:center;gap:5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tab .d{width:6px;height:6px;border-radius:50%;background:var(--c);flex:none}
+.tab[aria-selected=true]{background:var(--top);color:var(--t1);border-color:var(--line)}
+.meta{display:flex;justify-content:space-between;gap:8px;color:var(--t2);margin-bottom:8px}
+.meta b{color:var(--t1);font-weight:600}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--t3)}
+
+ol{list-style:none;padding:0;position:relative;max-height:132px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+li{position:relative;display:grid;grid-template-columns:14px 1fr auto;gap:8px;padding:3px 0;color:var(--t2);font-size:12.5px}
+li::before{content:"";position:absolute;left:6px;top:15px;bottom:-4px;width:1px;background:var(--line)}
+li:last-child::before{display:none}
+li .g{width:13px;height:13px;margin-top:2px;border-radius:50%;border:1.5px solid var(--idle);position:relative;z-index:1;background:var(--raised)}
+li.done .g{background:var(--green);border-color:var(--green)}
+li.done .g::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:6px;border:solid #0b1a12;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+li.now{color:var(--t1)}
+li.now .g{border-color:var(--c);box-shadow:inset 0 0 0 2.5px var(--raised),inset 0 0 0 7px var(--c)}
+li.exp{color:var(--t3)}
+li.exc .g{border-color:var(--red);background:var(--red)}
+li time{color:var(--t3);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+li .tag{font-size:10.5px;color:var(--c);border:1px solid currentColor;border-radius:4px;padding:0 4px;margin-left:5px;vertical-align:1px}
+li .sub{display:block;color:var(--t3);font-size:11.5px}
+
+.actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.btn{background:var(--top);color:var(--t1);border:1px solid var(--line);border-radius:7px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer;
+  transition:background .15s,transform .1s}
+.btn:hover{background:#30323c}
+.btn:active{transform:scale(.97)}
+.btn[aria-pressed=true]{border-color:var(--blue);color:var(--blue)}
+.btn.quiet{background:none;color:var(--t3);margin-left:auto}
+.x{background:none;border:0;color:var(--t3);cursor:pointer;width:26px;height:26px;border-radius:50%;font-size:15px;line-height:1;flex:none}
+.x:hover{background:var(--top);color:var(--t1)}
+.line{display:flex;align-items:center;gap:6px;color:var(--t3);font-size:11.5px;margin-top:8px;min-height:15px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toastmsg{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,6px);background:var(--top);border:1px solid var(--line);color:var(--t1);
+  padding:4px 10px;border-radius:999px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s,transform .2s var(--ease);white-space:nowrap}
+.toastmsg.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Orders</h1>
+  <p>Your parcels are tracked in the pill at the bottom right. It stays until you dismiss it. Click it, or press Enter on it, to open the scan history.</p>
+  <div class="row">
+    <button id="scan">Simulate next scan</button>
+    <button id="reset">Bring tracker back</button>
+  </div>
+</main>
+
+<section id="w" class="pre" aria-label="Package tracker">
+  <div class="toastmsg" id="msg" aria-hidden="true"></div>
+  <div class="stack">
+    <div class="ghost g2" id="gh2"><i></i></div>
+    <div class="ghost g1" id="gh1"><i></i></div>
+    <div class="surface" id="surface">
+      <button class="pill" id="pill" aria-expanded="false" aria-controls="panel">
+        <span class="dot" id="dot"></span>
+        <span class="stage" id="stage"></span>
+        <span class="count" id="count" title="Parcels tracked"></span>
+        <span class="eta" id="eta"></span>
+        <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+      </button>
+      <div class="panel" id="panel" role="region" aria-label="Tracking details">
+        <div class="inner"><div class="body">
+          <div class="tabs" id="tabs" role="tablist" aria-label="Parcels"></div>
+          <div class="meta"><span id="who"></span><span class="num" id="num"></span></div>
+          <ol id="log" aria-label="Scan history"></ol>
+          <div class="actions">
+            <button class="btn" id="copy">Copy number</button>
+            <button class="btn" id="carrier">Carrier page</button>
+            <button class="btn" id="mute" aria-pressed="false">Notify me</button>
+            <button class="btn quiet" id="dismiss">Dismiss</button>
+          </div>
+          <div class="line" id="line"></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sr" role="status" aria-live="polite" id="live"></div>
+</section>
+
+<script>
+(function(){
+  var COL={transit:'#5aa3ff',out:'#f5a524',done:'#4fdc99',exc:'#f87171',idle:'#6b7080'};
+  var P=[
+    {id:'a',item:'Walnut desk lamp',carrier:'UPS',num:'1Z 84A 3F2 03 7714 2268',eta:'Today, by 6 pm',etaShort:'Today 6 pm',stage:'out',mute:false,
+     scans:[['Label created','Mon 9:12 am','Portland, OR'],['Picked up','Mon 4:40 pm','Portland, OR'],['Departed facility','Tue 1:05 am','Salem, OR'],['Arrived at local facility','Wed 6:30 am','Seattle, WA'],['Out for delivery','Wed 8:14 am','Seattle, WA']],
+     future:[['Delivered','by 6 pm']]},
+    {id:'b',item:'Film camera strap',carrier:'USPS',num:'9400 1118 9922 3841 7603 55',eta:'Fri, Nov 7',etaShort:'Fri',stage:'transit',mute:true,
+     scans:[['Shipping label created','Tue 11:20 am','Reno, NV'],['Accepted at origin','Tue 5:02 pm','Reno, NV'],['In transit to next facility','Wed 2:48 am','Sacramento, CA']],
+     future:[['Arrives at hub','Thu'],['Delivered','Fri']]},
+    {id:'c',item:'Ceramic pour-over set',carrier:'FedEx',num:'7712 4098 3315',eta:'Delivery exception',etaShort:'Held',stage:'exc',mute:false,
+     scans:[['Shipment information sent','Sun 3:30 pm','Austin, TX'],['Picked up','Mon 10:10 am','Austin, TX'],['Address needs a unit number','Wed 7:55 am','Denver, CO']],
+     future:[['Delivery attempt','after update']],note:'Add apartment or unit number'}
+  ];
+  var LABEL={transit:'In transit',out:'Out for delivery',done:'Delivered',exc:'Exception'};
+  var $=function(i){return document.getElementById(i)};
+  var w=$('w'),pill=$('pill'),sel=0,open=false,toastT;
+
+  function cur(){return P[sel]}
+  function others(){return P.filter(function(p,i){return i!==sel})}
+  function setC(el,c){el.style.setProperty('--c',COL[c]||COL.idle)}
+  function say(t){$('live').textContent='';setTimeout(function(){$('live').textContent=t},30)}
+  function flash(t){var m=$('msg');m.textContent=t;m.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){m.classList.remove('on')},1400)}
+
+  function render(announce){
+    var p=cur();
+    setC(w,p.stage);
+    $('stage').textContent=LABEL[p.stage];
+    $('eta').textContent=p.etaShort;
+    $('dot').style.setProperty('--c',COL[p.stage]);
+    w.classList.toggle('moving',p.stage==='transit'||p.stage==='out');
+    $('count').textContent=P.length;
+    $('count').setAttribute('aria-label',P.length+' parcels');
+    var o=others();
+    [['gh1',o[0]],['gh2',o[1]]].forEach(function(x){
+      var g=$(x[0]);g.style.display=x[1]?'':'none';
+      if(x[1])g.firstChild.style.setProperty('--c',COL[x[1].stage])
+    });
+    $('count').style.display=P.length>1?'':'none';
+    // tabs
+    var tb=$('tabs');tb.innerHTML='';
+    P.forEach(function(q,i){
+      var b=document.createElement('button');b.className='tab';b.setAttribute('role','tab');
+      b.setAttribute('aria-selected',i===sel);b.tabIndex=i===sel?0:-1;
+      b.style.setProperty('--c',COL[q.stage]);
+      b.innerHTML='<span class="d"></span>'+q.carrier+' · '+LABEL[q.stage];
+      b.title=q.item;
+      b.onclick=function(){sel=i;render(true);};
+      b.onkeydown=function(e){
+        var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+        if(d){sel=(sel+d+P.length)%P.length;render(true);tb.children[sel].focus();e.preventDefault()}
+      };
+      tb.appendChild(b);
+    });
+    $('who').innerHTML='<b>'+p.item+'</b> · '+p.carrier;
+    $('num').textContent=p.num;
+    // log (newest first)
+    var ol=$('log');ol.innerHTML='';
+    var rows=[];
+    p.future.slice().reverse().forEach(function(f){rows.push({t:f[0],when:'Expected '+f[1],cls:'exp'})});
+    p.scans.slice().reverse().forEach(function(s,i){
+      rows.push({t:s[0],when:s[1],sub:s[2],cls:i===0?(p.stage==='exc'?'now exc':'now'):'done',now:i===0})
+    });
+    rows.forEach(function(r){
+      var li=document.createElement('li');li.className=r.cls;
+      if(r.now)li.setAttribute('aria-current','step');
+      li.innerHTML='<span class="g"></span><span>'+r.t+(r.now?'<span class="tag">Now</span>':'')+(r.sub?'<span class="sub">'+r.sub+'</span>':'')+'</span><time>'+r.when+'</time>';
+      ol.appendChild(li);
+    });
+    ol.scrollTop=0;
+    var mu=$('mute');mu.setAttribute('aria-pressed',p.mute);mu.textContent=p.mute?'Notifying':'Notify me';
+    $('line').textContent=p.note?p.note:(p.stage==='done'?'Delivered':'ETA '+p.eta);
+    pill.setAttribute('aria-label',LABEL[p.stage]+', '+p.eta+', '+P.length+' parcels. '+(open?'Collapse':'Expand')+' tracker');
+    if(announce)say(p.item+': '+LABEL[p.stage]+'. '+p.eta);
+  }
+
+  function toggle(v){
+    open=v===undefined?!open:v;
+    w.classList.toggle('open',open);
+    pill.setAttribute('aria-expanded',open);
+    render(false);
+  }
+  pill.onclick=function(){toggle()};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&open){toggle(false);pill.focus()}
+  });
+
+  $('copy').onclick=function(){
+    var n=cur().num.replace(/\s/g,'');
+    function ok(){flash('Number copied');$('copy').textContent='Copied';setTimeout(function(){$('copy').textContent='Copy number'},1400)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(n).then(ok,function(){fallback(n);ok()})}
+    else{fallback(n);ok()}
+  };
+  function fallback(t){var a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+  $('carrier').onclick=function(){flash('Would open '+cur().carrier+' tracking')};
+  $('mute').onclick=function(){var p=cur();p.mute=!p.mute;render(false);flash(p.mute?'Scan alerts on':'Scan alerts off')};
+  $('dismiss').onclick=function(){
+    if(P.length>1){var gone=P.splice(sel,1)[0];sel=Math.min(sel,P.length-1);render(true);flash('Removed '+gone.item)}
+    else{toggle(false);w.classList.add('gone');say('Tracker dismissed')}
+  };
+  $('reset').onclick=function(){
+    if(!P.length)return;
+    w.classList.remove('gone');
+  };
+
+  // Simulate scan: advance the selected parcel
+  var NEXT={
+    b:[['Arrived at hub','Thu 7:20 am','Oakland, CA'],['Out for delivery','Fri 8:02 am','Oakland, CA'],['Delivered, front door','Fri 1:15 pm','Oakland, CA']],
+    c:[['Unit number added','Wed 9:40 am','Denver, CO'],['Out for delivery','Thu 7:30 am','Denver, CO'],['Delivered','Thu 11:50 am','Denver, CO']],
+    a:[['Delivered, left at door','Wed 2:26 pm','Seattle, WA']]
+  };
+  var step={a:0,b:0,c:0};
+  $('scan').onclick=function(){
+    var p=cur(),n=NEXT[p.id][step[p.id]];
+    if(!n){flash('No more scans for this parcel');return}
+    step[p.id]++;
+    p.future.shift();
+    p.scans.push(n);
+    p.note='';
+    if(/Delivered/.test(n[0])){p.stage='done';p.eta='Delivered '+n[1];p.etaShort='Delivered';p.future=[]}
+    else if(/Out for delivery/.test(n[0])){p.stage='out';p.eta='Today';p.etaShort='Today'}
+    else{p.stage='transit';p.exc=false}
+    if(p.id==='c'&&step.c===1){p.stage='transit';p.eta='Thu, Nov 6';p.etaShort='Thu'}
+    if(p.id==='c'&&step.c===2){p.future=[['Delivered','Thu']]}
+    render(true);
+    w.classList.remove('gone');
+  };
+
+  render(false);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){w.classList.remove('pre')})});
+})();
+</script>
+</body>
+</html>

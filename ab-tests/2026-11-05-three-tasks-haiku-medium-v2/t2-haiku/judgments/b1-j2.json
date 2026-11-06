@@ -1,0 +1,43 @@
+{
+  "block": "b1",
+  "judge": "j2",
+  "scores": {
+    "W": {
+      "imagery": 8,
+      "form": 9,
+      "specificity": 9,
+      "freshness": 8,
+      "resonance": 8,
+      "overall": 8,
+      "note": "Syllables are 5-7-5 exactly (Midwin-ter ridge wind / one lens o-ver the pale peak / holds while air runs through), and a lenticular cloud held over a peak while wind passes through it is accurately evoked; line 1 reads as a slightly clipped fragment."
+    },
+    "X": {
+      "imagery": 7,
+      "form": 9,
+      "specificity": 9,
+      "freshness": 6,
+      "resonance": 6,
+      "overall": 7,
+      "note": "Syllables are 5-7-5 exactly (pearl-lit high un-seen / na-cre-ous clouds bloom at dusk / win-ter's rar-est sky), and nacreous clouds are a true rare high-altitude winter dusk phenomenon, but 'rarest sky' and 'bloom' are stock phrasing and the close is a flat declaration."
+    },
+    "Y": {
+      "imagery": 6,
+      "form": 9,
+      "specificity": 8,
+      "freshness": 5,
+      "resonance": 5,
+      "overall": 6,
+      "note": "Syllables are 5-7-5 exactly (na-cre-ous glow spreads / a-cross the win-ter dusk sky / clouds no one ex-pects); nacreous is accurate, but 'glow spreads across the sky' is generic and 'clouds no one expects' is a glib tag line with little feeling behind it."
+    },
+    "Z": {
+      "imagery": 8,
+      "form": 6,
+      "specificity": 9,
+      "freshness": 7,
+      "resonance": 7,
+      "overall": 7,
+      "note": "Syllables run 5-7-6 (win-ter ridge one lens / holds still in the mov-ing wind / its cold edge sharp on blue), so the last line is one syllable long, but the lenticular image and the still-in-moving-wind turn are vivid and true."
+    }
+  },
+  "ranking": ["W", "Z", "X", "Y"]
+}

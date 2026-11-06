@@ -1,0 +1,181 @@
+{
+ "scores": {
+  "A": {
+   "imagery": 5.58,
+   "form": 7.25,
+   "specificity": 7.08,
+   "freshness": 4.5,
+   "resonance": 4.92,
+   "overall": 5.08,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "A-r1": 6.33,
+    "A-r2": 4.33,
+    "A-r3": 4.67,
+    "A-r4": 5.0
+   }
+  },
+  "B": {
+   "imagery": 7.75,
+   "form": 9.08,
+   "specificity": 7.75,
+   "freshness": 7.58,
+   "resonance": 7.92,
+   "overall": 8.0,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "B-r1": 7.67,
+    "B-r2": 8.33,
+    "B-r3": 9.0,
+    "B-r4": 7.0
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 23,
+  "losses": 1,
+  "ties": 0,
+  "win_rate": 0.96
+ },
+ "functional": {
+  "A-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "fire on frozen air",
+   "words_total": 11,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "A-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "the sky holds its breath.",
+   "words_total": 11,
+   "syllables_per_line": [
+    3,
+    7,
+    5
+   ]
+  },
+  "A-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "mother-of-pearl sky",
+   "words_total": 11,
+   "syllables_per_line": [
+    4,
+    7,
+    5
+   ]
+  },
+  "A-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "dawn the sky holds, brief.",
+   "words_total": 12,
+   "syllables_per_line": [
+    5,
+    6,
+    5
+   ]
+  },
+  "B-r1": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "one watcher, then grey.",
+   "words_total": 15,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r2": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "my breath still rising",
+   "words_total": 12,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  },
+  "B-r3": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "the plane's line gone cold",
+   "words_total": 16,
+   "syllables_per_line": [
+    5,
+    7,
+    6
+   ]
+  },
+  "B-r4": {
+   "poem_lines": 3,
+   "ends_with_question": false,
+   "last_line": "then grey, then just sky",
+   "words_total": 14,
+   "syllables_per_line": [
+    5,
+    7,
+    5
+   ]
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 71341,
+   "mean_seconds": 8.0
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 97182,
+   "mean_seconds": 25.2
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 221383,
+   "ms": 1612950,
+   "tool_uses": 36,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.85,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "5-7-5 (Pearl cloud af-ter dusk=5; the pink lets go of its edge=7; one watch-er then grey=5); 'pearl cloud' only hints at nacreous clouds but the fading pink and single watcher give a quiet turn.",
+  "b1/j1/A-r1": "5-7-5 (Moth-er-of-pearl veils=5; na-cre-ous light at dusk slow=7; fire on fro-zen air=5 if fire is one syllable); names nacreous clouds accurately and 'fire on frozen air' is striking, but the middle line is stiff and there is no turn.",
+  "b1/j1/B-r2": "5-7-5 (Moth-er-of-pearl cloud=5; pink green gold then on-ly grey=7; my breath still ris-ing=5); the colour sequence into grey and the human breath at the end give a true cut and feeling.",
+  "b1/j1/A-r2": "Na-cre-ous glow=4 (short of 5), mother-of-pearl in the dusk=7, the sky holds its breath=5, so the form breaks; 'sky holds its breath' is stock and the imagery is thin.",
+  "b1/j2/B-r2": "Counts 5-7-5 (Moth-er-of-pearl cloud / pink green gold then on-ly grey / my breath still rising); colour sequence fading to grey is true to nacreous clouds and the breath turn lands, though mother-of-pearl is stock.",
+  "b1/j2/A-r2": "Counts 4-7-5 (Na-cre-ous glow is 4), so the first line is short; 'sky holds its breath' is a stock phrase and the images are thin.",
+  "b1/j2/A-r1": "Counts 5-7-5 (fire on frozen air is 5 if fire is one syllable); 'slow fire on frozen air' is a strong image, but the lines run together with no cut and nacreous plus mother-of-pearl is a bit redundant.",
+  "b1/j2/B-r1": "Counts a clean 5-7-5 (Pearl cloud af-ter dusk / the pink lets go of its edge / one watch-er then grey); the colour letting go of its edge is fresh and the lone watcher gives it a turn.",
+  "b1/j3/A-r2": "Nacreous glow (4: na-cre-ous glow) / mother-of-pearl in the dusk (7) / the sky holds its breath (5) is 4-7-5, short a syllable, and the closing line is a stock personification.",
+  "b1/j3/B-r2": "5 (moth-er-of-pearl cloud) / 7 (pink green gold then on-ly grey) / 5 (my breath still ris-ing); the colour sequence fading to grey and the breath turn land well.",
+  "b1/j3/B-r1": "5 (pearl cloud af-ter dusk) / 7 (the pink lets go of its edge) / 5 (one watch-er then grey); fresh image of colour releasing, the lone watcher gives a quiet turn.",
+  "b1/j3/A-r1": "5 (moth-er-of-pearl veils) / 7 (na-cre-ous light at dusk slow) / 5-6 (fire on fro-zen air, fire 1 or 2); enjambed 'slow' is awkward but 'fire on frozen air' is accurate to polar stratospheric clouds.",
+  "b2/j1/B-r3": "Fallstreak hole with ice streaks and the cold contrail line is accurate and fresh; counts 5 (Round gap in the sheet) / 7 (streaks of ice falling below) / 5 (the plane's line gone cold).",
+  "b2/j1/A-r3": "Nacreous clouds before dawn are evoked accurately but 'mother-of-pearl' is the stock epithet; counts 5 (Na-cre-ous glow burns) / 7 / 5 (moth-er-of-pearl sky).",
+  "b2/j1/B-r4": "Noctilucent clouds holding the last light then fading to plain sky, with a good turn; counts 5 (Night-shin-ing streaks hold) / 7 (the last blue-white of the day) / 5 (then grey, then just sky).",
+  "b2/j1/A-r4": "Nacreous clouds named but the lines are abstract and stock; counts 5 (Moth-er-of-pearl sheets) / 7 (na-cre-ous light on cold air) / 5 (dawn the sky holds, brief).",
+  "b2/j2/B-r4": "Syllables 5/7/5 (Night-shi-ning streaks hold; the last blue white of the day; then grey, then just sky); noctilucent clouds evoked accurately, with a quiet fading turn.",
+  "b2/j2/A-r4": "Syllables 5/7/5 (Moth-er-of-pearl sheets; na-cre-ous light on cold air; dawn the sky holds, brief); accurate nacreous clouds but mother-of-pearl and nacreous light are stock.",
+  "b2/j2/A-r3": "Syllables 5/7/5 (Na-cre-ous glow burns; in the long dark be-fore dawn; moth-er-of-pearl sky); near-duplicate of X with a weaker, less seen image.",
+  "b2/j2/B-r3": "Syllables 5/7/5 (Round gap in the sheet; streaks of ice fall-ing be-low; the plane's line gone cold); fallstreak hole precisely evoked, with a fresh human-made turn in the last line.",
+  "b2/j3/A-r4": "Counts 5-7-5 (Moth-er-of-pearl sheets / na-cre-ous light on cold air / dawn the sky holds, brief); nacreous clouds evoked accurately but 'mother-of-pearl' is the stock gloss and the last line is soft.",
+  "b2/j3/B-r4": "Counts 5-7-5 (Night-shin-ing streaks hold / the last blue-white of the day / then grey, then just sky); noctilucent clouds named literally, and the fading-to-sky ending has a quiet turn.",
+  "b2/j3/B-r3": "Counts 5-7-5 (Round gap in the sheet / streaks of ice falling below / the plane's line gone cold); fallstreak hole is exact and seen, with a sharp cause-and-effect turn in the last line.",
+  "b2/j3/A-r3": "Counts 5-7-5 (Na-cre-ous glow burns / in the long dark before dawn / mother-of-pearl sky); correct phenomenon but abstract, with 'glow burns' and 'mother-of-pearl' as stock phrases and no turn."
+ }
+}

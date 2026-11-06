@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en" data-motion="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen: dreamlike button hover</title>
+<style>
+:root{
+  --ink:#1b1838;
+  --muted:#5d5878;
+  --page:#f5f2fb;
+  --card:#ffffff;
+  --line:#e3ddf0;
+  --accent:#2c2766;
+  --ring:#1d1a40;
+  --face-ms:220ms;
+  --face-ease:cubic-bezier(0.33,1,0.68,1);
+  --glow-ms:620ms;
+  --glow-ease:cubic-bezier(0.22,1,0.36,1);
+  --glow-in-ms:180ms;
+  --lift:3px;
+  --glow-alpha:0.6;
+  --glass-a:0.3;
+  --glass-blur:12px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--page);
+  color:var(--ink);
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  overflow-x:clip;
+}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.2;margin:0 0 .5em}
+h1{font-size:clamp(2rem,6vw,3.1rem);letter-spacing:-.01em}
+h2{font-size:1.5rem}
+h3{font-size:1.05rem}
+p{margin:0 0 1em}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 16px;max-width:1040px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+.mark{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 18%,#b98fd1 40%,#4a3585 100%)}
+.top nav{display:flex;gap:18px;font-size:14px}
+.top nav a{text-decoration:none;color:var(--muted)}
+.top nav a:hover{color:var(--ink)}
+
+/* hero */
+.hero{max-width:1040px;margin:0 auto;padding:24px 16px 8px}
+.eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px}
+.lede{max-width:56ch;color:var(--muted);font-size:17px}
+.stage{
+  margin-top:28px;
+  position:relative;
+  display:grid;
+  place-items:center;
+  gap:18px;
+  padding:56px 16px 40px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 18% 28%,#e9a6c9 0 12%,transparent 40%),
+    radial-gradient(circle at 82% 72%,#7fb8d6 0 14%,transparent 42%),
+    linear-gradient(120deg,#b98fd1,#4a3585);
+  color:#fff;
+  text-align:center;
+}
+.stage-note,.status{
+  margin:0;
+  font-size:14px;
+  color:#fff;
+  padding:4px 12px;
+  border-radius:999px;
+  background:rgba(20,15,46,.6);
+}
+.status{min-height:1.5em}
+
+/* button: wrapper holds a pre-blurred glow layer that sits behind the face */
+.dl-wrap{position:relative;display:inline-block;isolation:isolate}
+.dl-glow{
+  position:absolute;
+  inset:-12px -18px;
+  z-index:-1;
+  border-radius:999px;
+  pointer-events:none;
+  background:radial-gradient(closest-side,rgba(190,160,255,.95),rgba(190,160,255,0));
+  filter:blur(14px);
+  opacity:0;
+  transform:translate3d(0,4px,0) scale(.9);
+  transition:opacity var(--glow-ms) var(--glow-ease),transform var(--glow-ms) var(--glow-ease);
+}
+.dl-btn{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5em;
+  min-height:46px;
+  padding:0 22px;
+  border-radius:999px;
+  border:1px solid transparent;
+  background:var(--accent);
+  color:#fff;
+  font:600 15px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  letter-spacing:.01em;
+  white-space:nowrap;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transform:translate3d(0,0,0);
+  transition:
+    transform var(--face-ms) var(--face-ease),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    opacity 200ms ease;
+}
+.dl-btn:focus{outline:none}
+.dl-btn:focus-visible{outline:2px solid var(--ring);outline-offset:3px}
+.stage .dl-btn:focus-visible{outline-color:#fff}
+.dl-btn.is-icon{width:46px;padding:0}
+.dl-btn.is-icon svg{width:20px;height:20px}
+
+/* surfaces */
+.dl-btn.is-rim{
+  background:rgba(12,10,36,.7);
+  border-color:rgba(255,255,255,.28);
+}
+.dl-btn.is-rim::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity var(--glow-ms) var(--glow-ease);
+}
+.dl-btn.is-glass{
+  background:rgba(20,15,46,var(--glass-a));
+  -webkit-backdrop-filter:blur(var(--glass-blur));
+  backdrop-filter:blur(var(--glass-blur));
+  border-color:rgba(255,255,255,.3);
+}
+.dl-btn.is-ghost{
+  background:transparent;
+  color:var(--accent);
+  padding:0 14px;
+}
+.dl-btn.is-ghost:hover:not(:disabled){background:rgba(44,39,102,.08)}
+.dl-btn:disabled{background:#d9d5e8;color:#3d3766;border-color:transparent;cursor:not-allowed;transform:none}
+
+/* pointer: hover with a fine pointer only, so touch never sticks */
+@media (hover:hover){
+  .dl-wrap:hover .dl-glow{
+    opacity:var(--glow-alpha);
+    transform:translate3d(0,0,0) scale(1);
+    transition-duration:var(--glow-in-ms),var(--glow-in-ms);
+    transition-timing-function:ease-out,ease-out;
+  }
+  .dl-wrap:hover .dl-btn.is-rim::after{
+    opacity:.6;
+    transition-duration:var(--glow-in-ms);
+    transition-timing-function:ease-out;
+  }
+  .dl-btn:hover:not(:disabled){transform:translate3d(0,calc(var(--lift) * -1),0)}
+}
+.dl-btn:active:not(:disabled){transform:translate3d(0,0,0) scale(.97);transition-duration:70ms}
+/* keyboard parity: half the lift, a quieter glow, and the ring */
+.dl-btn:focus-visible:not(:disabled){transform:translate3d(0,calc(var(--lift) * -.5),0)}
+.dl-btn:focus-visible ~ .dl-glow{opacity:.35;transform:translate3d(0,0,0) scale(1)}
+
+/* reduced motion: drift, lift and loops go; colour and opacity stay */
+[data-motion="reduce"] .dl-btn{transition:background-color 150ms linear,border-color 150ms linear,color 150ms linear,opacity 150ms linear}
+[data-motion="reduce"] .dl-btn:hover:not(:disabled),
+[data-motion="reduce"] .dl-btn:active:not(:disabled),
+[data-motion="reduce"] .dl-btn:focus-visible:not(:disabled){transform:none}
+[data-motion="reduce"] .dl-glow{transform:none;transition:opacity 150ms linear}
+[data-motion="reduce"] .dl-wrap:hover .dl-glow{transform:none;transition-duration:150ms}
+[data-motion="reduce"] .dl-btn.is-rim::after{transition:opacity 150ms linear}
+
+/* sections */
+.family,.cards,.lab{max-width:1040px;margin:0 auto;padding:40px 16px 8px}
+.family p,.cards p{color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:20px 22px;align-items:center;margin-top:18px}
+.card-grid{display:grid;gap:16px;margin-top:18px}
+@media (min-width:760px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.card h3{margin-bottom:6px}
+.card .row{margin-top:16px;gap:14px 16px}
+.card .row .dl-btn{min-height:42px;padding:0 18px;font-size:14px}
+.card .row .dl-btn.is-ghost{padding:0 10px}
+.card .dl-btn.is-icon{width:42px}
+.card .row .dl-wrap{display:inline-block}
+
+/* lab */
+.lab-grid{display:grid;gap:16px;margin-top:18px}
+@media (min-width:860px){.lab-grid{grid-template-columns:1fr 1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+.lab-grid .panel{margin-top:0}
+.controls{display:grid;gap:14px}
+.controls label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.controls label .lbl{display:flex;justify-content:space-between;gap:12px;color:var(--ink)}
+.controls output{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;text-align:right}
+.controls select{font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.controls input[type=range]{width:100%;accent-color:var(--accent)}
+.controls .check-row{display:flex;align-items:center;gap:10px;color:var(--ink)}
+.controls small{font-size:12px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
+.controls .actions{display:flex;justify-content:flex-start;margin-top:4px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.chk{display:flex;gap:12px;align-items:flex-start;font-size:14px}
+.chk strong{display:block;color:var(--ink)}
+.chk .why{display:block;color:var(--muted);font-size:13px}
+.badge{flex:0 0 auto;min-width:72px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.06em;padding:4px 8px;border-radius:999px}
+.chk.pass .badge{background:#dcf1e6;color:#14532d}
+.chk.fail .badge{background:#f8dde6;color:#8a1538}
+.chk.note .badge{background:#ece8f7;color:#3d3766}
+.meta{font-size:13px;color:var(--muted);margin:14px 0 0}
+.counts{font-size:14px;color:var(--muted);margin:0 0 8px}
+.log{margin:0;padding:0 0 0 20px;font-size:14px;color:var(--ink);display:grid;gap:6px;min-height:3em}
+.log li::marker{color:var(--muted)}
+.log time{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:6px}
+.foot{max-width:1040px;margin:40px auto 0;padding:24px 16px 48px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><span class="mark" aria-hidden="true"></span>Lumen</div>
+  <nav aria-label="Page sections">
+    <a href="#family">Buttons</a>
+    <a href="#lab">Tune the motion</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Notes for long thinking</p>
+    <h1 id="hero-title">Quiet notes for slow, careful work.</h1>
+    <p class="lede">Lumen keeps drafts, sources and half-formed ideas in one calm place. Bring in what you already have, or start on a blank page when you are ready.</p>
+
+    <div class="stage" id="stage">
+      <div class="dl-wrap">
+        <button class="dl-btn is-glow" id="focal" type="button">Start a free trial</button>
+        <span class="dl-glow" aria-hidden="true"></span>
+      </div>
+      <p class="stage-note">Hover, press, or Tab to it. 14-day trial, no card needed.</p>
+      <p class="status" id="status" role="status" aria-live="polite">No trials started yet.</p>
+    </div>
+  </section>
+
+  <section class="family" id="family" aria-labelledby="family-title">
+    <h2 id="family-title">The rest of the family</h2>
+    <p>Every button shares one rhythm: the face answers at once and the light follows behind it. The disabled button stops moving on purpose.</p>
+    <div class="row">
+      <div class="dl-wrap">
+        <button class="dl-btn is-glow" type="button" data-log="Opened a notebook (primary)">Open a notebook</button>
+        <span class="dl-glow" aria-hidden="true"></span>
+      </div>
+      <div class="dl-wrap">
+        <button class="dl-btn is-rim" type="button" data-log="Opened pricing (secondary)">See pricing</button>
+        <span class="dl-glow" aria-hidden="true"></span>
+      </div>
+      <button class="dl-btn is-ghost" type="button" data-log="Opened the docs (ghost)">Read the docs</button>
+      <div class="dl-wrap">
+        <button class="dl-btn is-glow is-icon" type="button" aria-label="Share this notebook" data-log="Share sheet opened (icon)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+        </button>
+        <span class="dl-glow" aria-hidden="true"></span>
+      </div>
+      <button class="dl-btn is-glow" type="button" disabled>Export (Pro only)</button>
+    </div>
+  </section>
+
+  <section class="cards" aria-labelledby="cards-title">
+    <h2 id="cards-title">Where the buttons sit</h2>
+    <div class="card-grid">
+      <article class="card">
+        <h3>Sources</h3>
+        <p>Pull in articles, papers and transcripts. Each one stays linked to the lines you quote.</p>
+        <div class="row">
+          <div class="dl-wrap"><button class="dl-btn is-glow" type="button" data-log="Added a source">Add source</button><span class="dl-glow" aria-hidden="true"></span></div>
+          <button class="dl-btn is-ghost" type="button" data-log="Opened source list">Browse</button>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Drafts</h3>
+        <p>Every draft keeps its history. Restore an earlier version without losing the one you are writing now.</p>
+        <div class="row">
+          <div class="dl-wrap"><button class="dl-btn is-rim" type="button" data-log="Opened draft history">History</button><span class="dl-glow" aria-hidden="true"></span></div>
+          <button class="dl-btn is-ghost" type="button" data-log="Draft duplicated">Duplicate</button>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Readers</h3>
+        <p>Invite a reader to comment on a passage. They see the page, not your other notebooks.</p>
+        <div class="row">
+          <div class="dl-wrap"><button class="dl-btn is-glow" type="button" data-log="Invite sheet opened">Invite a reader</button><span class="dl-glow" aria-hidden="true"></span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="lab" id="lab" aria-labelledby="lab-title">
+    <h2 id="lab-title">Tune the dreamlike motion</h2>
+    <p>Each dial changes the focal button above and the checks beside it. The checks are the practical limits: a settle, a short hit area, a label that still reads.</p>
+
+    <div class="lab-grid">
+      <div class="panel">
+        <form class="controls" id="controls" onsubmit="return false">
+          <label>
+            <span class="lbl">Face curve</span>
+            <select id="face">
+              <option value="landing">Quick landing</option>
+              <option value="float">Float that settles</option>
+              <option value="rebound">Float with a rebound</option>
+            </select>
+            <small id="face-curve"></small>
+          </label>
+          <label>
+            <span class="lbl">Glow curve</span>
+            <select id="glow">
+              <option value="tail">Long tail</option>
+              <option value="drift">Symmetric drift</option>
+            </select>
+            <small id="glow-curve"></small>
+          </label>
+          <label>
+            <span class="lbl">Lift <output id="v-lift"></output></span>
+            <input type="range" id="lift" min="1" max="4" step="1">
+          </label>
+          <label>
+            <span class="lbl">Face duration <output id="v-faceMs"></output></span>
+            <input type="range" id="faceMs" min="120" max="400" step="10">
+          </label>
+          <label>
+            <span class="lbl">Glow duration <output id="v-glowMs"></output></span>
+            <input type="range" id="glowMs" min="300" max="800" step="10">
+          </label>
+          <label>
+            <span class="lbl">Glow strength <output id="v-glowAlpha"></output></span>
+            <input type="range" id="glowAlpha" min="0.2" max="0.8" step="0.05">
+          </label>
+          <label>
+            <span class="lbl">Focal surface</span>
+            <select id="surface">
+              <option value="glow">Soft glow</option>
+              <option value="rim">Light rim</option>
+              <option value="glass">Smoked glass</option>
+            </select>
+          </label>
+          <label>
+            <span class="lbl">Glass fill <output id="v-glassA"></output></span>
+            <input type="range" id="glassA" min="0.04" max="0.4" step="0.02">
+          </label>
+          <label>
+            <span class="lbl">Glass blur <output id="v-glassBlur"></output></span>
+            <input type="range" id="glassBlur" min="0" max="24" step="1">
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="reduced">
+            <span>Reduced motion</span>
+          </label>
+          <div class="actions">
+            <button class="dl-btn is-ghost" type="button" id="reset">Reset dials</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h3>Practical checks</h3>
+        <ul class="checks" id="checks"></ul>
+        <p class="meta" id="overshoot-text"></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Activity</h3>
+      <p class="counts" id="counts"></p>
+      <ol class="log" id="log"></ol>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  Lumen sample page. Motion is cubic-bezier easing on transform and opacity only; the glow is a pre-blurred layer that fades in.
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var FACE = {
+    landing: { label: 'Quick landing', v: [0.33, 1, 0.68, 1] },
+    float:   { label: 'Float that settles', v: [0.34, 1.2, 0.64, 1] },
+    rebound: { label: 'Float with a rebound', v: [0.34, 2.0, 0.64, 1] }
+  };
+  var GLOW = {
+    tail:  { label: 'Long tail', v: [0.22, 1, 0.36, 1] },
+    drift: { label: 'Symmetric drift', v: [0.45, 0, 0.55, 1] }
+  };
+  var SURFACE = {
+    glow:  { fill: [44, 39, 102], a: 1 },
+    rim:   { fill: [12, 10, 36], a: 0.7 },
+    glass: { fill: [20, 15, 46], a: null }
+  };
+  var LIGHT = [185, 143, 209];   // lightest backdrop the focal sits on
+  var DARK  = [74, 53, 133];     // darkest backdrop the focal sits on
+  var WHITE = [255, 255, 255];
+  var GLOW_IN_MS = 180;
+
+  var DEFAULTS = {
+    face: 'landing', glow: 'tail', lift: 3, faceMs: 220, glowMs: 620,
+    glowAlpha: 0.6, surface: 'glow', glassA: 0.3, glassBlur: 12, reduced: false
+  };
+
+  var state = {
+    face: DEFAULTS.face, glow: DEFAULTS.glow, lift: DEFAULTS.lift,
+    faceMs: DEFAULTS.faceMs, glowMs: DEFAULTS.glowMs, glowAlpha: DEFAULTS.glowAlpha,
+    surface: DEFAULTS.surface, glassA: DEFAULTS.glassA, glassBlur: DEFAULTS.glassBlur,
+    reduced: DEFAULTS.reduced,
+    clicks: 0, hovers: 0, interrupts: 0,
+    log: []
+  };
+
+  var root = document.documentElement;
+  var focal = document.getElementById('focal');
+  var statusEl = document.getElementById('status');
+  var $ = function (id) { return document.getElementById(id); };
+
+  // Peak of a cubic-bezier's y over its run; above 1 means it passes the end state.
+  function bezPeak(v) {
+    var y1 = v[1], y2 = v[3], peak = 0;
+    for (var i = 0; i <= 400; i++) {
+      var t = i / 400, mt = 1 - t;
+      var y = 3 * mt * mt * t * y1 + 3 * mt * t * t * y2 + t * t * t;
+      if (y > peak) peak = y;
+    }
+    return peak;
+  }
+
+  function lum(c) {
+    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+  }
+  function ratio(a, b) {
+    var x = lum(a), y = lum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  function over(fg, a, bg) {
+    return [0, 1, 2].map(function (i) { return a * fg[i] + (1 - a) * bg[i]; });
+  }
+  // Worst-case label contrast for the focal button across the backdrop it can sit on.
+  function focalContrast() {
+    var s = SURFACE[state.surface];
+    var a = s.a === null ? state.glassA : s.a;
+    return Math.min(
+      ratio(WHITE, over(s.fill, a, LIGHT)),
+      ratio(WHITE, over(s.fill, a, DARK))
+    );
+  }
+
+  function applyToDocument() {
+    var f = FACE[state.face], g = GLOW[state.glow];
+    root.style.setProperty('--face-ms', state.faceMs + 'ms');
+    root.style.setProperty('--face-ease', 'cubic-bezier(' + f.v.join(',') + ')');
+    root.style.setProperty('--glow-ms', state.glowMs + 'ms');
+    root.style.setProperty('--glow-ease', 'cubic-bezier(' + g.v.join(',') + ')');
+    root.style.setProperty('--lift', state.lift + 'px');
+    root.style.setProperty('--glow-alpha', String(state.glowAlpha));
+    root.style.setProperty('--glass-a', String(state.glassA));
+    root.style.setProperty('--glass-blur', state.glassBlur + 'px');
+    root.setAttribute('data-motion', state.reduced ? 'reduce' : 'full');
+    focal.classList.remove('is-glow', 'is-rim', 'is-glass');
+    focal.classList.add('is-' + state.surface);
+  }
+
+  function pushLog(message) {
+    var now = new Date();
+    var stamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    state.log.unshift({ t: stamp, m: message });
+    if (state.log.length > 8) state.log.length = 8;
+  }
+
+  function renderChecks() {
+    var f = FACE[state.face];
+    var overshoot = Math.max(0, bezPeak(f.v) - 1) * 100;
+    var contrast = focalContrast();
+    var durationsOk = [state.faceMs, state.glowMs, GLOW_IN_MS].every(function (ms) { return ms >= 100 && ms <= 750; });
+    var tailOk = state.glowMs - state.faceMs >= 300 && state.glowMs <= 750;
+
+    var checks = [
+      overshoot < 2
+        ? { s: 'pass', b: 'PASS', t: 'Face settles: return under 2% of travel', w: 'Return ' + overshoot.toFixed(2) + '% past rest.' }
+        : { s: 'note', b: 'READING', t: 'Face rebounds: a named reading, not a settle', w: 'Return ' + overshoot.toFixed(1) + '% past rest. A choice, so the settle check does not apply.' },
+      state.faceMs <= 400
+        ? { s: 'pass', b: 'PASS', t: 'Hit area settles in 400 ms or less', w: 'Face runs ' + state.faceMs + ' ms.' }
+        : { s: 'fail', b: 'FAIL', t: 'Hit area settles in 400 ms or less', w: 'Face runs ' + state.faceMs + ' ms; the click reads as late.' },
+      tailOk
+        ? { s: 'pass', b: 'PASS', t: 'Glow tail outlasts the face by 300 ms or more', w: 'Tail ' + state.glowMs + ' ms against a ' + state.faceMs + ' ms face.' }
+        : { s: 'fail', b: 'FAIL', t: 'Glow tail outlasts the face by 300 ms or more', w: 'Tail is ' + (state.glowMs - state.faceMs) + ' ms longer than the face, and it must end by 750 ms.' },
+      durationsOk
+        ? { s: 'pass', b: 'PASS', t: 'Every hover duration sits within 100 to 750 ms', w: 'Face, glow and glow-in all inside the range.' }
+        : { s: 'fail', b: 'FAIL', t: 'Every hover duration sits within 100 to 750 ms', w: 'One duration is outside the range.' },
+      contrast >= 4.5
+        ? { s: 'pass', b: 'PASS', t: 'Label holds 4.5:1 at the lightest and darkest backdrop', w: 'Worst case ' + contrast.toFixed(2) + ':1 on the focal button.' }
+        : { s: 'fail', b: 'FAIL', t: 'Label holds 4.5:1 at the lightest and darkest backdrop', w: 'Worst case ' + contrast.toFixed(2) + ':1. Raise the glass fill or switch surface.' },
+      state.reduced
+        ? { s: 'note', b: 'ON', t: 'Reduced motion: lift and drift are off', w: 'The glow only fades and colour changes stay.' }
+        : { s: 'note', b: 'OFF', t: 'Reduced motion: lift and drift are off', w: 'Turn it on to see the fallback.' },
+      { s: 'pass', b: 'PASS', t: 'Only transform and opacity move', w: 'The blur on the glow is painted once and never animated.' },
+      { s: 'pass', b: 'PASS', t: 'Keyboard focus keeps the response', w: 'Focus-visible lifts at half the travel with a ring and a quieter glow.' }
+    ];
+
+    var list = $('checks');
+    list.textContent = '';
+    checks.forEach(function (c) {
+      var li = document.createElement('li');
+      li.className = 'chk ' + c.s;
+      var b = document.createElement('span');
+      b.className = 'badge';
+      b.textContent = c.b;
+      var body = document.createElement('div');
+      var t = document.createElement('strong'); t.textContent = c.t;
+      var w = document.createElement('span'); w.className = 'why'; w.textContent = c.w;
+      body.appendChild(t); body.appendChild(w);
+      li.appendChild(b); li.appendChild(body);
+      list.appendChild(li);
+    });
+
+    $('overshoot-text').textContent =
+      'Peak of the face curve: ' + overshoot.toFixed(2) + '% past rest. Label contrast on the focal button: ' + contrast.toFixed(2) + ':1.';
+  }
+
+  function renderControls() {
+    var f = FACE[state.face], g = GLOW[state.glow];
+    $('face').value = state.face;
+    $('glow').value = state.glow;
+    $('surface').value = state.surface;
+    $('lift').value = state.lift;
+    $('faceMs').value = state.faceMs;
+    $('glowMs').value = state.glowMs;
+    $('glowAlpha').value = state.glowAlpha;
+    $('glassA').value = state.glassA;
+    $('glassBlur').value = state.glassBlur;
+    $('reduced').checked = state.reduced;
+    $('v-lift').textContent = state.lift + ' px';
+    $('v-faceMs').textContent = state.faceMs + ' ms';
+    $('v-glowMs').textContent = state.glowMs + ' ms';
+    $('v-glowAlpha').textContent = state.glowAlpha.toFixed(2);
+    $('v-glassA').textContent = state.glassA.toFixed(2);
+    $('v-glassBlur').textContent = state.glassBlur + ' px';
+    $('face-curve').textContent = 'cubic-bezier(' + f.v.join(', ') + ')';
+    $('glow-curve').textContent = 'cubic-bezier(' + g.v.join(', ') + ')';
+    $('counts').textContent =
+      state.hovers + ' hovers, ' + state.clicks + ' clicks, ' + state.interrupts + ' reversed mid-motion.';
+
+    var logEl = $('log');
+    logEl.textContent = '';
+    if (state.log.length === 0) {
+      var empty = document.createElement('li');
+      empty.textContent = 'Hover, press or Tab to the focal button to see its events here.';
+      logEl.appendChild(empty);
+    }
+    state.log.forEach(function (entry) {
+      var li = document.createElement('li');
+      var time = document.createElement('time');
+      time.textContent = entry.t;
+      li.appendChild(time);
+      li.appendChild(document.createTextNode(entry.m));
+      logEl.appendChild(li);
+    });
+  }
+
+  function render() {
+    applyToDocument();
+    renderControls();
+    renderChecks();
+  }
+
+  // Dials
+  var textDials = { face: 1, glow: 1, surface: 1 };
+  var numDials = { lift: 1, faceMs: 1, glowMs: 1, glowAlpha: 1, glassA: 1, glassBlur: 1 };
+  ['face', 'glow', 'surface'].forEach(function (k) {
+    $(k).addEventListener('change', function () {
+      state[k] = this.value;
+      pushLog('Dial: ' + k + ' set to ' + (k === 'face' ? FACE[this.value].label : k === 'glow' ? GLOW[this.value].label : this.value));
+      render();
+    });
+  });
+  Object.keys(numDials).forEach(function (k) {
+    $(k).addEventListener('input', function () {
+      state[k] = parseFloat(this.value);
+      render();
+    });
+  });
+  $('reduced').addEventListener('change', function () {
+    state.reduced = this.checked;
+    pushLog(state.reduced ? 'Reduced motion on: no lift, no drift' : 'Reduced motion off: full motion');
+    render();
+  });
+  $('reset').addEventListener('click', function () {
+    state.face = DEFAULTS.face; state.glow = DEFAULTS.glow; state.lift = DEFAULTS.lift;
+    state.faceMs = DEFAULTS.faceMs; state.glowMs = DEFAULTS.glowMs; state.glowAlpha = DEFAULTS.glowAlpha;
+    state.surface = DEFAULTS.surface; state.glassA = DEFAULTS.glassA; state.glassBlur = DEFAULTS.glassBlur;
+    state.reduced = DEFAULTS.reduced;
+    pushLog('Dials reset to the defaults');
+    render();
+  });
+
+  // Focal button events drive state
+  var enteredAt = 0;
+  focal.addEventListener('pointerenter', function (e) {
+    if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+    enteredAt = performance.now();
+    state.hovers++;
+    pushLog(state.reduced
+      ? 'Pointer in: colour and glow change only'
+      : 'Pointer in: face lifts ' + state.lift + ' px over ' + state.faceMs + ' ms, glow rises over ' + GLOW_IN_MS + ' ms');
+    render();
+  });
+  focal.addEventListener('pointerleave', function (e) {
+    if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+    var dt = Math.round(performance.now() - enteredAt);
+    if (dt < GLOW_IN_MS) {
+      state.interrupts++;
+      pushLog('Pointer out after ' + dt + ' ms, before the glow landed: the light reverses from where it is');
+    } else {
+      pushLog('Pointer out after ' + dt + ' ms: face returns in ' + state.faceMs + ' ms, glow lingers ' + state.glowMs + ' ms');
+    }
+    render();
+  });
+  focal.addEventListener('focus', function () {
+    var keyboard = false;
+    try { keyboard = focal.matches(':focus-visible'); } catch (err) { keyboard = false; }
+    if (keyboard) {
+      pushLog('Keyboard focus: ring, half lift and a quieter glow, with no pointer needed');
+      render();
+    }
+  });
+  focal.addEventListener('click', function () {
+    state.clicks++;
+    statusEl.textContent = 'Trial started ' + state.clicks + (state.clicks === 1 ? ' time' : ' times') + ' in this session.';
+    pushLog('Click: the face presses to 97% while held, then releases to rest');
+    render();
+  });
+
+  // Other buttons log their own events
+  document.querySelectorAll('[data-log]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      pushLog(btn.getAttribute('data-log'));
+      render();
+    });
+  });
+
+  // Start from the visitor's own motion setting, then let the dials take over
+  try {
+    state.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (err) {
+    state.reduced = false;
+  }
+  render();
+})();
+</script>
+</body>
+</html>

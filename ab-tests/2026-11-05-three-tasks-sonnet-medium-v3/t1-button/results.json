@@ -1,0 +1,179 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 6.83,
+   "practical": 7.08,
+   "motion": 7.0,
+   "craft": 7.17,
+   "overall": 6.5,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "A-r1": 6.0,
+    "A-r2": 7.0,
+    "A-r3": 7.0,
+    "A-r4": 6.0
+   }
+  },
+  "B": {
+   "dreamlike": 8.42,
+   "practical": 8.08,
+   "motion": 8.33,
+   "craft": 8.08,
+   "overall": 8.25,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "B-r1": 8.0,
+    "B-r2": 8.0,
+    "B-r3": 9.0,
+    "B-r4": 8.0
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 23,
+  "losses": 0,
+  "ties": 1,
+  "win_rate": 0.98
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 7,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 7,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 76250,
+   "mean_seconds": 36.6
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 111883,
+   "mean_seconds": 80.4
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 221751,
+   "ms": 1959124,
+   "tool_uses": 44,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.9,
+ "permutation": {
+  "p": 0.029,
+  "extreme": 2,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Aurora-edged pill with a breathing glow layer, long-tailed 1.4s opacity glow and sparkle, strong focus ring, reduced-motion and opacity-only animation, though the hover change is modest.",
+  "b1/j1/A-r1": "Full-width gradient button gets a lovely iridescent wash on hover, but the label visibly washes out mid-transition and the blur glow plus transition:all is less disciplined.",
+  "b1/j1/B-r2": "Pale lavender plate with halo bloom, floating drift and asymmetric slow-in, slower-out curves feels very ethereal and the label stays legible, with good focus and reduced-motion handling, but the effect is subtle.",
+  "b1/j1/A-r2": "Gradient pill that blooms a soft halo with overshoot and an arrow reveal, clean and legible with sensible reduced-motion, but the effect is more conventional and the layout is plain.",
+  "b1/j2/B-r2": "Long layered bezier tails with a resting breath and soft bloom, high-contrast label, strong focus ring, thorough reduced-motion, and a clean primary/ghost hierarchy.",
+  "b1/j2/A-r2": "Bloom with gentle overshoot and arrow reveal reads ethereal and the exit is slow, but the blurred blob and spinning halo cost more to render and the resting button is plainer.",
+  "b1/j2/A-r1": "Pretty light-theme card, but the hover wash visibly fades the white label mid-transition, the slot buttons use transition: all, and it is the weakest at keeping contrast during motion.",
+  "b1/j2/B-r1": "Pink-blue halo, sparkle spin and an opacity-only breathing glow feel dreamy with good asymmetric curves, though the compact outline button has a lighter affordance.",
+  "b1/j3/A-r2": "Clean violet-blue pill with blurred aurora halo, bloom overshoot and arrow reveal, solid focus and reduced-motion, but the resting button is a little plain and the effect is fairly standard.",
+  "b1/j3/B-r2": "Pale pearl plate with slow breathing glow, letter-spacing drift and long exhale curves feels genuinely ethereal with a dark legible label, strong focus ring and thorough reduced-motion, though the exit is very slow.",
+  "b1/j3/B-r1": "Glass pill with iridescent rim, spark icon rotating and a glow that keeps arriving after the lift stops, asymmetric breath curves and clear exit, full-width on mobile with good focus and reduced-motion handling.",
+  "b1/j3/A-r1": "Pretty light pastel card with gradient sweep and spinning blur, but at peak hover the white label washes out against the pale gradient, hurting legibility.",
+  "b2/j1/B-r3": "Slow 1.5s exhale-out and a pointer-following bloom make a rich, lingering glow on dark, with focus ring, active state and a thorough reduced-motion block.",
+  "b2/j1/A-r3": "Gradient sweep with soft overshoot and glow is pleasant and legible, but the effect is more of a polished shift than a truly ethereal bloom.",
+  "b2/j1/B-r4": "Pink-to-cyan aurora halo blooms behind a white pill and fades slowly, very ethereal, with good focus and reduced-motion handling, though the glow is heavy at rest-to-hover contrast.",
+  "b2/j1/A-r4": "Subtle pastel veil with overshoot bloom is tasteful and legible but the change is faint, and reduced-motion just shortens durations.",
+  "b2/j2/B-r4": "Vivid pink-cyan aurora blooms behind a white label pill with long tail curves, floating drift, focus and reduced-motion handled, though the saturated glow is a bit loud for a calm card.",
+  "b2/j2/A-r4": "Gentle pastel gradient shift with a spinning blurred halo and ripple, but the rest button is pale on a pale page so the affordance is weak and the hover is subtle.",
+  "b2/j2/A-r3": "Strong solid gradient button with a clear affordance and nice bloom with overshoot, but the white glow washes out the white label mid-hover.",
+  "b2/j2/B-r3": "Dark scene with a slow lagging pointer-following light and rose-peach bloom, seven purposeful curves, hover-gated, strong focus ring, and legible label throughout, the most ethereal and polished.",
+  "b2/j3/A-r4": "Soft pastel aurora bloom with long exhale curves and good focus and reduced-motion handling, but the hover is subtle and the glow washes out on the pale page.",
+  "b2/j3/B-r4": "Vivid pink-to-cyan bloom behind a white pill label with layered 1.1-1.6s curves, drift, press snap and reduced-motion fallback; legible and clearly ethereal.",
+  "b2/j3/B-r3": "Dark moody page where a peach-lilac glow blooms and floats with slow exhale curves, pointer-following sheen, distinct leave timing, strong focus ring and thorough reduced-motion rules.",
+  "b2/j3/A-r3": "Solid gradient button with a drifting white sheen on hover that is pleasant and highly legible, but it reads more polished than ethereal."
+ }
+}

@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halo Button Lab</title>
+<style>
+  :root {
+    --bg: #0c0b1c;
+    --ink: #eef0ff;
+    --muted: #9da3cc;
+    --panel: rgba(255, 255, 255, 0.045);
+    --line: rgba(255, 255, 255, 0.11);
+    --violet: #8b7bff;
+    --sky: #5fd3f0;
+    --rose: #f29ad8;
+    --mint: #6ee7b7;
+    --ease-dream: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-drift: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(60vw 40vw at 15% -5%, rgba(139, 123, 255, 0.22), transparent 70%),
+      radial-gradient(50vw 40vw at 95% 10%, rgba(95, 211, 240, 0.14), transparent 70%),
+      radial-gradient(60vw 50vw at 50% 110%, rgba(242, 154, 216, 0.12), transparent 70%),
+      var(--bg);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding: 0 16px 64px;
+  }
+
+  .page { max-width: 960px; margin: 0 auto; }
+
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 20px 0 8px;
+  }
+  .brand { font-weight: 700; letter-spacing: 0.02em; }
+  .brand span { color: var(--muted); font-weight: 400; }
+  .bag-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--line);
+    color: var(--muted); font-size: 14px;
+  }
+  .bag-count {
+    display: inline-grid; place-items: center;
+    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+    background: #5a4bd8; color: #fff; font-weight: 700; font-size: 12px;
+    transition: transform 520ms var(--ease-dream);
+  }
+  .bag-count.bump { transform: scale(1.35); }
+
+  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: 18px 0 6px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 60ch; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 14px; }
+
+  /* ---------- Product card ---------- */
+  .product { display: grid; gap: 24px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .product { grid-template-columns: 1.1fr 1fr; align-items: center; } }
+
+  .visual {
+    position: relative; aspect-ratio: 1 / 1; border-radius: 20px; overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.55), transparent 22%),
+      radial-gradient(circle at 60% 65%, rgba(95, 211, 240, 0.7), transparent 45%),
+      radial-gradient(circle at 75% 30%, rgba(242, 154, 216, 0.7), transparent 40%),
+      linear-gradient(160deg, #1b1744, #0e1a33);
+    display: grid; place-items: center;
+  }
+  .orb {
+    width: 46%; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, rgba(139, 123, 255, 0.5) 45%, rgba(12, 11, 28, 0.2) 75%);
+    box-shadow: 0 0 80px 10px rgba(139, 123, 255, 0.45);
+    animation: float 9s var(--ease-drift) infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -10px, 0); }
+  }
+  .visual .tag {
+    position: absolute; left: 14px; top: 14px; font-size: 12px;
+    padding: 4px 10px; border-radius: 999px; background: rgba(12, 11, 28, 0.55); color: var(--ink);
+  }
+
+  .meta h2 { margin: 0 0 6px; font-size: 1.5rem; letter-spacing: -0.01em; }
+  .meta p { margin: 0 0 18px; color: var(--muted); }
+  .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; }
+  .price { font-size: 1.4rem; font-weight: 700; }
+  .price-note { color: var(--muted); font-size: 14px; }
+
+  .field-label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 18px; }
+
+  .seg { display: inline-flex; gap: 6px; padding: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); }
+  .seg button {
+    font: inherit; font-size: 14px; min-width: 44px; height: 36px; padding: 0 12px;
+    border-radius: 999px; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+    transition: background-color 420ms var(--ease-dream), color 420ms var(--ease-dream), transform 420ms var(--ease-dream);
+  }
+  .seg button:hover:not(:disabled) { color: var(--ink); transform: translate3d(0, -1px, 0); }
+  .seg button[aria-checked="true"] { background: var(--ink); color: #0c0b1c; }
+  .seg button:disabled { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
+
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .stepper button {
+    font: inherit; width: 40px; height: 40px; border: 0; background: transparent; color: var(--ink); cursor: pointer;
+    transition: background-color 400ms var(--ease-dream), transform 400ms var(--ease-dream);
+  }
+  .stepper button:hover { background: rgba(255, 255, 255, 0.08); }
+  .stepper button:active { transform: scale(0.9); }
+  .stepper output { min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  .wish {
+    font: inherit; height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--muted);
+    transition: color 500ms var(--ease-dream), border-color 500ms var(--ease-dream), background-color 500ms var(--ease-dream);
+  }
+  .wish[aria-pressed="true"] { color: var(--rose); border-color: rgba(242, 154, 216, 0.6); background: rgba(242, 154, 216, 0.1); }
+
+  /* ---------- The dream button ---------- */
+  .stage { --ease: var(--ease-dream); --dur: 700ms; }
+
+  .btn {
+    --ease: var(--ease-dream);
+    --dur: 700ms;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 48px; padding: 0 26px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font: inherit; font-weight: 600; font-size: 15px; letter-spacing: 0.01em;
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease),
+      filter var(--dur) var(--ease),
+      background-color var(--dur) var(--ease),
+      border-color var(--dur) var(--ease),
+      color var(--dur) var(--ease);
+  }
+  .btn:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+  .btn[aria-disabled="true"] { cursor: progress; }
+
+  /* Label stack: all states share one grid cell so the button never jumps. */
+  .btn__inner { display: grid; }
+  .btn__inner > span {
+    grid-area: 1 / 1; justify-self: center;
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    transition:
+      opacity var(--dur) var(--ease),
+      transform var(--dur) var(--ease),
+      filter var(--dur) var(--ease),
+      visibility var(--dur) linear;
+  }
+  .btn[data-state="idle"] .btn__busy,
+  .btn[data-state="idle"] .btn__done,
+  .btn[data-state="busy"] .btn__idle,
+  .btn[data-state="busy"] .btn__done,
+  .btn[data-state="done"] .btn__idle,
+  .btn[data-state="done"] .btn__busy {
+    opacity: 0; transform: translate3d(0, 40%, 0); filter: blur(4px); visibility: hidden;
+  }
+
+  .dots { display: inline-flex; gap: 6px; }
+  .dots i {
+    width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: block;
+    animation: bob 1100ms var(--ease-drift) infinite;
+  }
+  .dots i:nth-child(2) { animation-delay: 150ms; }
+  .dots i:nth-child(3) { animation-delay: 300ms; }
+  @keyframes bob {
+    0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.35; }
+    50% { transform: translate3d(0, -5px, 0); opacity: 1; }
+  }
+
+  .check { width: 18px; height: 18px; }
+  .check path {
+    fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 22; stroke-dashoffset: 22;
+    transition: stroke-dashoffset calc(var(--dur) * 0.9) var(--ease) 120ms;
+  }
+  .btn[data-state="done"] .check path { stroke-dashoffset: 0; }
+
+  /* Primary: aurora gradient with a sheen that drifts across on hover. */
+  .btn--primary {
+    color: #fff;
+    background: linear-gradient(120deg, #5a4bd8 0%, #4f5fd6 45%, #1e7ba8 100%);
+    box-shadow:
+      0 12px 32px -14px rgba(109, 94, 252, 0.9),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .btn--primary::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+    transform: translate3d(-130%, 0, 0);
+    transition: transform calc(var(--dur) * 1.5) var(--ease);
+  }
+  .btn--primary[data-state="done"] {
+    background: linear-gradient(120deg, #0f8a62 0%, #1a7f9c 100%);
+    box-shadow: 0 12px 32px -14px rgba(110, 231, 183, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  /* Glass: a glow that follows the pointer (state is written to --mx / --my by JS). */
+  .btn--glass {
+    color: var(--ink);
+    border-color: var(--line);
+    background:
+      radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), rgba(139, 123, 255, 0.42), transparent 70%),
+      rgba(255, 255, 255, 0.04);
+  }
+
+  /* Soft: tinted, with an inner light that rises on hover. */
+  .btn--soft {
+    color: #d9d4ff;
+    background: rgba(139, 123, 255, 0.16);
+    border-color: rgba(139, 123, 255, 0.3);
+  }
+
+  @media (hover: hover) {
+    .btn--primary:hover:not([aria-disabled="true"]) {
+      transform: translate3d(0, -3px, 0) scale(1.025);
+      filter: saturate(1.15) brightness(1.06);
+      box-shadow:
+        0 24px 52px -16px rgba(139, 123, 255, 0.85),
+        0 0 0 6px rgba(139, 123, 255, 0.13),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+    .btn--primary:hover:not([aria-disabled="true"])::before { transform: translate3d(130%, 0, 0); }
+
+    .btn--glass:hover:not([aria-disabled="true"]) {
+      transform: translate3d(0, -2px, 0);
+      border-color: rgba(190, 180, 255, 0.55);
+      box-shadow: 0 18px 44px -20px rgba(139, 123, 255, 0.9);
+    }
+
+    .btn--soft:hover:not([aria-disabled="true"]) {
+      transform: translate3d(0, -2px, 0);
+      background: rgba(139, 123, 255, 0.3);
+      box-shadow: 0 0 0 1px rgba(190, 180, 255, 0.25), 0 14px 34px -18px rgba(139, 123, 255, 0.9);
+    }
+  }
+
+  .btn:active:not([aria-disabled="true"]) {
+    transform: translate3d(0, 0, 0) scale(0.965);
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.3, 0.7, 0.4, 1);
+  }
+
+  .btn--block { width: 100%; }
+
+  /* ---------- Curve lab ---------- */
+  .lab-grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .lab-grid { grid-template-columns: 1fr 1fr; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip {
+    font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--muted);
+    transition: background-color 450ms var(--ease-dream), color 450ms var(--ease-dream), border-color 450ms var(--ease-dream), transform 450ms var(--ease-dream);
+  }
+  .chip:hover { color: var(--ink); transform: translate3d(0, -1px, 0); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #0c0b1c; border-color: var(--ink); }
+  .chip:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  .curve-box {
+    display: flex; gap: 16px; align-items: center; margin-bottom: 18px;
+    padding: 14px; border-radius: 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--line);
+  }
+  .curve-box svg { width: 96px; height: 96px; overflow: visible; flex: none; }
+  .curve-box code { font-size: 13px; color: var(--muted); word-break: break-all; }
+  .curve-box strong { display: block; margin-bottom: 4px; font-size: 15px; }
+
+  .slider-row { display: grid; gap: 8px; margin-bottom: 22px; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
+  input[type="range"] { width: 100%; accent-color: var(--violet); }
+
+  .lab-buttons { display: flex; flex-wrap: wrap; gap: 14px; }
+
+  .lab-note { color: var(--muted); font-size: 13px; margin: 14px 0 0; }
+
+  /* ---------- Activity log ---------- */
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; min-height: 48px; }
+  .log li {
+    font-size: 14px; color: var(--muted); padding: 10px 14px; border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line);
+    animation: rise 700ms var(--ease-dream) both;
+  }
+  .log li b { color: var(--ink); font-weight: 600; }
+  .log li time { font-variant-numeric: tabular-nums; margin-right: 8px; opacity: 0.7; }
+  @keyframes rise {
+    from { opacity: 0; transform: translate3d(0, 8px, 0); filter: blur(3px); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+  }
+
+  .stack { display: grid; gap: 24px; margin-top: 24px; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+    .btn:hover, .btn:active { transform: none !important; }
+    .orb { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page stage" id="stage">
+
+  <header class="top">
+    <div class="brand">Halo Lighting <span>/ Studio</span></div>
+    <div class="bag-chip" aria-live="polite">
+      Bag
+      <span class="bag-count" id="bag-count">0</span>
+    </div>
+  </header>
+
+  <h1>Dream button, built to be used</h1>
+  <p class="lede">A primary action with a slow, drifting sheen and a lift on hover, pressed back down on click. It moves through loading and done states without changing width, and every change is written to the page state and logged below.</p>
+
+  <!-- Product card -->
+  <section class="panel" aria-labelledby="product-title">
+    <p class="section-title">Live example</p>
+    <div class="product">
+      <div class="visual" aria-hidden="true">
+        <span class="tag">New</span>
+        <div class="orb"></div>
+      </div>
+
+      <div class="meta">
+        <h2 id="product-title">Lumen Drift Lamp</h2>
+        <p>Hand-blown smoked glass, warm 2200K dimming, and a base that rests on three felt feet. Ships in five days.</p>
+
+        <div class="price-row">
+          <span class="price" id="unit-price">$148</span>
+          <span class="price-note" id="price-note">Free returns within 30 days</span>
+        </div>
+
+        <span class="field-label" id="size-label">Size</span>
+        <div class="seg row" role="radiogroup" aria-labelledby="size-label" id="sizes">
+          <button type="button" role="radio" aria-checked="false" data-size="S">S</button>
+          <button type="button" role="radio" aria-checked="true" data-size="M">M</button>
+          <button type="button" role="radio" aria-checked="false" data-size="L">L</button>
+          <button type="button" role="radio" aria-checked="false" data-size="XL" disabled>XL</button>
+        </div>
+
+        <div class="row">
+          <div>
+            <span class="field-label" id="qty-label">Quantity</span>
+            <div class="stepper" role="group" aria-labelledby="qty-label">
+              <button type="button" id="qty-minus" aria-label="Decrease quantity">&minus;</button>
+              <output id="qty" aria-live="polite">1</output>
+              <button type="button" id="qty-plus" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+          <button type="button" class="wish" id="wish" aria-pressed="false">&#9825; Save</button>
+        </div>
+
+        <button type="button" class="btn btn--primary btn--block" id="add" data-state="idle" aria-disabled="false">
+          <span class="btn__inner">
+            <span class="btn__idle">Add to bag &middot; <span id="add-total">$148</span></span>
+            <span class="btn__busy"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span> Adding</span>
+            <span class="btn__done">
+              <svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6.5"/></svg>
+              Added to bag
+            </span>
+          </span>
+        </button>
+        <p class="sr-only" id="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="lab-grid stack" style="margin-top:24px">
+    <!-- Curve lab -->
+    <section class="panel" aria-labelledby="lab-title">
+      <p class="section-title" id="lab-title">Curve lab</p>
+
+      <div class="chips" role="group" aria-label="Easing curve">
+        <button type="button" class="chip" data-curve="dream" aria-pressed="true">Dream</button>
+        <button type="button" class="chip" data-curve="drift" aria-pressed="false">Drift</button>
+        <button type="button" class="chip" data-curve="bloom" aria-pressed="false">Bloom</button>
+        <button type="button" class="chip" data-curve="haze" aria-pressed="false">Haze</button>
+      </div>
+
+      <div class="curve-box">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="0" y="0" width="100" height="100" rx="10" fill="none" stroke="rgba(255,255,255,0.12)"/>
+          <path id="curve-path" d="M0 100 C 22 0 36 0 100 0" fill="none" stroke="#8b7bff" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <strong id="curve-name">Dream</strong>
+          <code id="curve-value">cubic-bezier(0.22, 1, 0.36, 1)</code>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <label for="dur">Duration <span id="dur-out">700 ms</span></label>
+        <input type="range" id="dur" min="150" max="1400" step="50" value="700">
+      </div>
+
+      <div class="lab-buttons">
+        <button type="button" class="btn btn--primary" data-lab="primary">Primary</button>
+        <button type="button" class="btn btn--glass" data-lab="glass">Glass</button>
+        <button type="button" class="btn btn--soft" data-lab="soft">Soft</button>
+      </div>
+      <p class="lab-note">Hover the buttons above. The curve and duration you pick apply to all three; clicks are logged.</p>
+    </section>
+
+    <!-- Activity -->
+    <section class="panel" aria-labelledby="log-title">
+      <p class="section-title" id="log-title">Activity</p>
+      <ul class="log" id="log" aria-live="polite">
+        <li><time>--:--</time>Ready. Hover a button to see the sheen.</li>
+      </ul>
+    </section>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const stage = $("#stage");
+  const logList = $("#log");
+  const status = $("#status");
+
+  const CURVES = {
+    dream: { name: "Dream", pts: [0.22, 1, 0.36, 1] },
+    drift: { name: "Drift", pts: [0.37, 0, 0.63, 1] },
+    bloom: { name: "Bloom", pts: [0.34, 1.56, 0.64, 1] },
+    haze:  { name: "Haze",  pts: [0.25, 0.1, 0.25, 1] }
+  };
+
+  const PRICE = 148;
+  const SIZE_EXTRA = { S: 0, M: 0, L: 10 };
+  const state = { qty: 1, size: "M", saved: false, bag: 0, busy: false, curve: "dream", dur: 700 };
+  let timers = [];
+
+  const money = (n) => "$" + n.toLocaleString("en-US");
+  const now = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  function log(html) {
+    const li = document.createElement("li");
+    const t = document.createElement("time");
+    t.textContent = now();
+    li.append(t);
+    const span = document.createElement("span");
+    span.innerHTML = html;
+    li.append(span);
+    logList.prepend(li);
+    while (logList.children.length > 6) logList.lastElementChild.remove();
+  }
+
+  function unitPrice() { return PRICE + (SIZE_EXTRA[state.size] || 0); }
+
+  function renderPrice() {
+    const total = unitPrice() * state.qty;
+    $("#unit-price").textContent = money(unitPrice());
+    $("#add-total").textContent = money(total);
+    $("#price-note").textContent = state.qty > 1
+      ? state.qty + " pieces, " + money(total) + " total"
+      : "Free returns within 30 days";
+  }
+
+  // ----- Size -----
+  $$("#sizes button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.size = btn.dataset.size;
+      $$("#sizes button").forEach((b) => b.setAttribute("aria-checked", String(b === btn)));
+      renderPrice();
+      const extra = SIZE_EXTRA[state.size] ? " (+" + money(SIZE_EXTRA[state.size]) + ")" : "";
+      log("Size set to <b>" + state.size + "</b>" + extra);
+    });
+  });
+
+  // ----- Quantity -----
+  function setQty(next) {
+    state.qty = Math.min(9, Math.max(1, next));
+    $("#qty").textContent = String(state.qty);
+    $("#qty-minus").disabled = state.qty === 1;
+    $("#qty-plus").disabled = state.qty === 9;
+    renderPrice();
+  }
+  $("#qty-minus").addEventListener("click", () => { setQty(state.qty - 1); log("Quantity <b>" + state.qty + "</b>"); });
+  $("#qty-plus").addEventListener("click", () => { setQty(state.qty + 1); log("Quantity <b>" + state.qty + "</b>"); });
+  setQty(1);
+
+  // ----- Wishlist -----
+  $("#wish").addEventListener("click", (e) => {
+    state.saved = !state.saved;
+    const b = e.currentTarget;
+    b.setAttribute("aria-pressed", String(state.saved));
+    b.textContent = state.saved ? "♥ Saved" : "♡ Save";
+    log(state.saved ? "Saved <b>Lumen Drift Lamp</b> to wishlist" : "Removed from wishlist");
+  });
+
+  // ----- Add to bag: idle -> busy -> done -> idle -----
+  const addBtn = $("#add");
+  const badge = $("#bag-count");
+
+  function setAddState(s) {
+    addBtn.dataset.state = s;
+    addBtn.setAttribute("aria-disabled", String(s !== "idle"));
+    addBtn.setAttribute("aria-busy", String(s === "busy"));
+  }
+
+  function bumpBadge() {
+    badge.textContent = String(state.bag);
+    badge.classList.remove("bump");
+    void badge.offsetWidth; // restart the transition
+    badge.classList.add("bump");
+    setTimeout(() => badge.classList.remove("bump"), 520);
+  }
+
+  addBtn.addEventListener("click", () => {
+    if (state.busy) return;
+    state.busy = true;
+    setAddState("busy");
+    status.textContent = "Adding to bag";
+    timers.push(setTimeout(() => {
+      state.bag += state.qty;
+      bumpBadge();
+      setAddState("done");
+      status.textContent = "Added " + state.qty + " to bag";
+      log("Added <b>" + state.qty + " x " + state.size + "</b> to bag, " + money(unitPrice() * state.qty));
+      timers.push(setTimeout(() => {
+        setAddState("idle");
+        state.busy = false;
+        status.textContent = "";
+      }, 1800));
+    }, 950));
+  });
+
+  // ----- Curve lab -----
+  function applyCurve(key) {
+    const c = CURVES[key];
+    state.curve = key;
+    stage.style.setProperty("--ease", "cubic-bezier(" + c.pts.join(", ") + ")");
+    $$(".chip").forEach((chip) => chip.setAttribute("aria-pressed", String(chip.dataset.curve === key)));
+    $("#curve-name").textContent = c.name;
+    $("#curve-value").textContent = "cubic-bezier(" + c.pts.join(", ") + ")";
+    const [x1, y1, x2, y2] = c.pts;
+    $("#curve-path").setAttribute(
+      "d",
+      "M0 100 C " + (x1 * 100) + " " + (100 - y1 * 100) + " " + (x2 * 100) + " " + (100 - y2 * 100) + " 100 0"
+    );
+  }
+
+  $$(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      applyCurve(chip.dataset.curve);
+      log("Curve set to <b>" + CURVES[chip.dataset.curve].name + "</b>");
+    });
+  });
+
+  const durInput = $("#dur");
+  durInput.addEventListener("input", () => {
+    state.dur = Number(durInput.value);
+    stage.style.setProperty("--dur", state.dur + "ms");
+    $("#dur-out").textContent = state.dur + " ms";
+  });
+  durInput.addEventListener("change", () => log("Duration set to <b>" + state.dur + " ms</b>"));
+
+  $$(".lab-buttons [data-lab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const label = btn.textContent;
+      log("<b>" + label + "</b> pressed on " + CURVES[state.curve].name + ", " + state.dur + " ms");
+    });
+  });
+
+  // ----- Pointer position for the glass glow -----
+  $$(".btn--glass").forEach((btn) => {
+    btn.addEventListener("pointermove", (e) => {
+      const r = btn.getBoundingClientRect();
+      btn.style.setProperty("--mx", (e.clientX - r.left) + "px");
+      btn.style.setProperty("--my", (e.clientY - r.top) + "px");
+    });
+  });
+
+  // Initial render.
+  applyCurve("dream");
+  renderPrice();
+  stage.style.setProperty("--dur", state.dur + "ms");
+})();
+</script>
+</body>
+</html>

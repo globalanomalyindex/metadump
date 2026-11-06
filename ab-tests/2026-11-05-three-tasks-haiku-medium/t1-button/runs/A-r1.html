@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamline Button</title>
+<style>
+:root {
+  --paper: #f6f4fb;
+  --surface: #ffffff;
+  --surface-2: #f0ecfa;
+  --ink: #1c1a2b;
+  --muted: #66627c;
+  --line: #e3ddf2;
+  --ring: #6654e6;
+  --g1: #7a66ff;
+  --g2: #4fd1c7;
+  --g3: #ff9dc4;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bloom: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur: 620ms;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #120f1d;
+    --surface: #1d1930;
+    --surface-2: #271f42;
+    --ink: #efebfb;
+    --muted: #a39dbd;
+    --line: #342f52;
+    --ring: #a798ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #120f1d;
+  --surface: #1d1930;
+  --surface-2: #271f42;
+  --ink: #efebfb;
+  --muted: #a39dbd;
+  --line: #342f52;
+  --ring: #a798ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+.aurora {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgba(122, 102, 255, .18), transparent 70%),
+    radial-gradient(50% 45% at 90% 20%, rgba(79, 209, 199, .16), transparent 70%),
+    radial-gradient(55% 50% at 60% 100%, rgba(255, 157, 196, .16), transparent 70%);
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 40px 16px 64px; display: grid; gap: 24px; }
+.eyebrow { font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 .25rem; }
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem); margin: 0; font-weight: 700; letter-spacing: -.02em;
+  color: var(--ink);
+}
+h2 { font-size: 1.25rem; margin: 0; }
+.lede { color: var(--muted); max-width: 60ch; margin: .5rem 0 0; }
+.muted { color: var(--muted); margin: .25rem 0 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px;
+  box-shadow: 0 30px 60px -40px rgba(60, 40, 140, .35);
+}
+.stay-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.price .amount { font-size: 2rem; font-weight: 700; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 20px 0; padding: 0; }
+.facts div { background: var(--surface-2); border-radius: 14px; padding: 12px 14px; }
+.facts dt { font-size: .8rem; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.stepper { display: inline-flex; align-items: center; gap: 10px; padding: 4px; border-radius: 999px; background: var(--surface-2); }
+.stepper span { min-width: 96px; text-align: center; font-weight: 600; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.status { margin: 18px 0 0; min-height: 1.5em; color: var(--muted); font-size: .95rem; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.curve-wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+svg.curve { width: 160px; height: auto; background: var(--surface-2); border-radius: 14px; flex: none; }
+.sliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 16px; flex: 1; min-width: 260px; }
+.sliders label { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); }
+.sliders output { color: var(--ink); font-variant-numeric: tabular-nums; float: right; }
+input[type="range"] { width: 100%; accent-color: var(--g1); }
+.readout {
+  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem;
+  background: var(--surface-2); padding: 8px 12px; border-radius: 10px; margin: 14px 0 0; display: inline-block;
+}
+.tryit { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+.counter { font-variant-numeric: tabular-nums; }
+
+/* ---------- Dreamline button ---------- */
+.dream {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex; align-items: center; justify-content: center; gap: .55em;
+  min-height: 44px; padding: .7em 1.4em;
+  border: 1px solid transparent; border-radius: 999px;
+  font: inherit; font-weight: 600; font-size: .95rem; line-height: 1; letter-spacing: .01em;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 8px 20px -12px rgba(90, 70, 200, .45);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background-color calc(var(--dur) * .6) var(--ease),
+    background-position calc(var(--dur) * 1.8) var(--ease),
+    border-color calc(var(--dur) * .6) var(--ease),
+    color calc(var(--dur) * .6) var(--ease);
+}
+/* halo: a blurred bloom that swells outward on hover */
+.dream::before {
+  content: ""; position: absolute; inset: -28%; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(122, 102, 255, .5), rgba(79, 209, 199, .22) 55%, transparent 100%);
+  filter: blur(12px);
+  opacity: 0; transform: scale(.6);
+  transition: opacity var(--dur) var(--ease), transform calc(var(--dur) * 1.5) var(--ease);
+}
+/* sheen: a pale band that drifts across the face */
+.dream::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .55) 50%, transparent 65%) no-repeat;
+  background-size: 250% 100%; background-position: 130% 0;
+  transition: background-position calc(var(--dur) * 1.8) var(--ease);
+}
+.dream:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.dream:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.dream--sm { min-height: 36px; padding: .5em 1em; font-size: .88rem; }
+.dream--ghost { background: transparent; border-color: var(--line); box-shadow: none; }
+.dream--primary {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(115deg, #6f5cf5, #4fd1c7 45%, #ff8fbe);
+  background-size: 200% 100%; background-position: 0% 50%;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .35) inset, 0 12px 26px -12px rgba(111, 92, 245, .7);
+}
+.dream--primary::before { opacity: .35; }
+.dream--icon { width: 44px; padding: 0; border-radius: 50%; color: var(--muted); }
+.dream--icon svg {
+  width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8;
+  transition: transform calc(var(--dur) * .8) var(--ease-bloom), fill calc(var(--dur) * .6) var(--ease);
+}
+.dream--icon[aria-pressed="true"] { color: #ff5f9e; border-color: rgba(255, 95, 158, .4); }
+.dream--icon[aria-pressed="true"] svg { fill: currentColor; transform: scale(1.14) rotate(-8deg); }
+.dream[aria-pressed="true"]:not(.dream--icon) { background: var(--surface-2); border-color: rgba(122, 102, 255, .5); }
+
+/* loading dots */
+.dots { display: none; gap: 4px; }
+.dots i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: bob 1s var(--ease) infinite; }
+.dots i:nth-child(2) { animation-delay: .12s; }
+.dots i:nth-child(3) { animation-delay: .24s; }
+.dream.is-loading .dots { display: inline-flex; }
+@keyframes bob { 0%, 100% { transform: translateY(0); opacity: .4; } 50% { transform: translateY(-4px); opacity: 1; } }
+
+/* hover and press only where a real pointer exists */
+@media (hover: hover) and (pointer: fine) {
+  .dream:not(:disabled):hover {
+    transform: translateY(-2px) scale(1.025);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 18px 36px -14px rgba(100, 80, 230, .55);
+  }
+  .dream:not(:disabled):hover::before { opacity: 1; transform: scale(1.05); }
+  .dream:not(:disabled):hover::after { background-position: -30% 0; }
+  .dream--primary:not(:disabled):hover { background-position: 100% 50%; }
+  .dream--ghost:not(:disabled):hover { background: var(--surface-2); border-color: rgba(122, 102, 255, .45); box-shadow: 0 14px 30px -18px rgba(100, 80, 230, .5); }
+  .dream--icon:not(:disabled):hover { color: var(--ink); }
+}
+.dream:not(:disabled):active { transform: translateY(0) scale(.97); transition-duration: 120ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dream, .dream::before, .dream::after, .dream--icon svg { transition-duration: 1ms !important; }
+  .dream:not(:disabled):hover, .dream:not(:disabled):active { transform: none !important; }
+  .dream::after { display: none; }
+  .dots i { animation: none; opacity: .8; }
+}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Component / Button</p>
+    <h1>Dreamline</h1>
+    <p class="lede">A button whose hover drifts, glows and settles on custom cubic-bezier curves. It is used here in a real booking card: keyboard reachable, reduced-motion safe, and it moves with transform so neighbouring content never reflows.</p>
+  </header>
+
+  <section class="card" aria-labelledby="stay-title">
+    <div class="stay-head">
+      <div>
+        <p class="eyebrow">Lakeside cabin</p>
+        <h2 id="stay-title">Hollow Pine Lodge</h2>
+        <p class="muted">Two-bedroom cabin, private dock, wood stove. Sleeps up to 6.</p>
+      </div>
+      <div class="price"><span class="amount">$214</span> <span class="muted">/ night</span></div>
+    </div>
+
+    <dl class="facts">
+      <div><dt>Check-in</dt><dd>Fri 14 Nov</dd></div>
+      <div><dt>Check-out</dt><dd>Sun 16 Nov</dd></div>
+      <div><dt>Guests</dt><dd id="guestOut">2</dd></div>
+    </dl>
+
+    <div class="row">
+      <div class="stepper" role="group" aria-label="Number of guests">
+        <button class="dream dream--ghost dream--sm" id="guestDec" type="button" aria-label="Remove a guest">&minus;</button>
+        <span id="guestCount" aria-live="polite">2 guests</span>
+        <button class="dream dream--ghost dream--sm" id="guestInc" type="button" aria-label="Add a guest">+</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="dream dream--primary" id="reserve" type="button">
+        <span id="reserveLabel">Reserve for $428</span>
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <button class="dream dream--ghost" id="share" type="button">Share</button>
+      <button class="dream dream--icon" id="save" type="button" aria-pressed="false" aria-label="Save to trip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.5 5.1 5.6.8-4.05 3.95.96 5.58L12 16.6l-5.01 2.43.96-5.58L3.9 9.5l5.6-.8z" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <p class="status" id="status" role="status">Pick your dates and reserve. Nothing is booked in this demo.</p>
+  </section>
+
+  <section class="card" aria-labelledby="lab-title">
+    <p class="eyebrow">Motion lab</p>
+    <h2 id="lab-title">Tune the curve</h2>
+    <p class="muted">Presets set the curve; the sliders set it by hand. Every button on this page reads the same <code>--ease</code> and <code>--dur</code> values, so changes apply live.</p>
+
+    <div class="presets" role="group" aria-label="Easing presets" style="margin-top:16px">
+      <button class="dream dream--ghost dream--sm" type="button" data-preset="drift" aria-pressed="true">Drift</button>
+      <button class="dream dream--ghost dream--sm" type="button" data-preset="bloom" aria-pressed="false">Bloom</button>
+      <button class="dream dream--ghost dream--sm" type="button" data-preset="hush" aria-pressed="false">Hush</button>
+    </div>
+
+    <div class="curve-wrap">
+      <svg class="curve" viewBox="0 0 120 160" role="img" aria-label="Preview of the easing curve">
+        <defs>
+          <linearGradient id="cg" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#7a66ff"/>
+            <stop offset="1" stop-color="#ff9dc4"/>
+          </linearGradient>
+        </defs>
+        <path d="M10 45H110M10 80H110M10 115H110" stroke="var(--line)" stroke-width="1" fill="none"/>
+        <path d="M10 115L110 45" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none" opacity=".5"/>
+        <line id="h1" stroke="var(--muted)" stroke-width="1" opacity=".6"/>
+        <line id="h2" stroke="var(--muted)" stroke-width="1" opacity=".6"/>
+        <path id="curve" d="M10 115C10 115 110 45 110 45" stroke="url(#cg)" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle id="p1" r="4" fill="#4fd1c7"/>
+        <circle id="p2" r="4" fill="#ff8fbe"/>
+      </svg>
+
+      <div class="sliders">
+        <label>x1 <output id="out-x1"></output>
+          <input type="range" id="in-x1" min="0" max="1" step="0.01"></label>
+        <label>y1 <output id="out-y1"></output>
+          <input type="range" id="in-y1" min="-0.5" max="1.5" step="0.01"></label>
+        <label>x2 <output id="out-x2"></output>
+          <input type="range" id="in-x2" min="0" max="1" step="0.01"></label>
+        <label>y2 <output id="out-y2"></output>
+          <input type="range" id="in-y2" min="-0.5" max="1.5" step="0.01"></label>
+        <label>Duration <output id="out-dur"></output>
+          <input type="range" id="in-dur" min="200" max="1200" step="10"></label>
+      </div>
+    </div>
+
+    <p class="readout" id="readout"></p>
+
+    <div class="tryit">
+      <button class="dream dream--primary" type="button">Hover me</button>
+      <button class="dream dream--ghost" type="button">Ghost</button>
+      <button class="dream dream--ghost" id="tap" type="button">Taps: 0</button>
+      <button class="dream dream--ghost" type="button" disabled>Unavailable</button>
+    </div>
+    <p class="muted">Hover effects turn off on touch screens; pressing still gives feedback.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var RATE = 214, NIGHTS = 2, INCLUDED = 4, PER_EXTRA = 25;
+
+  var PRESETS = {
+    drift: { curve: { x1: 0.22, y1: 1, x2: 0.36, y2: 1 }, dur: 620 },
+    bloom: { curve: { x1: 0.34, y1: 1.56, x2: 0.64, y2: 1 }, dur: 760 },
+    hush:  { curve: { x1: 0.45, y1: 0, x2: 0.55, y2: 1 }, dur: 900 }
+  };
+
+  var state = {
+    guests: 2,
+    saved: false,
+    busy: false,
+    taps: 0,
+    preset: 'drift',
+    curve: { x1: 0.22, y1: 1, x2: 0.36, y2: 1 },
+    dur: 620
+  };
+
+  function $(sel) { return document.querySelector(sel); }
+  function money(n) { return '$' + n.toLocaleString('en-US'); }
+  function total() {
+    return RATE * NIGHTS + Math.max(0, state.guests - INCLUDED) * PER_EXTRA * NIGHTS;
+  }
+
+  var el = {
+    guestCount: $('#guestCount'),
+    guestOut: $('#guestOut'),
+    dec: $('#guestDec'),
+    inc: $('#guestInc'),
+    reserve: $('#reserve'),
+    reserveLabel: $('#reserveLabel'),
+    share: $('#share'),
+    save: $('#save'),
+    status: $('#status'),
+    tap: $('#tap'),
+    readout: $('#readout')
+  };
+
+  function setStatus(text) { el.status.textContent = text; }
+
+  function renderBooking() {
+    el.guestCount.textContent = state.guests + (state.guests === 1 ? ' guest' : ' guests');
+    el.guestOut.textContent = state.guests;
+    el.dec.disabled = state.guests <= 1;
+    el.inc.disabled = state.guests >= 6;
+    if (!state.busy) el.reserveLabel.textContent = 'Reserve for ' + money(total());
+  }
+
+  function syncCurve() {
+    var c = state.curve;
+    var css = 'cubic-bezier(' + c.x1 + ', ' + c.y1 + ', ' + c.x2 + ', ' + c.y2 + ')';
+    var root = document.documentElement.style;
+    root.setProperty('--ease', css);
+    root.setProperty('--dur', state.dur + 'ms');
+
+    ['x1', 'y1', 'x2', 'y2'].forEach(function (k) {
+      $('#in-' + k).value = c[k];
+      $('#out-' + k).textContent = c[k].toFixed(2);
+    });
+    $('#in-dur').value = state.dur;
+    $('#out-dur').textContent = state.dur + 'ms';
+
+    document.querySelectorAll('[data-preset]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.preset === state.preset));
+    });
+
+    // Curve preview: x maps 0..1 to 10..110, y maps -0.5..1.5 to 150..10
+    var p1x = 10 + 100 * c.x1, p1y = 115 - 70 * c.y1;
+    var p2x = 10 + 100 * c.x2, p2y = 115 - 70 * c.y2;
+    $('#curve').setAttribute('d', 'M10 115C' + p1x + ' ' + p1y + ' ' + p2x + ' ' + p2y + ' 110 45');
+    $('#h1').setAttribute('x1', 10); $('#h1').setAttribute('y1', 115);
+    $('#h1').setAttribute('x2', p1x); $('#h1').setAttribute('y2', p1y);
+    $('#h2').setAttribute('x1', 110); $('#h2').setAttribute('y1', 45);
+    $('#h2').setAttribute('x2', p2x); $('#h2').setAttribute('y2', p2y);
+    $('#p1').setAttribute('cx', p1x); $('#p1').setAttribute('cy', p1y);
+    $('#p2').setAttribute('cx', p2x); $('#p2').setAttribute('cy', p2y);
+
+    el.readout.textContent = css + '  ' + state.dur + 'ms';
+  }
+
+  // Booking card
+  el.dec.addEventListener('click', function () {
+    state.guests = Math.max(1, state.guests - 1);
+    renderBooking();
+  });
+  el.inc.addEventListener('click', function () {
+    state.guests = Math.min(6, state.guests + 1);
+    renderBooking();
+  });
+
+  el.save.addEventListener('click', function () {
+    state.saved = !state.saved;
+    el.save.setAttribute('aria-pressed', String(state.saved));
+    el.save.setAttribute('aria-label', state.saved ? 'Remove from trip' : 'Save to trip');
+    setStatus(state.saved
+      ? 'Saved to your trip. It stays only until you reload this page.'
+      : 'Removed from your trip.');
+  });
+
+  el.reserve.addEventListener('click', function () {
+    if (state.busy) return;
+    state.busy = true;
+    el.reserve.classList.add('is-loading');
+    el.reserve.disabled = true;
+    el.reserve.setAttribute('aria-busy', 'true');
+    el.reserveLabel.textContent = 'Reserving';
+    setStatus('Checking Hollow Pine Lodge availability...');
+
+    setTimeout(function () {
+      state.busy = false;
+      el.reserve.classList.remove('is-loading');
+      el.reserve.disabled = false;
+      el.reserve.removeAttribute('aria-busy');
+      renderBooking();
+      setStatus('Demo only. This would reserve Fri 14 to Sun 16 Nov for ' +
+        state.guests + (state.guests === 1 ? ' guest' : ' guests') + ' at ' +
+        money(total()) + '. Nothing was booked.');
+    }, 1400);
+  });
+
+  el.share.addEventListener('click', function () {
+    try {
+      navigator.clipboard.writeText(location.href).then(
+        function () { setStatus('Link copied.'); },
+        function () { setStatus('Sharing is stubbed in this demo.'); }
+      );
+    } catch (e) {
+      setStatus('Sharing is stubbed in this demo.');
+    }
+  });
+
+  // Motion lab
+  document.querySelectorAll('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = PRESETS[b.dataset.preset];
+      state.preset = b.dataset.preset;
+      state.curve = { x1: p.curve.x1, y1: p.curve.y1, x2: p.curve.x2, y2: p.curve.y2 };
+      state.dur = p.dur;
+      syncCurve();
+    });
+  });
+
+  ['x1', 'y1', 'x2', 'y2', 'dur'].forEach(function (k) {
+    $('#in-' + k).addEventListener('input', function (e) {
+      var v = parseFloat(e.target.value);
+      if (k === 'dur') state.dur = v;
+      else state.curve[k] = v;
+      state.preset = null;
+      syncCurve();
+    });
+  });
+
+  el.tap.addEventListener('click', function () {
+    state.taps += 1;
+    el.tap.textContent = 'Taps: ' + state.taps;
+  });
+
+  renderBooking();
+  syncCurve();
+})();
+</script>
+</body>
+</html>

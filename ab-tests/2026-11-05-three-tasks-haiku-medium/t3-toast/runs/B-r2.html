@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel status toast</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --page: #0b0b0d;
+    --surface: #16181d;
+    --raised: #1f222a;
+    --hairline: #2b2f38;
+    --text: #e6e8ec;
+    --text-2: #9aa3b2;
+    --accent: #9cc7ff;
+    --focus: #9cc7ff;
+    --ok: #5fc48a;
+    --transit: #e0b45a;
+    --alert: #e38b6b;
+  }
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ---------- demo page (not part of the component) ---------- */
+  .demo { max-width: 640px; margin: 0 auto; padding: 32px 16px 200px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lede { color: var(--text-2); margin: 0 0 20px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 12px; margin: 0 0 10px; color: var(--text-2);
+    font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .lbl { color: var(--text-2); font-size: 13px; min-width: 56px; }
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+  .seg-btn, .action, .ghost {
+    min-height: 36px; padding: 6px 12px; border-radius: 8px;
+    border: 1px solid var(--hairline); background: var(--raised); color: var(--text);
+    font: 500 13px/1.1 system-ui, sans-serif; cursor: pointer;
+  }
+  .seg-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .action { border-color: #3a5a80; background: #1b2a3d; }
+  .action:disabled { opacity: .5; cursor: default; }
+  .ghost { background: transparent; color: var(--text-2); }
+  .seg-btn:focus-visible, .action:focus-visible, .ghost:focus-visible, .check input:focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px;
+  }
+  .check { display: flex; gap: 8px; align-items: center; color: var(--text-2); font-size: 13px; }
+  .readout { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0; font-size: 13px; }
+  .readout dt { color: var(--text-2); }
+  .readout dd { margin: 0; }
+  .sr {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; margin: -1px; padding: 0; border: 0;
+  }
+
+  /* ---------- the component: compact collapsible toast ---------- */
+  .tt {
+    position: fixed; right: 16px; bottom: 16px; z-index: 50;
+    width: min(300px, calc(100vw - 32px));
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    font-size: 13px;
+    transition: none;
+  }
+  .tt[hidden] { display: none; }
+  .tt.enter { animation: tt-in 220ms ease-out; }
+  @keyframes tt-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .tt-head {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; min-height: 40px; padding: 6px 10px 6px 12px;
+    border: 0; background: none; color: inherit; font: inherit; text-align: left;
+    cursor: pointer; border-radius: 14px;
+  }
+  .tt-head:hover { background: rgba(255, 255, 255, .03); }
+  .tt-head:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+  .tt-dot {
+    flex: none; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--ok);
+  }
+  .tt-dot[data-status="created"] { background: transparent; border: 2px solid var(--text-2); }
+  .tt-dot[data-status="shipped"] { background: var(--accent); }
+  .tt-dot[data-status="out"] { background: var(--transit); }
+  .tt-dot[data-status="delivered"] { background: var(--ok); }
+  .tt-dot[data-status="exception"] { background: var(--alert); border-radius: 2px; transform: rotate(45deg); }
+
+  .tt-status {
+    flex: none; font-weight: 600; white-space: nowrap;
+    padding: 1px 4px; margin-left: -4px; border-radius: 6px;
+  }
+  .tt-status.pulse { animation: tt-pulse 520ms ease-out 1; }
+  .tt-status.flash { background: rgba(156, 199, 255, .18); }
+  @keyframes tt-pulse {
+    0% { background: rgba(156, 199, 255, .28); }
+    100% { background: rgba(156, 199, 255, 0); }
+  }
+
+  .tt-eta {
+    flex: 1 1 auto; min-width: 0; color: var(--text-2); font-size: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tt-chev {
+    flex: none; width: 24px; height: 24px; display: grid; place-items: center;
+    color: var(--text-2); transition: transform 180ms ease-in;
+  }
+  .tt[data-open="true"] .tt-chev { transform: rotate(180deg); transition: transform 240ms ease-out; }
+
+  .tt-wrap {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows 180ms ease-in;
+  }
+  .tt[data-open="true"] .tt-wrap { grid-template-rows: 1fr; transition: grid-template-rows 240ms ease-out; }
+  .tt-inner { min-height: 0; overflow: hidden; }
+  .tt-body { padding: 0 12px 12px; border-top: 1px solid var(--hairline); }
+
+  .tt-meta { margin: 8px 0; color: var(--text-2); font-size: 11px; line-height: 1.4; }
+  .tt-meta span { color: var(--text); }
+
+  .tt-steps {
+    list-style: none; margin: 0 0 10px; padding: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  }
+  .tt-steps li {
+    display: flex; flex-direction: column; gap: 5px;
+    font-size: 10.5px; color: var(--text-2);
+  }
+  .tt-steps li::before { content: ""; height: 4px; border-radius: 2px; background: var(--hairline); }
+  .tt-steps li[data-state="done"]::before { background: var(--text-2); }
+  .tt-steps li[data-state="current"] { color: var(--text); }
+  .tt-steps li[data-state="current"]::before { background: var(--accent); }
+  .tt-steps li[data-state="current"][data-exc="true"]::before { background: var(--alert); }
+  .tt[data-status="delivered"] .tt-steps li[data-state="current"]::before { background: var(--ok); }
+
+  .tt-cause { margin: 0 0 8px; color: var(--alert); font-size: 12px; }
+  .tt-cause[hidden] { display: none; }
+
+  .tt-scans {
+    list-style: none; margin: 0 0 8px; padding: 8px 0 0;
+    border-top: 1px solid var(--hairline); display: grid; gap: 7px;
+  }
+  .tt-scans li { display: grid; gap: 1px; }
+  .tt-scans .line { font-size: 12px; }
+  .tt-scans .when { font-size: 11px; color: var(--text-2); }
+
+  .tt-action { margin: 0; font-size: 12px; color: var(--text-2); }
+
+  .tt-actions { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-top: 10px; }
+  .tt-btn {
+    min-height: 32px; padding: 6px 8px; border-radius: 8px;
+    border: 1px solid var(--hairline); background: var(--raised); color: var(--text);
+    font: 600 12px/1.1 system-ui, sans-serif; cursor: pointer; white-space: nowrap;
+  }
+  .tt-btn:hover { border-color: #3b4150; }
+  .tt-btn.tt-quiet { color: var(--text-2); }
+  .tt-btn:focus-visible, .tt-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .tt-tab {
+    position: fixed; right: 0; bottom: 88px; z-index: 50;
+    width: 24px; height: 64px; padding: 0;
+    border: 1px solid var(--hairline); border-right: 0; border-radius: 10px 0 0 10px;
+    background: var(--surface); color: var(--text-2);
+    font: 600 11px/1 system-ui, sans-serif; writing-mode: vertical-rl; cursor: pointer;
+  }
+  .tt-tab[hidden] { display: none; }
+
+  /* Reduced motion: the same states, without travel, pulses or easing. */
+  html.rm-on .tt,
+  html.rm-on .tt-wrap,
+  html.rm-on .tt-chev,
+  html.rm-on .tt-status.pulse { transition: none !important; animation: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .tt, .tt-wrap, .tt-chev, .tt-status.pulse { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="demo">
+  <h1>Parcel status</h1>
+  <p class="lede">A compact dark status panel for one package. Move the parcel along with the controls, then open, copy, dismiss or bring back the panel in the bottom-right corner.</p>
+
+  <section class="card" aria-labelledby="ctl-h">
+    <h2 id="ctl-h">Demo controls</h2>
+    <div class="row">
+      <span class="lbl" id="parcel-lbl">Parcel</span>
+      <div class="seg" role="group" aria-labelledby="parcel-lbl">
+        <button type="button" class="seg-btn" data-parcel="0" aria-pressed="true">Desk lamp, UPS</button>
+        <button type="button" class="seg-btn" data-parcel="1" aria-pressed="false">Running shoes, USPS</button>
+      </div>
+    </div>
+    <div class="row">
+      <button type="button" class="action" id="sim">Simulate carrier update</button>
+      <button type="button" class="ghost" id="reset">Reset parcel</button>
+    </div>
+    <label class="check"><input type="checkbox" id="rm"> Reduce motion</label>
+  </section>
+
+  <section class="card" aria-labelledby="st-h">
+    <h2 id="st-h">State</h2>
+    <dl class="readout">
+      <dt>Status</dt><dd id="r-status"></dd>
+      <dt>ETA</dt><dd id="r-eta"></dd>
+      <dt>Panel</dt><dd id="r-panel"></dd>
+      <dt>Carrier pages opened</dt><dd id="r-opened">0</dd>
+      <dt>Numbers copied</dt><dd id="r-copies">0</dd>
+    </dl>
+  </section>
+</main>
+
+<aside class="tt enter" id="tt" data-open="false" aria-label="Package status">
+  <button type="button" class="tt-head" id="tt-head" aria-expanded="false" aria-controls="tt-body">
+    <span class="tt-dot" id="tt-dot" aria-hidden="true"></span>
+    <span class="tt-status" id="tt-status"></span>
+    <span class="tt-eta" id="tt-eta"></span>
+    <span class="tt-chev" aria-hidden="true">
+      <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </button>
+  <div class="tt-wrap">
+    <div class="tt-inner">
+      <div class="tt-body" id="tt-body" inert>
+        <p class="tt-meta"><span id="tt-item"></span> · <span id="tt-carrier"></span> · <span id="tt-track"></span></p>
+        <ol class="tt-steps" id="tt-steps" aria-label="Stages"></ol>
+        <p class="tt-cause" id="tt-cause" hidden></p>
+        <ul class="tt-scans" id="tt-scans"></ul>
+        <p class="tt-action" id="tt-action"></p>
+        <div class="tt-actions">
+          <button type="button" class="tt-btn" id="tt-copy">Copy number</button>
+          <button type="button" class="tt-btn" id="tt-open">Open carrier</button>
+          <button type="button" class="tt-btn tt-quiet" id="tt-dismiss">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+<button type="button" class="tt-tab" id="tt-tab" hidden aria-label="Show package status">Track</button>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  "use strict";
+
+  var STAGES = ["Created", "On the way", "Out", "Delivered"];
+  var STAGE_OF = { created: 0, shipped: 1, out: 2, delivered: 3 };
+  var HEAD_WORD = {
+    created: "Label Created",
+    shipped: "On the Way",
+    out: "Out for Delivery",
+    delivered: "Delivered",
+    exception: "Exception"
+  };
+  var SHOPPER = {
+    created: "Nothing to do yet. The carrier has the label, not the parcel.",
+    shipped: "Check the delivery window and leave a door note if needed.",
+    out: "Be home or set a safe place before noon.",
+    delivered: "Check the doorstep. Report a missing parcel within 48 hours.",
+    exception: "Read the cause line. Contact the carrier if the ETA passes."
+  };
+
+  // Sample data. Each scan is one carrier checkpoint; `shown` is how many have arrived.
+  var PARCELS = [
+    {
+      item: "Desk lamp", carrier: "UPS", url: "https://www.ups.com/track",
+      tracking: "1Z 999 AA1 01 2345 6784", start: 3,
+      scans: [
+        { status: "created", text: "Label Created", time: "Nov 4, 3:12 PM", place: "Portland, OR", eta: "Sun, Nov 8" },
+        { status: "shipped", text: "Picked up by UPS", time: "Nov 4, 9:40 PM", place: "Portland, OR", eta: "Fri 8 AM-12 PM" },
+        { status: "shipped", text: "Departed facility", time: "Nov 5, 2:05 AM", place: "Sacramento, CA", eta: "Fri 8 AM-12 PM" },
+        { status: "out", text: "Out for delivery", time: "Nov 6, 7:30 AM", place: "Oakland, CA", eta: "Today by 12 PM" },
+        { status: "delivered", text: "Delivered, front door", time: "Nov 6, 11:48 AM", place: "Oakland, CA", eta: "Delivered 11:48 AM" }
+      ]
+    },
+    {
+      item: "Running shoes", carrier: "USPS", url: "https://tools.usps.com/go/TrackConfirmAction",
+      tracking: "9400 1000 0000 0000 0000 00", start: 4,
+      scans: [
+        { status: "created", text: "Label Created", time: "Nov 3, 1:05 PM", place: "Seattle, WA", eta: "Fri, Nov 6" },
+        { status: "shipped", text: "Accepted at USPS facility", time: "Nov 3, 6:02 PM", place: "Seattle, WA", eta: "Fri, Nov 6" },
+        { status: "shipped", text: "Departed facility", time: "Nov 4, 4:40 AM", place: "Spokane, WA", eta: "Fri, Nov 6" },
+        { status: "exception", text: "Delayed in transit", time: "Nov 5, 8:15 AM", place: "Denver, CO", eta: "To be confirmed",
+          cause: "Weather delay on the route east of Denver." },
+        { status: "shipped", text: "Back in transit", time: "Nov 5, 2:20 PM", place: "Denver, CO", eta: "Fri, after 2 PM" },
+        { status: "out", text: "Out for delivery", time: "Nov 6, 8:10 AM", place: "Lakewood, CO", eta: "Today by 6 PM" },
+        { status: "delivered", text: "Delivered, front door", time: "Nov 6, 5:52 PM", place: "Lakewood, CO", eta: "Delivered 5:52 PM" }
+      ]
+    }
+  ];
+
+  var $ = function (sel) { return document.querySelector(sel); };
+  var html = document.documentElement;
+  var reduceMq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+  var parcels = PARCELS.map(function (p) { return { def: p, shown: p.start }; });
+  var current = 0;
+  var ui = { open: false, dismissed: false, copies: 0, opened: 0, copyFlash: false };
+  var flashTimer = null;
+  var cueTimer = null;
+
+  function reduced() {
+    return html.classList.contains("rm-on") || !!(reduceMq && reduceMq.matches);
+  }
+
+  function announce(msg) {
+    var live = $("#live");
+    live.textContent = "";
+    setTimeout(function () { live.textContent = msg; }, 30);
+  }
+
+  // Walk back past exceptions to the last real stage, so the stepper keeps its place.
+  function stageIndex(def, idx) {
+    var k = idx;
+    while (k > 0 && def.scans[k].status === "exception") k--;
+    return STAGE_OF[def.scans[k].status] || 0;
+  }
+
+  function render() {
+    var p = parcels[current];
+    var def = p.def;
+    var idx = p.shown - 1;
+    var scan = def.scans[idx];
+    var st = scan.status;
+    var stage = stageIndex(def, idx);
+    var isExc = st === "exception";
+
+    var tt = $("#tt");
+    tt.hidden = ui.dismissed;
+    tt.dataset.open = String(ui.open);
+    tt.dataset.status = st;
+
+    $("#tt-dot").dataset.status = st;
+    $("#tt-status").textContent = HEAD_WORD[st];
+    $("#tt-eta").textContent = scan.eta;
+    $("#tt-head").setAttribute("aria-expanded", String(ui.open));
+    $("#tt-body").inert = !ui.open;
+
+    $("#tt-item").textContent = def.item;
+    $("#tt-carrier").textContent = def.carrier;
+    $("#tt-track").textContent = def.tracking;
+
+    var steps = $("#tt-steps");
+    steps.textContent = "";
+    STAGES.forEach(function (label, i) {
+      var li = document.createElement("li");
+      var state = i < stage ? "done" : i === stage ? "current" : "upcoming";
+      li.dataset.state = state;
+      if (state === "current" && isExc) li.dataset.exc = "true";
+      li.textContent = label;
+      steps.appendChild(li);
+    });
+
+    var cause = $("#tt-cause");
+    if (isExc && scan.cause) {
+      cause.textContent = scan.cause;
+      cause.hidden = false;
+    } else {
+      cause.textContent = "";
+      cause.hidden = true;
+    }
+
+    var list = $("#tt-scans");
+    list.textContent = "";
+    def.scans.slice(0, idx + 1).reverse().slice(0, 4).forEach(function (s) {
+      var li = document.createElement("li");
+      var line = document.createElement("span");
+      line.className = "line";
+      line.textContent = s.text;
+      var when = document.createElement("span");
+      when.className = "when";
+      when.textContent = s.time + " · " + s.place;
+      li.appendChild(line);
+      li.appendChild(when);
+      list.appendChild(li);
+    });
+
+    $("#tt-action").textContent = SHOPPER[st];
+    $("#tt-copy").textContent = ui.copyFlash ? "Copied" : "Copy number";
+    $("#tt-open").textContent = "Open " + def.carrier;
+
+    var sim = $("#sim");
+    var done = idx === def.scans.length - 1;
+    sim.disabled = done;
+    sim.textContent = done ? "Nothing more to show" : "Simulate carrier update";
+
+    $("#tt-tab").hidden = !ui.dismissed;
+
+    document.querySelectorAll(".seg-btn").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(Number(b.dataset.parcel) === current));
+    });
+
+    $("#r-status").textContent = HEAD_WORD[st] + " (" + def.item + ")";
+    $("#r-eta").textContent = scan.eta;
+    $("#r-panel").textContent = ui.dismissed ? "dismissed, Track tab on the edge" : ui.open ? "expanded" : "collapsed";
+    $("#r-opened").textContent = String(ui.opened);
+    $("#r-copies").textContent = String(ui.copies);
+  }
+
+  function replayEnter() {
+    var tt = $("#tt");
+    tt.classList.remove("enter");
+    void tt.offsetWidth;
+    if (!reduced()) tt.classList.add("enter");
+  }
+
+  // Status-change cue: one pulse on the status word, or a static flash under reduced motion.
+  function cue() {
+    var el = $("#tt-status");
+    el.classList.remove("pulse", "flash");
+    void el.offsetWidth;
+    clearTimeout(cueTimer);
+    if (reduced()) {
+      el.classList.add("flash");
+      cueTimer = setTimeout(function () { el.classList.remove("flash"); }, 1500);
+    } else {
+      el.classList.add("pulse");
+      cueTimer = setTimeout(function () { el.classList.remove("pulse"); }, 600);
+    }
+  }
+
+  function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return fallbackCopy(text); });
+      }
+    } catch (e) { /* fall through to the textarea copy */ }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  function fallbackCopy(text) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ---------- handlers ----------
+  $("#tt-head").addEventListener("click", function () {
+    ui.open = !ui.open;
+    render();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && ui.open && $("#tt").contains(document.activeElement)) {
+      ui.open = false;
+      render();
+      $("#tt-head").focus();
+    }
+  });
+
+  $("#tt-copy").addEventListener("click", function () {
+    var number = parcels[current].def.tracking.replace(/\s/g, "");
+    copyText(number).then(function (ok) {
+      if (ok) {
+        ui.copies++;
+        ui.copyFlash = true;
+        clearTimeout(flashTimer);
+        flashTimer = setTimeout(function () { ui.copyFlash = false; render(); }, 1500);
+        announce("Tracking number copied.");
+      } else {
+        announce("Copy was blocked here. The number is shown in the panel.");
+      }
+      render();
+    });
+  });
+
+  $("#tt-open").addEventListener("click", function () {
+    var def = parcels[current].def;
+    try {
+      window.open(def.url, "_blank", "noopener,noreferrer");
+      ui.opened++;
+      announce("Opened the " + def.carrier + " tracking page in a new tab.");
+    } catch (e) {
+      announce("Could not open the carrier page.");
+    }
+    render();
+  });
+
+  $("#tt-dismiss").addEventListener("click", function () {
+    ui.dismissed = true;
+    ui.open = false;
+    render();
+    $("#tt-tab").focus();
+    announce("Panel dismissed. The Track tab on the right edge brings it back.");
+  });
+
+  $("#tt-tab").addEventListener("click", function () {
+    ui.dismissed = false;
+    ui.open = false;
+    render();
+    replayEnter();
+    $("#tt-head").focus();
+    announce("Panel shown, collapsed.");
+  });
+
+  $("#sim").addEventListener("click", function () {
+    var p = parcels[current];
+    if (p.shown >= p.def.scans.length) return;
+    p.shown++;
+    var scan = p.def.scans[p.shown - 1];
+    var wasDismissed = ui.dismissed;
+    if (wasDismissed) {
+      ui.dismissed = false;
+      ui.open = false;
+    }
+    render();
+    if (wasDismissed) replayEnter();
+    cue();
+    announce(p.def.item + ": " + HEAD_WORD[scan.status] + ". " + scan.text + ", " + scan.time + ", " + scan.place + ".");
+  });
+
+  $("#reset").addEventListener("click", function () {
+    var p = parcels[current];
+    p.shown = p.def.start;
+    ui.dismissed = false;
+    ui.open = false;
+    render();
+    replayEnter();
+    announce("Parcel reset to its earlier status.");
+  });
+
+  document.querySelectorAll(".seg-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      current = Number(btn.dataset.parcel);
+      render();
+    });
+  });
+
+  var rm = $("#rm");
+  rm.checked = !!(reduceMq && reduceMq.matches);
+  rm.addEventListener("change", function () {
+    html.classList.toggle("rm-on", rm.checked);
+  });
+
+  render();
+  replayEnter();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en" data-preset="settle">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamlike hover button</title>
+<style>
+:root {
+  --page: #f4f1ec;
+  --card: #fbfaf7;
+  --edge: #e2ddd4;
+  --ink: #1f2433;
+  --ink-2: #4b5163;
+  --face: #2f3a5c;
+  --face-hover: #3b4880;
+  --label: #ffffff;
+  --ghost-edge: #7a829a;
+  --ghost-fill: rgba(47, 58, 92, 0.08);
+  --ring: #1f2433;
+  --stage-face: #f6f3ff;
+  --stage-label: #1f2433;
+  --stage-fill: #e2d9ff;
+  --dis-face: #e6e8ee;
+  --dis-ink: #4b5163;
+  --dis-edge: #c3c7d2;
+  --glow: #b7a4ff;
+  /* set from the curve lab */
+  --lift: 2px;
+  --dur: 260ms;
+  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --glow-dur: 620ms;
+  --glow-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --glow-peak: 0.6;
+  --glow-y: 0px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+h2 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- header ---------- */
+.site { border-bottom: 1px solid var(--edge); }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
+.logo { font-weight: 700; color: var(--ink); text-decoration: none; letter-spacing: 0.01em; }
+nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+nav a { color: var(--ink-2); text-decoration: none; }
+nav a:hover { color: var(--ink); }
+.cart { font-size: 15px; color: var(--ink-2); }
+.cart strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ---------- the button ---------- */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--face);
+  color: var(--label);
+  font: 600 16px/1 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  --overlay: var(--face-hover);
+  transform: translate3d(0, 0, 0);
+  transition: transform var(--dur) var(--ease);
+}
+/* glow: one pre-blurred layer behind the face, animated by opacity only */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: -16% -10% -12%;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(closest-side, var(--glow), transparent 72%);
+  filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--glow-dur) var(--glow-ease), transform var(--glow-dur) var(--glow-ease);
+}
+/* hover fill: a layer that fades in, so the face colour never repaints */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease-out;
+}
+
+@media (hover: hover) {
+  .btn:hover { transform: translate3d(0, calc(var(--lift) * -1), 0); }
+  .btn:hover::before { opacity: var(--glow-peak); transform: translate3d(0, var(--glow-y), 0); }
+  .btn:hover::after { opacity: 1; }
+}
+.btn.is-hover { transform: translate3d(0, calc(var(--lift) * -1), 0); }
+.btn.is-hover::before { opacity: var(--glow-peak); transform: translate3d(0, var(--glow-y), 0); }
+.btn.is-hover::after { opacity: 1; }
+
+/* keyboard: the same response at half the lift, with a ring checked at 3:1 */
+.btn:focus-visible,
+.btn.is-focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+  transform: translate3d(0, calc(var(--lift) * -0.5), 0);
+}
+.btn:focus-visible::before, .btn.is-focus::before { opacity: calc(var(--glow-peak) * 0.5); }
+
+/* press: transform only, quick in, normal release */
+.btn:active, .btn.is-press {
+  transform: translate3d(0, 1px, 0) scale(0.97);
+  transition-duration: 120ms;
+}
+.btn:active::after, .btn.is-press::after { opacity: 1; }
+
+/* ghost variant */
+.btn--ghost {
+  --overlay: var(--ghost-fill);
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ghost-edge);
+}
+
+/* stage variant: the focal tester on the dark backdrop */
+.btn--stage {
+  --overlay: var(--stage-fill);
+  background: var(--stage-face);
+  color: var(--stage-label);
+  min-height: 56px;
+  padding: 0 30px;
+  font-size: 17px;
+}
+.btn--stage:focus-visible, .btn--stage.is-focus { outline-color: #ffffff; }
+
+/* disabled: no motion, no hover, label kept legible */
+.btn:disabled, .btn.is-disabled {
+  background: var(--dis-face);
+  color: var(--dis-ink);
+  border-color: var(--dis-edge);
+  transform: none !important;
+  cursor: not-allowed;
+}
+.btn:disabled::before, .btn:disabled::after,
+.btn.is-disabled::before, .btn.is-disabled::after { opacity: 0 !important; }
+.btn:disabled.btn--stage {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.84);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* busy: a single calm label change, no loop */
+.btn[aria-busy="true"] { cursor: progress; }
+
+/* ---------- presets (glass changes the tester only) ---------- */
+html[data-preset="glass"] .btn--stage {
+  /* a light tint over a dark scrim, so the white label keeps 4.5:1 over the blurred light behind */
+  background: linear-gradient(rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)), rgba(20, 18, 40, 0.6);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+}
+html[data-preset="glass"] .btn--stage { --overlay: rgba(255, 255, 255, 0.2); }
+html[data-preset="glass"] .btn--stage:disabled { background: rgba(255, 255, 255, 0.08); }
+
+/* ---------- reduced motion: the setting, or the preview toggle ---------- */
+:root.rm .btn,
+:root.rm .btn:hover,
+:root.rm .btn.is-hover,
+:root.rm .btn:focus-visible,
+:root.rm .btn.is-focus,
+:root.rm .btn:active,
+:root.rm .btn.is-press {
+  transform: none !important;
+  transition-property: opacity, background-color, color, border-color;
+  transition-duration: 160ms;
+  transition-timing-function: linear;
+}
+:root.rm .btn::before,
+:root.rm .btn:hover::before,
+:root.rm .btn.is-hover::before {
+  transform: none !important;
+  transition: opacity 160ms linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn:hover, .btn.is-hover, .btn:focus-visible, .btn:active { transform: none !important; }
+  .btn::before { transform: none !important; }
+}
+
+/* ---------- page layout ---------- */
+.hero { display: grid; gap: 40px; padding-top: 56px; padding-bottom: 48px; }
+@media (min-width: 860px) { .hero { grid-template-columns: 1.05fr 0.95fr; align-items: center; } }
+.eyebrow { font-size: 14px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+h1 { font-size: clamp(30px, 4.2vw, 46px); line-height: 1.12; margin: 0 0 16px; font-weight: 700; letter-spacing: -0.01em; }
+.lead { color: var(--ink-2); font-size: 18px; max-width: 52ch; margin-bottom: 28px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 300px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+  background: linear-gradient(160deg, #241d47 0%, #1b2c48 55%, #163a45 100%);
+}
+.blob { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.85; z-index: -1; pointer-events: none; }
+.b1 { width: 220px; height: 220px; left: -40px; top: -50px; background: #7b5cff; }
+.b2 { width: 180px; height: 180px; right: -30px; bottom: -40px; background: #2fb9c4; }
+.b3 { width: 120px; height: 120px; right: 22%; top: 18%; background: #ff8fb1; opacity: 0.55; }
+.caption { font-size: 14px; color: var(--ink-2); margin-top: 12px; }
+
+.section { padding-top: 48px; padding-bottom: 8px; }
+.lede { color: var(--ink-2); max-width: 64ch; margin-bottom: 24px; }
+
+.specimens { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+.specimens figure { margin: 0; }
+.specimens .btn { width: 100%; }
+.specimens figcaption { margin-top: 10px; font-size: 14px; color: var(--ink-2); }
+
+.cards { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+.card { background: var(--card); border: 1px solid var(--edge); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.card p.desc { color: var(--ink-2); }
+.card .foot { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.price { font-weight: 600; font-variant-numeric: tabular-nums; }
+.inq { font-size: 14px; color: var(--ink-2); }
+.status { min-height: 1.5em; color: var(--ink-2); margin-top: 16px; }
+
+.form { display: grid; gap: 10px; max-width: 520px; }
+.form label { font-weight: 600; }
+.form input {
+  font: inherit;
+  min-height: 48px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #9aa0b2;
+  background: #ffffff;
+  color: var(--ink);
+  width: 100%;
+}
+.form input:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.form .btn { justify-self: start; }
+.msg { min-height: 1.5em; color: var(--ink-2); }
+.msg.err { color: #8a2330; }
+
+.panel { background: var(--card); border: 1px solid var(--edge); border-radius: 18px; padding: 22px; }
+.lab-grid { display: grid; gap: 24px; }
+@media (min-width: 900px) { .lab-grid { grid-template-columns: 1.1fr 0.9fr; } }
+fieldset { border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+legend { font-weight: 700; margin-bottom: 10px; padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { min-height: 40px; padding: 0 16px; font-size: 15px; }
+.chip[aria-pressed="true"] { background: var(--face); color: var(--label); border-color: var(--face); }
+.note { font-size: 14px; color: var(--ink-2); margin-top: 10px; min-height: 2.8em; }
+.field { display: grid; gap: 6px; margin-bottom: 18px; font-weight: 600; }
+.field output { float: right; font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--face); margin: 0; }
+.toggles { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 15px; margin-top: 4px; }
+.toggles label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 14px; }
+dt { color: var(--ink-2); }
+dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.warnings { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 8px; }
+.warnings li { font-size: 14px; background: #ffffff; border-left: 3px solid #a86f10; padding: 8px 12px; border-radius: 8px; }
+.warnings li.ok { border-left-color: #2f7a55; }
+pre {
+  background: #1f2433;
+  color: #e9e6ff;
+  padding: 14px;
+  border-radius: 12px;
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0 0 12px;
+}
+.log { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; max-height: 200px; overflow: auto; }
+.log li { margin-bottom: 2px; }
+h3.sub { margin: 18px 0 4px; }
+
+.site-foot { margin-top: 64px; padding: 32px 0 48px; border-top: 1px solid var(--edge); color: var(--ink-2); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap bar">
+    <a class="logo" href="#top">Marlow &amp; Finch</a>
+    <nav aria-label="Primary">
+      <a href="#shop">Shop</a>
+      <a href="#process">Process</a>
+      <a href="#care">Care</a>
+      <a href="#lab">Curve lab</a>
+    </nav>
+    <span class="cart">Cart, <strong id="cartCount">0</strong> items</span>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="wrap hero">
+    <div>
+      <p class="eyebrow">Autumn firing, small batches</p>
+      <h1>Hand-thrown stoneware, glazed slowly and packed the day it leaves the kiln.</h1>
+      <p class="lead">Every piece is thrown, trimmed and fired twice in our studio in Asheville. Free returns for 30 days. Orders placed before Thursday ship on Monday.</p>
+      <div class="row">
+        <button class="btn" type="button" id="ctaShop">Shop the autumn set</button>
+        <a class="btn btn--ghost" href="#process">Watch the firing</a>
+      </div>
+    </div>
+    <div>
+      <div class="stage" id="stage">
+        <span class="blob b1" aria-hidden="true"></span>
+        <span class="blob b2" aria-hidden="true"></span>
+        <span class="blob b3" aria-hidden="true"></span>
+        <button class="btn btn--stage" id="tester" type="button"><span class="btn-label">Reserve a glaze</span></button>
+      </div>
+      <p class="caption">Tester. Hover it, Tab to it, press it. The curve lab below changes how it moves.</p>
+    </div>
+  </section>
+
+  <section class="wrap section" id="states" aria-labelledby="statesTitle">
+    <h2 id="statesTitle">States</h2>
+    <p class="lede">Each specimen is pinned into one state with a class, so the difference shows without a pointer. They use the same curves as the tester.</p>
+    <div class="specimens">
+      <figure><button class="btn" type="button">Rest</button><figcaption>Rest</figcaption></figure>
+      <figure><button class="btn is-hover" type="button">Hover</button><figcaption>Hover: lift and glow</figcaption></figure>
+      <figure><button class="btn is-focus" type="button">Focus</button><figcaption>Keyboard focus: half lift, ring</figcaption></figure>
+      <figure><button class="btn is-press" type="button">Pressed</button><figcaption>Pressed: scale 0.97</figcaption></figure>
+      <figure><button class="btn" type="button" disabled>Disabled</button><figcaption>Disabled: no response</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="wrap section" id="shop" aria-labelledby="shopTitle">
+    <h2 id="shopTitle">Shop the autumn set</h2>
+    <p class="lede">Glazes are poured in batches of about forty. When a batch sells out, the colour is gone until the next firing.</p>
+    <div class="cards">
+      <article class="card">
+        <h3>Oat Speckle Mug</h3>
+        <p class="desc">12 oz, speckled oat glaze over an iron body. Dishwasher safe.</p>
+        <div class="foot">
+          <span class="price">$34</span>
+          <span class="inq" id="q-mug" aria-live="polite">None in your cart</span>
+          <button class="btn btn--ghost add" type="button" data-id="mug" data-name="Oat Speckle Mug">Add to cart</button>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Tidewater Bowl</h3>
+        <p class="desc">Wide and low, glazed deep blue-green at the rim. Holds about 24 oz.</p>
+        <div class="foot">
+          <span class="price">$58</span>
+          <span class="inq" id="q-bowl" aria-live="polite">None in your cart</span>
+          <button class="btn btn--ghost add" type="button" data-id="bowl" data-name="Tidewater Bowl">Add to cart</button>
+        </div>
+      </article>
+      <article class="card">
+        <h3>Ash Pour-over Set</h3>
+        <p class="desc">Dripper and two cups in matte ash. Each cup is glazed by hand.</p>
+        <div class="foot">
+          <span class="price">$112</span>
+          <span class="inq" id="q-set" aria-live="polite">None in your cart</span>
+          <button class="btn btn--ghost add" type="button" data-id="set" data-name="Ash Pour-over Set">Add to cart</button>
+        </div>
+      </article>
+    </div>
+    <p class="status" id="shopStatus" role="status"></p>
+  </section>
+
+  <section class="wrap section" id="process" aria-labelledby="processTitle">
+    <h2 id="processTitle">Process</h2>
+    <p class="lede">Three firings, one studio, and a slow glaze that takes about a week to dry through.</p>
+    <div class="cards">
+      <article class="card"><h3>Throw</h3><p class="desc">Each form is thrown on the wheel and left to firm up for two days before trimming.</p></article>
+      <article class="card"><h3>Bisque</h3><p class="desc">A first firing hardens the clay so it can be dipped and handled without breaking.</p></article>
+      <article class="card"><h3>Glaze</h3><p class="desc">Poured, wiped and fired a second time at cone 6 until the surface settles to its colour.</p></article>
+    </div>
+  </section>
+
+  <section class="wrap section" id="lab" aria-labelledby="labTitle">
+    <h2 id="labTitle">Curve lab</h2>
+    <p class="lede">Change the reading and the tester answers. Each change is checked against the practical limits: a settle under 400 ms, a return under 2 percent, and a label that stays legible.</p>
+    <div class="lab-grid">
+      <div class="panel">
+        <fieldset>
+          <legend>Motion reading</legend>
+          <div class="chips">
+            <button class="btn btn--ghost chip" type="button" data-preset="settle" aria-pressed="true">Settle with a glow tail</button>
+            <button class="btn btn--ghost chip" type="button" data-preset="float" aria-pressed="false">Float that settles</button>
+            <button class="btn btn--ghost chip" type="button" data-preset="rebound" aria-pressed="false">Float with a rebound</button>
+            <button class="btn btn--ghost chip" type="button" data-preset="glass" aria-pressed="false">Glass on one focal button</button>
+          </div>
+          <p class="note" id="presetNote" aria-live="polite"></p>
+        </fieldset>
+
+        <label class="field" for="lift">Lift <output id="liftOut"></output>
+          <input type="range" id="lift" min="0" max="6" step="0.5"></label>
+        <label class="field" for="dur">Face settle time <output id="durOut"></output>
+          <input type="range" id="dur" min="100" max="750" step="10"></label>
+        <label class="field" for="y1">Curve, first control point y <output id="y1Out"></output>
+          <input type="range" id="y1" min="0.8" max="2.2" step="0.01"></label>
+        <label class="field" for="tail">Glow tail <output id="tailOut"></output>
+          <input type="range" id="tail" min="300" max="750" step="10"></label>
+        <label class="field" for="peak">Glow strength <output id="peakOut"></output>
+          <input type="range" id="peak" min="0" max="0.8" step="0.05"></label>
+
+        <div class="toggles">
+          <label><input type="checkbox" id="rm"> Reduce motion (preview)</label>
+          <label><input type="checkbox" id="dis"> Disable the tester</label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <dl>
+          <dt>Curve</dt><dd id="curveOut"></dd>
+          <dt>Return past rest</dt><dd id="overOut"></dd>
+          <dt>Tester clicks</dt><dd id="clickOut">0</dd>
+          <dt>Motion</dt><dd id="motionOut"></dd>
+        </dl>
+        <ul class="warnings" id="warnings" aria-live="polite"></ul>
+        <pre id="cssOut"></pre>
+        <div class="row">
+          <button class="btn btn--ghost" id="copyBtn" type="button">Copy CSS</button>
+          <span class="note" id="copyMsg" role="status" style="margin:0"></span>
+        </div>
+        <h3 class="sub">Recent actions</h3>
+        <ol class="log" id="log"><li>Ready</li></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" id="subscribe" aria-labelledby="subTitle">
+    <h2 id="subTitle">The Tuesday firing list</h2>
+    <p class="lede">One email a week with what came out of the kiln and which glazes are nearly gone.</p>
+    <form class="form" id="subForm" novalidate>
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" aria-describedby="emailMsg">
+      <button class="btn" id="subBtn" type="submit" disabled><span class="btn-label">Subscribe</span></button>
+      <p class="msg" id="emailMsg" role="status"></p>
+    </form>
+  </section>
+
+</main>
+
+<footer class="wrap site-foot" id="care">
+  <p>Care: hand wash the glazed rim the first week, then dishwasher safe. Marlow &amp; Finch, Asheville, NC.</p>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var $ = function (s) { return document.querySelector(s); };
+  var reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+  var PRESETS = {
+    settle: {
+      label: 'Settle with a glow tail',
+      note: 'A quick landing on the face, with light drifting on behind it on a longer tail.',
+      x1: 0.33, x2: 0.68, y2: 1, y1: 1, dur: 260, lift: 2, tail: 620, peak: 0.6, glowY: 0
+    },
+    float: {
+      label: 'Float that settles',
+      note: 'A 3 px lift on a short curve with no return past rest, and a soft shadow under it.',
+      x1: 0.25, x2: 0.5, y2: 1, y1: 1, dur: 320, lift: 3, tail: 340, peak: 0.35, glowY: 10
+    },
+    rebound: {
+      label: 'Float with a rebound',
+      note: 'The same lift returns about 25 percent past rest, once. A different reading from the settle.',
+      x1: 0.34, x2: 0.64, y2: 1, y1: 2.0, dur: 420, lift: 3, tail: 420, peak: 0.5, glowY: 0
+    },
+    glass: {
+      label: 'Glass on one focal button',
+      note: 'A translucent fill with blur on this tester only. The other buttons stay solid.',
+      x1: 0.22, x2: 0.36, y2: 1, y1: 1, dur: 360, lift: 2, tail: 500, peak: 0.3, glowY: 0
+    }
+  };
+
+  var state = {};
+  var cart = { mug: 0, bowl: 0, set: 0 };
+  var NAMES = { mug: 'Oat Speckle Mug', bowl: 'Tidewater Bowl', set: 'Ash Pour-over Set' };
+  var clicks = 0;
+  var busy = false;
+  var logItems = [];
+
+  function applyPreset(key) {
+    var p = PRESETS[key];
+    state.preset = key;
+    state.x1 = p.x1; state.x2 = p.x2; state.y2 = p.y2; state.y1 = p.y1;
+    state.dur = p.dur; state.lift = p.lift; state.tail = p.tail; state.peak = p.peak; state.glowY = p.glowY;
+    log('Reading: ' + p.label);
+    render();
+  }
+
+  function log(text) {
+    var t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    logItems.unshift(t + '  ' + text);
+    logItems = logItems.slice(0, 6);
+  }
+
+  // Largest value the curve reaches above 1, sampled along the curve, in percent.
+  function returnPastRest(x1, y1, x2, y2) {
+    var max = 0;
+    for (var i = 0; i <= 1000; i++) {
+      var t = i / 1000, u = 1 - t;
+      var y = 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t;
+      if (y > max) max = y;
+    }
+    return Math.max(0, (max - 1) * 100);
+  }
+
+  function curveString() {
+    return 'cubic-bezier(' + state.x1.toFixed(2) + ', ' + state.y1.toFixed(2) + ', ' + state.x2.toFixed(2) + ', ' + state.y2.toFixed(2) + ')';
+  }
+
+  function render() {
+    var ease = curveString();
+    var over = returnPastRest(state.x1, state.y1, state.x2, state.y2);
+    var rm = state.rm;
+
+    root.style.setProperty('--lift', state.lift + 'px');
+    root.style.setProperty('--dur', state.dur + 'ms');
+    root.style.setProperty('--ease', ease);
+    root.style.setProperty('--glow-dur', state.tail + 'ms');
+    root.style.setProperty('--glow-peak', String(state.peak));
+    root.style.setProperty('--glow-y', state.glowY + 'px');
+    root.setAttribute('data-preset', state.preset);
+    root.classList.toggle('rm', rm);
+
+    $('#lift').value = state.lift;
+    $('#dur').value = state.dur;
+    $('#y1').value = state.y1;
+    $('#tail').value = state.tail;
+    $('#peak').value = state.peak;
+    $('#liftOut').textContent = state.lift + ' px';
+    $('#durOut').textContent = state.dur + ' ms';
+    $('#y1Out').textContent = state.y1.toFixed(2);
+    $('#tailOut').textContent = state.tail + ' ms';
+    $('#peakOut').textContent = state.peak.toFixed(2);
+
+    var chips = document.querySelectorAll('[data-preset]');
+    for (var c = 0; c < chips.length; c++) {
+      if (chips[c].classList.contains('chip')) {
+        chips[c].setAttribute('aria-pressed', String(chips[c].getAttribute('data-preset') === state.preset));
+      }
+    }
+    $('#presetNote').textContent = PRESETS[state.preset].note;
+
+    $('#curveOut').textContent = ease;
+    $('#overOut').textContent = over.toFixed(1) + ' %';
+    $('#clickOut').textContent = String(clicks);
+    $('#motionOut').textContent = rm ? 'Off: the curve is kept, not played' : 'On';
+
+    var warn = [];
+    if (state.dur > 400) warn.push('The face takes more than 400 ms to answer the click. Keep the landing under 400 ms and move the long tail to the glow.');
+    if (over > 2) warn.push('Visible rebound: the face returns past rest by more than 2 percent. This is the rebound reading, not the settle.');
+    if (state.lift > 4) warn.push('Lifts above 4 px read as a jump on a small button.');
+    if (state.peak > 0.7) warn.push('Glow above 0.7 starts to read as neon.');
+    if (!warn.length) warn.push('Within the practical checks: settle under 400 ms, return under 2 percent, glow below 0.7.');
+    var ul = $('#warnings');
+    ul.innerHTML = '';
+    warn.forEach(function (w, i) {
+      var li = document.createElement('li');
+      if (i === warn.length - 1 && warn.length === 1) li.className = 'ok';
+      li.textContent = w;
+      ul.appendChild(li);
+    });
+
+    $('#cssOut').textContent =
+      '.btn {\n' +
+      '  transition: transform ' + state.dur + 'ms ' + ease + ';\n' +
+      '}\n' +
+      '.btn:hover {\n' +
+      '  transform: translate3d(0, -' + state.lift + 'px, 0);\n' +
+      '}\n' +
+      '.btn::before {\n' +
+      '  transition: opacity ' + state.tail + 'ms cubic-bezier(0.22, 1, 0.36, 1);\n' +
+      '}\n' +
+      '.btn:hover::before {\n' +
+      '  opacity: ' + state.peak + ';\n' +
+      '}\n' +
+      '@media (prefers-reduced-motion: reduce) {\n' +
+      '  .btn, .btn:hover { transform: none; }\n' +
+      '}';
+
+    var tester = $('#tester');
+    tester.disabled = state.disabled;
+
+    $('#q-mug').textContent = cart.mug ? 'In cart: ' + cart.mug : 'None in your cart';
+    $('#q-bowl').textContent = cart.bowl ? 'In cart: ' + cart.bowl : 'None in your cart';
+    $('#q-set').textContent = cart.set ? 'In cart: ' + cart.set : 'None in your cart';
+    $('#cartCount').textContent = String(cart.mug + cart.bowl + cart.set);
+
+    var lg = $('#log');
+    lg.innerHTML = '';
+    logItems.forEach(function (text) {
+      var li = document.createElement('li');
+      li.textContent = text;
+      lg.appendChild(li);
+    });
+
+    var valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('#email').value.trim());
+    $('#subBtn').disabled = !valid || busy;
+    $('#subBtn').setAttribute('aria-busy', String(busy));
+  }
+
+  // initial state: the settle reading
+  applyPreset('settle');
+  state.rm = reduceQuery ? reduceQuery.matches : false;
+  state.disabled = false;
+  $('#rm').checked = state.rm;
+  logItems = [];
+  log('Ready. Reading: ' + PRESETS.settle.label);
+  render();
+
+  if (reduceQuery && reduceQuery.addEventListener) {
+    reduceQuery.addEventListener('change', function (e) {
+      state.rm = e.matches;
+      $('#rm').checked = e.matches;
+      log('System reduce-motion ' + (e.matches ? 'on' : 'off'));
+      render();
+    });
+  }
+
+  // chips
+  document.querySelectorAll('.chip').forEach(function (b) {
+    b.addEventListener('click', function () { applyPreset(b.getAttribute('data-preset')); });
+  });
+
+  // sliders
+  [['#lift', 'lift', parseFloat], ['#dur', 'dur', parseInt], ['#y1', 'y1', parseFloat], ['#tail', 'tail', parseInt], ['#peak', 'peak', parseFloat]]
+    .forEach(function (row) {
+      $(row[0]).addEventListener('input', function (e) {
+        state[row[1]] = row[2](e.target.value);
+        render();
+      });
+    });
+
+  $('#rm').addEventListener('change', function (e) {
+    state.rm = e.target.checked;
+    log('Reduce motion preview ' + (state.rm ? 'on' : 'off'));
+    render();
+  });
+  $('#dis').addEventListener('change', function (e) {
+    state.disabled = e.target.checked;
+    log('Tester ' + (state.disabled ? 'disabled' : 'enabled'));
+    render();
+  });
+
+  // the tester
+  $('#tester').addEventListener('click', function () {
+    clicks++;
+    log('Tester clicked (' + clicks + ')');
+    render();
+  });
+
+  // shop
+  document.querySelectorAll('.add').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var id = b.getAttribute('data-id');
+      cart[id]++;
+      $('#shopStatus').textContent = NAMES[id] + ' added. ' + cart[id] + ' in your cart.';
+      log('Added ' + NAMES[id]);
+      render();
+    });
+  });
+
+  $('#ctaShop').addEventListener('click', function () {
+    var el = $('#shop');
+    el.scrollIntoView({ behavior: state.rm ? 'auto' : 'smooth', block: 'start' });
+    $('#shopTitle').setAttribute('tabindex', '-1');
+    $('#shopTitle').focus({ preventScroll: true });
+    log('Jumped to the autumn set');
+    render();
+  });
+
+  // copy the generated CSS
+  $('#copyBtn').addEventListener('click', function () {
+    var text = $('#cssOut').textContent;
+    var msg = $('#copyMsg');
+    var done = function () { msg.textContent = 'Copied'; log('Copied CSS'); render(); };
+    var fail = function () {
+      var range = document.createRange();
+      range.selectNodeContents($('#cssOut'));
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      msg.textContent = 'Copy blocked: the code is selected, press Cmd or Ctrl C';
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fail);
+      } else {
+        fail();
+      }
+    } catch (err) {
+      fail();
+    }
+  });
+
+  // subscribe form
+  var email = $('#email');
+  email.addEventListener('input', function () {
+    var v = email.value.trim();
+    var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    $('#emailMsg').textContent = v && !ok ? 'Enter an address like name@example.com.' : '';
+    $('#emailMsg').className = 'msg' + (v && !ok ? ' err' : '');
+    render();
+  });
+  $('#subForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if ($('#subBtn').disabled) return;
+    busy = true;
+    $('#subBtn').querySelector('.btn-label').textContent = 'Subscribing';
+    render();
+    setTimeout(function () {
+      busy = false;
+      $('#subBtn').querySelector('.btn-label').textContent = 'Subscribe';
+      $('#emailMsg').textContent = 'Thanks. The first list goes out on Tuesday.';
+      $('#emailMsg').className = 'msg';
+      email.value = '';
+      log('Joined the Tuesday firing list');
+      render();
+    }, 1100);
+  });
+})();
+</script>
+</body>
+</html>

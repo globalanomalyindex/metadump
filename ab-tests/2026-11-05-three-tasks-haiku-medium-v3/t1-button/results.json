@@ -1,0 +1,179 @@
+{
+ "scores": {
+  "A": {
+   "dreamlike": 7.0,
+   "practical": 6.08,
+   "motion": 6.75,
+   "craft": 7.33,
+   "overall": 6.75,
+   "mean_rank": 2.5,
+   "per_run_overall": {
+    "A-r1": 7.33,
+    "A-r2": 6.33,
+    "A-r3": 5.67,
+    "A-r4": 7.67
+   }
+  },
+  "B": {
+   "dreamlike": 6.33,
+   "practical": 8.17,
+   "motion": 7.33,
+   "craft": 7.17,
+   "overall": 7.0,
+   "mean_rank": 2.5,
+   "per_run_overall": {
+    "B-r1": 8.0,
+    "B-r2": 6.67,
+    "B-r3": 6.67,
+    "B-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "wins": 11,
+  "losses": 8,
+  "ties": 5,
+  "win_rate": 0.56
+ },
+ "functional": {
+  "A-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 6,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 5,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 3,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "mobile_overflow_px": 0,
+   "mobile_no_overflow": true,
+   "custom_beziers": 4,
+   "reduced_motion": true,
+   "button_found": true,
+   "hover_changes": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 91347,
+   "mean_seconds": 82.4
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 165859,
+   "mean_seconds": 198.9
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 206192,
+   "ms": 1776129,
+   "tool_uses": 46,
+   "note": "main loop only"
+  }
+ },
+ "agreement_r": 0.29,
+ "permutation": {
+  "p": 0.686,
+  "extreme": 48,
+  "of": 70
+ },
+ "notes": {
+  "b1/j1/B-r1": "Face lifts 3px over 220ms on a cubic-bezier(0.33,1,0.68,1) while a pre-blurred glow fades in over 180ms and lingers on a 620ms (0.22,1,0.36,1) tail, with full focus-visible and reduced-motion handling and a contrast check, so it is the most complete answer to both halves of the brief.",
+  "b1/j1/A-r1": "The aura, sheen, drifting gradient and floating motes are the most dreamlike, but hover durations run 900 to 1600ms, background-position and box-shadow repaint on every frame, and white label text on the sky end of the gradient is weak for legibility.",
+  "b1/j1/B-r2": "Transform and opacity only, with a 180ms settle lift, a 420ms glow-in and a 700ms tail and a clean reduced-motion fallback, but the pale lavender face makes the primary button look like the ghost and the glow is faint.",
+  "b1/j1/A-r2": "The gradient drift and halo are pleasant, but letter-spacing animates on hover and reflows neighbouring buttons, reduced-motion users get no hover feedback at all, and the shimmer pseudo-element is not clipped so a white sheen is visible beside the button at rest.",
+  "b1/j2/B-r2": "Restrained violet glow with a long asymmetric tail and a sensible settle curve, but the pale primary reads like a secondary button and the page is dominated by a dial panel.",
+  "b1/j2/A-r2": "Aura, sheen and a drifting gradient give the most literal dreamlike hover with solid reduced-motion and focus handling, though the 1.1 to 1.6 s durations feel slow and overflow hidden clips the aura.",
+  "b1/j2/A-r1": "Most polished pairing of hover bloom, gradient drift and custom curves on a strong layout with full reduced-motion and focus handling; the hover crops missed the button, so this is judged mainly from source.",
+  "b1/j2/B-r1": "Most practical, with a high-contrast label, a slow glow tail, real glass and rebound dials, and reduced-motion and focus covered, but the solid navy focal is less ethereal and the pill note wraps awkwardly on phone.",
+  "b1/j3/A-r2": "A clean violet-to-magenta gradient drifts on hover with a bloom halo and shimmer, but animating letter-spacing reflows the label, and the rest-state screenshot shows stray light smears on the button and the ghost label.",
+  "b1/j3/B-r2": "The most complete system: separate face and glow curves with 420 ms in and 700 ms out, a named rebound preset, live contrast and overshoot checks, and focus parity, though the lab-heavy page is busier than a marketing site.",
+  "b1/j3/B-r1": "The aurora-gradient stage gives the most ethereal whole-page feel, with a lingering glow and checked curves, and the solid navy primary keeps the label legible; the glass variant drops its glow and the mobile note pill wraps awkwardly.",
+  "b1/j3/A-r1": "The richest dreamlike vocabulary (aura, sheen, looping motes, 1.1 to 1.6 s glides) on an editorial layout, but white labels on the rose and mint states fail contrast, the sky focus ring is faint on lavender, and the hover crop missed the button, so the hover evidence is weak.",
+  "b2/j1/B-r3": "Thorough and well-tested (contrast readouts, disabled, focus ring, reduced motion, hover gated to fine pointers) with a soft settle glow on the dark stage, but the page is mostly a designer-facing lab and the hover reads as a gentle fade more than a dream.",
+  "b2/j1/A-r3": "Attractive moodboard, but the hover is a sheen band sweeping across a Send button plus an infinitely looping blurred aura, which reads as shiny rather than ethereal and costs paint on every frame while hovered.",
+  "b2/j1/B-r4": "Strongest complete website hero: a legible dark stage with a glow and halo that rise on a settle curve, a distinct slower exit curve, a glass secondary, a focus ring, disabled and reduced-motion handling, and a clear affordance, though the glow is restrained.",
+  "b2/j1/A-r4": "Most dreamlike hover in the frames, with a rose-violet gradient shift, sheen and text glow that feel luminous, but it animates box-shadow, background-position and letter-spacing, which is paint- and layout-heavy and slower to answer than the rest.",
+  "b2/j2/B-r4": "Restrained violet glow and halo with three real cubic-bezier readings, a 600 ms glow tail and a 400 ms exit, all gated for reduced motion, focus and touch; the lab panel clutters the page but the button reads as a real control.",
+  "b2/j2/A-r4": "The hover shifts the gradient toward rose, adds a sheen sweep and a glow, and the stays page looks like a finished product; the letter-spacing and box-shadow transitions cost some layout and paint, but reduced motion and focus are handled.",
+  "b2/j2/A-r3": "The ink button's sheen sweep and violet aura look good, but the aura runs an infinite ease-in-out loop on hover, the hover is not gated to fine pointers, and several tiles use backdrop blur.",
+  "b2/j2/B-r3": "Live contrast checks, focus ring and disabled state are strong, but a :root:not(.motion-full) .btn rule overrides the lift and curve variables, so by default there is no lift and only a 150 ms linear fade until the user picks Full, which defeats the curve readings.",
+  "b2/j3/A-r4": "The violet button drifts to a rose-tinted glow with a sheen sweep and a slow 500 ms return, which reads as airy and dreamlike, though three glass Save/Reserve buttons add backdrop-filter cost.",
+  "b2/j3/B-r4": "The hover glow is faint on the dark stage, the primary focus ring (#3b2bb8) nearly disappears against that stage, and the tuning lab panel clutters what should be a workshop page.",
+  "b2/j3/B-r3": "A soft glow and halo ring ease in and out over 220 to 600 ms on the dark stage, with a focus ring that adapts to the backdrop, contrast checks, a disabled state and transform/opacity-only animation, though the default settle has no overshoot and the lab panel is dense.",
+  "b2/j3/A-r3": "A hard white sheen band sweeping across the dark Send button and an infinite aura drift on hover read more as gloss than dream, though the swatch moodboard layout is tidy and holds at phone width."
+ }
+}

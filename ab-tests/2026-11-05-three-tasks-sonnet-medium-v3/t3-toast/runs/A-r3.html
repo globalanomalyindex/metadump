@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package toast</title>
+<style>
+:root{
+  --bg:#0b0d10; --toast:#14171c; --toast-2:#1a1e25; --line:#262b34; --text:#e8ebf0; --muted:#8a93a2;
+  --accent:#4ade80; --accent-dim:#16351f; --warn:#fbbf24; --blue:#60a5fa;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.35 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-image:radial-gradient(900px 500px at 20% 0%,#151a22 0,transparent 60%)}
+main{max-width:520px;padding:40px 20px;color:var(--muted)}
+main h1{font-size:15px;color:var(--text);font-weight:600;margin-bottom:6px}
+main p{font-size:13px;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ghost{border:1px solid var(--line);padding:6px 10px;border-radius:8px;background:var(--toast)}
+.ghost:hover{background:var(--toast-2)}
+
+/* toast */
+.toast{position:fixed;right:16px;bottom:16px;width:min(320px,calc(100vw - 32px));background:var(--toast);
+  border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.55);overflow:hidden;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;transform-origin:bottom right}
+.toast[hidden]{display:none}
+.toast.leaving{transform:translateY(12px) scale(.97);opacity:0}
+.head{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px 9px 11px;text-align:left}
+.ico{flex:none;width:26px;height:26px;border-radius:8px;background:var(--accent-dim);color:var(--accent);display:grid;place-items:center}
+.ico svg{width:15px;height:15px}
+.t{flex:1;min-width:0}
+.t b{display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t span{display:block;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{flex:none;width:16px;height:16px;color:var(--muted);transition:transform .25s}
+.toast.open .chev{transform:rotate(180deg)}
+.bar{height:3px;background:var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
+.x{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:6px;color:var(--muted);display:none;place-items:center;font-size:14px;line-height:1}
+.toast.open .x{display:grid}
+.toast.open .head{padding-right:30px}
+.x:hover{background:var(--toast-2);color:var(--text)}
+
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s cubic-bezier(.2,.8,.2,1)}
+.toast.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden;min-height:0}
+.inner{padding:10px 11px 11px;border-top:1px solid var(--line)}
+.meta{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--muted);margin-bottom:9px}
+.meta code{font:11.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text)}
+.steps{display:flex;justify-content:space-between;margin-bottom:10px}
+.step{flex:1;text-align:center;font-size:10px;color:var(--muted);position:relative}
+.step:before{content:"";display:block;width:9px;height:9px;border-radius:50%;margin:0 auto 4px;background:var(--line);position:relative;z-index:1}
+.step:after{content:"";position:absolute;top:4px;left:-50%;width:100%;height:2px;background:var(--line)}
+.step:first-child:after{display:none}
+.step.done{color:var(--text)}
+.step.done:before,.step.done:after{background:var(--accent)}
+.step.now:before{box-shadow:0 0 0 3px var(--accent-dim)}
+.log{list-style:none;padding:0;max-height:96px;overflow:auto;margin-bottom:10px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.log li{display:flex;gap:8px;padding:3px 0;font-size:11.5px}
+.log time{flex:none;width:62px;color:var(--muted)}
+.log li:first-child{color:var(--text)}
+.log li.new{animation:flash 1.2s}
+@keyframes flash{from{background:var(--accent-dim)}to{background:transparent}}
+.acts{display:flex;gap:6px}
+.acts button{flex:1;padding:6px 4px;border:1px solid var(--line);border-radius:8px;font-size:11.5px;background:var(--toast-2);
+  display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+.acts button:hover{border-color:#39414e}
+.acts button[aria-pressed="true"]{color:var(--accent);border-color:#235a34;background:var(--accent-dim)}
+.acts svg{width:12px;height:12px;flex:none}
+.spin svg{animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.dots{display:flex;gap:4px;justify-content:center;margin-top:9px}
+.dots button{width:6px;height:6px;border-radius:50%;background:var(--line);padding:0}
+.dots button[aria-current="true"]{background:var(--accent);width:14px;border-radius:3px;transition:width .2s}
+.msg{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222831;border:1px solid var(--line);
+  padding:5px 10px;border-radius:8px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s}
+.msg.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Orders</h1>
+  <p>Your package tracker lives in the toast at the bottom right. Click it to expand, switch packages with the dots, refresh for new scans, mute alerts or copy the tracking number.</p>
+  <div class="row"><button class="ghost" id="reopen">Show tracker</button></div>
+</main>
+
+<section class="toast" id="toast" role="status" aria-live="polite" aria-label="Package tracker">
+  <button class="head" id="head" aria-expanded="false" aria-controls="body">
+    <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+    <span class="t"><b id="title"></b><span id="sub"></span></span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+  </button>
+  <button class="x" id="close" aria-label="Dismiss tracker">&times;</button>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="body" id="body"><div><div class="inner">
+    <div class="meta"><span id="carrier"></span><code id="num"></code></div>
+    <div class="steps" id="steps"></div>
+    <ul class="log" id="log"></ul>
+    <div class="acts">
+      <button id="copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg><span>Copy #</span></button>
+      <button id="refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8M21 3v5h-5"/></svg><span>Refresh</span></button>
+      <button id="notify" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 004 0"/></svg><span>Alerts on</span></button>
+    </div>
+    <div class="dots" id="dots" role="group" aria-label="Packages"></div>
+  </div></div></div>
+</section>
+<div class="msg" id="msg" role="status"></div>
+
+<script>
+(function(){
+  var STEPS=["Ordered","Shipped","In transit","Out","Delivered"];
+  var pk=[
+    {name:"Keychron Q1 keyboard",carrier:"UPS",num:"1Z84A9R20396518274",stage:3,eta:"Today by 6:00 PM",notify:true,
+     log:[["2:14 PM","Out for delivery, Brooklyn NY"],["6:52 AM","Arrived at local facility"],["Yesterday","Departed Louisville KY hub"],["Mon","Shipped from Hebron KY"]],
+     next:[["Nearby","Driver is 6 stops away"],["Soon","Delivered, left at front door"]]},
+    {name:"Aesop hand balm",carrier:"USPS",num:"9400111899223397518204",stage:2,eta:"Fri, Nov 7",notify:true,
+     log:[["8:31 AM","In transit to next facility"],["Tue","Accepted at USPS origin, Newark NJ"],["Mon","Label created"]],
+     next:[["Later","Arrived at NYC distribution"],["Fri","Out for delivery"]]},
+    {name:"Trail running shoes",carrier:"FedEx",num:"781204539826",stage:1,eta:"Mon, Nov 10",notify:false,
+     log:[["Today","Shipped from Memphis TN"],["Yesterday","Picked up by FedEx"]],
+     next:[["Later","In transit, Indianapolis IN"],["Sun","Arrived at local hub"]]}
+  ];
+  var cur=0, open=false;
+  try{var s=JSON.parse(localStorage.getItem("pkgtoast")||"{}");if(typeof s.open==="boolean")open=s.open;if(s.cur>=0&&s.cur<pk.length)cur=s.cur}catch(e){}
+  var $=function(i){return document.getElementById(i)};
+  var toast=$("toast"),head=$("head");
+  function save(){try{localStorage.setItem("pkgtoast",JSON.stringify({open:open,cur:cur}))}catch(e){}}
+  function msg(t){var m=$("msg");m.textContent=t;m.classList.add("on");clearTimeout(msg.t);msg.t=setTimeout(function(){m.classList.remove("on")},1400)}
+  function render(freshLog){
+    var p=pk[cur];
+    $("title").textContent=STEPS[p.stage]==="Out"?"Out for delivery":STEPS[p.stage]==="Delivered"?"Delivered":STEPS[p.stage];
+    $("sub").textContent=p.name+" · "+(p.stage===4?"Done":p.eta);
+    $("fill").style.width=(p.stage/(STEPS.length-1)*100)+"%";
+    $("carrier").textContent=p.carrier;
+    $("num").textContent=p.num.length>14?p.num.slice(0,6)+"…"+p.num.slice(-5):p.num;
+    $("num").title=p.num;
+    var st=$("steps");st.innerHTML="";
+    STEPS.forEach(function(n,i){var d=document.createElement("div");d.className="step"+(i<=p.stage?" done":"")+(i===p.stage?" now":"");d.textContent=n;st.appendChild(d)});
+    var l=$("log");l.innerHTML="";
+    p.log.forEach(function(e,i){var li=document.createElement("li");if(freshLog&&i===0)li.className="new";
+      var t=document.createElement("time");t.textContent=e[0];var s=document.createElement("span");s.textContent=e[1];li.appendChild(t);li.appendChild(s);l.appendChild(li)});
+    var n=$("notify");n.setAttribute("aria-pressed",p.notify);n.querySelector("span").textContent=p.notify?"Alerts on":"Alerts off";
+    var d=$("dots");d.innerHTML="";
+    pk.forEach(function(q,i){var b=document.createElement("button");b.setAttribute("aria-label",q.name);b.title=q.name;
+      if(i===cur)b.setAttribute("aria-current","true");b.onclick=function(){cur=i;save();render()};d.appendChild(b)});
+    head.setAttribute("aria-expanded",open);toast.classList.toggle("open",open);
+  }
+  head.onclick=function(){open=!open;save();render()};
+  $("close").onclick=function(){toast.classList.add("leaving");setTimeout(function(){toast.hidden=true;toast.classList.remove("leaving")},200)};
+  $("reopen").onclick=function(){toast.hidden=false;msg("Tracker shown")};
+  $("copy").onclick=function(){
+    var v=pk[cur].num,ok=function(){msg("Copied "+pk[cur].carrier+" tracking number")};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(ok,fb)}else fb();
+    function fb(){var t=document.createElement("textarea");t.value=v;document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}t.remove();ok()}
+  };
+  $("notify").onclick=function(){var p=pk[cur];p.notify=!p.notify;render();msg(p.notify?"Alerts on for this package":"Alerts muted")};
+  $("refresh").onclick=function(){
+    var b=$("refresh"),p=pk[cur];if(b.classList.contains("spin"))return;
+    b.classList.add("spin");
+    setTimeout(function(){
+      b.classList.remove("spin");
+      if(p.next.length){var e=p.next.shift();p.log.unshift([new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}),e[1]]);
+        if(/Out for delivery/.test(e[1]))p.stage=3,p.eta="Today by 8:00 PM";
+        else if(/Delivered/.test(e[1]))p.stage=4;
+        else if(/Arrived at (local|NYC)/.test(e[1])&&p.stage<3)p.stage=Math.max(p.stage,2);
+        render(true);msg(p.notify?"New scan: "+e[1]:"New scan (alerts muted)")}
+      else msg("No new scans")
+    },700);
+  };
+  render();
+})();
+</script>
+</body>
+</html>

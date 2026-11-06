@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"compact": 6, "collapsible": 7, "tracking": 7, "dark": 7, "usability": 6, "craft": 7, "overall": 6, "note": "Polished collapsed row with progress bar and smooth grid-height transition, but the opened card is tall, it has a needless package dropdown, no explicit next-step guidance, and status changes are not announced."},
+"X": {"compact": 8, "collapsible": 8, "tracking": 8, "dark": 8, "usability": 8, "craft": 7, "overall": 8, "note": "Tiny pill that expands to a dense timeline with next-step note, copy and carrier link, plus dismiss, restore tab, live region and Escape, though the collapsed ETA truncates and the expanded meta row wraps awkwardly."},
+"Y": {"compact": 9, "collapsible": 8, "tracking": 8, "dark": 8, "usability": 8, "craft": 8, "overall": 8, "note": "Smallest footprint, clean expanded layer with tracking number, next-step line, timestamped timeline and labelled actions, live region and Escape support, with only minor truncation and a wrapping button label."},
+"Z": {"compact": 6, "collapsible": 7, "tracking": 6, "dark": 8, "usability": 5, "craft": 7, "overall": 6, "note": "Attractive teal accent, progress bar and timeline, but it omits the carrier and tracking number and a clear next step, leaves dead space at the bottom, and has weak screen-reader announcements."}
+},
+"ranking": ["Y", "X", "W", "Z"]}

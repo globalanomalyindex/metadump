@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Retreat - Ethereal Button</title>
+<style>
+:root{
+  --ink:#2a2547;
+  --ink-soft:#5d567f;
+  --bg1:#f4f0ff;
+  --bg2:#e6f1ff;
+  --bg3:#ffeef6;
+  --a:#b9a6ff;
+  --b:#8fd3ff;
+  --c:#ffc1e3;
+  /* dreamlike curves */
+  --drift:cubic-bezier(.22,.9,.28,1.04);      /* soft overshoot, like surfacing */
+  --exhale:cubic-bezier(.16,.84,.3,1);        /* long slow settle */
+  --veil:cubic-bezier(.6,.02,.2,.98);         /* slow-in, slow-out fade */
+  --linger:cubic-bezier(.3,0,.1,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:ui-serif,"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  color:var(--ink);
+  min-height:100vh;
+  background:
+    radial-gradient(60rem 40rem at 15% 10%,var(--bg3),transparent 60%),
+    radial-gradient(50rem 40rem at 90% 30%,var(--bg2),transparent 60%),
+    linear-gradient(180deg,var(--bg1),#fbf9ff);
+  display:grid;place-items:center;padding:24px;
+}
+.card{
+  width:min(560px,100%);
+  background:rgba(255,255,255,.62);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:28px;
+  padding:clamp(24px,5vw,44px);
+  box-shadow:0 30px 80px -30px rgba(110,90,200,.35);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.eyebrow{font:600 .72rem/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+h1{font-weight:400;font-size:clamp(1.8rem,5vw,2.4rem);line-height:1.12;margin:.6rem 0 .8rem;letter-spacing:-.01em}
+p{margin:0 0 1.4rem;color:var(--ink-soft);line-height:1.6;font-family:ui-sans-serif,system-ui,sans-serif;font-size:.98rem}
+.meta{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 1.8rem;font:500 .85rem ui-sans-serif,system-ui,sans-serif;color:var(--ink)}
+.meta span{opacity:.8}
+.seats{font-variant-numeric:tabular-nums}
+
+/* ---------- The button ---------- */
+.dream{
+  --mx:50%;--my:50%;
+  position:relative;isolation:isolate;
+  display:inline-flex;align-items:center;gap:.7em;
+  padding:1.05em 1.9em;
+  border:0;border-radius:999px;cursor:pointer;
+  font:600 1rem/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.01em;
+  color:#fff;
+  background:linear-gradient(120deg,#5a49b8,#3f78b8 55%,#a74f8f);
+  background-size:180% 100%;background-position:0% 50%;
+  box-shadow:0 10px 24px -10px rgba(110,90,200,.65),0 0 0 0 rgba(185,166,255,0);
+  transform:translateY(0) scale(1);
+  transition:
+    transform .9s var(--drift),
+    box-shadow 1.2s var(--exhale),
+    background-position 1.4s var(--veil),
+    letter-spacing 1s var(--exhale),
+    filter 1s var(--linger);
+  -webkit-tap-highlight-color:transparent;
+}
+/* soft aura that blooms outward */
+.dream::before{
+  content:"";position:absolute;inset:-14px;border-radius:inherit;z-index:-1;
+  background:radial-gradient(closest-side,rgba(185,166,255,.75),rgba(143,211,255,.35) 60%,transparent);
+  filter:blur(14px);opacity:0;transform:scale(.7);
+  transition:opacity 1.3s var(--veil),transform 1.5s var(--exhale);
+}
+/* light that follows the pointer, like mist */
+.dream::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;
+  background:radial-gradient(circle 70px at var(--mx) var(--my),rgba(255,255,255,.55),transparent 70%);
+  opacity:0;transition:opacity .9s var(--veil);
+}
+.dream>*{position:relative;z-index:1}
+.dream .arrow{
+  display:inline-block;width:1.1em;height:1.1em;
+  transition:transform 1s var(--drift),opacity .8s var(--veil);
+  opacity:.85;
+}
+.dream .label{display:inline-block;transition:transform 1s var(--exhale),opacity .6s var(--veil)}
+
+@media (hover:hover){
+  .dream:hover{
+    transform:translateY(-4px) scale(1.035);
+    background-position:100% 50%;
+    letter-spacing:.035em;
+    box-shadow:0 22px 44px -14px rgba(110,90,200,.55),0 0 36px 4px rgba(185,166,255,.45);
+    filter:saturate(1.1);
+  }
+  .dream:hover::before{opacity:1;transform:scale(1.08)}
+  .dream:hover::after{opacity:1}
+  .dream:hover .arrow{transform:translateX(5px);opacity:1}
+}
+.dream:focus-visible{
+  outline:2px solid #fff;outline-offset:3px;
+  box-shadow:0 0 0 5px #6f5fd0,0 0 32px 6px rgba(185,166,255,.6);
+}
+.dream:active{
+  transform:translateY(1px) scale(.97);
+  transition-duration:.25s;
+  transition-timing-function:cubic-bezier(.3,.7,.4,1);
+}
+.dream[aria-busy="true"]{pointer-events:none;filter:saturate(.9)}
+.dream[data-state="done"]{background-image:linear-gradient(120deg,#237a63,#3f78b8 60%,#6f55b8)}
+.dream[data-state="done"] .arrow{transform:rotate(0)}
+
+/* ripple of light on click */
+.ring{
+  position:absolute;border-radius:50%;pointer-events:none;z-index:0;
+  width:20px;height:20px;margin:-10px 0 0 -10px;
+  background:radial-gradient(circle,rgba(255,255,255,.8),rgba(255,255,255,0) 70%);
+  animation:ring 1.4s cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes ring{from{transform:scale(1);opacity:.9}to{transform:scale(16);opacity:0}}
+
+.status{margin-top:1.1rem;min-height:1.4em;font:500 .9rem ui-sans-serif,system-ui,sans-serif;color:var(--ink-soft)}
+.secondary{
+  margin-left:10px;background:none;border:0;cursor:pointer;color:var(--ink-soft);
+  font:500 .9rem ui-sans-serif,system-ui,sans-serif;padding:.8em .6em;border-radius:10px;
+  background-image:linear-gradient(currentColor,currentColor);background-repeat:no-repeat;
+  background-size:0% 1px;background-position:0 85%;
+  transition:background-size .9s var(--exhale),color .6s var(--veil);
+}
+.secondary:hover{background-size:100% 1px;color:var(--ink)}
+.secondary:focus-visible{outline:2px solid #6f5fd0;outline-offset:2px}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+
+@media (prefers-reduced-motion:reduce){
+  .dream,.dream::before,.dream::after,.dream .arrow,.secondary{transition-duration:.01ms!important}
+  .ring{display:none}
+}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="eyebrow">Lumen Retreat &middot; Spring session</div>
+  <h1>Three quiet days in the Cascades</h1>
+  <p>Slow mornings, guided silence walks, and evenings by the lake. A small group, a long exhale, and nothing to catch up on.</p>
+  <div class="meta">
+    <span>Apr 18 - 21</span>
+    <span>$640 per person</span>
+    <span class="seats"><b id="seats">6</b> seats left</span>
+  </div>
+  <div class="row">
+    <button class="dream" id="reserve" type="button" aria-live="polite">
+      <span class="label" id="label">Reserve a seat</span>
+      <svg class="arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
+    </button>
+    <button class="secondary" id="undo" type="button" hidden>Release my seat</button>
+  </div>
+  <div class="status" id="status" role="status">Hover or tab to the button. Click to reserve.</div>
+</main>
+
+<script>
+(function(){
+  var btn=document.getElementById('reserve'),
+      label=document.getElementById('label'),
+      seatsEl=document.getElementById('seats'),
+      status=document.getElementById('status'),
+      undo=document.getElementById('undo'),
+      seats=6, held=false, busy=false;
+
+  // mist follows the pointer
+  btn.addEventListener('pointermove',function(e){
+    var r=btn.getBoundingClientRect();
+    btn.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    btn.style.setProperty('--my',(e.clientY-r.top)+'px');
+  });
+
+  function ripple(e){
+    var r=btn.getBoundingClientRect(), s=document.createElement('span');
+    s.className='ring';
+    var x=(e&&e.clientX&&e.detail)?e.clientX-r.left:r.width/2,
+        y=(e&&e.clientY&&e.detail)?e.clientY-r.top:r.height/2;
+    s.style.left=x+'px';s.style.top=y+'px';
+    btn.appendChild(s);
+    setTimeout(function(){s.remove()},1500);
+  }
+
+  function render(){
+    seatsEl.textContent=seats;
+    label.textContent=held?'Seat reserved':'Reserve a seat';
+    btn.dataset.state=held?'done':'';
+    undo.hidden=!held;
+  }
+
+  btn.addEventListener('click',function(e){
+    if(busy||held) return;
+    ripple(e);
+    busy=true;
+    btn.setAttribute('aria-busy','true');
+    label.textContent='Holding your seat...';
+    status.textContent='One moment.';
+    setTimeout(function(){
+      busy=false;held=true;seats-=1;
+      btn.removeAttribute('aria-busy');
+      render();
+      status.textContent='Your seat is held for 24 hours. A confirmation is on its way.';
+    },1100);
+  });
+
+  undo.addEventListener('click',function(){
+    held=false;seats+=1;render();
+    status.textContent='Seat released. It is waiting for you if you change your mind.';
+    btn.focus();
+  });
+})();
+</script>
+</body>
+</html>

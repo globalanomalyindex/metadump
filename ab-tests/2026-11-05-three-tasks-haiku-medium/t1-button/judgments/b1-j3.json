@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j3",
+  "scores": {
+    "W": {"dreamlike": 7, "practical": 7, "motion": 6, "craft": 7, "overall": 7, "note": "An aurora gradient with a sheen that sweeps across and a glow that blooms on hover reads dreamy, but the 700 ms enter and the equally slow 700 ms leave make the button feel sluggish and the box-shadow and filter transitions are heavier than needed."},
+    "X": {"dreamlike": 4, "practical": 8, "motion": 7, "craft": 6, "overall": 5, "note": "The enter (360 ms) and leave (180 ms) curves are well split and the glow is opacity-only and cheap, but the glow is faint and the primary is a pale pill that looks like the ghost button, and its purple-on-near-white label becomes illegible in dark mode per the source."},
+    "Y": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 8, "overall": 8, "note": "A translucent face lets a violet and mint haze rise after a small lift, with a 170 ms leave and a clear curve plot and reduced-motion path, giving the most usable and polished result even though the dreaminess is restrained."},
+    "Z": {"dreamlike": 9, "practical": 5, "motion": 6, "craft": 5, "overall": 6, "note": "The halo swell and the drifting gradient are the most ethereal of the four, but the 620 ms leave is sluggish, white text washes out over the teal end of the gradient, and the phone view clips the booking card and lede off the right edge."}
+  },
+  "ranking": ["Y", "W", "Z", "X"]
+}

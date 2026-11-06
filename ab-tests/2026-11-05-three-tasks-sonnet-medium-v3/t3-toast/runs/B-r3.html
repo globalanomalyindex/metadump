@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel pill</title>
+<style>
+:root{
+  color-scheme:dark;
+  --canvas:#0c0d0b; --base:#151613; --raised:#1f201c; --top:#282925; --line:#3a3a35;
+  --text:#f1f0ea; --muted:#a6a59b; --faint:#8f8e84;
+  --transit:#7cb7ff; --out:#f0c35a; --done:#6fd39a; --exc:#f87171;
+  --accent:var(--out);
+  --ease:cubic-bezier(.2,.9,.25,1.04);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--canvas);color:var(--text);font:13px/1.35 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+/* faux page behind the toast */
+.page{max-width:640px;margin:0 auto;padding:28px 16px 140px}
+.page h1{font-size:15px;font-weight:600;margin:0 0 4px}
+.page p{color:var(--faint);margin:0 0 14px}
+.ghost{height:10px;border-radius:5px;background:#1a1b17;margin:10px 0}
+.demo{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0;align-items:center}
+.demo span{color:var(--faint);font-size:12px;margin-right:4px}
+.demo button{font:inherit;font-size:12px;color:var(--muted);background:var(--base);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
+.demo button:hover{color:var(--text);background:var(--raised)}
+.demo button[aria-pressed=true]{color:var(--text);border-color:var(--muted)}
+
+/* the tracker */
+.dock{position:fixed;right:16px;bottom:16px;width:min(272px,calc(100vw - 32px));display:flex;flex-direction:column;align-items:flex-end}
+.tracker{width:100%;background:var(--base);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,.45);transition:background .25s,transform .35s var(--ease),opacity .2s;transform-origin:100% 100%}
+.tracker[data-open=true]{background:var(--raised);border-radius:14px}
+.tracker[hidden]{display:none}
+.tracker.enter{animation:in .38s var(--ease)}
+@keyframes in{from{opacity:0;transform:translateY(10px) scale(.94)}}
+.tracker.leave{opacity:0;transform:translateY(8px) scale(.94)}
+
+.pill{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px 0 11px;cursor:pointer}
+.pill:hover{background:rgba(255,255,255,.04)}
+.pill:focus-visible,.row-btn:focus-visible,.x:focus-visible,.restore:focus-visible,.demo button:focus-visible{outline:2px solid var(--text);outline-offset:-2px}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.tracker[data-stage=out] .dot{animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 6%,transparent)}}
+.word{font-weight:600;font-size:13px;white-space:nowrap;color:var(--text)}
+.eta{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chev{flex:none;width:10px;height:10px;color:var(--faint);transition:transform .3s var(--ease)}
+[data-open=true] .chev{transform:rotate(180deg)}
+.bar{display:flex;gap:2px;padding:0 11px 0;height:0;opacity:0}
+.mini{display:flex;gap:2px;height:2px;margin:0}
+.mini i{flex:1;background:var(--top);transition:background .3s}
+.mini i.on{background:var(--accent)}
+
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s var(--ease)}
+[data-open=true] .body{grid-template-rows:1fr}
+.inner{overflow:hidden;min-height:0}
+.pad{padding:4px 12px 10px;border-top:1px solid var(--line)}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 6px;color:var(--muted);font-size:12px}
+.meta b{white-space:nowrap;color:var(--text);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.btns{display:flex;gap:2px}
+.row-btn,.x{all:unset;box-sizing:border-box;min-width:28px;height:28px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:7px;color:var(--muted);cursor:pointer;font-size:12px}
+.row-btn:hover,.x:hover{background:var(--top);color:var(--text)}
+.row-btn svg,.x svg{width:13px;height:13px}
+.note{margin:2px 0 6px;padding:6px 8px;border-radius:8px;background:color-mix(in srgb,var(--exc) 14%,var(--raised));color:#fecaca;font-size:12px;display:none}
+[data-exc=true] .note{display:block}
+ol{list-style:none;margin:0;padding:0;position:relative}
+li{display:grid;grid-template-columns:14px 1fr auto;gap:8px;padding:4px 0;position:relative;opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .3s var(--ease)}
+[data-open=true] li{opacity:1;transform:none;transition-delay:calc(var(--i)*40ms + 90ms)}
+li::before{content:"";position:absolute;left:3.5px;top:16px;bottom:-4px;width:1px;background:var(--line)}
+li:last-child::before{display:none}
+li .d{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--faint);margin-top:4px;background:var(--raised)}
+li:first-child .d{background:var(--accent);border-color:var(--accent)}
+li .t{color:var(--muted)}
+li:first-child .t{color:var(--text);font-weight:500}
+li .t small{display:block;color:var(--faint);font-size:11px}
+li time{color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums;padding-top:1px;white-space:nowrap}
+li.bad .d{border-color:var(--exc);background:var(--exc)}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-size:12px}
+.foot a{color:var(--muted);text-decoration:none;display:inline-flex;gap:4px;align-items:center;min-height:24px}
+.foot a:hover{color:var(--text);text-decoration:underline}
+.foot a:focus-visible{outline:2px solid var(--text);outline-offset:2px;border-radius:4px}
+.toast-msg{position:absolute;opacity:0;pointer-events:none}
+.copied{color:var(--done)!important}
+
+.restore{all:unset;box-sizing:border-box;margin-top:8px;height:28px;padding:0 10px;border-radius:14px;background:var(--base);border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:12px;display:none}
+.restore:hover{color:var(--text)}
+.restore.show{display:inline-flex;align-items:center;gap:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Orders</h1>
+  <p>Your parcel is tracked in the corner. Try the pill, then the controls below.</p>
+  <div class="ghost" style="width:80%"></div><div class="ghost" style="width:60%"></div><div class="ghost" style="width:72%"></div>
+  <div class="demo" role="group" aria-label="Demo controls">
+    <span>Demo state</span>
+    <button data-go="0" aria-pressed="false">Label created</button>
+    <button data-go="1" aria-pressed="false">In transit</button>
+    <button data-go="2" aria-pressed="true">Out for delivery</button>
+    <button data-go="3" aria-pressed="false">Delivered</button>
+    <button data-exc aria-pressed="false">Delay</button>
+  </div>
+  <div class="ghost" style="width:68%"></div><div class="ghost" style="width:50%"></div>
+</main>
+
+<div class="dock">
+  <section class="tracker" id="tr" data-open="false" data-stage="out" data-exc="false" aria-label="Package tracking">
+    <button class="pill" id="pill" aria-expanded="false" aria-controls="menu">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="word" id="word">Out for delivery</span>
+      <span class="eta" id="eta">Today by 4:10 pm</span>
+      <svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="mini" id="mini" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="body" id="menu">
+      <div class="inner"><div class="pad">
+        <div class="meta">
+          <span>UPS <b id="num">1Z84A7R20399214418</b></span>
+          <span class="btns">
+            <button class="row-btn" id="copy" aria-label="Copy tracking number"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4.5" y="4.5" width="7" height="8" rx="1.5"/><path d="M9.5 2.5h-6a1 1 0 0 0-1 1v7"/></svg><span id="copyl">Copy</span></button>
+            <button class="x" id="dismiss" aria-label="Dismiss tracker"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="m3 3 8 8M11 3l-8 8"/></svg></button>
+          </span>
+        </div>
+        <div class="note" id="note">Weather delay at the Louisville hub. New estimate: Fri, Nov 7.</div>
+        <ol id="list" aria-label="Scan history, newest first"></ol>
+        <div class="foot"><a href="https://www.ups.com/track" target="_blank" rel="noopener">Open carrier page <span aria-hidden="true">↗</span></a><span id="upd" style="color:var(--faint)">Updated 2:41 pm</span></div>
+      </div></div>
+    </div>
+  </section>
+  <button class="restore" id="restore">Show tracker</button>
+</div>
+<div class="sr" role="status" aria-live="polite" id="live"></div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var tr=$('#tr'),pill=$('#pill'),live=$('#live');
+  var stages=[
+    {k:'label',word:'Label created',eta:'Arrives Thu, Nov 6',upd:'Updated 9:12 am',scans:[
+      ['Shipping label created','Oakland, CA','Nov 3 · 9:12 am']]},
+    {k:'transit',word:'In transit',eta:'Arrives Thu, Nov 6',upd:'Updated 6:05 am',scans:[
+      ['Arrived at hub','Louisville, KY','Nov 5 · 6:05 am'],
+      ['Departed facility','Salt Lake City, UT','Nov 4 · 10:48 pm'],
+      ['Picked up','Oakland, CA','Nov 3 · 5:30 pm'],
+      ['Shipping label created','Oakland, CA','Nov 3 · 9:12 am']]},
+    {k:'out',word:'Out for delivery',eta:'Today by 4:10 pm',upd:'Updated 2:41 pm',scans:[
+      ['Out for delivery','Cincinnati, OH','Nov 5 · 7:52 am'],
+      ['Arrived at local facility','Cincinnati, OH','Nov 5 · 4:20 am'],
+      ['Arrived at hub','Louisville, KY','Nov 5 · 1:05 am'],
+      ['Departed facility','Salt Lake City, UT','Nov 4 · 10:48 pm'],
+      ['Picked up','Oakland, CA','Nov 3 · 5:30 pm']]},
+    {k:'done',word:'Delivered',eta:'Today 3:26 pm',upd:'Updated 3:26 pm',scans:[
+      ['Delivered, front door','Cincinnati, OH','Nov 5 · 3:26 pm'],
+      ['Out for delivery','Cincinnati, OH','Nov 5 · 7:52 am'],
+      ['Arrived at local facility','Cincinnati, OH','Nov 5 · 4:20 am'],
+      ['Departed facility','Salt Lake City, UT','Nov 4 · 10:48 pm'],
+      ['Picked up','Oakland, CA','Nov 3 · 5:30 pm']]}
+  ];
+  var colors={label:'var(--faint)',transit:'var(--transit)',out:'var(--out)',done:'var(--done)'};
+  var st={stage:2,exc:false,open:false,dismissed:false};
+
+  function esc(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+  function render(announce){
+    var s=stages[st.stage],scans=s.scans.slice(0,5),word=s.word,eta=s.eta,key=s.k;
+    if(st.exc&&st.stage<3){
+      word='Delayed';eta='Now Fri, Nov 7';key='exc';
+      scans=[['Delayed, weather','Louisville, KY','Nov 5 · 2:41 pm']].concat(scans.slice(0,4));
+    }
+    tr.dataset.stage=key;tr.dataset.exc=String(st.exc&&st.stage<3);
+    tr.style.setProperty('--accent',key==='exc'?'var(--exc)':colors[key]);
+    $('#word').textContent=word;$('#eta').textContent=eta;
+    $('#upd').textContent=s.upd;
+    var html='';
+    scans.forEach(function(r,i){
+      html+='<li style="--i:'+i+'"'+(key==='exc'&&i===0?' class="bad"':'')+'><span class="d" aria-hidden="true"></span><span class="t">'+esc(r[0])+'<small>'+esc(r[1])+'</small></span><time>'+esc(r[2])+'</time></li>';
+    });
+    $('#list').innerHTML=html;
+    var on=Math.min(st.stage+1,4);
+    [].forEach.call($('#mini').children,function(el,i){el.className=i<on?'on':''});
+    [].forEach.call(document.querySelectorAll('[data-go]'),function(b){b.setAttribute('aria-pressed',String(+b.dataset.go===st.stage))});
+    $('[data-exc]').setAttribute('aria-pressed',String(st.exc&&st.stage<3));
+    if(announce)live.textContent='Package update: '+word+', '+eta;
+  }
+  function setOpen(o){
+    st.open=o;tr.dataset.open=String(o);pill.setAttribute('aria-expanded',String(o));
+  }
+  function dismiss(){
+    setOpen(false);tr.classList.add('leave');
+    setTimeout(function(){tr.hidden=true;tr.classList.remove('leave');$('#restore').classList.add('show');$('#restore').focus();live.textContent='Tracker dismissed'},200);
+    st.dismissed=true;
+  }
+  function restore(){
+    tr.hidden=false;tr.classList.add('enter');$('#restore').classList.remove('show');st.dismissed=false;
+    setTimeout(function(){tr.classList.remove('enter');pill.focus()},400);
+  }
+  pill.addEventListener('click',function(){setOpen(!st.open)});
+  $('#dismiss').addEventListener('click',dismiss);
+  $('#restore').addEventListener('click',restore);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&st.open){setOpen(false);pill.focus()}});
+  $('#copy').addEventListener('click',function(){
+    var t=$('#num').textContent,b=$('#copyl'),btn=$('#copy');
+    var done=function(){b.textContent='Copied';btn.classList.add('copied');live.textContent='Tracking number copied';
+      setTimeout(function(){b.textContent='Copy';btn.classList.remove('copied')},1600)};
+    try{navigator.clipboard.writeText(t).then(done,done)}catch(e){done()}
+  });
+  [].forEach.call(document.querySelectorAll('[data-go]'),function(b){
+    b.addEventListener('click',function(){
+      st.stage=+b.dataset.go;if(st.stage===3)st.exc=false;
+      if(st.dismissed)restore();render(true)})});
+  $('[data-exc]').addEventListener('click',function(){
+    if(st.stage===3)st.stage=2;
+    st.exc=!st.exc;if(st.dismissed)restore();render(true)});
+  render(false);
+})();
+</script>
+</body>
+</html>

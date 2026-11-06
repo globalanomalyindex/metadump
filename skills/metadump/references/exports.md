@@ -47,17 +47,17 @@ Tier 4 candidate pools: offer at most two as named variants (`"variants": [{"nam
 
 ## LLM brief (copy, writing, analysis, any text model)
 
-`exports.llm_brief.text`, ≤600 tokens, in five labeled blocks:
+`exports.llm_brief.text`, ≤600 tokens, in five labeled blocks. It's a spread of material for a writer to play with, not instructions (ADR 0012): no rule words, and no pool item described at more length than the others.
 
 ```
-Core: tier-1 entries, stated plainly (each traceable to `from`): what the task is most about.
-Also relevant: tier-2 entries that bear on text, with their measured or sourced specifics.
-Say instead: each not_meant/not_wanted for text as "say X, not Y".
-Open: open questions with the default being assumed.
-Options: proposed choices, labeled as options.
+On the table: the material, mixed: the user's words (quoted), tier-1 and tier-2 specifics with their measured or sourced values, and deep cuts from the pools, each in a few words, no item leading.
+Ways in: the angles, one line each, none marked as the default.
+Dials: illustrative values as spreads (ranges, or several values far apart) with what turning them does, never one value per slot.
+Worn paths: each not_meant/not_wanted for text as "the usual move is X; fresher: Y or Z".
+Open: what the prompt leaves open, with the assumption if one is needed to proceed.
 ```
 
-Briefs compiled before 0.2.0 use `Must` / `Should` / `Say instead` / `Unknowns`; read `Must` as Core and `Should` as Also relevant.
+Older briefs use `Core` / `Also relevant` / `Say instead` / `Options` (0.2.0 to 0.7.x) or `Must` / `Should` / `Say instead` / `Unknowns` (before 0.2.0). Read them as material too: `Core`/`Must` as what the task is most about, never as orders.
 
 Copy consumers also turn `not_wanted` text phrases (and `noise` words) into lint patterns: a `regex` review prompt per phrase.
 

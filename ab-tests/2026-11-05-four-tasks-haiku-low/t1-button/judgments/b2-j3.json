@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j3", "scores": {
+"W": {"dreamlike": 7, "practical": 7, "motion": 7, "craft": 7, "overall": 7, "note": "Layers aura, sheen and sparks with four named curves and a duration slider, but the aura is clipped by overflow hidden and the hover frames show modest change on the primary."},
+"X": {"dreamlike": 7, "practical": 7, "motion": 8, "craft": 6, "overall": 6, "note": "Separate lift and glow curves with a delayed bloom give the most considered motion, but the invalid font shorthand drops button weight and size and the desktop layout leaves a large dead gap."},
+"Y": {"dreamlike": 6, "practical": 8, "motion": 7, "craft": 7, "overall": 7, "note": "The most usable of the four: unclipped halo, sensible in and out timings, disabled and touch paths handled, and a clean mobile layout, though the hover change reads as subtle."},
+"Z": {"dreamlike": 8, "practical": 6, "motion": 7, "craft": 7, "overall": 7, "note": "The conic aurora and shimmer feel the most dreamlike, but animating box-shadow, filter and a blurred rotating layer costs more to render than a site button should."}
+},
+"ranking": ["Z", "W", "Y", "X"]}

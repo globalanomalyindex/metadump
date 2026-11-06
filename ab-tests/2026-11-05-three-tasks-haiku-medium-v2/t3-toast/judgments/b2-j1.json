@@ -1,0 +1,11 @@
+{
+  "block": "b2",
+  "judge": "j1",
+  "scores": {
+    "W": {"compact": 8, "collapsible": 9, "tracking": 8, "dark": 8, "usability": 8, "craft": 8, "overall": 8, "note": "A single-row toast that expands into a clean timeline with expected dates, carrier and tracking line, Show history and Dismiss; the whole row is the toggle, the chevron rotates, aria-expanded and aria-live are wired, and reduced motion is respected."},
+    "X": {"compact": 5, "collapsible": 7, "tracking": 9, "dark": 8, "usability": 7, "craft": 6, "overall": 6, "note": "The richest tracker (filters, per-package progress, carrier, tracking number, stage labels, Next scan, Remove, Add form), but it opens at rest as a large panel and the tiny chevron glyphs are hard to see and hit."},
+    "Y": {"compact": 9, "collapsible": 8, "tracking": 6, "dark": 7, "usability": 7, "craft": 7, "overall": 7, "note": "The smallest footprint and a tidy timeline with expected ETA and carrier, but it tracks only one parcel, has no next-step action, and the small grey labels and open panel covering the list on mobile weaken it."},
+    "Z": {"compact": 6, "collapsible": 8, "tracking": 9, "dark": 8, "usability": 8, "craft": 7, "overall": 7, "note": "A compact pill that opens to a multi-package list with ETA, overdue flags, carrier, progress, next step and mark delivered, plus a labeled add form; the open panel is taller and denser than it needs to be."}
+  },
+  "ranking": ["W", "Z", "Y", "X"]
+}

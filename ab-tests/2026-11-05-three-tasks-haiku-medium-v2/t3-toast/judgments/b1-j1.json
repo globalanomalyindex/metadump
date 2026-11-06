@@ -1,0 +1,11 @@
+{
+  "block": "b1",
+  "judge": "j1",
+  "scores": {
+    "W": {"compact": 7, "collapsible": 9, "tracking": 7, "dark": 8, "usability": 8, "craft": 8, "overall": 8, "note": "Smooth grid-row expand with a clear chevron and aria-expanded, a five-step timeline with an expected window, and a thorough exception flow, but the toast never shows the carrier or tracking number and the open panel overlaps the demo hint on mobile."},
+    "X": {"compact": 6, "collapsible": 6, "tracking": 9, "dark": 8, "usability": 7, "craft": 7, "overall": 8, "note": "The richest tracker (carrier, masked tracking number, ETA, progress bar, scan history, next-scan action, add form with validation), but the open panel is tall, toggling is an instant display swap with no transition, and the summary is not in a live region."},
+    "Y": {"compact": 8, "collapsible": 9, "tracking": 9, "dark": 8, "usability": 8, "craft": 9, "overall": 9, "note": "A tight 52px row that opens into a well-spaced panel with steps, expected windows, carrier and tracking number, an exception block, a live region, Escape and focus return, and a smooth transition with reduced-motion handling."},
+    "Z": {"compact": 5, "collapsible": 6, "tracking": 7, "dark": 8, "usability": 7, "craft": 6, "overall": 6, "note": "The collapse works and is labelled, but the toast opens by default so it has a large resting footprint, collapse is an instant hide, the badge's aria-label on a plain span is weak, and no clear next step is offered."}
+  },
+  "ranking": ["Y", "W", "X", "Z"]
+}

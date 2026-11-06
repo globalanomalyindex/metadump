@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Parcel Tracking Toast</title>
+<style>
+:root{
+  --page:#121212;
+  --card:#1F1B24;
+  --raise:#2A272F;
+  --hover:#34303A;
+  --line:rgba(255,255,255,.08);
+  --line-strong:rgba(255,255,255,.16);
+  --text:#E5E5E5;      /* 13.44:1 on --card */
+  --muted:#9CA3AF;     /* 6.67:1 on --card */
+  --faint:#4A4B47;
+  --ok:#22C55E;        /* the one status accent: progress and delivered */
+  --warn:#F59E0B;      /* exception only */
+  --ease-out:cubic-bezier(.22,1,.36,1);
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;background:var(--page);color:var(--text);
+  font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;letter-spacing:.02em}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* sample page behind the toast */
+.page{max-width:720px;margin:0 auto;padding:28px 16px 120px}
+.page h1{font-size:18px;margin:0;font-weight:600}
+.page .sub{color:var(--muted);margin:2px 0 0}
+.orders{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid var(--line)}
+.orders li{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.orders .muted{color:var(--muted)}
+
+/* sample controls */
+.demo{margin-top:24px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#171519}
+.demo h2{font-size:11px;margin:0 0 10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.demo-row{display:flex;flex-wrap:wrap;gap:6px}
+.demo-line{margin:10px 0 0;color:var(--muted);font-size:11.5px}
+
+.btn{
+  appearance:none;min-height:28px;padding:4px 9px;border-radius:7px;
+  border:1px solid var(--line);background:var(--raise);color:var(--text);
+  font-size:11.5px;cursor:pointer;
+}
+.btn:hover{background:var(--hover)}
+.btn:disabled{background:transparent;color:var(--muted);cursor:default}
+.link{
+  appearance:none;background:none;border:0;padding:6px 4px;min-height:28px;
+  color:var(--text);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:11.5px;
+}
+button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+
+/* the toast */
+.toast{
+  position:fixed;right:16px;bottom:16px;width:300px;max-width:calc(100vw - 32px);
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);overflow:hidden;
+  animation:enter 280ms var(--ease-out) backwards;
+}
+.toast.gone{opacity:0;transform:translateY(10px);transition:opacity 180ms ease-in,transform 180ms ease-in}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}}
+
+.bar{display:flex;align-items:center;padding-right:6px}
+.head{
+  flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:44px;
+  padding:0 10px 0 14px;background:none;border:0;cursor:pointer;text-align:left;
+}
+.stage{font-weight:600;white-space:nowrap}
+.item{flex:1;min-width:0;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.count{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chev{flex:none;width:12px;height:12px;color:var(--muted);transition:transform 180ms ease}
+.toast[data-open="true"] .chev{transform:rotate(180deg)}
+.x{
+  flex:none;width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:7px;
+  background:none;color:var(--muted);cursor:pointer;
+}
+.x:hover{background:var(--raise);color:var(--text)}
+
+.dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.dot.warn{background:var(--warn)}
+.dot.seen{background:transparent;box-shadow:inset 0 0 0 1.5px var(--warn)}
+.dot.live{animation:breathe 1.8s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* panel: height eases open through grid rows */
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 180ms ease-in-out}
+.toast[data-open="true"] .panel{grid-template-rows:1fr;transition:grid-template-rows 260ms var(--ease-out)}
+.inner{min-height:0;overflow:hidden;visibility:hidden;transition:visibility 0s linear 180ms}
+.toast[data-open="true"] .inner{visibility:visible;transition-delay:0s}
+
+.meta{display:flex;justify-content:space-between;gap:8px;padding:0 14px 8px;color:var(--muted);font-size:11.5px}
+
+/* steps: one rail, solid up to the current step, dashed after it */
+.steps{list-style:none;margin:0;padding:2px 14px 0}
+.step{position:relative;display:grid;grid-template-columns:14px 1fr;column-gap:10px;min-height:28px;padding-bottom:6px}
+.step.seg-solid::before,.step.seg-dash::before{
+  content:"";position:absolute;left:6px;top:16px;bottom:-2px;width:0;border-left:1.5px solid var(--ok);
+}
+.step.seg-dash::before{border-left-style:dashed;border-left-color:var(--faint)}
+.mark{position:relative;z-index:1;width:14px;height:14px;margin-top:2px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box}
+.mark.done{background:var(--ok)}
+.mark.current{background:var(--card);border:2px solid var(--ok)}
+.mark.current::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--ok)}
+.mark.todo{border:1.5px solid var(--faint)}
+.sx{display:grid;grid-template-columns:1fr auto;column-gap:8px;align-items:baseline;min-width:0}
+.label{font-size:12.5px}
+.is-todo .label{color:var(--muted)}
+.is-current .label{font-weight:600}
+.when{color:var(--muted);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sub{grid-column:1/-1;color:var(--muted);font-size:11.5px;margin-top:1px}
+
+/* exception: sits beside the steps, not as one of them */
+.exc{margin:6px 14px 0;padding:9px 10px 10px;border-radius:8px;background:rgba(245,158,11,.08);box-shadow:inset 2px 0 0 var(--warn)}
+.exc-h{display:flex;justify-content:space-between;gap:8px;color:var(--warn);font-weight:600;font-size:12.5px}
+.exc-h time{color:var(--muted);font-weight:400;font-size:11.5px;font-variant-numeric:tabular-nums}
+.exc-d{margin:4px 0 8px;font-size:12px}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.phone{margin:8px 0 0;font-size:11.5px}
+.snz{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 14px 0;
+  padding:4px 10px;border-radius:8px;border:1px dashed var(--line-strong);color:var(--muted);font-size:11.5px;
+}
+
+.latest{margin:8px 14px 0;padding:8px 0 12px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
+.latest span{color:var(--text);font-variant-numeric:tabular-nums}
+.note{margin:-6px 14px 12px;color:var(--muted);font-size:11.5px}
+
+/* restore chip when the toast is hidden */
+.restore{
+  position:fixed;right:16px;bottom:16px;z-index:2;min-height:32px;padding:0 12px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card);display:flex;align-items:center;gap:8px;
+  font-size:12px;cursor:pointer;
+}
+
+@media (max-width:380px){
+  .toast{left:16px;width:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <h1>Orders</h1>
+  <p class="sub">3 orders this month</p>
+  <ul class="orders">
+    <li><span>Ceramic pour-over set</span><span class="muted">Delivered Tue 3 Nov</span></li>
+    <li><span>Linen throw, oat</span><span class="muted">Arriving Mon 9 Nov</span></li>
+    <li><span>Walnut desk lamp</span><span class="muted">Out for delivery</span></li>
+  </ul>
+
+  <section class="demo" aria-label="Sample controls">
+    <h2>Sample controls (this page only)</h2>
+    <div class="demo-row">
+      <button class="btn" data-demo="next">Next scan</button>
+      <button class="btn" data-demo="exception">Add exception</button>
+      <button class="btn" data-demo="hour">Advance clock 1 h</button>
+      <button class="btn" data-demo="reset">Reset</button>
+    </div>
+    <p class="demo-line" id="clockLine"></p>
+  </section>
+</main>
+
+<aside id="toast" class="toast" data-open="false" aria-label="Parcel tracking: Walnut desk lamp">
+  <div class="bar">
+    <button id="toggle" class="head" data-act="toggle" aria-expanded="false" aria-controls="panel">
+      <span id="dot" class="dot"></span>
+      <span id="stage" class="stage">Out for delivery</span>
+      <span id="item" class="item">Walnut desk lamp</span>
+      <span id="count" class="count">4/5</span>
+      <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="x" data-act="dismiss" aria-label="Hide tracker">
+      <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2l6 6M8 2 2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div id="panel" class="panel" role="region" aria-label="Delivery steps">
+    <div class="inner">
+      <div class="meta"><span>Northwind Post</span><span class="mono">NW 4471 0932 5518</span></div>
+      <ol id="steps" class="steps"></ol>
+      <div id="exc"></div>
+      <p id="latest" class="latest"></p>
+      <p id="note" class="note" hidden></p>
+    </div>
+  </div>
+</aside>
+
+<button id="restore" class="restore" data-act="restore" hidden></button>
+<div id="live" class="sr-only" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var STEPS = ['Ordered', 'Packed', 'Handed to the carrier', 'Out for delivery', 'Delivered'];
+  var ITEM = 'Walnut desk lamp';
+  var EXPECTED = 'Expected Fri 6 Nov, 10:00 to 14:00';
+  var EXC_DETAIL = 'Delivery attempt failed: the communal door code was not accepted. Retry tomorrow, or hold at the depot.';
+  var AUTO_HIDE_MS = 5000;
+
+  var INITIAL = {
+    stage: 3,
+    delivered: false,
+    times: ['Mon 2 Nov, 09:14', 'Tue 3 Nov, 16:40', 'Wed 4 Nov, 08:05', 'Thu 5 Nov, 07:22', ''],
+    exception: null,        // { clock, seen }
+    snoozeUntil: null,      // sample-clock minutes
+    contactOpen: false,
+    open: false,
+    dismissed: false,
+    clock: 14 * 60 + 12,    // sample clock, Thu 5 Nov 14:12
+    latestWhen: 'Thu 07:22',
+    latestText: 'Out for delivery, Leeds South depot',
+    note: ''
+  };
+  var state = JSON.parse(JSON.stringify(INITIAL));
+
+  var $ = function (s) { return document.querySelector(s); };
+  var toast = $('#toast'), toggle = $('#toggle'), dot = $('#dot'), stage = $('#stage'),
+      count = $('#count'), steps = $('#steps'), exc = $('#exc'), latest = $('#latest'),
+      note = $('#note'), panel = $('#panel'), restore = $('#restore'), live = $('#live'),
+      clockLine = $('#clockLine');
+
+  var timer = null, hovering = false;
+
+  function fmt(min) {
+    var h = Math.floor(min / 60) % 24, m = min % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+  function say(msg) { if (msg) live.textContent = msg; }
+
+  function seenFlag() { return !!(state.exception && state.exception.seen); }
+  function isActive() { return !!state.exception && !state.delivered && state.snoozeUntil === null; }
+  function isSnoozed() { return !!state.exception && !state.delivered && state.snoozeUntil !== null; }
+  function stageWord() {
+    if (state.delivered) return 'Delivered';
+    if (isActive() && !seenFlag()) return 'Delivery exception';
+    return STEPS[state.stage];
+  }
+
+  function stepsHTML() {
+    return STEPS.map(function (label, i) {
+      var done = state.delivered || i < state.stage;
+      var current = !state.delivered && i === state.stage;
+      var last = i === STEPS.length - 1;
+      var seg = i < state.stage ? 'seg-solid' : 'seg-dash';
+      var cls = 'step ' + (done ? 'is-done' : current ? 'is-current' : 'is-todo') + (last ? '' : ' ' + seg);
+      var mark = done
+        ? '<span class="mark done"><svg width="8" height="8" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 5.2 4.2 7 8 3" fill="none" stroke="#121212" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+        : current ? '<span class="mark current"></span>' : '<span class="mark todo"></span>';
+      var when = (done || current) ? state.times[i] : '';
+      var sub = (!done && !current && last && !state.delivered) ? EXPECTED : '';
+      return '<li class="' + cls + '">' + mark + '<div class="sx"><span class="label">' + label + '</span>' +
+        (when ? '<span class="when">' + when + '</span>' : '') +
+        (sub ? '<span class="sub">' + sub + '</span>' : '') + '</div></li>';
+    }).join('');
+  }
+
+  function excHTML() {
+    var seen = seenFlag();
+    return '<div class="exc">' +
+      '<div class="exc-h"><span>Delivery exception</span><time>Thu ' + fmt(state.exception.clock) + '</time></div>' +
+      '<p class="exc-d">' + EXC_DETAIL + '</p>' +
+      '<div class="acts">' +
+        '<button class="btn" data-act="contact">' + (state.contactOpen ? 'Hide number' : 'Contact carrier') + '</button>' +
+        '<button class="btn" data-act="seen"' + (seen ? ' disabled' : '') + '>' + (seen ? 'Seen, still watching' : 'Mark seen, keep watching') + '</button>' +
+        '<button class="btn" data-act="snooze">Snooze 1 h</button>' +
+        '<button class="btn" data-act="carrier">Carrier page</button>' +
+      '</div>' +
+      (state.contactOpen ? '<p class="phone">Northwind Post +1 (555) 010-4471, ref NW 4471 0932 5518</p>' : '') +
+      '</div>';
+  }
+
+  function snoozedHTML() {
+    return '<div class="snz"><span>Exception snoozed until ' + fmt(state.snoozeUntil) + '</span>' +
+      '<button class="link" data-act="unsnooze">Show now</button></div>';
+  }
+
+  function render() {
+    var active = isActive(), snoozed = isSnoozed(), word = stageWord();
+    stage.textContent = word;
+    count.textContent = (state.delivered ? 5 : state.stage + 1) + '/5';
+    dot.className = 'dot' + (state.delivered ? '' : active && !seenFlag() ? ' warn live' : (active || snoozed) ? ' seen' : '');
+    toast.dataset.open = state.open ? 'true' : 'false';
+    toggle.setAttribute('aria-expanded', state.open ? 'true' : 'false');
+    panel.inert = !state.open;
+    steps.innerHTML = stepsHTML();
+    if (active) { exc.innerHTML = excHTML(); }
+    else if (snoozed) { exc.innerHTML = snoozedHTML(); }
+    else { exc.innerHTML = ''; }
+    latest.innerHTML = 'Latest <span>' + state.latestWhen + '</span> &middot; ' + state.latestText;
+    note.hidden = !state.note;
+    note.textContent = state.note;
+    restore.hidden = !state.dismissed;
+    restore.textContent = 'Track ' + ITEM.toLowerCase() + ': ' + word;
+    clockLine.textContent = 'Sample clock: Thu 5 Nov, ' + fmt(state.clock) +
+      (state.snoozeUntil !== null ? ' (snooze ends ' + fmt(state.snoozeUntil) + ')' : '');
+    document.querySelector('[data-demo="next"]').disabled = state.delivered;
+    document.querySelector('[data-demo="exception"]').disabled = state.delivered || !!state.exception;
+    schedule();
+  }
+
+  // Routine updates leave on their own to the restore chip; exceptions wait for the user.
+  // The timer pauses while the pointer or focus is in the toast, while the panel is open,
+  // and while the page is hidden.
+  function schedule() {
+    clearTimeout(timer);
+    timer = null;
+    if (state.dismissed || state.open || state.exception || hovering || document.hidden) return;
+    if (toast.contains(document.activeElement)) return;
+    timer = setTimeout(function () { act('dismiss', true); }, AUTO_HIDE_MS);
+  }
+
+  function hide(auto) {
+    state.dismissed = true;
+    toast.classList.add('gone');
+    setTimeout(function () {
+      if (state.dismissed) {
+        toast.hidden = true;
+        if (!auto) restore.focus();
+      }
+    }, 200);
+    say(auto ? 'Tracker hidden after a routine update. Use the chip to show it.' : 'Tracker hidden. Use the chip to show it again.');
+  }
+
+  function show() {
+    state.dismissed = false;
+    toast.hidden = false;
+    toast.classList.remove('gone');
+    say('Tracker shown.');
+  }
+
+  function act(name, auto) {
+    var focused = document.activeElement;
+    var key = focused && focused.dataset ? focused.dataset.act : null;
+    clearTimeout(timer);
+    switch (name) {
+      case 'toggle':
+        state.open = !state.open;
+        if (state.open) say('Steps shown.');
+        break;
+      case 'dismiss':
+        if (state.dismissed) break;
+        hide(!!auto);
+        break;
+      case 'restore':
+        show();
+        break;
+      case 'contact':
+        state.contactOpen = !state.contactOpen;
+        say(state.contactOpen ? 'Carrier phone number shown.' : '');
+        break;
+      case 'seen':
+        if (state.exception) state.exception.seen = true;
+        say('Marked seen. Still tracking this parcel.');
+        break;
+      case 'snooze':
+        state.snoozeUntil = state.clock + 60;
+        state.contactOpen = false;
+        say('Exception snoozed until ' + fmt(state.snoozeUntil) + '.');
+        break;
+      case 'unsnooze':
+        state.snoozeUntil = null;
+        say('Exception shown again.');
+        break;
+      case 'carrier':
+        state.note = 'Carrier page opened (sample link, nothing was sent).';
+        say('Carrier page opened in the sample.');
+        break;
+    }
+    render();
+    if (key && key !== 'toggle' && key !== 'restore') {
+      var n = toast.querySelector('[data-act="' + key + '"]:not([disabled])');
+      if (n) n.focus();
+      else if (state.open && !toast.hidden) toggle.focus();
+    }
+  }
+
+  function demo(name) {
+    if (name === 'next') {
+      if (state.delivered) return;
+      state.stage = 4;
+      state.delivered = true;
+      state.times[4] = 'Thu 5 Nov, ' + fmt(state.clock);
+      state.exception = null;
+      state.snoozeUntil = null;
+      state.contactOpen = false;
+      state.latestWhen = 'Thu ' + fmt(state.clock);
+      state.latestText = 'Delivered, left at front porch, photo on file';
+      state.note = '';
+      say('Northwind Post: delivered. Five of five steps done.');
+    } else if (name === 'exception') {
+      if (state.delivered || state.exception) return;
+      state.exception = { clock: state.clock, seen: false };
+      state.snoozeUntil = null;
+      state.contactOpen = false;
+      state.latestWhen = 'Thu ' + fmt(state.clock);
+      state.latestText = 'Delivery exception, communal door code rejected';
+      say('Northwind Post: delivery exception. Next steps are in the toast.');
+    } else if (name === 'hour') {
+      state.clock += 60;
+      if (state.snoozeUntil !== null && state.clock >= state.snoozeUntil) {
+        state.snoozeUntil = null;
+        say('Snooze ended. Exception shown again.');
+      }
+    } else if (name === 'reset') {
+      state = JSON.parse(JSON.stringify(INITIAL));
+      toast.hidden = false;
+      toast.classList.remove('gone');
+      say('Sample reset.');
+    }
+    render();
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-act]');
+    if (a && !a.disabled) { act(a.dataset.act, false); return; }
+    var d = e.target.closest('[data-demo]');
+    if (d && !d.disabled) demo(d.dataset.demo);
+  });
+
+  toast.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.open) {
+      state.open = false;
+      render();
+      toggle.focus();
+    }
+  });
+  toast.addEventListener('mouseenter', function () { hovering = true; schedule(); });
+  toast.addEventListener('mouseleave', function () { hovering = false; schedule(); });
+  toast.addEventListener('focusin', function () { clearTimeout(timer); });
+  toast.addEventListener('focusout', function () { setTimeout(schedule, 0); });
+  document.addEventListener('visibilitychange', schedule);
+
+  render();
+})();
+</script>
+</body>
+</html>

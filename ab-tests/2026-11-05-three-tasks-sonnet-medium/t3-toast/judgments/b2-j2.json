@@ -1,0 +1,7 @@
+{"block": "b2", "judge": "j2", "scores": {
+"W": {"compact": 8, "collapsible": 8, "tracking": 7, "dark": 8, "usability": 8, "craft": 7, "overall": 7, "note": "Very slim collapsed row with a clear step timeline, ETA, tracking number and actions, but the carrier is only a cryptic UP chip and the Carrier page button wraps awkwardly."},
+"X": {"compact": 6, "collapsible": 7, "tracking": 7, "dark": 8, "usability": 7, "craft": 6, "overall": 6, "note": "Pleasant green dark styling with progress bar and timeline, but the UPS/USPS/FedEx tabs are confusing for one package and the open card has dead space at the bottom."},
+"Y": {"compact": 7, "collapsible": 8, "tracking": 9, "dark": 9, "usability": 8, "craft": 8, "overall": 8, "note": "Richest tracking (stepper, event log, carrier, masked number, copy, refresh, alerts, multi-package dots) in a dense dark card with good ARIA, though the subtitle truncates the ETA."},
+"Z": {"compact": 9, "collapsible": 9, "tracking": 7, "dark": 8, "usability": 8, "craft": 9, "overall": 8, "note": "Tightest collapsed state with a segmented progress bar and polished timeline with locations, but no carrier name and only a Dismiss action for what to do next."}
+},
+"ranking": ["Y", "Z", "W", "X"]}

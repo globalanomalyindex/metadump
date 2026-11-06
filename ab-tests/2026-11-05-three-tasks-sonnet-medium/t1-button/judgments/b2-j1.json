@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j1","scores":{
+"W":{"dreamlike":7,"practical":6,"motion":7,"craft":6,"overall":6,"note":"Frosted glass pill with a drifting light and nice halo, but the small label and low-contrast resting button feel weak, and the effect stays fairly subtle."},
+"X":{"dreamlike":9,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Gradient shift with a drifting light blob, overshoot bezier and arrow nudge reads clearly dreamy, with strong label contrast and a polished card, though 1s transitions run long."},
+"Y":{"dreamlike":6,"practical":8,"motion":7,"craft":6,"overall":6,"note":"Careful bezier set, clean focus ring and reduced-motion handling, but the glow is subtle and the stacked buttons including Sold out clutter the demo."},
+"Z":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Pastel iridescent pill with a blurred bloom and gentle arrow drift feels airy and legible, with good focus outline and reduced-motion override."}},
+"ranking":["X","Z","W","Y"]}

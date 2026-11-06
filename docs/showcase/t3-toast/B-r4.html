@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package toast</title>
+<style>
+:root{
+  --base:#141519; --pill:#1C1D22; --raised:#22232A; --top:#2C2D36;
+  --line:rgba(255,255,255,.08); --text:#ECEDF2; --muted:#A3A6B4; --dim:#7C7F8E;
+  --transit:#7DB8FF; --ofd:#FFC561; --ok:#6EE7A0; --bad:#F87171;
+  --accent:var(--transit);
+  --ease:cubic-bezier(.34,1.4,.5,1);
+  --out:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--base);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:flex-start;padding:20px 16px;
+  background-image:radial-gradient(900px 400px at 50% -10%,#1d2030 0,transparent 70%)}
+.stage{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.page-hint{color:var(--dim);font-size:12px;text-align:center;margin:0 0 4px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.toast{background:var(--pill);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  transform-origin:top center;transition:transform .28s var(--ease),opacity .2s var(--out),background .25s;
+  animation:enter .32s var(--ease) both}
+.toast.open{background:var(--raised);border-radius:16px}
+.toast.leaving{transform:translateY(-8px) scale(.96);opacity:0;transition:transform .18s ease-in,opacity .18s ease-in}
+@keyframes enter{from{transform:translateY(-10px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+
+.head{display:flex;align-items:center;gap:8px;width:100%;height:38px;padding:0 6px 0 12px;text-align:left}
+.head:hover{background:rgba(255,255,255,.04)}
+.glyph{flex:none;width:18px;height:18px;color:var(--accent);display:grid;place-items:center}
+.glyph svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.stage-word{font-weight:600;color:var(--accent);white-space:nowrap}
+.eta{color:var(--text);white-space:nowrap}
+.eta b{font-weight:600}
+.spacer{flex:1;min-width:4px}
+.carrier{color:var(--dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
+.chev{flex:none;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;color:var(--muted);transition:transform .28s var(--ease)}
+.chev svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.open .chev{transform:rotate(180deg)}
+.bar{height:2px;background:rgba(255,255,255,.06);margin:0 12px;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px;transition:width .5s var(--out),background .25s}
+
+.menu{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s var(--out)}
+.open .menu{grid-template-rows:1fr}
+.menu>div{overflow:hidden;min-height:0}
+.inner{padding:8px 12px 10px;opacity:0;transition:opacity .12s}
+.open .inner{opacity:1;transition:opacity .2s .08s}
+
+.tn{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;margin-bottom:6px}
+.tn code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);letter-spacing:.2px}
+.tn .sp{flex:1}
+.mini{height:24px;padding:0 8px;border-radius:12px;background:var(--top);color:var(--text);font-size:12px;
+  display:inline-flex;align-items:center;gap:4px;transition:background .15s,transform .1s}
+.mini:hover{background:#363745}
+.mini:active{transform:scale(.95)}
+
+ol{list-style:none;margin:0;padding:0;position:relative}
+li{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:start;padding:3px 0;position:relative;min-height:26px}
+li::before{content:"";position:absolute;left:7px;top:17px;bottom:-9px;width:1px;background:var(--line)}
+li:last-child::before{display:none}
+li.done::before{background:var(--accent);opacity:.5}
+.dot{width:14px;height:14px;border-radius:50%;margin-top:2px;display:grid;place-items:center;background:var(--accent);color:#10131a}
+.dot svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+li.now .dot{background:transparent;border:2px solid var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+li.next .dot{background:transparent;border:1.5px solid var(--dim)}
+.what{color:var(--text)}
+.where{display:block;color:var(--muted);font-size:11.5px}
+li.next .what{color:var(--muted)}
+.when{color:var(--muted);font-size:11.5px;white-space:nowrap;padding-top:1px}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);margin-left:6px}
+
+.actions{display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);flex-wrap:wrap}
+.actions .sp{flex:1}
+.sw{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;height:24px;cursor:pointer}
+.sw i{width:26px;height:14px;border-radius:7px;background:var(--top);position:relative;transition:background .2s}
+.sw i::after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:transform .2s var(--ease),background .2s}
+.sw[aria-checked=true] i{background:color-mix(in srgb,var(--accent) 55%,#000)}
+.sw[aria-checked=true] i::after{transform:translateX(12px);background:#fff}
+.sw[aria-checked=true]{color:var(--text)}
+
+.note{display:none;margin:6px 0 0;padding:6px 8px;border-radius:8px;background:rgba(248,113,113,.12);color:#FFB0B0;font-size:12px}
+.exception .note{display:block}
+.tools{display:flex;gap:6px;margin-top:8px}
+
+.chip{align-self:center;height:30px;padding:0 12px;border-radius:15px;background:var(--pill);border:1px solid var(--line);color:var(--muted);display:none}
+.chip.show{display:inline-flex;align-items:center;gap:6px;animation:enter .25s var(--ease) both}
+.chip:hover{color:var(--text)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.log{color:var(--dim);font-size:11.5px;text-align:center;min-height:16px}
+
+.toast[data-s=transit]{--accent:var(--transit)}
+.toast[data-s=ofd]{--accent:var(--ofd)}
+.toast[data-s=delivered]{--accent:var(--ok)}
+.toast[data-s=exception]{--accent:var(--bad)}
+.toast[data-s=label]{--accent:var(--muted)}
+
+@media (max-width:360px){.carrier{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="stage">
+  <p class="page-hint">Tap the pill to open the scan timeline</p>
+
+  <section class="toast" id="toast" data-s="transit" aria-label="Package tracking">
+    <button class="head" id="head" aria-expanded="false" aria-controls="menu">
+      <span class="glyph" id="glyph" aria-hidden="true"></span>
+      <span class="stage-word" id="word">In transit</span>
+      <span class="eta" id="eta">Thu <b>2–5 pm</b></span>
+      <span class="spacer"></span>
+      <span class="carrier" id="carrier">Parcelline</span>
+      <span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+    </button>
+    <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+
+    <div class="menu" id="menu" role="region" aria-label="Scan history">
+      <div>
+        <div class="inner">
+          <div class="tn">
+            <span>No.</span><code id="tn">PL4821 7730 1956</code>
+            <span class="sp"></span>
+            <button class="mini" id="copy" type="button">Copy</button>
+          </div>
+          <ol id="list"></ol>
+          <p class="note" id="note">Held at the depot. Scans usually resume within a day.</p>
+          <div class="actions">
+            <button class="mini" id="advance" type="button">Refresh</button>
+            <button class="mini" id="open" type="button">Carrier page</button>
+            <button class="mini" id="exc" type="button">Report delay</button>
+            <span class="sp"></span>
+            <button class="sw" id="notify" role="switch" aria-checked="true" type="button"><i></i>Notify</button>
+            <button class="mini" id="dismiss" type="button" aria-label="Dismiss tracker">Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <button class="chip" id="chip" type="button">Show tracker</button>
+  <div class="log" id="log"></div>
+  <div class="sr" id="live" aria-live="polite"></div>
+</main>
+
+<script>
+(function(){
+  var ICON={
+    box:'<svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>',
+    truck:'<svg viewBox="0 0 24 24"><path d="M2 6h11v10H2zM13 10h5l3 3v3h-8"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>',
+    bike:'<svg viewBox="0 0 24 24"><path d="M3 12h12l4-6M15 12v6M3 12v6h12"/><circle cx="19" cy="18" r="2"/></svg>',
+    check:'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+    alert:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.1"/></svg>',
+    tag:'<svg viewBox="0 0 24 24"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>'
+  };
+  var STAGES=[
+    {k:'label',word:'Label created',icon:'tag',eta:'Wed <b>pending</b>'},
+    {k:'transit',word:'In transit',icon:'truck',eta:'Thu <b>2–5 pm</b>'},
+    {k:'ofd',word:'Out for delivery',icon:'bike',eta:'Today <b>by 5 pm</b>'},
+    {k:'delivered',word:'Delivered',icon:'check',eta:'Today <b>1:42 pm</b>'}
+  ];
+  var scans=[
+    {w:'Label created',p:'Portland, OR',t:'Mon 9:12 am',s:0},
+    {w:'Picked up',p:'Portland, OR',t:'Mon 5:40 pm',s:1},
+    {w:'Arrived at hub',p:'Boise, ID',t:'Tue 6:05 am',s:1},
+    {w:'Departed hub',p:'Boise, ID',t:'Tue 11:30 pm',s:1}
+  ];
+  var future=[
+    {w:'Arrived at local depot',p:'Salt Lake City, UT',t:'Thu 7:00 am',s:1},
+    {w:'Out for delivery',p:'Salt Lake City, UT',t:'Thu 9:15 am',s:2},
+    {w:'Delivered',p:'Front door',t:'Thu 2–5 pm',s:3}
+  ];
+  var stage=1, exception=false, notify=true;
+
+  var $=function(i){return document.getElementById(i)};
+  var toast=$('toast'),head=$('head'),list=$('list'),word=$('word'),eta=$('eta'),glyph=$('glyph'),
+      fill=$('fill'),live=$('live'),logEl=$('log'),chip=$('chip');
+
+  function say(t){live.textContent='';setTimeout(function(){live.textContent=t},30)}
+  function log(t){logEl.textContent=t;clearTimeout(log.t);log.t=setTimeout(function(){logEl.textContent=''},2600)}
+
+  function render(){
+    var st=STAGES[stage], key=exception?'exception':st.k;
+    toast.dataset.s=key;
+    toast.classList.toggle('exception',exception);
+    word.textContent=exception?'Delayed':st.word;
+    eta.innerHTML=exception?'New ETA <b>Fri</b>':st.eta;
+    glyph.innerHTML=exception?ICON.alert:ICON[st.icon];
+    var total=scans.length+future.length;
+    fill.style.width=Math.round(scans.length/total*100)+'%';
+    $('exc').textContent=exception?'Resume':'Report delay';
+    $('advance').disabled=(stage===3);
+    $('advance').style.opacity=stage===3?.45:1;
+    var h='';
+    scans.forEach(function(s,i){
+      var now=i===scans.length-1;
+      h+='<li class="'+(now?'now':'done')+'"'+(now?' aria-current="step"':'')+'><span class="dot">'+(now?'':ICON.check)+'</span>'+
+        '<span class="what">'+s.w+(now?'<span class="tag">Now</span>':'')+'<span class="where">'+s.p+'</span></span><span class="when">'+s.t+'</span></li>';
+    });
+    future.forEach(function(s){
+      h+='<li class="next"><span class="dot"></span><span class="what">'+s.w+'<span class="where">'+s.p+'</span></span><span class="when">Expected '+s.t+'</span></li>';
+    });
+    list.innerHTML=h;
+  }
+
+  function setOpen(o){
+    toast.classList.toggle('open',o);
+    head.setAttribute('aria-expanded',o);
+    if(o){var n=list.querySelector('.now');}
+  }
+  head.addEventListener('click',function(){setOpen(head.getAttribute('aria-expanded')!=='true')});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&head.getAttribute('aria-expanded')==='true'){setOpen(false);head.focus()}
+  });
+
+  $('advance').addEventListener('click',function(){
+    if(!future.length||exception)return exception&&log('Resume first to get new scans');
+    var s=future.shift();
+    var hh=['Thu 7:04 am','Thu 9:18 am','Thu 1:42 pm'][scans.length-4]||s.t;
+    s.t=hh; scans.push(s); stage=s.s;
+    render();
+    var msg=STAGES[stage].word+(stage===3?', '+STAGES[stage].eta.replace(/<\/?b>/g,''):'');
+    say('Package update: '+msg); log('New scan: '+s.w);
+  });
+
+  $('exc').addEventListener('click',function(){
+    if(stage===3)return log('Already delivered');
+    exception=!exception; render();
+    say(exception?'Package delayed':'Delay cleared, back in transit');
+    log(exception?'Delay reported':'Back on schedule');
+  });
+
+  $('notify').addEventListener('click',function(){
+    notify=!notify; this.setAttribute('aria-checked',notify);
+    log(notify?'Notifications on':'Notifications muted');
+  });
+
+  $('copy').addEventListener('click',function(){
+    var b=this, n=$('tn').textContent;
+    function ok(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1400);log('Tracking number copied')}
+    try{navigator.clipboard.writeText(n).then(ok,function(){fallback()})}catch(e){fallback()}
+    function fallback(){
+      var r=document.createRange();r.selectNodeContents($('tn'));var s=getSelection();s.removeAllRanges();s.addRange(r);
+      try{document.execCommand('copy')}catch(e){} s.removeAllRanges(); ok();
+    }
+  });
+
+  $('open').addEventListener('click',function(){log('Would open parcelline.example/track/'+$('tn').textContent.replace(/\s/g,''))});
+
+  $('dismiss').addEventListener('click',function(){
+    setOpen(false);
+    toast.classList.add('leaving');
+    setTimeout(function(){toast.style.display='none';chip.classList.add('show')},190);
+    say('Tracker dismissed');
+  });
+  chip.addEventListener('click',function(){
+    chip.classList.remove('show');
+    toast.classList.remove('leaving');toast.style.display='';
+    toast.style.animation='none';void toast.offsetWidth;toast.style.animation='';
+    head.focus();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

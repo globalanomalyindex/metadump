@@ -1,0 +1,7 @@
+{"block": "b1", "judge": "j3", "scores": {
+"W": {"dreamlike": 7, "practical": 6, "motion": 7, "craft": 6, "overall": 6, "note": "Overshoot bloom and a drifting veil feel airy, but it animates box-shadow, filter, background-position and letter-spacing per hover, which is costly for a real page, and the plain shop layout is only average."},
+"X": {"dreamlike": 6, "practical": 9, "motion": 7, "craft": 8, "overall": 8, "note": "The halo is restrained but clearly lit, only transform and opacity animate, the focus ring and reduced-motion handling are solid, and the dark states grid gives it the clearest hierarchy."},
+"Y": {"dreamlike": 7, "practical": 6, "motion": 8, "craft": 6, "overall": 6, "note": "Delayed bloom and the four distinct curve presets are the most thoughtful motion work, but backdrop-filter and blurred halos cost render time, and the garish gradient stage and tuning panel crowd the page."},
+"Z": {"dreamlike": 8, "practical": 6, "motion": 8, "craft": 6, "overall": 7, "note": "The pearly veil sweep and slow haze exit are the most dreamlike, with a playful release spring, but letter-spacing and box-shadow transitions cost layout and paint, and the mismatched pink and cyan buttons weaken the palette."}
+},
+"ranking": ["X", "Z", "W", "Y"]}

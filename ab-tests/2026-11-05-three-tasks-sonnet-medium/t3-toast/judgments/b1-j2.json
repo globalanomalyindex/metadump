@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"compact":6,"collapsible":7,"tracking":7,"dark":7,"usability":8,"craft":6,"overall":6,"note":"Thin one-line collapsed bar with strong ARIA (switches, live region, Esc), but the opened card has a large dead gap above the footer and the collapsed row is cramped."},
+"X":{"compact":7,"collapsible":7,"tracking":8,"dark":8,"usability":6,"craft":7,"overall":7,"note":"Clean header with progress bar, carrier and number, stops-away and action buttons, though the collapsed state shows no progress and keyboard and screen-reader support is lighter."},
+"Y":{"compact":7,"collapsible":8,"tracking":9,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Richest tracking with ETA window, progress line, locations and timestamps, copy and alert actions, plus Esc and reduced-motion support, at the cost of a taller opened card."},
+"Z":{"compact":9,"collapsible":8,"tracking":7,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Tightest footprint with a stepped dot meter, amber accent and check timeline, though the tracking number is shortened and no ETA shows when collapsed beyond 4 of 5."}},
+"ranking":["Y","Z","X","W"]}

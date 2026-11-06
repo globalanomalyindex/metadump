@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Journal: dreamlike button states</title>
+<style>
+:root{
+  --paper:#fbfaff;
+  --ink:#1d1640;
+  --muted:#57506f;
+  --face:#e4dcff;
+  --face-muted:#e9e7ef;
+  --line:#dcd7ec;
+  --ring:#4b3bb8;
+  --accent:#6a50f0;
+  --glow-rgb:169,140,255;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+
+/* The stage holds the motion tokens. JS writes the current reading onto it. */
+.stage{
+  min-height:100vh;overflow-x:hidden;overflow-x:clip;
+  --face-curve:cubic-bezier(0.33,1,0.68,1);
+  --face-in:180ms;--face-out:320ms;--lift:2px;
+  --glow-curve:cubic-bezier(0.22,1,0.36,1);
+  --glow-in:420ms;--glow-out:700ms;
+  --glow-alpha:0.6;--halo-alpha:0;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* Page chrome */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.02em}
+.topbar nav a{color:var(--muted);text-decoration:none;margin-left:18px;font-size:15px}
+.topbar nav a:hover{color:var(--ink)}
+.basket{font-size:15px;color:var(--muted)}
+.basket strong{color:var(--ink);font-variant-numeric:tabular-nums}
+.hero{padding:56px 0 40px;max-width:680px}
+.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1;margin:0 0 16px;font-weight:650;letter-spacing:-.01em}
+h2{font-size:24px;margin:0 0 8px;font-weight:650}
+h3{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:24px 0 8px;font-weight:600}
+.lede{font-size:18px;color:var(--muted);margin:0 0 28px;max-width:58ch}
+.sub{color:var(--muted);margin:0 0 24px;max-width:62ch}
+.row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.note{min-height:1.5em;color:var(--muted);font-size:15px;margin:16px 0 0}
+.block{padding:44px 0;border-top:1px solid var(--line)}
+.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.card .price{font-size:32px;font-weight:650;margin:0}
+.card ul{margin:0;padding-left:18px;color:var(--muted);flex:1}
+.card .dream-btn{align-self:flex-start}
+.split{display:grid;gap:24px;grid-template-columns:1fr}
+@media (min-width:760px){.split{grid-template-columns:1fr 1fr}}
+.newsletter{display:flex;gap:12px;flex-wrap:wrap;max-width:560px;margin-top:8px}
+.field{flex:1 1 240px;min-height:50px;font:inherit;font-size:16px;padding:0 18px;border-radius:999px;border:1px solid #b9b2d3;background:#fff;color:var(--ink)}
+.field:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.field[aria-invalid="true"]{border-color:#b3261e}
+.form-status{font-size:15px;color:var(--muted);min-height:1.5em;margin-top:12px}
+footer{padding:32px 0 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+
+/* Glass: one focal button over a dark, coloured backdrop */
+.glass{position:relative;overflow:hidden;isolation:isolate;border-radius:28px;min-height:280px;display:grid;place-items:center;padding:56px 24px;background:linear-gradient(130deg,#1b1442 0%,#2d1d66 50%,#0d3345 100%);color:#fff;text-align:center}
+.glass-blob{position:absolute;border-radius:50%;filter:blur(28px);opacity:.8;z-index:-1;pointer-events:none}
+.glass-copy{position:relative;max-width:38ch}
+.glass-copy p{color:#d9d4f2;margin:0 0 24px}
+.glass-copy h2{color:#fff}
+.glass-note{font-size:15px;color:#cfc8ee;min-height:1.5em;margin:16px 0 0}
+
+/* ---------- The dreamlike button ---------- */
+.dream-btn{
+  position:relative;isolation:isolate;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:50px;padding:0 26px;border:0;border-radius:999px;
+  background:transparent;color:var(--ink);
+  font:inherit;font-weight:600;font-size:16px;letter-spacing:.01em;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transform:translateY(0);
+  transition:transform var(--face-out) var(--face-curve);
+}
+/* face: opaque, painted under the label */
+.dream-btn::before{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;background:var(--face)}
+.dream-btn .label{position:relative;z-index:1}
+/* glow: a pre-blurred layer behind the face, faded by opacity only */
+.dream-btn::after{
+  content:"";position:absolute;z-index:-2;inset:-14px -18px -20px;border-radius:999px;
+  background:radial-gradient(closest-side,rgba(var(--glow-rgb),.95),rgba(var(--glow-rgb),0));
+  filter:blur(12px);opacity:0;pointer-events:none;
+  transition:opacity var(--glow-out) var(--glow-curve);
+}
+/* halo: a thin rim of light, faded by opacity */
+.halo{
+  position:absolute;z-index:-1;inset:-5px;border-radius:inherit;
+  border:1px solid rgba(106,80,240,.6);opacity:0;pointer-events:none;
+  transition:opacity var(--glow-out) var(--glow-curve);
+}
+
+/* Hover only where a pointer can hover, so touch never sticks in a hover state */
+@media (hover:hover){
+  .dream-btn:not(:disabled):hover{transform:translateY(calc(var(--lift) * -1));transition:transform var(--face-in) var(--face-curve)}
+  .dream-btn:not(:disabled):hover::after{opacity:var(--glow-alpha);transition:opacity var(--glow-in) var(--glow-curve)}
+  .dream-btn:not(:disabled):hover .halo{opacity:var(--halo-alpha);transition:opacity var(--glow-in) var(--glow-curve)}
+}
+/* keyboard parity: half the lift, quieter glow, a ring that does not depend on the pointer */
+.dream-btn:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
+.dream-btn:focus-visible:not(:disabled){transform:translateY(calc(var(--lift) * -0.5));transition:transform var(--face-in) var(--face-curve)}
+.dream-btn:focus-visible::after{opacity:calc(var(--glow-alpha) * .4)}
+/* press: transform only, short in, a normal release */
+.dream-btn:active:not(:disabled){transform:translateY(0) scale(.975);transition:transform 110ms cubic-bezier(0.33,1,0.68,1)}
+.dream-btn:disabled{cursor:not-allowed}
+.dream-btn:disabled::before{background:var(--face-muted)}
+
+/* variants */
+.dream-btn--ghost::before{background:rgba(29,22,64,.04);box-shadow:inset 0 0 0 1px rgba(29,22,64,.5)}
+.dream-btn--glass{
+  background:rgba(12,8,34,.45);color:#fff;
+  backdrop-filter:blur(12px) saturate(1.3);-webkit-backdrop-filter:blur(12px) saturate(1.3);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.32);
+}
+.dream-btn--glass::before,.dream-btn--glass::after{display:none}
+.dream-btn--glass:focus-visible{outline-color:#fff}
+
+/* Reduced motion, from the system setting or the demo override: no lift, no drift, short fades */
+@media (prefers-reduced-motion:reduce){
+  .stage .dream-btn,.stage .dream-btn::after,.stage .halo,.stage .dot{transition-duration:120ms !important}
+  .stage .dream-btn:hover,.stage .dream-btn:focus-visible,.stage .dream-btn:active{transform:none !important}
+  .stage .dream-btn:active:not(:disabled){opacity:.9}
+}
+.stage.force-rm .dream-btn,.stage.force-rm .dream-btn::after,.stage.force-rm .halo,.stage.force-rm .dot{transition-duration:120ms !important}
+.stage.force-rm .dream-btn:hover,.stage.force-rm .dream-btn:focus-visible,.stage.force-rm .dream-btn:active{transform:none !important}
+.stage.force-rm .dream-btn:active:not(:disabled){opacity:.9}
+
+/* ---------- Demo controls ---------- */
+.controls{display:grid;gap:24px;grid-template-columns:1fr}
+@media (min-width:760px){.controls{grid-template-columns:1.1fr .9fr}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px}
+.group{margin:0 0 18px}
+.group-label{display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:inherit;font-size:15px;padding:8px 14px;border-radius:999px;border:1px solid #bdb6d6;background:#fff;color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.track{position:relative;height:20px;border-radius:999px;background:var(--line);margin:8px 0 14px}
+.dot{position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:var(--accent);transition:transform var(--face-in) var(--face-curve)}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:15px}
+.readout dt{color:var(--muted)}
+.readout dd{margin:0;font-variant-numeric:tabular-nums}
+svg.curve{width:100%;max-width:240px;height:auto;display:block;margin:12px 0 4px}
+.checks{list-style:none;margin:0;padding:0}
+.checks li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.checks li:last-child{border-bottom:0}
+.pass{color:#1e6b3a;font-weight:600}
+.check{color:#8a4b00;font-weight:600}
+.log{margin:0;padding-left:20px;color:var(--muted);font-size:15px;min-height:6em}
+</style>
+</head>
+<body>
+<div class="stage" id="stage" data-reading="settle" data-surface="glow" data-tail="on">
+  <div class="wrap">
+
+    <header class="topbar">
+      <div class="brand">Lumen Journal</div>
+      <nav aria-label="Main">
+        <a href="#plans">Plans</a>
+        <a href="#kit">Journal kit</a>
+        <a href="#glass">How it works</a>
+      </nav>
+      <span class="basket">Basket <strong id="basket-count">0</strong></span>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-h">
+      <p class="eyebrow">One page a day, on every device</p>
+      <h1 id="hero-h">A quieter place to keep your days.</h1>
+      <p class="lede">Lumen Journal keeps one page per day, syncs across your phone and laptop, and asks for nothing you did not type. Start with a fourteen-day free trial. No card needed.</p>
+      <div class="row">
+        <button class="dream-btn" type="button" id="trial" data-action="trial" data-disableable><span class="halo" aria-hidden="true"></span><span class="label">Start free trial</span></button>
+        <button class="dream-btn dream-btn--ghost" type="button" data-action="tour"><span class="halo" aria-hidden="true"></span><span class="label">See how it works</span></button>
+      </div>
+      <p class="note" id="hero-status" aria-live="polite"></p>
+    </section>
+
+    <section class="block" id="tune" aria-labelledby="tune-h">
+      <h2 id="tune-h">Tune the motion</h2>
+      <p class="sub">Pick a reading and a surface, then hover, tab to, or press any button on this page. These controls set the same CSS variables the buttons read.</p>
+      <div class="controls">
+        <div class="panel">
+          <div class="group" role="group" aria-labelledby="g-read">
+            <span class="group-label" id="g-read">Motion reading</span>
+            <div class="seg">
+              <button class="chip" type="button" data-set="reading" data-value="settle" aria-pressed="true">Settle</button>
+              <button class="chip" type="button" data-set="reading" data-value="float" aria-pressed="false">Float</button>
+              <button class="chip" type="button" data-set="reading" data-value="rebound" aria-pressed="false">Rebound</button>
+            </div>
+          </div>
+          <div class="group" role="group" aria-labelledby="g-surf">
+            <span class="group-label" id="g-surf">Surface</span>
+            <div class="seg">
+              <button class="chip" type="button" data-set="surface" data-value="glow" aria-pressed="true">Glow</button>
+              <button class="chip" type="button" data-set="surface" data-value="halo" aria-pressed="false">Halo</button>
+              <button class="chip" type="button" data-set="surface" data-value="both" aria-pressed="false">Glow and halo</button>
+            </div>
+          </div>
+          <div class="group" role="group" aria-labelledby="g-tail">
+            <span class="group-label" id="g-tail">Glow tail after the pointer leaves</span>
+            <div class="seg"><button class="chip" type="button" data-toggle="tail" aria-pressed="true">On</button></div>
+          </div>
+          <div class="group" role="group" aria-labelledby="g-dis">
+            <span class="group-label" id="g-dis">Demo buttons disabled</span>
+            <div class="seg"><button class="chip" type="button" data-toggle="disabled" aria-pressed="false">Off</button></div>
+          </div>
+          <div class="group" role="group" aria-labelledby="g-rm">
+            <span class="group-label" id="g-rm">Reduced motion (demo override)</span>
+            <div class="seg"><button class="chip" type="button" data-toggle="forceRm" aria-pressed="false">Off</button></div>
+          </div>
+          <span class="group-label">Trace of the chosen curve</span>
+          <div class="track" id="track" aria-hidden="true"><span class="dot" id="dot"></span></div>
+          <div class="seg"><button class="chip" type="button" data-action="replay" id="replay">Replay forward</button></div>
+        </div>
+
+        <div class="panel">
+          <dl class="readout">
+            <dt>Reading</dt><dd id="ro-reading"></dd>
+            <dt>Surface</dt><dd id="ro-surface"></dd>
+            <dt>Curve</dt><dd id="ro-curve"></dd>
+            <dt>Return past rest</dt><dd id="ro-return"></dd>
+            <dt>Lift</dt><dd id="ro-lift"></dd>
+            <dt>Face</dt><dd id="ro-face"></dd>
+            <dt>Glow</dt><dd id="ro-glow"></dd>
+          </dl>
+          <svg class="curve" id="curve" viewBox="0 0 200 200" role="img" aria-label="Plot of the chosen cubic-bezier curve from 0,0 to 1,1">
+            <line x1="20" y1="185" x2="180" y2="185" stroke="#dcd7ec" stroke-width="1"/>
+            <line id="rest" x1="20" y1="75" x2="180" y2="75" stroke="#b9b2d3" stroke-width="1" stroke-dasharray="3 3"/>
+            <line id="h1" stroke="#c9c2e4" stroke-width="1"/>
+            <line id="h2" stroke="#c9c2e4" stroke-width="1"/>
+            <path id="curve-path" fill="none" stroke="#6a50f0" stroke-width="3" stroke-linecap="round"/>
+            <circle id="c1" r="4" fill="#6a50f0"/>
+            <circle id="c2" r="4" fill="#6a50f0"/>
+          </svg>
+          <p class="note" id="ro-note"></p>
+          <h3>Practical checks</h3>
+          <ul class="checks">
+            <li><span>Label on face, rest</span><span id="chk-label"></span></li>
+            <li><span>Focus ring on page</span><span id="chk-ring"></span></li>
+            <li><span>Animated properties</span><span>transform, opacity</span></li>
+            <li><span>Hover response</span><span>pointer devices only</span></li>
+            <li><span>Motion at rest</span><span>none, no loops</span></li>
+            <li><span>Reduced motion</span><span id="chk-rm"></span></li>
+          </ul>
+          <h3>Recent events</h3>
+          <ol class="log" id="log" aria-live="polite"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="plans" aria-labelledby="plans-h">
+      <h2 id="plans-h">Plans</h2>
+      <p class="sub">Every plan includes the same editor, search and sync. Choose one to see the state change.</p>
+      <div class="cards">
+        <article class="card">
+          <h3 style="margin:0">Notebook</h3>
+          <p class="price">Free</p>
+          <ul><li>One journal, up to 60 entries a month</li><li>Sync on two devices</li><li>Export to PDF</li></ul>
+          <button class="dream-btn" type="button" data-plan="Notebook" data-disableable aria-pressed="false"><span class="halo" aria-hidden="true"></span><span class="label">Choose Notebook</span></button>
+        </article>
+        <article class="card">
+          <h3 style="margin:0">Studio</h3>
+          <p class="price">$9 a month</p>
+          <ul><li>Unlimited entries</li><li>Photos and voice notes</li><li>Five devices</li></ul>
+          <button class="dream-btn" type="button" data-plan="Studio" data-disableable aria-pressed="false"><span class="halo" aria-hidden="true"></span><span class="label">Choose Studio</span></button>
+        </article>
+        <article class="card">
+          <h3 style="margin:0">Atelier</h3>
+          <p class="price">$19 a month</p>
+          <ul><li>Shared journals for two people</li><li>Print-ready yearly books</li><li>Priority support</li></ul>
+          <button class="dream-btn" type="button" data-plan="Atelier" data-disableable aria-pressed="false"><span class="halo" aria-hidden="true"></span><span class="label">Choose Atelier</span></button>
+        </article>
+      </div>
+      <p class="note" id="plan-summary" aria-live="polite"></p>
+    </section>
+
+    <section class="block split" id="kit" aria-label="Journal kit and newsletter">
+      <article class="card">
+        <h2 style="margin:0">Paper journal</h2>
+        <p class="price">$24</p>
+        <p style="margin:0;color:var(--muted)">192 pages of dot-grid paper, ink-proof and lay-flat. Ships in two working days.</p>
+        <button class="dream-btn" type="button" id="basket" data-action="basket" data-disableable><span class="halo" aria-hidden="true"></span><span class="label">Add to basket</span></button>
+      </article>
+      <article>
+        <h2>Monthly letter</h2>
+        <p class="sub" style="margin-bottom:8px">One prompt, one reading list, no ads.</p>
+        <form id="subscribe" novalidate>
+          <label for="email" class="group-label" style="margin-top:12px">Email address</label>
+          <div class="newsletter">
+            <input class="field" id="email" type="email" autocomplete="email" placeholder="you@example.com">
+            <button class="dream-btn" type="submit" id="subscribe-btn"><span class="halo" aria-hidden="true"></span><span class="label">Subscribe</span></button>
+          </div>
+        </form>
+        <p class="form-status" id="form-status" aria-live="polite"></p>
+      </article>
+    </section>
+
+    <section class="block" id="glass" aria-labelledby="glass-h">
+      <div class="glass">
+        <span class="glass-blob" style="width:200px;height:200px;left:6%;top:14%;background:#7c5cff"></span>
+        <span class="glass-blob" style="width:170px;height:170px;right:8%;bottom:6%;background:#2ec4b6"></span>
+        <span class="glass-blob" style="width:140px;height:140px;left:46%;top:-30px;background:#ff7ab6;opacity:.6"></span>
+        <div class="glass-copy">
+          <h2 id="glass-h">Ninety seconds of how it works</h2>
+          <p>See a day in the app, from the first line to the monthly review.</p>
+          <button class="dream-btn dream-btn--glass" type="button" data-action="tour-glass" data-disableable><span class="label">Watch the 90-second tour</span></button>
+          <p class="glass-note" id="glass-note" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <footer>Lumen Journal demo page. Sample content only; no account or payment is involved.</footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var stage = $('#stage');
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  var READINGS = {
+    settle:  { label: 'Settle',  curve: [0.33, 1, 0.68, 1],    lift: 2, faceIn: 180, faceOut: 320,
+               note: 'Lands at rest with no return past the end. The hit area answers at once.' },
+    float:   { label: 'Float',   curve: [0.34, 1.2, 0.64, 1],  lift: 3, faceIn: 260, faceOut: 320,
+               note: 'A small lift that returns under 2 percent past rest, then settles.' },
+    rebound: { label: 'Rebound', curve: [0.34, 1.56, 0.64, 1], lift: 3, faceIn: 320, faceOut: 320,
+               note: 'A visible rebound. This is a different reading from float and sits outside the 2 percent check.' }
+  };
+  var SURFACES = {
+    glow:  { label: 'Glow',           glow: 0.6, halo: 0 },
+    halo:  { label: 'Halo',           glow: 0,   halo: 1 },
+    both:  { label: 'Glow and halo',  glow: 0.4, halo: 1 }
+  };
+  var PLANS = { Notebook: 'Free', Studio: '$9 a month', Atelier: '$19 a month' };
+  var TOGGLE_NAMES = { tail: 'Glow tail', disabled: 'Demo disabled state', forceRm: 'Reduced motion override' };
+
+  var state = {
+    reading: 'settle', surface: 'glow', tail: true, disabled: false, forceRm: false,
+    basket: 0, trialStarted: false, subscribed: false, traceRight: false,
+    plan: null, tours: 0, log: []
+  };
+
+  function log(msg) {
+    state.log.unshift(msg);
+    state.log = state.log.slice(0, 5);
+  }
+
+  // Percent the curve passes its end state (0 when it settles without overshoot).
+  function returnPastRest(c) {
+    var y1 = c[1], y2 = c[3], peak = 1;
+    for (var i = 0; i <= 400; i++) {
+      var t = i / 400, m = 1 - t;
+      var y = 3 * m * m * t * y1 + 3 * m * t * t * y2 + t * t * t;
+      if (y > peak) peak = y;
+    }
+    return (peak - 1) * 100;
+  }
+
+  function drawCurve(c) {
+    var X = function (x) { return 20 + x * 160; };
+    var Y = function (y) { return 185 - y * 110; };
+    var set = function (id, attrs) {
+      var el = document.getElementById(id);
+      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    };
+    set('curve-path', { d: 'M' + X(0) + ' ' + Y(0) + ' C' + X(c[0]) + ' ' + Y(c[1]) + ' ' + X(c[2]) + ' ' + Y(c[3]) + ' ' + X(1) + ' ' + Y(1) });
+    set('h1', { x1: X(0), y1: Y(0), x2: X(c[0]), y2: Y(c[1]) });
+    set('h2', { x1: X(1), y1: Y(1), x2: X(c[2]), y2: Y(c[3]) });
+    set('c1', { cx: X(c[0]), cy: Y(c[1]) });
+    set('c2', { cx: X(c[2]), cy: Y(c[3]) });
+  }
+
+  function lum(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    var ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      v = v / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  }
+  function ratio(a, b) {
+    var l1 = lum(a), l2 = lum(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  function setCheck(id, value, need) {
+    var el = document.getElementById(id);
+    var ok = value >= need;
+    el.textContent = value.toFixed(1) + ':1 ' + (ok ? 'pass' : 'fails') + ' (needs ' + need + ':1)';
+    el.className = ok ? 'pass' : 'check';
+  }
+
+  function render() {
+    var r = READINGS[state.reading];
+    var s = SURFACES[state.surface];
+    var st = stage.style;
+
+    st.setProperty('--face-curve', 'cubic-bezier(' + r.curve.join(', ') + ')');
+    st.setProperty('--face-in', r.faceIn + 'ms');
+    st.setProperty('--face-out', r.faceOut + 'ms');
+    st.setProperty('--lift', r.lift + 'px');
+    st.setProperty('--glow-in', (state.tail ? 420 : 200) + 'ms');
+    st.setProperty('--glow-out', (state.tail ? 700 : 200) + 'ms');
+    st.setProperty('--glow-alpha', String(s.glow));
+    st.setProperty('--halo-alpha', String(s.halo));
+    stage.classList.toggle('force-rm', state.forceRm);
+    stage.dataset.reading = state.reading;
+    stage.dataset.surface = state.surface;
+
+    $$('[data-set]').forEach(function (b) {
+      var k = b.getAttribute('data-set');
+      b.setAttribute('aria-pressed', String(state[k] === b.getAttribute('data-value')));
+    });
+    $$('[data-toggle]').forEach(function (b) {
+      var k = b.getAttribute('data-toggle');
+      b.setAttribute('aria-pressed', String(!!state[k]));
+      b.textContent = state[k] ? 'On' : 'Off';
+    });
+    $$('[data-disableable]').forEach(function (b) { b.disabled = state.disabled; });
+
+    $('#trial .label').textContent = state.trialStarted ? 'Trial started' : 'Start free trial';
+    $('#basket .label').textContent = state.basket ? 'Add another (' + state.basket + ' in basket)' : 'Add to basket';
+    $('#basket-count').textContent = String(state.basket);
+
+    $$('[data-plan]').forEach(function (b) {
+      var n = b.getAttribute('data-plan');
+      var on = state.plan === n;
+      b.setAttribute('aria-pressed', String(on));
+      b.querySelector('.label').textContent = on ? 'Selected' : 'Choose ' + n;
+    });
+    $('#plan-summary').textContent = state.plan
+      ? 'Plan: ' + state.plan + ', ' + PLANS[state.plan] + '. You can change it at any time.'
+      : 'No plan chosen yet.';
+
+    $('#ro-reading').textContent = r.label;
+    $('#ro-surface').textContent = s.label;
+    $('#ro-curve').textContent = 'cubic-bezier(' + r.curve.join(', ') + ')';
+    $('#ro-return').textContent = returnPastRest(r.curve).toFixed(1) + '% past rest';
+    $('#ro-lift').textContent = r.lift + ' px';
+    $('#ro-face').textContent = r.faceIn + ' ms in, ' + r.faceOut + ' ms out';
+    $('#ro-glow').textContent = state.tail ? '420 ms in, 700 ms tail' : '200 ms in and out (tail off)';
+    $('#ro-note').textContent = r.note;
+    drawCurve(r.curve);
+
+    var track = $('#track'), dot = $('#dot');
+    var travel = Math.max(0, track.clientWidth - dot.offsetWidth);
+    dot.style.transform = state.traceRight ? 'translateX(' + travel + 'px)' : 'translateX(0)';
+    $('#replay').textContent = state.traceRight ? 'Replay back' : 'Replay forward';
+
+    var cs = getComputedStyle(document.documentElement);
+    var ink = cs.getPropertyValue('--ink').trim();
+    var face = cs.getPropertyValue('--face').trim();
+    var paper = cs.getPropertyValue('--paper').trim();
+    var ring = cs.getPropertyValue('--ring').trim();
+    setCheck('chk-label', ratio(ink, face), 4.5);
+    setCheck('chk-ring', ratio(ring, paper), 3);
+
+    var sys = mq.matches;
+    var trimmed = sys || state.forceRm;
+    $('#chk-rm').textContent = (sys ? 'system asks to reduce' : 'system allows motion') +
+      '; override ' + (state.forceRm ? 'on' : 'off') + '; motion ' +
+      (trimmed ? 'trimmed to 120 ms, no lift' : 'full');
+
+    var ol = $('#log');
+    ol.innerHTML = '';
+    var entries = state.log.length ? state.log : ['No events yet.'];
+    entries.forEach(function (m) {
+      var li = document.createElement('li');
+      li.textContent = m;
+      ol.appendChild(li);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest('[data-set]');
+    if (chip) {
+      var k = chip.getAttribute('data-set'), v = chip.getAttribute('data-value');
+      state[k] = v;
+      log(k === 'reading' ? 'Motion reading: ' + READINGS[v].label : 'Surface: ' + SURFACES[v].label);
+      render();
+      return;
+    }
+    var tog = e.target.closest('[data-toggle]');
+    if (tog) {
+      var key = tog.getAttribute('data-toggle');
+      state[key] = !state[key];
+      log(TOGGLE_NAMES[key] + ': ' + (state[key] ? 'on' : 'off'));
+      render();
+      return;
+    }
+    var plan = e.target.closest('[data-plan]');
+    if (plan) {
+      state.plan = plan.getAttribute('data-plan');
+      log('Plan chosen: ' + state.plan);
+      render();
+      return;
+    }
+    var act = e.target.closest('[data-action]');
+    if (!act) return;
+    switch (act.getAttribute('data-action')) {
+      case 'trial':
+        state.trialStarted = true;
+        $('#hero-status').textContent = 'Your fourteen-day trial has started. Nothing was charged.';
+        log('Free trial started');
+        break;
+      case 'tour':
+        $('#glass').scrollIntoView({ behavior: mq.matches ? 'auto' : 'smooth', block: 'center' });
+        log('Jumped to the tour section');
+        break;
+      case 'basket':
+        state.basket += 1;
+        log('Added one paper journal to the basket');
+        break;
+      case 'tour-glass':
+        state.tours += 1;
+        $('#glass-note').textContent = 'Tour requests this session: ' + state.tours + '. The video is not loaded in this demo.';
+        log('Tour requested');
+        break;
+      case 'replay':
+        state.traceRight = !state.traceRight;
+        log('Trace moved ' + (state.traceRight ? 'forward' : 'back'));
+        break;
+    }
+    render();
+  });
+
+  $('#subscribe').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var field = $('#email'), value = field.value.trim();
+    var out = $('#form-status'), btn = $('#subscribe-btn');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      field.setAttribute('aria-invalid', 'true');
+      out.textContent = 'Enter an email address, like you@example.com.';
+      log('Subscribe needs a valid email');
+      render();
+      return;
+    }
+    field.removeAttribute('aria-invalid');
+    btn.disabled = true;
+    btn.querySelector('.label').textContent = 'Subscribing...';
+    out.textContent = 'Sending your confirmation...';
+    log('Subscribe submitted');
+    render();
+    setTimeout(function () {
+      state.subscribed = true;
+      btn.disabled = false;
+      btn.querySelector('.label').textContent = 'Subscribed';
+      out.textContent = 'Thanks. Confirm from your inbox; the first letter arrives on Sunday.';
+      field.value = '';
+      log('Newsletter confirmed for one address');
+      render();
+    }, 800);
+  });
+
+  if (mq.addEventListener) mq.addEventListener('change', render);
+  else if (mq.addListener) mq.addListener(render);
+  window.addEventListener('resize', render);
+
+  log('Page ready');
+  render();
+})();
+</script>
+</body>
+</html>

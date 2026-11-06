@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five Shapes Loop</title>
+<style>
+  :root {
+    --bg-a: #1e1e1e;
+    --bg-b: #0d0d0e;
+    --fg: #ffffff;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg-a: #f5f5f7;
+      --bg-b: #e4e4e8;
+      --fg: #1e1e1e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg-a: #1e1e1e;
+    --bg-b: #0d0d0e;
+    --fg: #ffffff;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg-b);
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, var(--bg-a) 0%, var(--bg-b) 70%);
+  }
+  svg {
+    width: min(80vmin, 560px);
+    height: min(80vmin, 560px);
+    display: block;
+  }
+  .shape {
+    will-change: transform;
+  }
+</style>
+</head>
+<body>
+<svg id="stage" viewBox="-300 -300 600 600" aria-label="Animated five-shape logo" role="img">
+  <g id="logo">
+    <path class="shape" id="p0" fill="#F24E1E" d="M50 0 H100 V100 H50 A50 50 0 0 1 50 0 Z"/>
+    <path class="shape" id="p1" fill="#FF7262" d="M100 0 H150 A50 50 0 0 1 150 100 H100 Z"/>
+    <path class="shape" id="p2" fill="#A259FF" d="M50 100 A50 50 0 1 0 50 200 A50 50 0 1 0 50 100 Z"/>
+    <path class="shape" id="p3" fill="#1ABCFE" d="M150 100 A50 50 0 1 0 150 200 A50 50 0 1 0 150 100 Z"/>
+    <path class="shape" id="p4" fill="#0ACF83" d="M50 200 V300 A50 50 0 0 1 50 200 Z"/>
+  </g>
+</svg>
+<script>
+(function () {
+  var DURATION = 5; // seconds per loop
+
+  // Each state: per-piece translate (dx, dy), rotation (deg).
+  // SCATTER: pieces start off-canvas; ASSEMBLED: the logo; EXPLODED: pieces pushed apart.
+  var SCATTER = {
+    dx: [-260, 260, -300, 300, -220],
+    dy: [-200, -180, 60, 40, 220],
+    r:  [-120, 140, 200, -160, 90]
+  };
+  var ASSEMBLED = {
+    dx: [0, 0, 0, 0, 0],
+    dy: [0, 0, 0, 0, 0],
+    r:  [0, 0, 0, 0, 0]
+  };
+  var EXPLODED = {
+    dx: [-120, 120, -150, 150, -100],
+    dy: [-90, -90, 0, 0, 110],
+    r:  [-20, 20, -30, 30, -15]
+  };
+
+  // Keyframes on the 5 second loop. First and last keyframes match, so the loop is seamless.
+  var KEYS = [
+    { t: 0.0, s: SCATTER,   ease: 'backOut' },
+    { t: 1.4, s: ASSEMBLED, ease: 'inOut' },
+    { t: 2.6, s: ASSEMBLED, ease: 'inOut' },
+    { t: 3.4, s: EXPLODED,  ease: 'inOut' },
+    { t: 4.3, s: EXPLODED,  ease: 'inOut' },
+    { t: 5.0, s: SCATTER,   ease: 'inOut' }
+  ];
+
+  function easeInOut(p) {
+    return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  }
+  function easeBackOut(p) {
+    var c1 = 1.5, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
+  }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function sample(t) {
+    var out = { dx: [], dy: [], r: [] };
+    var i, seg, p, e;
+    for (i = 0; i < KEYS.length - 1; i++) {
+      if (t >= KEYS[i].t && t <= KEYS[i + 1].t) { seg = i; break; }
+    }
+    if (seg === undefined) seg = KEYS.length - 2;
+    var a = KEYS[seg], b = KEYS[seg + 1];
+    p = (t - a.t) / (b.t - a.t);
+    p = Math.min(1, Math.max(0, p));
+    e = b.ease === 'backOut' ? easeBackOut(p) : easeInOut(p);
+    for (i = 0; i < 5; i++) {
+      out.dx.push(lerp(a.s.dx[i], b.s.dx[i], e));
+      out.dy.push(lerp(a.s.dy[i], b.s.dy[i], e));
+      out.r.push(lerp(a.s.r[i], b.s.r[i], e));
+    }
+    return out;
+  }
+
+  var pieces = [0, 1, 2, 3, 4].map(function (i) {
+    return document.getElementById('p' + i);
+  });
+  var logo = document.getElementById('logo');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function render(timeSec) {
+    var t = ((timeSec % DURATION) + DURATION) % DURATION;
+    var st = sample(t);
+    // Breathing scale over the whole loop (period matches the loop, so it stays seamless).
+    var breathe = 1 + 0.02 * Math.sin((2 * Math.PI * t) / DURATION);
+    for (var i = 0; i < 5; i++) {
+      pieces[i].setAttribute(
+        'transform',
+        'translate(' + st.dx[i].toFixed(2) + ' ' + st.dy[i].toFixed(2) + ') ' +
+        'rotate(' + st.r[i].toFixed(2) + ') ' +
+        'scale(' + breathe.toFixed(4) + ') ' +
+        'translate(-100 -150)'
+      );
+    }
+  }
+
+  if (reduce) {
+    render(2.0); // assembled, static
+    return;
+  }
+
+  var start = null;
+  function frame(now) {
+    if (start === null) start = now;
+    render((now - start) / 1000);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

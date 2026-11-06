@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Package tracker toast</title>
+<style>
+:root {
+  color-scheme: dark;
+  --page: #121212;
+  --card: #1F1B24;
+  --card-hi: #2A2A2E;
+  --hair: rgba(255, 255, 255, 0.10);
+  --hair-strong: rgba(255, 255, 255, 0.22);
+  --text: #E5E5E5;
+  --muted: #9CA3AF;
+  --pending: #4B5563;
+  --amber: #F59E0B;
+  --green: #22C55E;
+  --focus: #E5E5E5;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body { background: var(--page); }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 32px 16px 24px;
+  color: var(--text);
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.intro {
+  width: min(100%, 320px);
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- tracker ---------- */
+
+.tracker {
+  position: relative;
+  width: min(100%, 320px);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.notice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px 10px 12px;
+  border-bottom: 1px solid var(--hair);
+  font-size: 12.5px;
+}
+
+.notice-text { flex: 1; min-width: 0; }
+
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--muted);
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+
+.bar {
+  display: flex;
+  align-items: stretch;
+}
+
+.head {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 4px 8px 12px;
+  background: none;
+  border: 0;
+  border-radius: 12px 0 0 12px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.head:hover { background: rgba(255, 255, 255, 0.03); }
+
+.dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text);
+}
+.dot.is-done { background: var(--green); }
+.dot.is-held { background: var(--amber); }
+.dot.is-snoozed {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  border: 2px solid var(--amber);
+}
+
+.titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.chev {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  transition: transform 200ms ease-out;
+}
+.tracker.is-open .chev { transform: rotate(180deg); }
+
+.x {
+  flex: 0 0 40px;
+  min-height: 48px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 0 12px 12px 0;
+}
+.x:hover { color: var(--text); }
+
+.xs {
+  flex: 0 0 32px;
+  min-height: 32px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.xs:hover { color: var(--text); }
+
+/* collapsible panel: grid-row height transition, hidden from focus when closed */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 180ms ease-in-out, visibility 0s linear 180ms;
+}
+.tracker.is-open .panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 250ms var(--ease-out), visibility 0s;
+}
+.inner { min-height: 0; overflow: hidden; }
+.pad { padding: 4px 12px 12px; }
+
+/* steps rail */
+.steps {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  column-gap: 10px;
+  min-height: 36px;
+  padding-bottom: 12px;
+}
+
+.step::before {
+  content: "";
+  position: absolute;
+  left: 5.5px;
+  top: 15px;
+  bottom: 0;
+  border-left: 1px dashed var(--pending);
+}
+.step.is-done::before {
+  border-left-style: solid;
+  border-left-color: var(--muted);
+}
+.step:last-child::before { display: none; }
+
+.mark {
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 2px solid var(--pending);
+  background: var(--card);
+  box-sizing: border-box;
+}
+.is-done .mark { background: var(--text); border-color: var(--text); }
+.is-current .mark {
+  border-color: var(--text);
+  box-shadow: 0 0 0 3px rgba(229, 229, 229, 0.2);
+}
+.is-held-row .mark { background: var(--amber); border-color: var(--amber); }
+
+.txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.label { font-weight: 500; }
+.is-current .label { font-weight: 600; }
+.is-pending .label { color: var(--muted); }
+.is-held-row .label { color: var(--amber); font-weight: 600; }
+.time { font-size: 12px; color: var(--muted); }
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+}
+
+/* exception block */
+.exc {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+}
+.exc-title {
+  margin: 0 0 2px;
+  color: var(--amber);
+  font-weight: 600;
+}
+.exc-detail {
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--hair);
+  background: var(--card-hi);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--hair-strong); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+.phone {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+}
+
+.snooze {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.last {
+  margin: 8px 0 0;
+  min-height: 1.4em;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hair);
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 0;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.track {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--pending);
+  transition: background 150ms;
+}
+.track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 150ms var(--ease-out);
+}
+.switch[aria-checked="true"] { color: var(--text); }
+.switch[aria-checked="true"] .track { background: var(--muted); }
+.switch[aria-checked="true"] .track::after { transform: translateX(14px); background: var(--card); }
+
+.head:focus-visible,
+.x:focus-visible,
+.xs:focus-visible,
+.btn:focus-visible,
+.switch:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- sample controls ---------- */
+
+.controls {
+  width: min(100%, 320px);
+  display: grid;
+  gap: 10px;
+}
+
+.note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.grid2 .btn { text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .chev,
+  .track,
+  .track::after { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<p class="intro">Package tracker &middot; dark toast menu</p>
+
+<section class="tracker" id="tracker" aria-label="Package tracker, NL 4471 2290 0832">
+  <div class="notice" id="notice" hidden>
+    <span class="notice-text" id="noticeText"></span>
+    <button class="xs" id="noticeClose" type="button" aria-label="Close this update">&times;</button>
+    <span class="progress" id="progress"></span>
+  </div>
+
+  <div class="bar">
+    <button class="head" id="toggle" type="button" aria-expanded="false" aria-controls="panel">
+      <span class="dot" id="dot" aria-hidden="true"></span>
+      <span class="titles">
+        <span class="stage" id="stage"></span>
+        <span class="sub" id="sub"></span>
+      </span>
+      <span class="count" id="count"></span>
+      <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="x" id="dismiss" type="button" aria-label="Dismiss tracker">&times;</button>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="inner">
+      <div class="pad">
+        <ol class="steps" id="steps"></ol>
+
+        <div class="exc" id="exc">
+          <p class="exc-title">Delivery exception</p>
+          <p class="exc-detail" id="excDetail"></p>
+          <div class="actions">
+            <button class="btn" id="openCarrier" type="button">Open carrier page</button>
+            <button class="btn" id="contact" type="button" aria-expanded="false" aria-controls="phone">Contact carrier</button>
+            <button class="btn" id="markSeen" type="button">Mark seen, keep watching</button>
+            <button class="btn" id="snooze" type="button">Snooze 1 hour</button>
+          </div>
+          <p class="phone" id="phone" hidden></p>
+        </div>
+
+        <div class="snooze" id="snoozeRow" hidden>
+          <span id="snoozeText"></span>
+          <button class="btn" id="wake" type="button">Wake now</button>
+        </div>
+
+        <p class="last" id="last"></p>
+
+        <div class="foot">
+          <button class="switch" id="keep" type="button" role="switch" aria-checked="false">
+            <span>Keep updates on screen</span>
+            <span class="track" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="controls" aria-label="Sample controls">
+  <p class="note">Sample parcel NL 4471 2290 0832 from a fictional carrier, Northline. These buttons change the state the tracker shows.</p>
+  <div class="grid2">
+    <button class="btn" id="next" type="button">Next scan</button>
+    <button class="btn" id="raise" type="button">Raise exception</button>
+    <button class="btn" id="restore" type="button" hidden>Show tracker</button>
+    <button class="btn" id="reset" type="button">Reset sample</button>
+  </div>
+</section>
+
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- sample data (fictional carrier) ----
+  var STAGES = [
+    { label: 'Ordered',              time: 'Mon 2 Nov, 09:12' },
+    { label: 'Packed',               time: 'Mon 2 Nov, 18:40' },
+    { label: 'Handed to the carrier', time: 'Tue 3 Nov, 07:55' },
+    { label: 'Out for delivery',     time: null, expected: 'Thu 5 Nov, 08:00 to 12:00' },
+    { label: 'Delivered',            time: null, expected: 'Thu 5 Nov, 14:00 to 18:00' }
+  ];
+  var SCAN_PLACE = { 3: 'Harbor Street depot', 4: 'your address' };
+  var START_STAGE = 2;
+  var TRACK = 'NL 4471 2290 0832';
+  var PHONE = '+1 (555) 010-0147';
+  var HELD_DETAIL = 'Held at depot: the address needs a unit number. The carrier can deliver once it has one.';
+  var NOTICE_MS = 5000;
+  var SNOOZE_MS = 60 * 60 * 1000;
+  var TICK_MS = 100;
+
+  // ---- state ----
+  var times = [];
+  var state;
+  var noticeLeft = 0;
+  var noticePaused = false;
+
+  function freshState() {
+    times = STAGES.map(function (s) { return s.time; });
+    return {
+      stage: START_STAGE,
+      held: false,
+      heldAt: null,
+      snoozeUntil: null,
+      showPhone: false,
+      expanded: false,
+      dismissed: false,
+      notice: null,
+      keepOpen: false,
+      lastAction: ''
+    };
+  }
+
+  function stamp() {
+    try {
+      return new Date().toLocaleString(undefined, {
+        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) {
+      return 'Just now';
+    }
+  }
+
+  function clock(ms) {
+    try {
+      return new Date(ms).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return 'later';
+    }
+  }
+
+  // ---- elements ----
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    tracker: $('tracker'), notice: $('notice'), noticeText: $('noticeText'),
+    noticeClose: $('noticeClose'), progress: $('progress'),
+    toggle: $('toggle'), dot: $('dot'), stage: $('stage'), sub: $('sub'), count: $('count'),
+    dismiss: $('dismiss'), panel: $('panel'), steps: $('steps'),
+    exc: $('exc'), excDetail: $('excDetail'), openCarrier: $('openCarrier'),
+    contact: $('contact'), markSeen: $('markSeen'), snooze: $('snooze'), phone: $('phone'),
+    snoozeRow: $('snoozeRow'), snoozeText: $('snoozeText'), wake: $('wake'),
+    last: $('last'), keep: $('keep'),
+    next: $('next'), raise: $('raise'), restore: $('restore'), reset: $('reset'),
+    live: $('live')
+  };
+
+  function announce(text) {
+    el.live.textContent = '';
+    setTimeout(function () { el.live.textContent = text; }, 50);
+  }
+
+  // ---- rendering from state ----
+  function buildSteps() {
+    var cur = state.stage;
+    var delivered = cur === 4;
+    var html = '';
+    STAGES.forEach(function (s, i) {
+      var cls, prefix, meta;
+      if (delivered || i < cur) { cls = 'is-done'; prefix = 'Done: '; meta = times[i] || ''; }
+      else if (i === cur) { cls = 'is-current'; prefix = 'Current: '; meta = times[i] || ''; }
+      else { cls = 'is-pending'; prefix = 'Not yet: '; meta = 'Expected ' + (s.expected || ''); }
+      html += '<li class="step ' + cls + '"><span class="mark" aria-hidden="true"></span>' +
+        '<span class="txt"><span class="sr">' + prefix + '</span>' +
+        '<span class="label">' + s.label + '</span>' +
+        '<span class="time">' + meta + '</span></span></li>';
+      if (state.held && i === cur) {
+        html += '<li class="step is-held-row"><span class="mark" aria-hidden="true"></span>' +
+          '<span class="txt"><span class="sr">Action needed: </span>' +
+          '<span class="label">Held at depot</span>' +
+          '<span class="time">' + (state.heldAt || '') + '</span></span></li>';
+      }
+    });
+    return html;
+  }
+
+  function render() {
+    var cur = state.stage;
+    var delivered = cur === 4;
+    var snoozed = state.held && state.snoozeUntil !== null && Date.now() < state.snoozeUntil;
+    var showExc = state.held && !snoozed;
+
+    el.tracker.classList.toggle('is-open', state.expanded);
+    el.tracker.hidden = state.dismissed;
+    el.restore.hidden = !state.dismissed;
+    el.toggle.setAttribute('aria-expanded', String(state.expanded));
+
+    el.stage.textContent = state.held ? 'Delivery exception' : STAGES[cur].label;
+    el.sub.textContent = 'Northline · ' + TRACK;
+    el.count.textContent = state.held
+      ? (snoozed ? 'Snoozed' : 'Action needed')
+      : (delivered ? '5 of 5' : (cur + 1) + ' of 5');
+
+    var dotCls = 'dot';
+    if (state.held) dotCls += snoozed ? ' is-snoozed' : ' is-held';
+    else if (delivered) dotCls += ' is-done';
+    el.dot.className = dotCls;
+
+    el.steps.innerHTML = buildSteps();
+
+    el.exc.hidden = !showExc;
+    el.excDetail.textContent = HELD_DETAIL;
+    el.phone.hidden = !(showExc && state.showPhone);
+    el.phone.textContent = 'Call ' + PHONE + ', 08:00 to 20:00.';
+    el.contact.setAttribute('aria-expanded', String(state.showPhone));
+
+    el.snoozeRow.hidden = !(state.held && snoozed);
+    el.snoozeText.textContent = snoozed ? 'Snoozed until ' + clock(state.snoozeUntil) + '.' : '';
+
+    el.raise.disabled = state.held || delivered;
+    el.next.disabled = delivered;
+    el.last.textContent = state.lastAction;
+
+    el.keep.setAttribute('aria-checked', String(state.keepOpen));
+
+    el.notice.hidden = !state.notice;
+    el.noticeText.textContent = state.notice || '';
+    el.progress.hidden = state.keepOpen;
+  }
+
+  // ---- routine updates: a notice that leaves on its own ----
+  function showNotice(text) {
+    state.notice = text;
+    noticeLeft = NOTICE_MS;
+    el.progress.style.transform = 'scaleX(1)';
+    announce(text);
+    render();
+  }
+
+  function tickNotice() {
+    if (!state.notice || state.keepOpen || noticePaused || document.hidden) return;
+    noticeLeft -= TICK_MS;
+    if (noticeLeft <= 0) {
+      state.notice = null;
+      render();
+      return;
+    }
+    el.progress.style.transform = 'scaleX(' + (noticeLeft / NOTICE_MS) + ')';
+  }
+
+  // ---- actions ----
+  function advance() {
+    if (state.stage >= 4) return;
+    state.stage += 1;
+    var cur = state.stage;
+    times[cur] = stamp();
+    if (cur === 4) {
+      state.held = false;
+      state.heldAt = null;
+      state.snoozeUntil = null;
+      state.showPhone = false;
+    }
+    var msg = STAGES[cur].label + (SCAN_PLACE[cur] ? ' at ' + SCAN_PLACE[cur] : '');
+    state.lastAction = 'Scan added: ' + msg + '.';
+    showNotice('Update: ' + msg + '.');
+  }
+
+  function raiseException() {
+    if (state.held || state.stage === 4) return;
+    state.held = true;
+    state.heldAt = stamp();
+    state.snoozeUntil = null;
+    state.showPhone = false;
+    state.expanded = true;
+    state.lastAction = '';
+    announce('Delivery exception: held at depot. Actions are open in the tracker.');
+    render();
+  }
+
+  function openCarrier() {
+    // no network from this file: the address is shown as text for the user to copy
+    state.lastAction = 'Carrier page: northline.example/track/NL447122900832. The exception stays here.';
+    announce('Carrier page address shown.');
+    render();
+  }
+
+  function toggleContact() {
+    state.showPhone = !state.showPhone;
+    state.lastAction = state.showPhone ? 'Phone route shown. Calls go to the carrier.' : '';
+    render();
+  }
+
+  function markSeen() {
+    state.held = false;
+    state.heldAt = null;
+    state.snoozeUntil = null;
+    state.showPhone = false;
+    state.lastAction = 'Alert cleared. Still tracking this parcel.';
+    announce('Alert cleared. Still tracking this parcel.');
+    render();
+  }
+
+  function snoozeException() {
+    state.snoozeUntil = Date.now() + SNOOZE_MS;
+    state.showPhone = false;
+    state.lastAction = 'Snoozed. The exception returns at ' + clock(state.snoozeUntil) + '.';
+    render();
+  }
+
+  function wakeException() {
+    state.snoozeUntil = null;
+    state.lastAction = 'Exception back on screen.';
+    render();
+  }
+
+  function resetSample() {
+    state = freshState();
+    noticeLeft = 0;
+    announce('Sample reset.');
+    render();
+    showNotice('Latest: handed to the carrier, Tue 3 Nov. Next expected Thu 5 Nov.');
+  }
+
+  // ---- wiring ----
+  el.toggle.addEventListener('click', function () {
+    state.expanded = !state.expanded;
+    if (!state.expanded && el.panel.contains(document.activeElement)) el.toggle.focus();
+    render();
+  });
+
+  el.tracker.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.expanded) {
+      state.expanded = false;
+      render();
+      el.toggle.focus();
+    }
+  });
+
+  // hover or focus holds the notice on screen
+  el.tracker.addEventListener('mouseenter', function () { noticePaused = true; });
+  el.tracker.addEventListener('mouseleave', function () { noticePaused = false; });
+  el.tracker.addEventListener('focusin', function () { noticePaused = true; });
+  el.tracker.addEventListener('focusout', function (e) {
+    if (!el.tracker.contains(e.relatedTarget)) noticePaused = false;
+  });
+
+  el.noticeClose.addEventListener('click', function () {
+    state.notice = null;
+    render();
+  });
+
+  el.dismiss.addEventListener('click', function () {
+    state.dismissed = true;
+    render();
+    el.restore.focus();
+    announce('Tracker dismissed. Show tracker brings it back.');
+  });
+
+  el.restore.addEventListener('click', function () {
+    state.dismissed = false;
+    render();
+    el.toggle.focus();
+  });
+
+  el.keep.addEventListener('click', function () {
+    state.keepOpen = !state.keepOpen;
+    noticeLeft = NOTICE_MS;
+    render();
+  });
+
+  el.openCarrier.addEventListener('click', openCarrier);
+  el.contact.addEventListener('click', toggleContact);
+  el.markSeen.addEventListener('click', markSeen);
+  el.snooze.addEventListener('click', snoozeException);
+  el.wake.addEventListener('click', wakeException);
+
+  el.next.addEventListener('click', advance);
+  el.raise.addEventListener('click', raiseException);
+  el.reset.addEventListener('click', resetSample);
+
+  // a snooze ends by itself
+  setInterval(function () {
+    if (state.held && state.snoozeUntil !== null && Date.now() >= state.snoozeUntil) {
+      state.snoozeUntil = null;
+      state.lastAction = 'Snooze ended. The exception is back.';
+      announce('Snooze ended. The delivery exception is back.');
+      render();
+    }
+  }, 15000);
+
+  setInterval(tickNotice, TICK_MS);
+
+  // ---- start ----
+  state = freshState();
+  render();
+  showNotice('Latest: handed to the carrier, Tue 3 Nov. Next expected Thu 5 Nov.');
+})();
+</script>
+</body>
+</html>

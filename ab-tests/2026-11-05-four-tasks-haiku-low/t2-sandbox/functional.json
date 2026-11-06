@@ -1,0 +1,98 @@
+{
+ "A-r1": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 6,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r2": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 8,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r3": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 6,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r4": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 6,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r1": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 6,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r2": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 8,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r3": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 8,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "B-r4": {
+  "mobile_overflow_px": 0,
+  "mobile_no_overflow": true,
+  "boxes_hook": true,
+  "box_count": 8,
+  "drag_moves_box": true,
+  "falls_after_release": true,
+  "boxes_in_view": 100,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ }
+}

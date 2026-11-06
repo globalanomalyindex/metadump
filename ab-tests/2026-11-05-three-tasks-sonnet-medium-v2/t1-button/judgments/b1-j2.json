@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"dreamlike":5,"practical":8,"motion":6,"craft":6,"overall":6,"note":"Legible, well-built with clear focus and reduced motion, but the dark navy button barely glows and the dreamlike effect is subtle and the button looks small and plain."},
+"X":{"dreamlike":9,"practical":8,"motion":9,"craft":9,"overall":9,"note":"Gradient pill blooms into a soft blurred halo with gentle overshoot and an arrow reveal, label stays legible, strong focus and reduced-motion handling, polished serif/sans page."},
+"Y":{"dreamlike":7,"practical":6,"motion":7,"craft":8,"overall":6,"note":"Nice drifting color wash and long curves, but white label washes out against the pale gradient on hover and it uses transition:all."},
+"Z":{"dreamlike":7,"practical":8,"motion":8,"craft":8,"overall":8,"note":"Glassy button with warm amber haze, breathing and drift, six well-named curves and thoughtful focus ring, though the effect is restrained and low contrast at rest."}},
+"ranking":["X","Z","W","Y"]}

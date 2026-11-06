@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en" data-glow="both" data-motion="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamlike button, Northfield Studio</title>
+<style>
+  /* Tokens. Timing and lift are rewritten by script from the chosen reading. */
+  :root {
+    --paper: #f6f4fb;
+    --ink: #1d1a2b;
+    --ink-soft: #4a4560;
+    --rule: #d9d3ea;
+    --focus: #3b2bb8;
+    --primary: #5b43d9;
+    --primary-peak: #6a55e6;
+    --glow: rgba(156, 132, 255, 0.9);
+    --glow-alpha: 0.6;
+    --halo-alpha: 0.6;
+    --glow-blur: 16px;
+
+    /* Defaults: the settle reading, full motion. */
+    --face-ease: cubic-bezier(0.33, 1, 0.68, 1);
+    --face-ms: 220ms;
+    --glow-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --glow-ms: 600ms;
+    --exit-ease: cubic-bezier(0.45, 0, 0.55, 1);
+    --exit-ms: 400ms;
+    --lift: 2px;
+    --press: 0.97;
+  }
+
+  /* No-script fallback for reduced motion. Script also sets these inline. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --face-ease: linear;
+      --face-ms: 120ms;
+      --glow-ease: linear;
+      --glow-ms: 150ms;
+      --exit-ease: linear;
+      --exit-ms: 150ms;
+      --lift: 0px;
+      --press: 1;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+  header.site {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 0; gap: 12px; flex-wrap: wrap;
+  }
+  .brand { font-weight: 700; letter-spacing: 0.02em; }
+  header.site nav a { color: var(--ink-soft); margin-left: 18px; text-decoration: none; }
+  header.site nav a:hover { color: var(--ink); text-decoration: underline; }
+
+  /* ---------- Button system ---------- */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; padding: 13px 22px;
+    font: inherit; font-weight: 600; font-size: 16px; line-height: 1.1;
+    border: 1px solid transparent; border-radius: 999px;
+    background: var(--primary); color: #fff;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    /* Exit timing: the return from hover runs on its own, slower curve. */
+    transition:
+      transform var(--exit-ms) var(--exit-ease),
+      background-color var(--exit-ms) var(--exit-ease);
+  }
+
+  /* Glow: a blurred layer drawn once; only its opacity changes. */
+  .btn::before {
+    content: "";
+    position: absolute; inset: -12px -10px; border-radius: 999px;
+    background: radial-gradient(closest-side, var(--glow), rgba(156, 132, 255, 0));
+    filter: blur(var(--glow-blur));
+    opacity: 0; z-index: -1; pointer-events: none;
+    transition: opacity var(--exit-ms) var(--exit-ease);
+  }
+
+  /* Halo: a thin rim of light, opacity only. */
+  .btn::after {
+    content: "";
+    position: absolute; inset: 0; border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--exit-ms) var(--exit-ease);
+  }
+
+  html[data-glow="glow"] .btn::after { display: none; }
+  html[data-glow="halo"] .btn::before { display: none; }
+
+  /* Hover rules only where a pointer can hover, so a tap does not leave a stuck hover. */
+  @media (hover: hover) {
+    .btn:hover:not(:disabled) {
+      transform: translateY(calc(var(--lift) * -1));
+      transition:
+        transform var(--face-ms) var(--face-ease),
+        background-color var(--glow-ms) var(--glow-ease);
+    }
+    .btn:hover:not(:disabled)::before {
+      opacity: var(--glow-alpha);
+      transition: opacity var(--glow-ms) var(--glow-ease);
+    }
+    .btn:hover:not(:disabled)::after {
+      opacity: var(--halo-alpha);
+      transition: opacity var(--glow-ms) var(--glow-ease);
+    }
+  }
+
+  /* Focus: the same family of motion, at half the lift, with a ring. */
+  .btn:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .btn:focus-visible:not(:disabled) {
+    transform: translateY(calc(var(--lift) * -0.5));
+    transition: transform var(--face-ms) var(--face-ease);
+  }
+
+  /* Press: short, transform only, no overshoot. */
+  .btn:active:not(:disabled) {
+    transform: translateY(1px) scale(var(--press));
+    transition: transform 90ms var(--face-ease);
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    background: #8c86a3;
+  }
+
+  .btn--ghost {
+    background: #fff; color: #2b2540;
+    border-color: #7d7596;
+  }
+  @media (hover: hover) {
+    .btn--ghost:hover:not(:disabled) { background: #efeafb; }
+  }
+  .btn--ghost.is-on { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .btn--small { min-height: 40px; padding: 9px 14px; font-size: 15px; }
+
+  /* Glass: the only element on the page with backdrop-filter. */
+  .btn--glass {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  @media (hover: hover) {
+    .btn--glass:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+  }
+
+  .btn--primary:hover:not(:disabled) { background: var(--primary-peak); }
+
+  /* ---------- Layout ---------- */
+  .stage {
+    position: relative; overflow: hidden;
+    margin: 12px 0 28px; padding: 56px 28px 48px;
+    border-radius: 22px; color: #fff;
+    background:
+      linear-gradient(135deg, #1c1538 0%, #3a2a6b 58%, #4a3488 100%);
+  }
+  .stage .eyebrow { color: #d9d0ff; }
+  .stage .lede { color: #efeaff; }
+  .stage .btn--glass:focus-visible { outline-color: #fff; }
+
+  .eyebrow {
+    margin: 0 0 8px; font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+  }
+  h1 { font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1.08; margin: 0 0 14px; font-weight: 700; }
+  h2 { font-size: 1.4rem; margin: 0 0 12px; }
+  .lede { max-width: 56ch; margin: 0 0 28px; color: var(--ink-soft); }
+
+  .row { display: flex; flex-wrap: wrap; gap: 18px 20px; align-items: center; }
+
+  .preview {
+    margin-top: 22px; max-width: 56ch;
+    padding: 14px 16px; border-radius: 14px;
+    background: rgba(255, 255, 255, 0.1); color: #f1edff;
+    font-size: 15px;
+  }
+  .seats { margin: 22px 0 0; font-size: 15px; color: #efeaff; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 18px; padding: 24px; margin-bottom: 24px;
+  }
+
+  .list { list-style: none; margin: 0; padding: 0; }
+  .item {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 16px 0; border-top: 1px solid var(--rule);
+  }
+  .item:first-child { border-top: 0; padding-top: 0; }
+  .meta { display: block; font-size: 14px; color: var(--ink-soft); }
+  .item-actions { display: flex; gap: 12px; flex-wrap: wrap; padding: 6px 0; }
+
+  .layout { display: grid; gap: 24px; }
+  @media (min-width: 880px) {
+    .layout { grid-template-columns: 1.25fr 1fr; align-items: start; }
+  }
+
+  fieldset { border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; margin: 0 0 16px; }
+  legend { font-weight: 700; padding: 0 6px; }
+  .radio { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; cursor: pointer; }
+  .radio input { margin-top: 5px; accent-color: var(--primary); }
+  .radio small { display: block; color: var(--ink-soft); }
+
+  select {
+    font: inherit; padding: 8px 10px; border-radius: 10px;
+    border: 1px solid #7d7596; background: #fff; color: var(--ink);
+  }
+
+  dl.readout { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; font-size: 15px; }
+  dl.readout dt { color: var(--ink-soft); }
+  dl.readout dd { margin: 0; font-variant-numeric: tabular-nums; word-break: break-word; }
+  code { font-size: 14px; background: #efeafb; padding: 1px 6px; border-radius: 6px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  th, td { text-align: left; padding: 7px 6px; border-top: 1px solid var(--rule); vertical-align: top; }
+  .pass { color: #1f6b3a; font-weight: 700; }
+  .fail { color: #9b1c1c; font-weight: 700; }
+
+  ol.log { list-style: none; padding: 0; margin: 0; font-size: 14px; max-height: 210px; overflow: auto; }
+  ol.log li { padding: 6px 0; border-top: 1px solid var(--rule); }
+  ol.log time { color: var(--ink-soft); margin-right: 8px; font-variant-numeric: tabular-nums; }
+
+  .note { font-size: 14px; color: var(--ink-soft); margin: 10px 0 0; }
+
+  footer { color: var(--ink-soft); font-size: 14px; padding: 8px 0 40px; }
+
+  @media (max-width: 480px) {
+    .stage { padding: 40px 20px 36px; }
+    .btn { width: 100%; }
+    .item-actions .btn { width: auto; }
+    .row .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+    <div class="brand">Northfield Studio</div>
+    <nav aria-label="Primary">
+      <a href="#workshops">Workshops</a>
+      <a href="#visit">Visit</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="stage" aria-labelledby="hero-title">
+      <p class="eyebrow">Spring workshops</p>
+      <h1 id="hero-title">Slow hands, bright kilns.</h1>
+      <p class="lede">Four-week glaze and throwing courses for beginners, plus a Saturday open studio. Groups are small on purpose.</p>
+
+      <div class="row">
+        <button class="btn btn--primary" id="book" type="button">Book a seat</button>
+        <button class="btn btn--glass" id="preview-toggle" type="button" aria-expanded="false" aria-controls="preview">Watch the 90-second preview</button>
+      </div>
+
+      <div class="preview" id="preview" hidden>
+        The preview clip is not bundled in this sample. This panel marks where it would play.
+      </div>
+
+      <p class="seats" id="seats" aria-live="polite"></p>
+    </section>
+
+    <div class="layout">
+      <section class="panel" id="workshops" aria-labelledby="ws-title">
+        <h2 id="ws-title">Workshops</h2>
+        <p class="note">Pick a workshop to book, or save it to your shortlist.</p>
+        <ul class="list" id="list"></ul>
+        <p class="note" id="shortlist" aria-live="polite"></p>
+      </section>
+
+      <aside class="panel" aria-labelledby="tune-title">
+        <h2 id="tune-title">Tune the feel</h2>
+
+        <fieldset>
+          <legend>Hover curve reading</legend>
+          <label class="radio"><input type="radio" name="reading" value="settle" checked>
+            <span>Settle with a light tail<small>Face lands at rest; the glow keeps drifting after it.</small></span></label>
+          <label class="radio"><input type="radio" name="reading" value="float">
+            <span>Float that settles<small>A small lift with a return under 2 percent of travel.</small></span></label>
+          <label class="radio"><input type="radio" name="reading" value="rebound">
+            <span>Float with a rebound<small>A visible return past rest. A different reading, outside the 2 percent check.</small></span></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Light</legend>
+          <label for="glow">Light on hover</label>
+          <select id="glow">
+            <option value="both" selected>Glow and halo</option>
+            <option value="glow">Glow only</option>
+            <option value="halo">Halo only</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Motion</legend>
+          <button class="btn btn--ghost btn--small" id="motion" type="button" aria-pressed="false">Motion: follow system</button>
+          <p class="note">Reduced motion removes the lift, the overshoot and the drift. Colour and opacity still respond.</p>
+        </fieldset>
+
+        <dl class="readout" aria-live="polite">
+          <dt>Face curve</dt><dd><code id="face-curve"></code></dd>
+          <dt>Glow curve</dt><dd><code id="glow-curve"></code></dd>
+          <dt>Face timing</dt><dd id="face-ms"></dd>
+          <dt>Return past rest</dt><dd id="overshoot"></dd>
+          <dt>Measured settle</dt><dd id="measured">Hover the primary button</dd>
+          <dt>Motion state</dt><dd id="motion-state"></dd>
+        </dl>
+
+        <table aria-label="Contrast checks">
+          <thead><tr><th>Pair</th><th>Ratio</th><th>Needed</th><th>Result</th></tr></thead>
+          <tbody id="contrast"></tbody>
+        </table>
+        <p class="note">Ratios are computed from the colours in this file, at the least favourable state.</p>
+
+        <h2 style="margin-top:20px;font-size:1.1rem">Activity</h2>
+        <ol class="log" id="log" aria-live="polite"></ol>
+      </aside>
+    </div>
+
+    <section class="panel" id="visit" aria-labelledby="visit-title">
+      <h2 id="visit-title">Visit</h2>
+      <p>Northfield Studio, 14 Kiln Lane. Open Tuesday to Saturday, 9:00 to 18:00. Bring an apron if you have one; we have spares.</p>
+    </section>
+  </main>
+
+  <footer>Sample page for testing a hover curve. Nothing here is submitted anywhere.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var $ = function (s) { return document.querySelector(s); };
+  var reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  // Each reading: cubic-bezier spreads and timings, as written in the dump.
+  var READINGS = {
+    settle:  { face: [0.33, 1, 0.68, 1],   faceMs: 220, lift: 2, glow: [0.22, 1, 0.36, 1], glowMs: 600, exit: [0.45, 0, 0.55, 1], exitMs: 400 },
+    float:   { face: [0.34, 1.2, 0.64, 1], faceMs: 300, lift: 3, glow: [0.22, 1, 0.36, 1], glowMs: 500, exit: [0.45, 0, 0.55, 1], exitMs: 400 },
+    rebound: { face: [0.34, 1.56, 0.64, 1], faceMs: 360, lift: 3, glow: [0.22, 1, 0.36, 1], glowMs: 500, exit: [0.45, 0, 0.55, 1], exitMs: 400 }
+  };
+
+  var WORKSHOPS = [
+    { id: "glaze",  name: "Morning glaze lab",         meta: "Tuesdays and Thursdays, 9:30", seats: 4 },
+    { id: "wheel",  name: "Evening wheel, beginners",  meta: "Wednesdays, 18:00",            seats: 6 },
+    { id: "letter", name: "Intro to letterpress",      meta: "Saturdays, 10:00",             seats: 0 }
+  ];
+
+  var state = {
+    reading: "settle",
+    glow: "both",
+    motion: "system",          // system | reduce | full
+    selected: "glaze",
+    saved: {},
+    log: [],
+    measured: null
+  };
+
+  var bookLabelTimer = null;
+  var hoverStart = 0;
+
+  // ---------- Maths: cubic-bezier evaluation and contrast ----------
+  function cb(a) { return "cubic-bezier(" + a.join(", ") + ")"; }
+
+  function bezierY(t, y1, y2) {
+    var u = 1 - t;
+    return 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t;
+  }
+
+  // Largest progress reached, as a percent of travel past rest.
+  function returnPastRest(curve) {
+    var max = 0;
+    for (var i = 0; i <= 1000; i++) {
+      var y = bezierY(i / 1000, curve[1], curve[3]);
+      if (y > max) max = y;
+    }
+    return Math.max(0, (max - 1) * 100);
+  }
+
+  function lin(c) {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function lum(rgb) { return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]); }
+  function ratio(a, b) {
+    var la = lum(a), lb = lum(b);
+    var hi = Math.max(la, lb), lo = Math.min(la, lb);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+  function over(fg, alpha, bg) {
+    return [0, 1, 2].map(function (i) { return alpha * fg[i] + (1 - alpha) * bg[i]; });
+  }
+
+  var WHITE = [255, 255, 255];
+  var PAPER = [246, 244, 251];
+  var STAGE_LIGHTEST = [74, 52, 136];   // #4a3488, the brightest stage stop under the glass button
+  var CHECKS = [
+    { pair: "Primary label, rest fill #5b43d9", fg: WHITE, bg: [91, 67, 217], need: 4.5 },
+    { pair: "Primary label, peak hover #6a55e6", fg: WHITE, bg: [106, 85, 230], need: 4.5 },
+    { pair: "Glass label, peak 0.24 over stage", fg: WHITE, bg: over(WHITE, 0.24, STAGE_LIGHTEST), need: 4.5 },
+    { pair: "Ghost edge against paper", fg: [125, 117, 150], bg: PAPER, need: 3 },
+    { pair: "Focus ring #3b2bb8 on paper", fg: [59, 43, 184], bg: PAPER, need: 3 }
+  ];
+
+  // ---------- Rendering ----------
+  function applyMotion() {
+    var reduce = state.motion === "reduce" || (state.motion === "system" && reduceQuery.matches);
+    root.setAttribute("data-motion", reduce ? "reduce" : "full");
+    applyVars();
+  }
+
+  function applyVars() {
+    var r = READINGS[state.reading];
+    var reduce = root.getAttribute("data-motion") === "reduce";
+    var s = root.style;
+    s.setProperty("--face-ease", reduce ? "linear" : cb(r.face));
+    s.setProperty("--face-ms", (reduce ? 120 : r.faceMs) + "ms");
+    s.setProperty("--glow-ease", reduce ? "linear" : cb(r.glow));
+    s.setProperty("--glow-ms", (reduce ? 150 : r.glowMs) + "ms");
+    s.setProperty("--exit-ease", reduce ? "linear" : cb(r.exit));
+    s.setProperty("--exit-ms", (reduce ? 150 : r.exitMs) + "ms");
+    s.setProperty("--lift", (reduce ? 0 : r.lift) + "px");
+    s.setProperty("--press", reduce ? "1" : "0.97");
+    renderReadout();
+  }
+
+  function renderReadout() {
+    var r = READINGS[state.reading];
+    var pct = returnPastRest(r.face);
+    var reduce = root.getAttribute("data-motion") === "reduce";
+    $("#face-curve").textContent = cb(r.face);
+    $("#glow-curve").textContent = cb(r.glow);
+    $("#face-ms").textContent = (reduce ? "120" : r.faceMs) + " ms (glow " + (reduce ? "150" : r.glowMs) + " ms)";
+    var verdict = pct < 2 ? "settle, inside the 2 percent check" : "rebound reading, outside the 2 percent check";
+    $("#overshoot").textContent = pct.toFixed(1) + " percent, " + verdict;
+    $("#measured").textContent = state.measured === null ? "Hover the primary button" : state.measured + " ms";
+    var label = state.motion === "system" ? "follow system" : state.motion === "reduce" ? "reduced" : "full";
+    $("#motion-state").textContent = (reduce ? "reduced in effect" : "full in effect") + " (setting: " + label + ")";
+    $("#motion").textContent = "Motion: " + label;
+    $("#motion").setAttribute("aria-pressed", String(state.motion !== "system"));
+  }
+
+  function renderContrast() {
+    $("#contrast").innerHTML = CHECKS.map(function (c) {
+      var v = ratio(c.fg, c.bg);
+      var ok = v >= c.need;
+      return "<tr><td>" + c.pair + "</td><td>" + v.toFixed(2) + ":1</td><td>" + c.need + ":1</td><td class=\"" +
+        (ok ? "pass\">Pass" : "fail\">Fail") + "</td></tr>";
+    }).join("");
+  }
+
+  function selectedWorkshop() {
+    for (var i = 0; i < WORKSHOPS.length; i++) if (WORKSHOPS[i].id === state.selected) return WORKSHOPS[i];
+    return null;
+  }
+
+  function renderList() {
+    $("#list").innerHTML = WORKSHOPS.map(function (w) {
+      var on = state.selected === w.id;
+      var saved = !!state.saved[w.id];
+      var soldOut = w.seats === 0;
+      return "<li class=\"item\"><div><strong>" + w.name + "</strong><span class=\"meta\">" + w.meta + " · " +
+        (soldOut ? "Sold out" : w.seats + " seats left") + "</span></div>" +
+        "<div class=\"item-actions\">" +
+        "<button class=\"btn btn--ghost btn--small" + (on ? " is-on" : "") + "\" type=\"button\" data-act=\"select\" data-id=\"" + w.id + "\" aria-pressed=\"" + on + "\"" + (soldOut ? " disabled" : "") + ">" + (on ? "Selected" : "Select") + "</button>" +
+        "<button class=\"btn btn--ghost btn--small" + (saved ? " is-on" : "") + "\" type=\"button\" data-act=\"save\" data-id=\"" + w.id + "\" aria-pressed=\"" + saved + "\">" + (saved ? "Saved" : "Save") + "</button>" +
+        "</div></li>";
+    }).join("");
+    var names = WORKSHOPS.filter(function (w) { return state.saved[w.id]; }).map(function (w) { return w.name; });
+    $("#shortlist").textContent = "Shortlist: " + (names.length ? names.join(", ") : "empty") + ".";
+  }
+
+  function renderBook() {
+    var w = selectedWorkshop();
+    var btn = $("#book");
+    if (bookLabelTimer) return;            // keep the confirmation label while it shows
+    if (!w || w.seats === 0) {
+      btn.disabled = true;
+      btn.textContent = "No seats left";
+    } else {
+      btn.disabled = false;
+      btn.textContent = "Book a seat in " + w.name.charAt(0).toLowerCase() + w.name.slice(1);
+    }
+  }
+
+  function renderSeats() {
+    var w = selectedWorkshop();
+    $("#seats").textContent = w
+      ? (w.seats === 0 ? w.name + " is sold out." : w.seats + " seats left in " + w.name + " this week.")
+      : "Pick a workshop to see seats.";
+  }
+
+  function renderAll() { renderList(); renderBook(); renderSeats(); renderReadout(); }
+
+  function log(msg) {
+    var t = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    state.log.unshift({ t: t, msg: msg });
+    state.log = state.log.slice(0, 8);
+    $("#log").innerHTML = state.log.map(function (e) {
+      return "<li><time>" + e.t + "</time>" + e.msg + "</li>";
+    }).join("");
+  }
+
+  // ---------- Actions ----------
+  function book() {
+    var w = selectedWorkshop();
+    if (!w || w.seats === 0) return;
+    w.seats -= 1;
+    log("Held a seat in " + w.name + ". " + w.seats + " left.");
+    var btn = $("#book");
+    btn.textContent = "Seat held";
+    if (bookLabelTimer) clearTimeout(bookLabelTimer);
+    bookLabelTimer = setTimeout(function () {
+      bookLabelTimer = null;
+      renderAll();
+    }, 1600);
+    renderList(); renderSeats();
+  }
+
+  function togglePreview() {
+    var panel = $("#preview");
+    var btn = $("#preview-toggle");
+    var open = panel.hasAttribute("hidden");
+    if (open) panel.removeAttribute("hidden"); else panel.setAttribute("hidden", "");
+    btn.setAttribute("aria-expanded", String(open));
+    btn.textContent = open ? "Hide the preview" : "Watch the 90-second preview";
+    log(open ? "Preview panel opened." : "Preview panel closed.");
+  }
+
+  // ---------- Wiring ----------
+  $("#list").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-act]");
+    if (!b || b.disabled) return;
+    var id = b.getAttribute("data-id");
+    var w = WORKSHOPS.filter(function (x) { return x.id === id; })[0];
+    if (b.getAttribute("data-act") === "select") {
+      state.selected = id;
+      log("Selected " + w.name + ".");
+    } else {
+      state.saved[id] = !state.saved[id];
+      log((state.saved[id] ? "Saved " : "Removed ") + w.name + " from the shortlist.");
+    }
+    renderAll();
+  });
+
+  $("#book").addEventListener("click", book);
+  $("#preview-toggle").addEventListener("click", togglePreview);
+
+  document.querySelectorAll('input[name="reading"]').forEach(function (input) {
+    input.addEventListener("change", function () {
+      state.reading = input.value;
+      applyVars();
+      log("Curve reading: " + input.parentNode.textContent.trim().split("\n")[0] + ".");
+    });
+  });
+
+  $("#glow").addEventListener("change", function (e) {
+    state.glow = e.target.value;
+    root.setAttribute("data-glow", state.glow);
+    log("Light on hover: " + e.target.options[e.target.selectedIndex].text.toLowerCase() + ".");
+  });
+
+  $("#motion").addEventListener("click", function () {
+    state.motion = state.motion === "system" ? "reduce" : state.motion === "reduce" ? "full" : "system";
+    applyMotion();
+    log("Motion setting: " + state.motion + ".");
+  });
+
+  // Measure how long the primary face takes to settle after the pointer enters.
+  var primary = $("#book");
+  primary.addEventListener("pointerenter", function (e) {
+    if (e.pointerType === "mouse" || e.pointerType === "pen") hoverStart = performance.now();
+  });
+  primary.addEventListener("transitionend", function (e) {
+    if (e.target !== primary || e.propertyName !== "transform" || !hoverStart) return;
+    state.measured = Math.round(performance.now() - hoverStart);
+    hoverStart = 0;
+    renderReadout();
+  });
+
+  reduceQuery.addEventListener && reduceQuery.addEventListener("change", applyMotion);
+
+  // ---------- Init ----------
+  root.setAttribute("data-glow", state.glow);
+  renderContrast();
+  applyMotion();
+  renderAll();
+  log("Page ready. Settle reading, full motion.");
+})();
+</script>
+</body>
+</html>

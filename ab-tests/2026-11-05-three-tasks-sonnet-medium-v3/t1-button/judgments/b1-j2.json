@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j2","scores":{
+"W":{"dreamlike":8,"practical":9,"motion":8,"craft":8,"overall":8,"note":"Long layered bezier tails with a resting breath and soft bloom, high-contrast label, strong focus ring, thorough reduced-motion, and a clean primary/ghost hierarchy."},
+"X":{"dreamlike":8,"practical":8,"motion":8,"craft":7,"overall":7,"note":"Bloom with gentle overshoot and arrow reveal reads ethereal and the exit is slow, but the blurred blob and spinning halo cost more to render and the resting button is plainer."},
+"Y":{"dreamlike":7,"practical":6,"motion":6,"craft":7,"overall":6,"note":"Pretty light-theme card, but the hover wash visibly fades the white label mid-transition, the slot buttons use transition: all, and it is the weakest at keeping contrast during motion."},
+"Z":{"dreamlike":8,"practical":7,"motion":8,"craft":8,"overall":7,"note":"Pink-blue halo, sparkle spin and an opacity-only breathing glow feel dreamy with good asymmetric curves, though the compact outline button has a lighter affordance."}
+},"ranking":["W","Z","X","Y"]}

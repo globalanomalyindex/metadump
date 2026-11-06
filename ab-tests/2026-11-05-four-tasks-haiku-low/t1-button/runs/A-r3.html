@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dreamlike Button Demo</title>
+<style>
+  :root {
+    --bg: #0c0e1a;
+    --panel: #151a2e;
+    --ink: #e9ecff;
+    --muted: #9aa3c7;
+    --line: rgba(160, 175, 230, 0.16);
+    --accent-a: #8fb8ff;
+    --accent-b: #c79bff;
+    --accent-c: #7fe7d6;
+
+    /* Motion tokens, swapped by the intensity presets in JS */
+    --ease-main: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-bloom: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-drift: cubic-bezier(0.37, 0, 0.63, 1);
+    --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --slow: 900ms;
+    --lift: 2px;
+    --halo: 0.7;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) { --bg: #f4f6ff; --panel: #ffffff; --ink: #1b2038; --muted: #5b6588; --line: rgba(40, 50, 90, 0.12); }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+  }
+
+  .stage {
+    width: min(560px, 100%);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 32px;
+    display: grid;
+    gap: 22px;
+  }
+
+  h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+  p { margin: 0; color: var(--muted); }
+
+  .features { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .features li::before { content: "\2726"; color: var(--accent-c); margin-right: 10px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+  /* ---------- The button ---------- */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 48px;
+    padding: 0 1.6rem;
+    border: 0;
+    border-radius: 999px;
+    font: 600 1rem/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #0b0d1c;
+    background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+    box-shadow:
+      0 6px 18px -8px color-mix(in srgb, var(--accent-a) calc(var(--halo) * 100%), transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 220ms var(--ease-main),
+      box-shadow var(--slow) var(--ease-bloom),
+      filter var(--slow) var(--ease-main),
+      background-color 300ms var(--ease-main);
+  }
+
+  /* Aurora: a slow conic wash that turns beneath the label on hover */
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: -45%;
+    z-index: -1;
+    background: conic-gradient(from 0deg,
+      transparent 0deg, var(--accent-c) 70deg, transparent 150deg,
+      var(--accent-b) 220deg, transparent 300deg);
+    opacity: 0;
+    filter: blur(14px);
+    transform: rotate(0deg);
+    transition: opacity var(--slow) var(--ease-main), transform 3.2s var(--ease-drift);
+  }
+
+  /* Shimmer: one pale sheen crosses the face once per hover */
+  .btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 45%;
+    height: 100%;
+    z-index: -1;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transform: skewX(-18deg);
+    opacity: 0;
+    transition: opacity 600ms var(--ease-main);
+    pointer-events: none;
+  }
+
+  .btn:hover,
+  .btn:focus-visible {
+    transform: translateY(calc(var(--lift) * -1));
+    filter: saturate(1.15) brightness(1.06);
+    box-shadow:
+      0 20px 42px -14px color-mix(in srgb, var(--accent-a) calc(var(--halo) * 100%), transparent),
+      0 0 0 6px color-mix(in srgb, var(--accent-a) calc(var(--halo) * 16%), transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  .btn:hover::before { opacity: 0.6; transform: rotate(200deg); }
+  .btn:hover::after { opacity: 1; left: 125%; transition: left 1.2s var(--ease-bloom), opacity 600ms var(--ease-main); }
+
+  .btn:focus-visible { outline: 2px solid var(--accent-c); outline-offset: 4px; }
+
+  /* Press: quick, slightly sinks, release overshoots a touch */
+  .btn:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 90ms, var(--slow), var(--slow), 300ms;
+  }
+
+  /* Loading: the label stays, three motes drift across */
+  .dots { display: none; gap: 4px; }
+  .dots i {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #0b0d1c;
+    animation: mote 1.4s var(--ease-drift) infinite;
+  }
+  .dots i:nth-child(2) { animation-delay: 0.18s; }
+  .dots i:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes mote {
+    0%, 100% { transform: translateY(0); opacity: 0.35; }
+    50% { transform: translateY(-5px); opacity: 1; }
+  }
+  .btn[aria-busy="true"] .dots { display: inline-flex; }
+  .btn[aria-busy="true"] { cursor: progress; }
+
+  /* Done: a soft check bloom */
+  .btn.is-done { background: linear-gradient(135deg, var(--accent-c), var(--accent-a)); animation: settle 700ms var(--ease-snap); }
+  @keyframes settle {
+    0% { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+
+  /* Ghost (toggle) variant */
+  .btn-ghost {
+    color: var(--ink);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .btn-ghost::before { filter: blur(18px); }
+  .btn-ghost[aria-pressed="true"] {
+    color: #0b0d1c;
+    background: linear-gradient(135deg, var(--accent-c), var(--accent-b));
+    box-shadow: 0 10px 26px -12px var(--accent-b), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+
+  .btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    filter: grayscale(0.4);
+    box-shadow: none;
+  }
+  .btn[disabled]::before, .btn[disabled]::after { display: none; }
+
+  /* ---------- Controls ---------- */
+  .segment { display: inline-flex; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent); gap: 2px; }
+  .segment button {
+    border: 0; background: transparent; color: var(--muted);
+    font-family: inherit; font-size: 0.9rem; font-weight: 500; line-height: 1; padding: 9px 14px; border-radius: 999px; cursor: pointer;
+    transition: background-color 350ms var(--ease-main), color 350ms var(--ease-main);
+  }
+  .segment button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  .segment button:focus-visible { outline: 2px solid var(--accent-c); outline-offset: 2px; }
+
+  .counter { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; }
+  .counter strong { color: var(--ink); }
+
+  .log { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 0.88rem; color: var(--muted); min-height: 3.2em; }
+  .log li { animation: drift-in 600ms var(--ease-bloom); }
+  @keyframes drift-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .hint { font-size: 0.82rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .btn:hover, .btn:focus-visible, .btn:active { transform: none; }
+    .btn::before { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main class="stage">
+  <header>
+    <h2>Lumen Studio</h2>
+    <h1>Quiet tools for slow work</h1>
+    <p>Notes, drafts and boards that stay out of the way until you need them.</p>
+  </header>
+
+  <ul class="features">
+    <li>Offline-first notebooks that sync when you reconnect</li>
+    <li>Version history kept for 90 days, no setup</li>
+    <li>Share read-only links with anyone, no account needed</li>
+  </ul>
+
+  <section class="row" aria-label="Actions">
+    <button class="btn" id="join" type="button">
+      <span class="label">Join the waitlist</span>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>
+    <button class="btn btn-ghost" id="save" type="button" aria-pressed="false">Save for later</button>
+    <button class="btn" type="button" disabled>Export unavailable</button>
+  </section>
+
+  <section>
+    <h2>Motion intensity</h2>
+    <div class="segment" role="group" aria-label="Motion intensity" id="presets">
+      <button type="button" data-preset="gentle" aria-pressed="false">Gentle</button>
+      <button type="button" data-preset="dreamlike" aria-pressed="true">Dreamlike</button>
+      <button type="button" data-preset="luminous" aria-pressed="false">Luminous</button>
+    </div>
+  </section>
+
+  <section class="row" style="justify-content: space-between;">
+    <span class="counter">Waitlist: <strong id="count">2,481</strong></span>
+    <span class="counter">Saved: <strong id="savedCount">0</strong></span>
+  </section>
+
+  <section>
+    <h2>Activity</h2>
+    <ul class="log" id="log" aria-live="polite"></ul>
+  </section>
+  <p class="hint">Hover, press, or tab through the buttons. Reduced-motion settings turn all of this off.</p>
+</main>
+
+<script>
+  (function () {
+    var PRESETS = {
+      gentle:   { '--ease-main': 'cubic-bezier(0.25, 0.1, 0.25, 1)', '--ease-bloom': 'cubic-bezier(0.25, 0.1, 0.25, 1)', '--slow': '600ms', '--lift': '1px', '--halo': '0.4' },
+      dreamlike:{ '--ease-main': 'cubic-bezier(0.22, 0.61, 0.36, 1)', '--ease-bloom': 'cubic-bezier(0.16, 1, 0.3, 1)', '--slow': '900ms', '--lift': '2px', '--halo': '0.7' },
+      luminous: { '--ease-main': 'cubic-bezier(0.16, 1, 0.3, 1)', '--ease-bloom': 'cubic-bezier(0.07, 0.82, 0.165, 1)', '--slow': '1400ms', '--lift': '3px', '--halo': '1' }
+    };
+
+    var state = { joined: 2481, saved: 0, isSaved: false, busy: false, preset: 'dreamlike' };
+
+    var joinBtn = document.getElementById('join');
+    var joinLabel = joinBtn.querySelector('.label');
+    var saveBtn = document.getElementById('save');
+    var countEl = document.getElementById('count');
+    var savedEl = document.getElementById('savedCount');
+    var logEl = document.getElementById('log');
+    var presetBtns = document.querySelectorAll('#presets button');
+    var events = [];
+
+    function log(text) {
+      events.unshift(text);
+      events = events.slice(0, 4);
+      logEl.innerHTML = '';
+      events.forEach(function (t) {
+        var li = document.createElement('li');
+        li.textContent = t;
+        logEl.appendChild(li);
+      });
+    }
+
+    function render() {
+      countEl.textContent = state.joined.toLocaleString('en-US');
+      savedEl.textContent = state.saved;
+      saveBtn.setAttribute('aria-pressed', String(state.isSaved));
+      saveBtn.textContent = state.isSaved ? 'Saved' : 'Save for later';
+    }
+
+    function setPreset(name) {
+      var vars = PRESETS[name];
+      if (!vars) return;
+      Object.keys(vars).forEach(function (k) {
+        document.documentElement.style.setProperty(k, vars[k]);
+      });
+      state.preset = name;
+      presetBtns.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.preset === name));
+      });
+      log('Motion set to ' + name);
+    }
+
+    joinBtn.addEventListener('click', function () {
+      if (state.busy) return;
+      state.busy = true;
+      joinBtn.setAttribute('aria-busy', 'true');
+      joinLabel.textContent = 'Opening the gate';
+      setTimeout(function () {
+        state.busy = false;
+        state.joined += 1;
+        joinBtn.removeAttribute('aria-busy');
+        joinBtn.classList.remove('is-done');
+        void joinBtn.offsetWidth; // restart the settle animation
+        joinBtn.classList.add('is-done');
+        joinLabel.textContent = 'You are on the list';
+        log('Joined the waitlist');
+        render();
+        setTimeout(function () {
+          joinBtn.classList.remove('is-done');
+          joinLabel.textContent = 'Join the waitlist';
+        }, 2400);
+      }, 1200);
+    });
+
+    saveBtn.addEventListener('click', function () {
+      state.isSaved = !state.isSaved;
+      state.saved += state.isSaved ? 1 : -1;
+      log(state.isSaved ? 'Saved for later' : 'Removed from saved');
+      render();
+    });
+
+    presetBtns.forEach(function (b) {
+      b.addEventListener('click', function () { setPreset(b.dataset.preset); });
+    });
+
+    setPreset(state.preset);
+    render();
+  })();
+</script>
+</body>
+</html>

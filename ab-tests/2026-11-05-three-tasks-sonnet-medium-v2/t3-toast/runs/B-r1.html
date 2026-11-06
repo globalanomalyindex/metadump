@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parcel pill</title>
+<style>
+:root{
+  --canvas:#0d0d0b; --page:#0a0a0a; --raised:#1a1a18; --raised2:#222220; --line:#363632;
+  --text:#fafafa; --text2:#bdbdb6; --muted:#9c9c9c;
+  --go:#6ee7a8; --warn:#f5b84b; --bad:#f87171; --done:#7cc4ff;
+  --accent:var(--go);
+  --open-ease:cubic-bezier(.34,1.38,.64,1); --close-ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--page);color:var(--text);font:13px/1.35 ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:16px}
+.demo{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.demo span{color:var(--muted);font-size:12px;align-self:center;margin-right:4px}
+.demo button{background:transparent;color:var(--text2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer;min-height:24px}
+.demo button[aria-pressed=true]{background:var(--raised2);color:var(--text)}
+.demo button:hover{border-color:#555}
+.stage{position:fixed;right:16px;bottom:16px;width:min(300px,calc(100vw - 32px));display:flex;flex-direction:column;align-items:flex-end}
+.toast{width:100%;background:var(--canvas);border:1px solid var(--line);border-radius:22px;overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);transform-origin:bottom right;
+  transition:transform .28s var(--open-ease),opacity .18s ease-out,border-radius .28s var(--open-ease),width .28s var(--open-ease)}
+.toast.collapsed{width:auto;min-width:0}
+.stage .toast{align-self:flex-end}
+.toast.gone{transform:translateY(12px) scale(.92);opacity:0;pointer-events:none;visibility:hidden;transition:transform .18s var(--close-ease),opacity .18s ease-out,visibility 0s .18s}
+.toast.open{border-radius:14px;background:var(--raised)}
+.head{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;height:36px;padding:0 14px 0 12px;cursor:pointer;width:100%;white-space:nowrap}
+.head:focus-visible,.act:focus-visible,.x:focus-visible,.demo button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;position:relative}
+.live .dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--accent);opacity:0;animation:ping 2.4s ease-out infinite}
+@keyframes ping{0%{transform:scale(.5);opacity:.7}70%,100%{transform:scale(1.4);opacity:0}}
+.word{font-weight:600;color:var(--text);font-size:13px}
+.eta{margin-left:auto;font-weight:700;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums;padding-left:10px}
+.eta small{font-weight:500;color:var(--text2);font-size:12px;margin-left:2px}
+.chev{width:10px;height:10px;color:var(--muted);transition:transform .2s var(--close-ease);flex:none}
+.open .chev{transform:rotate(180deg)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .18s var(--close-ease)}
+.open .body{grid-template-rows:1fr;transition:grid-template-rows .28s var(--open-ease)}
+.inner{overflow:hidden;min-height:0}
+.content{padding:2px 14px 12px;opacity:0;filter:blur(6px);transition:opacity .12s ease-out,filter .12s ease-out}
+.open .content{opacity:1;filter:none;transition:opacity .16s ease-out .12s,filter .16s ease-out .12s}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--text2);font-size:12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);font-size:12px}
+ol{list-style:none;padding:8px 0 4px;position:relative}
+li{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:start;padding:3px 0;position:relative;color:var(--text2);font-size:12.5px}
+li::before{content:"";position:absolute;left:6px;top:18px;bottom:-5px;width:1px;background:var(--line)}
+li:last-child::before{display:none}
+li i{width:13px;height:13px;border-radius:50%;margin-top:2px;border:1.5px solid var(--line);background:transparent;display:grid;place-items:center;font-style:normal;font-size:9px;line-height:1;color:var(--canvas)}
+li.done i{background:var(--text2);border-color:var(--text2)}
+li.now{color:var(--text);font-weight:600}
+li.now i{border-color:var(--accent);background:var(--canvas);box-shadow:inset 0 0 0 2.5px var(--accent)}
+li.exp{color:var(--muted)}
+li time{color:var(--muted);font-size:11.5px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
+li.now time{color:var(--accent)}
+li small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.act{background:var(--raised2);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:0 11px;min-height:28px;font:inherit;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .12s,transform .1s}
+.act:hover{background:#2c2c29}
+.act:active{transform:scale(.96)}
+.act[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.act.sp{margin-left:auto}
+.note{min-height:16px;margin-top:7px;color:var(--text2);font-size:11.5px}
+.note.warn{color:var(--warn)}
+.x{all:unset;cursor:pointer;color:var(--muted);width:28px;height:28px;display:grid;place-items:center;border-radius:50%;box-sizing:border-box;margin-right:4px}
+.x:hover{color:var(--text);background:var(--raised2)}
+.toprow{display:flex;align-items:center}
+.toast.open .toprow .head{padding-right:6px}
+.toast.open .eta{display:none}
+.toast.open .head .etashort{display:inline}
+.etashort{display:none;margin-left:auto;color:var(--text2);font-size:12px}
+.toast:not(.open) .x{display:none}
+.restore{background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:0 12px;min-height:28px;font:inherit;font-size:12px;cursor:pointer;margin-top:8px;display:none}
+.restore.show{display:inline-block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast.exception{--accent:var(--warn)}.toast.bad{--accent:var(--bad)}.toast.delivered{--accent:var(--done)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms !important;animation:none !important;transition-delay:0s !important}
+}
+</style>
+</head>
+<body>
+<div class="demo" role="group" aria-label="Demo: set the parcel state">
+  <span>Demo state</span>
+  <button data-s="transit" aria-pressed="true">In transit</button>
+  <button data-s="out" aria-pressed="false">Out for delivery</button>
+  <button data-s="exception" aria-pressed="false">Delayed</button>
+  <button data-s="delivered" aria-pressed="false">Delivered</button>
+</div>
+
+<div class="stage">
+  <section class="toast collapsed" id="toast" aria-label="Package tracking">
+    <div class="toprow">
+      <button class="head" id="head" aria-expanded="false" aria-controls="panel">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="word" id="word">In transit</span>
+        <span class="etashort" id="etashort"></span>
+        <span class="eta" id="eta"><span id="etan">2</span><small id="etau">d</small></span>
+        <svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5"/></svg>
+      </button>
+      <button class="x" id="dismiss" aria-label="Dismiss tracker"><svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2l6 6M8 2 2 8"/></svg></button>
+    </div>
+    <div class="body" id="panel" role="region" aria-label="Tracking details">
+      <div class="inner"><div class="content">
+        <div class="meta"><span id="carrier">Northwind Freight</span><span class="num" id="trk">NW 4821 7730 19</span></div>
+        <ol id="tl"></ol>
+        <div class="actions">
+          <button class="act" id="copy">Copy no.</button>
+          <button class="act" id="carrierBtn">Carrier page</button>
+          <button class="act" id="refresh">Refresh</button>
+          <button class="act sp" id="notify" aria-pressed="true">Notify on</button>
+        </div>
+        <div class="note" id="note"></div>
+      </div></div>
+    </div>
+  </section>
+  <button class="restore" id="restore">Show tracker again</button>
+  <div class="sr" role="status" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var toast=$('toast'),head=$('head'),tl=$('tl'),note=$('note'),live=$('live');
+  var NUMBER='NW482177301​9'.replace(/​/g,'');
+  var scans={
+    transit:{word:'In transit',eta:['2','d'],cls:'',live:true,list:[
+      ['done','Label created','Mon 08:12','Harlow, UK'],
+      ['done','Picked up','Mon 17:40','Harlow, UK'],
+      ['done','Arrived at hub','Tue 03:05','Daventry hub'],
+      ['now','Departed hub, on the way','Tue 06:48','To Leeds depot'],
+      ['exp','Out for delivery','Thu','Expected'],
+      ['exp','Delivered','Thu by 18:00','Expected']]},
+    out:{word:'Out for delivery',eta:['4','h'],cls:'',live:true,list:[
+      ['done','Picked up','Mon 17:40','Harlow, UK'],
+      ['done','Arrived at hub','Tue 03:05','Daventry hub'],
+      ['done','Arrived at Leeds depot','Thu 05:22','Leeds depot'],
+      ['now','Out for delivery','Thu 07:31','Driver: route 14'],
+      ['exp','Delivered','by 13:00','Expected']]},
+    exception:{word:'Delayed',eta:['?',''],cls:'exception',live:false,list:[
+      ['done','Picked up','Mon 17:40','Harlow, UK'],
+      ['done','Arrived at hub','Tue 03:05','Daventry hub'],
+      ['now','Delay: weather at hub','Wed 11:10','Held at Daventry'],
+      ['exp','New date pending','Check back soon','Expected']]},
+    delivered:{word:'Delivered',eta:['✓',''],cls:'delivered',live:false,list:[
+      ['done','Picked up','Mon 17:40','Harlow, UK'],
+      ['done','Out for delivery','Thu 07:31','Leeds depot'],
+      ['now','Delivered, front porch','Thu 11:52','Signed: R. Okafor']]}
+  };
+  var state='transit',refreshN=0;
+
+  function render(announce){
+    var s=scans[state];
+    toast.className=toast.className.replace(/\b(exception|bad|delivered|live)\b/g,'').trim();
+    if(s.cls)toast.classList.add(s.cls);
+    if(s.live)toast.classList.add('live');
+    $('word').textContent=s.word;
+    $('etan').textContent=s.eta[0];$('etau').textContent=s.eta[1];
+    $('etashort').textContent=s.eta[1]?'ETA '+s.eta[0]+s.eta[1]:'';
+    tl.innerHTML='';
+    s.list.forEach(function(r){
+      var li=document.createElement('li');li.className=r[0];
+      if(r[0]==='now')li.setAttribute('aria-current','step');
+      li.innerHTML='<i aria-hidden="true">'+(r[0]==='done'?'✓':'')+'</i><span></span><time></time>';
+      var sp=li.children[1];sp.textContent=r[1];
+      var sm=document.createElement('small');sm.textContent=(r[0]==='exp'?'Expected · ':'')+r[3];sp.appendChild(sm);
+      li.children[2].textContent=r[2];
+      tl.appendChild(li);
+    });
+    $('copy').textContent='Copy no.';
+    if(announce)live.textContent='Package status: '+s.word+(s.eta[1]?', arriving in '+s.eta[0]+(s.eta[1]==='d'?' days':' hours'):'')+'.';
+    var btns=document.querySelectorAll('.demo button');
+    for(var i=0;i<btns.length;i++)btns[i].setAttribute('aria-pressed',btns[i].dataset.s===state);
+    note.className='note'+(state==='exception'?' warn':'');
+    note.textContent=state==='exception'?'Delayed. Refresh, copy the number, or contact the carrier.':'';
+  }
+
+  function setOpen(o){
+    toast.classList.toggle('open',o);toast.classList.toggle('collapsed',!o);
+    head.setAttribute('aria-expanded',o);
+    if(o)toast.style.width='100%';else toast.style.width='';
+  }
+  head.addEventListener('click',function(){setOpen(head.getAttribute('aria-expanded')!=='true')});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&head.getAttribute('aria-expanded')==='true'){setOpen(false);head.focus()}
+  });
+
+  $('dismiss').addEventListener('click',function(){
+    setOpen(false);toast.classList.add('gone');$('restore').classList.add('show');
+    live.textContent='Tracker dismissed.';$('restore').focus();
+  });
+  $('restore').addEventListener('click',function(){
+    toast.classList.remove('gone');$('restore').classList.remove('show');head.focus();
+  });
+
+  $('copy').addEventListener('click',function(){
+    var b=this;
+    function ok(){b.textContent='Copied';note.className='note';note.textContent=NUMBER+' copied.';live.textContent='Tracking number copied.';
+      setTimeout(function(){b.textContent='Copy no.'},1600)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(NUMBER).then(ok,fallback)}else fallback();
+    function fallback(){var t=document.createElement('textarea');t.value=NUMBER;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}t.remove();ok()}
+  });
+  $('carrierBtn').addEventListener('click',function(){
+    note.className='note';note.textContent='Would open northwind.example/track/'+NUMBER+' (offline demo).';
+  });
+  $('refresh').addEventListener('click',function(){
+    var b=this;b.disabled=true;b.textContent='Checking…';
+    setTimeout(function(){
+      b.disabled=false;b.textContent='Refresh';refreshN++;
+      var t=new Date();var hh=('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2);
+      note.className='note'+(state==='exception'?' warn':'');
+      note.textContent='Checked '+hh+'. '+(state==='exception'?'Still delayed, no new scan.':'No new scans.');
+      live.textContent='Status checked. '+scans[state].word+'.';
+    },700);
+  });
+  $('notify').addEventListener('click',function(){
+    var on=this.getAttribute('aria-pressed')!=='true';
+    this.setAttribute('aria-pressed',on);this.textContent=on?'Notify on':'Notify off';
+    note.className='note';note.textContent=on?'You will be told at each new scan.':'Muted. The pill still updates.';
+  });
+
+  document.querySelector('.demo').addEventListener('click',function(e){
+    var s=e.target.dataset&&e.target.dataset.s;if(!s)return;
+    state=s;render(true);
+  });
+  render(false);
+})();
+</script>
+</body>
+</html>

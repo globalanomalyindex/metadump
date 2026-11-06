@@ -1,0 +1,74 @@
+{
+ "t1-button": {
+  "A_mean": 3.0,
+  "B_mean": 4.0,
+  "A": [
+   3.0,
+   4.0,
+   2.0
+  ],
+  "B": [
+   4.0,
+   3.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 1,
+   "B": 2,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is largely one pastel-lilac/violet serif (Georgia-style) wellness-booking page made four times (P1/P2 are near-identical light cards, P3 light hero, P4 dark hero), with similar gradient pill CTAs and curves clustered around (.16,.84,.3,1) and (.6,.02,.2,.98). Q varies more in context and palette (dark blurred-blob waitlist, light subscribe form with button group, dark card with three button states, glassmorphic Lisbon residency), but all share the same sans/lilac-night mood and near-identical easing values, so it is only moderately varied.",
+   "v2 (P=B): P is mostly one idea: Inter sans, glassy translucent buttons with a soft glow on purple-blob backgrounds (P1, P2 and P4 are near-identical dark cards or heroes), with only P3's light page and tactile-border look differing; Q mixes serif headlines, a pastel iridescent pill, a dark gradient pill and light cards, though Q3 and Q4 are close to the same light card with a gradient arrow pill, and all curves are similar expo-out easings.",
+   "v3 (P=A): P is nearly one design four times: Halcyon/Lumen sleep or retreat copy, Georgia serif headline, a lavender-blue gradient pill 'Reserve' button, and near-identical named curves (exhale/drift/bloom), with only the dark hero differing from the other three light ones. Q shares a purple palette and Inter type but varies the context (glass card over blobs, dark multi-button card, email waitlist hero, light subscribe panel), the button form (pill, rounded-rect, glass) and the timing, so it is moderately varied."
+  ]
+ },
+ "t2-haiku": {
+  "A_mean": 1.33,
+  "B_mean": 5.33,
+  "A": [
+   2.0,
+   1.0,
+   1.0
+  ],
+  "B": [
+   6.0,
+   5.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 0,
+   "B": 3,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): P is one poem four times: nacreous / mother-of-pearl light at dusk or dawn on cold air, with 'the sky holds' recurring in three of four. Q mixes two clouds (lens cloud over a ridge vs. high ice veil after sunset) and different angles (wind and snow smell, street at dusk, indoor cold cup on the sill, winter dusk), though the veil/pearl pair partly repeats.",
+   "v2 (P=B): P splits into two cloud types (lens cloud over a ridge in P1/P4, nacreous dusk veil in P2/P3) with some differing details (cold cup, smell of snow, street), though P2 and P3 are near twins; Q is the same poem four times: nacreous mother-of-pearl glow at dusk/dawn on cold air, with near-identical phrasing.",
+   "v3 (P=A): P is one poem four times: nacreous/mother-of-pearl light at dusk or dawn on cold air, with near-identical words and the same angle. Q has two near-duplicate lenticular ridge poems (Q2/Q3) and two near-duplicate dusk-veil poems (Q1/Q4), so it is really two ideas, but those two ideas do differ (wind and snow smell versus pearl and rose burning)."
+  ]
+ },
+ "t3-toast": {
+  "A_mean": 4.33,
+  "B_mean": 3.33,
+  "A": [
+   4.0,
+   5.0,
+   4.0
+  ],
+  "B": [
+   2.0,
+   3.0,
+   5.0
+  ],
+  "more_varied": {
+   "A": 2,
+   "B": 1,
+   "tie": 0
+  },
+  "notes": [
+   "v1 (P=A): Both sets are bottom-right dark toasts with a green accent, but P varies the expanded content (horizontal 5-step stepper with package dots, timestamped list, carrier tabs, minimal collapsed pill), while Q is almost one design four times: a vertical check-circle timeline with ETA, a step counter and a small footer row, with only an amber accent and button/toggle changes differing.",
+   "v2 (P=B): P is largely one design four times: bottom-right dark card, header with status dot and n of 5, vertical stepper timeline, footer actions, differing mainly in accent color and small details. Q varies more (a compact two-line pill with no expanded section, a carrier-tab version, a monospace tracking-number-plus-Copy card with location sublines, a horizontal stepper with a package pager and event log), though all share the same bottom-right card and green accent.",
+   "v3 (P=A): Both sets are bottom-right dark cards with green or amber accents and a vertical timeline once opened. P varies mostly in expanded content (carrier tabs, horizontal stepper with dots, location log), but P1 and P4 are near-identical and all four use the same green. Q varies the collapsed form more (accent-edge pill with 4/5, UP badge, segmented bar, mini dots) and uses amber in two designs, but its expanded views are all the same vertical stepper."
+  ]
+ }
+}

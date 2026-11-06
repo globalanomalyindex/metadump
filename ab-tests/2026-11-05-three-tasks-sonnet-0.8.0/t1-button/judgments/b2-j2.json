@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j2","scores":{
+"W":{"dreamlike":5,"practical":9,"motion":6,"craft":7,"overall":6,"note":"Clean, fast glow and lift with solid focus and reduced-motion handling, but 180-480ms feels crisp more than ethereal."},
+"X":{"dreamlike":9,"practical":8,"motion":9,"craft":9,"overall":9,"note":"Pastel halo with blur bloom, overshoot bezier and long soft return reads truly dreamy, with a tidy card layout, focus ring and reduced-motion."},
+"Y":{"dreamlike":8,"practical":6,"motion":8,"craft":8,"overall":7,"note":"Rich mist, blur halo, sheen and pointer-following glow are ethereal, but 1-2s durations, animated filter blur and a small label cost practicality, and the hover frames missed the button."},
+"Z":{"dreamlike":4,"practical":7,"motion":5,"craft":6,"overall":5,"note":"Competent sheen sweep with focus and reduced-motion, but a sheen artifact sits on the button at rest and the effect is more shiny than dreamlike."}},
+"ranking":["X","Y","W","Z"]}

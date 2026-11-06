@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Box Sandbox</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #f4f1ea; font-family: system-ui, -apple-system, sans-serif; }
+  canvas { position: fixed; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: default; }
+  canvas.grabbing { cursor: grabbing; }
+  #hud { position: fixed; left: 12px; top: 10px; font-size: 13px; color: #333; background: rgba(255,255,255,0.75); padding: 6px 10px; border-radius: 6px; user-select: none; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"></div>
+<script>
+(function () {
+  'use strict';
+
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const hud = document.getElementById('hud');
+
+  const GRAVITY = 1400;        // px/s^2
+  const RESTITUTION = 0.25;    // bounciness on impacts faster than REST_SPEED
+  const REST_SPEED = 40;       // px/s below which impacts do not bounce
+  const FRICTION = 0.4;        // tangential impulse limit, as a fraction of normal impulse
+  const FLOOR_DAMP = 0.3;      // fraction of horizontal speed kept per second on the floor
+  const ITERATIONS = 8;
+  const SUBSTEP = 1 / 240;
+  const DRAG_GAIN = 18;        // 1/s: how hard a grabbed box chases the pointer
+  const MAX_SPEED = 3000;      // px/s
+  const MAX_BOXES = 200;
+  const COLORS = ['#e76f51', '#2a9d8f', '#e9c46a', '#264653', '#8ab17d', '#f4a261', '#6d597a'];
+
+  let W = 0, H = 0, DPR = 1;
+  const boxes = [];            // {x, y, w, h, vx, vy, dragging, tx, ty, color}; x, y are centers
+  let drag = null;             // {box, ox, oy}
+  let lastBox = null;
+  let shownCount = -1;
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function makeBox(x, y) {
+    return {
+      x, y,
+      w: Math.round(rand(30, 110)),
+      h: Math.round(rand(30, 110)),
+      vx: 0, vy: 0,
+      dragging: false,
+      tx: x, ty: y,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)]
+    };
+  }
+
+  function clampBox(b) {
+    const hw = b.w / 2, hh = b.h / 2;
+    if (b.x < hw) b.x = hw;
+    if (b.x > W - hw) b.x = W - hw;
+    if (b.y < hh) b.y = hh;
+    if (b.y > H - hh) b.y = H - hh;
+  }
+
+  function resize() {
+    DPR = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    for (const b of boxes) clampBox(b);
+  }
+
+  // Impulse-based collision between two axis-aligned boxes.
+  // A dragged box has zero inverse mass: it pushes others but is not pushed.
+  function collide(a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const ox = (a.w + b.w) / 2 - Math.abs(dx);
+    const oy = (a.h + b.h) / 2 - Math.abs(dy);
+    if (ox <= 0 || oy <= 0) return;
+
+    let nx = 0, ny = 0, pen;
+    if (ox < oy) { nx = dx < 0 ? -1 : 1; pen = ox; }
+    else { ny = dy < 0 ? -1 : 1; pen = oy; }
+
+    const ia = a.dragging ? 0 : 1;
+    const ib = b.dragging ? 0 : 1;
+    const total = ia + ib;
+    if (total === 0) return;
+
+    // positional correction
+    const pa = pen * ia / total;
+    const pb = pen * ib / total;
+    a.x -= nx * pa; a.y -= ny * pa;
+    b.x += nx * pb; b.y += ny * pb;
+
+    // normal impulse
+    const rvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    let jn = 0;
+    if (rvn < 0) {
+      const e = Math.abs(rvn) < REST_SPEED ? 0 : RESTITUTION;
+      jn = -(1 + e) * rvn / total;
+      a.vx -= jn * ia * nx; a.vy -= jn * ia * ny;
+      b.vx += jn * ib * nx; b.vy += jn * ib * ny;
+    }
+
+    // friction impulse along the tangent
+    const tx = -ny, ty = nx;
+    const rvt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
+    const maxF = FRICTION * jn;
+    let jt = -rvt / total;
+    if (jt > maxF) jt = maxF;
+    if (jt < -maxF) jt = -maxF;
+    a.vx -= jt * ia * tx; a.vy -= jt * ia * ty;
+    b.vx += jt * ib * tx; b.vy += jt * ib * ty;
+  }
+
+  function solveWalls(b) {
+    const hw = b.w / 2, hh = b.h / 2;
+    if (b.x - hw < 0) { b.x = hw; if (b.vx < 0) b.vx = -b.vx * RESTITUTION; }
+    if (b.x + hw > W) { b.x = W - hw; if (b.vx > 0) b.vx = -b.vx * RESTITUTION; }
+    if (b.y - hh < 0) { b.y = hh; if (b.vy < 0) b.vy = -b.vy * RESTITUTION; }
+    if (b.y + hh > H) {
+      b.y = H - hh;
+      if (b.vy > 0) b.vy = Math.abs(b.vy) < REST_SPEED ? 0 : -b.vy * RESTITUTION;
+    }
+  }
+
+  function step(dt) {
+    for (const b of boxes) {
+      if (b.dragging) {
+        b.vx = (b.tx - b.x) * DRAG_GAIN;
+        b.vy = (b.ty - b.y) * DRAG_GAIN;
+      } else {
+        b.vy += GRAVITY * dt;
+      }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+    }
+    for (let it = 0; it < ITERATIONS; it++) {
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) collide(boxes[i], boxes[j]);
+      }
+      for (const b of boxes) solveWalls(b);
+    }
+    for (const b of boxes) {
+      if (b.y + b.h / 2 >= H - 0.5) b.vx *= Math.pow(FLOOR_DAMP, dt);
+      const s = Math.hypot(b.vx, b.vy);
+      if (s > MAX_SPEED) { b.vx *= MAX_SPEED / s; b.vy *= MAX_SPEED / s; }
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = '#f4f1ea';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#d9d3c5';
+    ctx.fillRect(0, H - 6, W, 6);
+
+    for (const b of boxes) {
+      const x = b.x - b.w / 2, y = b.y - b.h / 2;
+      if (b.dragging) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.tx, b.ty);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.fillStyle = b.color;
+      ctx.fillRect(x, y, b.w, b.h);
+      ctx.lineWidth = b === lastBox ? 3 : 2;
+      ctx.strokeStyle = b === lastBox ? '#111' : 'rgba(0,0,0,0.25)';
+      ctx.strokeRect(x + 1, y + 1, b.w - 2, b.h - 2);
+    }
+  }
+
+  function updateHud() {
+    if (boxes.length !== shownCount) {
+      shownCount = boxes.length;
+      hud.textContent = 'Boxes: ' + shownCount + ' | drag a box | click empty space to spawn | Backspace removes the last box touched | R resets';
+    }
+  }
+
+  function hit(p) {
+    for (let i = boxes.length - 1; i >= 0; i--) {
+      const b = boxes[i];
+      if (Math.abs(p.x - b.x) <= b.w / 2 && Math.abs(p.y - b.y) <= b.h / 2) return b;
+    }
+    return null;
+  }
+
+  function pos(e) { return { x: e.clientX, y: e.clientY }; }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    const p = pos(e);
+    const b = hit(p);
+    e.preventDefault();
+    if (b) {
+      boxes.splice(boxes.indexOf(b), 1);
+      boxes.push(b);
+      drag = { box: b, ox: p.x - b.x, oy: p.y - b.y };
+      b.dragging = true;
+      b.tx = b.x; b.ty = b.y;
+      lastBox = b;
+      canvas.setPointerCapture(e.pointerId);
+      canvas.classList.add('grabbing');
+    } else if (boxes.length < MAX_BOXES) {
+      const nb = makeBox(p.x, p.y);
+      boxes.push(nb);
+      lastBox = nb;
+    }
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    const p = pos(e);
+    if (drag) {
+      drag.box.tx = p.x - drag.ox;
+      drag.box.ty = p.y - drag.oy;
+    } else {
+      canvas.style.cursor = hit(p) ? 'grab' : 'default';
+    }
+  });
+
+  function endDrag() {
+    if (!drag) return;
+    drag.box.dragging = false;
+    drag = null;
+    canvas.classList.remove('grabbing');
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  window.addEventListener('keydown', function (e) {
+    if ((e.key === 'Backspace' || e.key === 'Delete') && lastBox && !lastBox.dragging) {
+      const i = boxes.indexOf(lastBox);
+      if (i >= 0) boxes.splice(i, 1);
+      lastBox = null;
+    } else if (e.key === 'r' || e.key === 'R') {
+      reset();
+    }
+  });
+
+  window.addEventListener('resize', resize);
+
+  function reset() {
+    drag = null;
+    lastBox = null;
+    boxes.length = 0;
+    for (let i = 0; i < 6; i++) {
+      boxes.push(makeBox(rand(W * 0.2, W * 0.8), rand(60, 220)));
+    }
+  }
+
+  // Test-harness hook: box centers and sizes in page CSS pixels.
+  window.boxes = function () {
+    return boxes.map(function (b) { return { x: b.x, y: b.y, w: b.w, h: b.h }; });
+  };
+
+  resize();
+  reset();
+
+  let last = performance.now();
+  let acc = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    acc += dt;
+    while (acc >= SUBSTEP) {
+      step(SUBSTEP);
+      acc -= SUBSTEP;
+    }
+    draw();
+    updateHud();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

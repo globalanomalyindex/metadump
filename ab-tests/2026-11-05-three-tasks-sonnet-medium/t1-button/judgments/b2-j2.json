@@ -1,0 +1,6 @@
+{"block":"b2","judge":"j2","scores":{
+"W":{"dreamlike":6,"practical":9,"motion":8,"craft":8,"overall":7,"note":"Disciplined cyan halo and light sweep on a solid indigo button with strong focus ring, active state and reduced-motion handling, but the effect is subtle rather than truly ethereal."},
+"X":{"dreamlike":9,"practical":7,"motion":8,"craft":8,"overall":8,"note":"Pastel iridescent pill with a blurred spinning bloom, long exhale easings and drifting arrow feels genuinely dreamlike, though the pale rest state has a soft affordance and the bloom is the heaviest to render."},
+"Y":{"dreamlike":8,"practical":8,"motion":8,"craft":8,"overall":8,"note":"Saturated gradient button with an overshoot lift, light-band sweep and halo reads clearly at rest and gets ethereal on hover, with good focus and reduced-motion support."},
+"Z":{"dreamlike":7,"practical":6,"motion":7,"craft":7,"overall":6,"note":"Glass button with a halo and sheen looks nice in motion but the translucent rest state with a small label has weak contrast and affordance on the dark blurred backdrop."}},
+"ranking":["X","Y","W","Z"]}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Package toast</title>
+<style>
+:root{color-scheme:dark;--bg:#0f1114;--s1:#171a1f;--s2:#1f232a;--line:#2c313a;--tx:#e6e8eb;--tx2:#a3a9b3;--ok:#5fcf9a;--go:#6aa8f7;--warn:#e8b04b;--bad:#f08a7a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.page{padding:24px;max-width:560px;color:var(--tx2)}
+.page h1{font-size:15px;color:var(--tx);margin:0 0 6px;font-weight:600}
+.page p{margin:0 0 16px}
+.demo{display:flex;gap:8px;flex-wrap:wrap}
+.demo button{background:var(--s2);color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer;min-height:28px}
+button:focus-visible,a:focus-visible{outline:2px solid var(--go);outline-offset:2px}
+#toast{position:fixed;right:16px;bottom:16px;width:248px;background:var(--s1);border:1px solid var(--line);border-radius:18px;overflow:hidden;transition:opacity .18s ease,transform .18s ease}
+#toast[hidden]{display:none}
+#toast.gone{opacity:0;transform:translateY(8px)}
+.face{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;height:38px;padding:0 10px 0 12px;cursor:pointer}
+.face:focus-visible{outline:2px solid var(--go);outline-offset:-2px;border-radius:18px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c,var(--go));flex:none}
+.st{font-weight:600;white-space:nowrap}
+.st.pulse{animation:pulse .5s ease-out 1}
+@keyframes pulse{40%{color:var(--c);transform:scale(1.06)}}
+.eta{color:var(--tx2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.chev{flex:none;width:24px;height:24px;display:grid;place-items:center;color:var(--tx2);transition:transform .18s}
+[aria-expanded=true] .chev{transform:rotate(180deg)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .2s ease}
+.body.open{grid-template-rows:1fr}
+.inner{overflow:hidden;min-height:0}
+.pad{padding:2px 12px 10px;border-top:1px solid var(--line);background:var(--s2)}
+.meta{display:flex;justify-content:space-between;gap:8px;padding:8px 0 6px;color:var(--tx2);font-size:12px}
+.meta b{color:var(--tx);font-weight:500;font-variant-numeric:tabular-nums}
+.next{margin:0 0 8px;font-size:12px;color:var(--tx2)}
+ol{list-style:none;margin:0;padding:0}
+li{position:relative;display:grid;grid-template-columns:14px 1fr auto;gap:8px;padding:3px 0;font-size:12px;color:var(--tx2)}
+li::before{content:"";width:8px;height:8px;margin:5px 3px 0;border-radius:50%;border:1.5px solid var(--tx2);box-sizing:border-box}
+li.done::before{background:var(--ok);border-color:var(--ok)}
+li.cur::before{background:var(--c);border-color:var(--c)}
+li.cur{color:var(--tx)}
+li small{color:var(--tx2);font-size:11px;font-variant-numeric:tabular-nums}
+li span em{display:block;font-style:normal;font-size:11px;color:var(--tx2)}
+.acts{display:flex;gap:6px;margin-top:8px}
+.acts>*{flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 8px;background:var(--s1);color:var(--tx);border:1px solid var(--line);border-radius:8px;font:inherit;font-size:12px;cursor:pointer;text-decoration:none}
+.acts>*:hover,.demo button:hover{background:#272c35}
+#tab{position:fixed;right:0;bottom:24px;width:28px;height:44px;border:1px solid var(--line);border-right:0;border-radius:10px 0 0 10px;background:var(--s1);cursor:pointer;display:grid;place-items:center;padding:0}
+#tab[hidden]{display:none}
+#tab i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body>
+<div class="page"><h1>Your orders</h1><p>Sample page. The tracker floats at the bottom right.</p>
+<div class="demo"><button id="adv">Simulate next scan</button><button id="rst">Reset</button></div></div>
+
+<section id="toast" aria-label="Package tracking">
+ <button class="face" id="face" aria-expanded="false" aria-controls="body">
+  <span class="dot" id="dot"></span><span class="st" id="st"></span><span class="eta" id="eta"></span>
+  <span class="chev" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4.5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+ </button>
+ <div class="body" id="body"><div class="inner"><div class="pad">
+  <div class="meta"><span>UPS</span><b id="tn">1Z999AA10123456784</b></div>
+  <p class="next" id="next"></p>
+  <ol id="steps"></ol>
+  <div class="acts">
+   <button id="copy" type="button">Copy number</button>
+   <a id="carrier" href="https://www.ups.com/track?tracknum=1Z999AA10123456784" target="_blank" rel="noopener">Open UPS</a>
+   <button id="dis" type="button" aria-label="Dismiss tracker">Dismiss</button>
+  </div>
+ </div></div></div>
+</section>
+<button id="tab" hidden aria-label="Show package tracker"><i id="tdot"></i></button>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+var STAGES=[
+ {k:"Label Created",c:"#a3a9b3",next:"Carrier has not received it yet.",eta:"Arrives Fri, Nov 8"},
+ {k:"On the Way",c:"#6aa8f7",next:"No action needed.",eta:"Arrives Fri, Nov 8"},
+ {k:"Out for Delivery",c:"#e8b04b",next:"Check delivery instructions.",eta:"Today by 8 PM"},
+ {k:"Delivered",c:"#5fcf9a",next:"Left at front door.",eta:"Today, 2:41 PM"}];
+var CP=[
+ ["Label Created","Nov 4, 9:12 AM","Louisville, KY"],
+ ["Departed facility","Nov 5, 6:30 AM","Louisville, KY"],
+ ["Arrived at hub","Nov 6, 4:05 AM","Columbus, OH"],
+ ["Out for Delivery","Nov 8, 7:48 AM","Pittsburgh, PA"],
+ ["Delivered","Nov 8, 2:41 PM","Pittsburgh, PA"]];
+var cpAt=[0,2,3,4]; // last checkpoint index shown per stage
+var s=1,open=false,$=function(i){return document.getElementById(i)};
+function render(announce){
+ var g=STAGES[s],t=$("toast");
+ t.style.setProperty("--c",g.c);$("tab").style.setProperty("--c",g.c);
+ $("st").textContent=g.k;$("eta").textContent=g.eta;$("next").textContent=g.next;
+ var h="",n=cpAt[s];
+ for(var i=n;i>=0;i--){var c=CP[i];h+='<li class="'+(i==n?"cur":"done")+'"'+(i==n?' aria-current="step"':'')+'><span>'+c[0]+'<em>'+c[2]+'</em></span><small>'+c[1]+'</small><span></span></li>';}
+ $("steps").innerHTML=h.replace(/<span><\/span>/g,"");
+ $("steps").querySelectorAll("li").forEach(function(l){l.style.gridTemplateColumns="14px 1fr auto"});
+ if(announce){
+  var st=$("st");st.classList.remove("pulse");void st.offsetWidth;st.classList.add("pulse");
+  $("live").textContent="Package status: "+g.k+". "+g.eta+".";
+  if($("toast").hidden){$("toast").hidden=false;$("tab").hidden=true;requestAnimationFrame(function(){t.classList.remove("gone")});}
+ }
+}
+function setOpen(o){open=o;$("face").setAttribute("aria-expanded",o);$("body").classList.toggle("open",o);}
+$("face").onclick=function(){setOpen(!open)};
+$("adv").onclick=function(){if(s<3){s++;render(true)}else $("live").textContent="Already delivered."};
+$("rst").onclick=function(){s=1;setOpen(false);render(true)};
+$("dis").onclick=function(){var t=$("toast");t.classList.add("gone");setTimeout(function(){t.hidden=true;$("tab").hidden=false;$("tab").focus()},180);setOpen(false)};
+$("tab").onclick=function(){$("tab").hidden=true;$("toast").hidden=false;$("toast").classList.remove("gone");$("face").focus()};
+$("copy").onclick=function(){
+ var b=$("copy"),v=$("tn").textContent;
+ function ok(){b.textContent="Copied";$("live").textContent="Tracking number copied";setTimeout(function(){b.textContent="Copy number"},1500)}
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(ok,fb)}else fb();
+ function fb(){var r=document.createRange();r.selectNodeContents($("tn"));var sl=getSelection();sl.removeAllRanges();sl.addRange(r);try{document.execCommand("copy")}catch(e){}sl.removeAllRanges();ok()}
+};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&open){setOpen(false);$("face").focus()}});
+render(false);
+</script></body></html>

@@ -1,0 +1,6 @@
+{"block":"b1","judge":"j3","scores":{
+"W":{"compact":8,"collapsible":7,"tracking":8,"dark":8,"usability":7,"craft":7,"overall":7,"note":"Tight, clear timeline with ETA, carrier and tracking number and a good aria-expanded header, but it ships open by default, has no reduced-motion handling, and no real next-action beyond demo buttons."},
+"X":{"compact":6,"collapsible":7,"tracking":8,"dark":7,"usability":8,"craft":7,"overall":7,"note":"Segmented progress bar and a rich timeline with a proper switch and good ARIA, but the open state is tall with tiny cramped buttons and a dead gap at the bottom."},
+"Y":{"compact":6,"collapsible":8,"tracking":8,"dark":8,"usability":7,"craft":7,"overall":7,"note":"Compact pill with ETA and count that opens to a multi-parcel tabbed view with copy, carrier and notify, though the opened panel clips the timeline mid-row and feels busy."},
+"Z":{"compact":8,"collapsible":8,"tracking":9,"dark":8,"usability":8,"craft":8,"overall":8,"note":"Compact collapsed toast with a progress hairline expands to a clean full six-step timeline with number, copy and alerts, with Esc, aria-expanded and reduced-motion support."}},
+"ranking":["Z","W","X","Y"]}
