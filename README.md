@@ -29,7 +29,7 @@ Before this, I was making meta dumps by asking an agent to make one from a text 
 
 ## Does it actually help?
 
-I A/B tested it: the same task built with and without a dump, then graded blind. The early rounds ran everything on Haiku 5.5, builders and graders; the latest round builds and grades with Sonnet 5.5 at medium effort (the dumps themselves are always built by a swarm of Haiku agents). It started with two tasks, a "compact, minimal, modern shopping component" and "a set of three custom bezier curves that are described as feeling 'sticky and punchy', present them as loops". Then I added more tasks: four on 0.7.1 with every agent on Haiku at low effort (dump builders included), three on 0.8.0 at medium effort, and the same three again on 0.12.0 with Sonnet building and grading:
+I A/B tested it: the same task built with and without a dump, then graded blind. The early rounds ran everything on Haiku 5.5, builders and graders; the latest round builds and grades with Sonnet 5.5 at medium effort (the dumps themselves are always built by a swarm of Haiku agents). It started with two tasks, a "compact, minimal, modern shopping component" and "a set of three custom bezier curves that are described as feeling 'sticky and punchy', present them as loops". Then I added more tasks: four on 0.7.1 with every agent on Haiku at low effort (dump builders included), three on 0.8.0 at medium effort, the same three again on 0.12.0 with Sonnet building and grading, and then three brand-new ones on 0.12.0 that I never tuned it on:
 
 | Version | Task | Prompt only | Prompt + meta dump | Dump wins head to head |
 |---|---|---|---|---|
@@ -48,6 +48,9 @@ I A/B tested it: the same task built with and without a dump, then graded blind.
 | 0.12.0, Sonnet 5.5 | dreamlike bezier hover button | 6.50 | **8.25** | **98%** |
 | 0.12.0, Sonnet 5.5 | haiku about rare clouds | 5.08 | **8.00** | **96%** |
 | 0.12.0, Sonnet 5.5 | dark mode, very compact collapsible package-tracking toast | 6.83 | **7.50** | 58% |
+| 0.12.0, Sonnet 5.5, new task | a recipe for mammoth steak | 4.92 | **7.00** | **96%** |
+| 0.12.0, Sonnet 5.5, new task | a basic tic tac toe game | 6.50 | **7.67** | 71% |
+| 0.12.0, Sonnet 5.5, new task | a 3D model of a lemon | 5.00 | **6.67** | 73% |
 
 The early versions lost. When a dump carried a wrong made-up number, the model followed it instead of what I asked for. Another time the dump decided on its own that "compact" meant one product and nothing else, so every build that read it made a bare little card with no cart. The fixes behind 0.4.0 to 0.5.1 came straight out of those losses. In the 0.5.1 round, the dump builds won on every criterion, including usability, and every one of them covered the whole shopping job: size, quantity, add to bag, a bag you can review, and checkout.
 
@@ -59,15 +62,18 @@ So 0.8.0 changes how a dump talks. It's not a set of facts to follow anymore, it
 
 Then I switched the builders and graders to Sonnet 5.5, and that was humbling. Sonnet on its own is good at UI, and for three versions in a row the dump side lost the button and tied or lost the toast while winning the haiku by a mile every time. Each version fixed something real: 0.8.1 stopped the dump from offering single values that get copied (every value is a spread now), 0.9.0 and 0.10.0 added a deal (real randomness picks where each session starts and which half of the material it gets, so four sessions reading the same dump don't all build the same thing), and 0.11.0 fixed the part that was annoying me most, where the dump had been calling glow and glass "worn paths" for a button I had literally asked to be ethereal. It isn't allowed to tame your adjectives anymore; it has to push them further. Variety went up every time. Quality didn't, and when I read the grader notes the reason was boring: the dump builds were cramming more into the design and shipping clipped timelines and overlapping icons that nobody had looked at. So 0.12.0 makes the model look. The last step of using a dump is now a script that renders the page headlessly, screenshots it at desktop and phone widths, hovers and clicks it, and lists what's clipped, overlapping or cut off, and the model reads the screenshots and fixes it before it finishes. With the same dumps and the same prompt-only builds as the round before, the dump side went from losing 27–39 to winning 57 of 72 blind head-to-heads (p = 0.0002): the button 23 of 24, the haiku 23 of 24, the toast 11 to 7 with 6 ties, and more varied on all three. One honest note on the numbers: the graders score four builds at a time, so the prompt-only scores dropped a little when the dump builds stopped breaking next to them. The head-to-heads are the comparison that holds.
 
+Then I wanted to know if any of that was just me tuning it to those three tasks, so I gave it three it had never seen, one of each kind: an imaginative one ("a recipe for mammoth steak"), a technical one ("a basic tic tac toe game") and a visual one ("a 3D model of a lemon"). Fresh dumps, fresh builds on both sides, same blind grading. The dump side won all three and 54 of 72 head-to-heads (p = 0.02). The recipe was the clearest: the prompt-only recipes were a normal bison steak with a one-line "mammoths are extinct" note, and the dump recipes actually knew things about mammoths (the Yuka carcass, the lab-grown mammoth meatball, which meats are the honest stand-ins), and won 22 of 24. The prompt-only tic tac toe games were basically the same page four times, and the two best games in the whole test came from the dump side. The lemon is the honest one: the dump side was more consistent and won 17 of 24, but the single best lemon was a prompt-only one. Variety went the wrong way on two of the three, too: three of the four dump recipes were the same bone-in bison steak, and the dump lemons all landed on the same layout. So there's still work to do on getting four sessions to go four different ways.
+
 It's still small (4 runs per side per test), so read it as a direction and not proof. Everything is in [`ab-tests/`](ab-tests/README.md): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
 
 ### See it side by side
 
-Live builds from the Sonnet round, left without a dump and right with one: **[globalanomalyindex.github.io/metadump/showcase](https://globalanomalyindex.github.io/metadump/showcase/)**
+Live builds from both Sonnet rounds, left without a dump and right with one. Each round also has a short video of run 1 of each side, filmed in a browser (no sound). Click a preview to open that round's page, where the full video plays and you can try all eight builds per task.
 
-| | | |
-|---|---|---|
-| [![Dreamlike button, prompt only vs prompt + MetaDump](docs/showcase/posters/t1-button.jpg)](https://globalanomalyindex.github.io/metadump/showcase/) | [![Rare-cloud haiku, prompt only vs prompt + MetaDump](docs/showcase/posters/t2-haiku.jpg)](https://globalanomalyindex.github.io/metadump/showcase/) | [![Dark package toast, prompt only vs prompt + MetaDump](docs/showcase/posters/t3-toast.jpg)](https://globalanomalyindex.github.io/metadump/showcase/) |
+| Round 1: button, haiku, toast | Round 2: recipe, game, lemon |
+|---|---|
+| [![Round 1: the dreamlike button, the rare-cloud haiku and the dark package toast, prompt only vs prompt + MetaDump](docs/showcase/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/) | [![Round 2: the mammoth steak recipe, tic tac toe and the 3D lemon, prompt only vs prompt + MetaDump](docs/showcase/round-2/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/round-2/) |
+| **[Live page](https://globalanomalyindex.github.io/metadump/showcase/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/metadump-ab-round-1.mp4) · 57 of 72 head-to-heads | **[Live page](https://globalanomalyindex.github.io/metadump/showcase/round-2/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/round-2/metadump-ab-round-2.mp4) · 54 of 72 head-to-heads |
 
 ## What makes it work
 

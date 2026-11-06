@@ -35,6 +35,7 @@ iframe{width:100%;height:520px;border:1px solid var(--line);border-radius:10px;b
 .open{font-size:12px;color:var(--muted)}
 .hint{font-size:13px;color:var(--muted);margin:10px 0 0}.finding{font-size:14px;margin:12px 0 0}
 footer{font-size:13px;color:var(--muted)}footer a{color:inherit}
+.film{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;margin:0 0 30px}.film video{width:min(100%,340px);aspect-ratio:4/5;border-radius:12px;border:1px solid var(--line);background:#111}.film figcaption{flex:1 1 260px;font-size:15px;color:var(--muted);margin:0}.film figcaption b{color:var(--ink)}.film figcaption a{color:inherit}
 </style>
 </head>
 <body>
@@ -44,6 +45,7 @@ footer{font-size:13px;color:var(--muted)}footer a{color:inherit}
 <p class="lede">Every pair below was built by Sonnet 5.5 at medium effort from the exact prompt shown. The right side also got a meta dump of the task, made by <a href="https://github.com/globalanomalyindex/metadump">MetaDump</a> (its dumps are built by a swarm of Haiku 5.5 agents), and looked at its own page before finishing. Blind Sonnet graders scored all 8 builds per task without knowing which side was which.</p>
 <p class="meta">Run 1 of each side is shown by default; it was picked before grading. Switch runs to see all four. Full method, grades and every file: <a href="https://github.com/globalanomalyindex/metadump/tree/main/ab-tests/2026-11-05-recipe-game-lemon-sonnet">ab-tests/2026-11-05-recipe-game-lemon-sonnet</a>.</p>
 <p class="pooled" id="pooled"></p>
+<figure class="film"><video src="metadump-ab-round-2.mp4" controls muted playsinline loop preload="metadata"></video><figcaption><b>The video.</b> Run 1 of each side, filmed in a browser: the recipes read, a game played on each side, each lemon turned, then the blind scores. 49 seconds, no sound.</figcaption></figure>
 <div id="tasks"></div>
 <footer>MetaDump is free and open source: <a href="https://github.com/globalanomalyindex/metadump">github.com/globalanomalyindex/metadump</a>. Small samples (4 builds per side per task) and AI graders, so read these as a direction, not proof.</footer>
 </main>
