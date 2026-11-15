@@ -29,25 +29,41 @@ Before this, I was making meta dumps by asking an agent to make one from a text 
 
 ## Does it actually help?
 
-I A/B tested it: the same task built with and without a dump, then graded blind. For the latest round I gave 0.12.0 three tasks I never tuned it on, one of each kind: an imaginative one ("a recipe for mammoth steak"), a technical one ("a basic tic tac toe game") and a visual one ("a 3D model of a lemon"). Sonnet 5.5 at medium effort built and graded everything (the dumps themselves are built by a swarm of Haiku agents), with fresh dumps, fresh builds on both sides and blind grading:
+I A/B tested it: the same task built with and without a dump, then graded blind. For 1.0.0 I ran the strict kind, a confirmation test. First the skill got frozen (a hash of every file). Then I picked four tasks it had never seen. And the rules for what counts as a win were written down before any of that, so nothing could be tuned to the tasks or explained away afterwards. Each task got built three ways, four times each: from the prompt alone, with quick mode (the model writes its own little dump first, no agents), and with the full build (a swarm of Haiku agents builds a lite dump, then the model uses it). Sonnet 5.5 at medium effort built and graded everything.
 
-| Task | Prompt only | Prompt + meta dump | Dump wins head to head |
+| Task | Prompt only | Quick mode | Full build |
 |---|---|---|---|
-| a recipe for mammoth steak | 4.92 | **7.00** | **96%** |
-| a basic tic tac toe game | 6.50 | **7.67** | 71% |
-| a 3D model of a lemon | 5.00 | **6.67** | 73% |
+| an SVG animation of a pelican riding a bike | 7.17 | 7.25 | **8.17** |
+| a simple interactive ascii color mixing engine | 5.67 | **7.92** | 7.08 |
+| a bento box-inspired collapsible UI menu component for a fictional coffee company site | **7.50** | 6.82 | 7.17 |
+| a simple block-building sandbox game with a 32x32 block world | 5.92 | **8.75** | 6.17 |
 
-The dump side won all three and 54 of 72 head-to-heads (p = 0.02). The recipe was the clearest: the prompt-only recipes were a normal bison steak with a one-line "mammoths are extinct" note, and the dump recipes actually knew things about mammoths (the Yuka carcass, the lab-grown mammoth meatball, which meats are the honest stand-ins), and won 22 of 24. The prompt-only tic tac toe games were basically the same page four times, and the two best games in the whole test came from the dump side. The lemon is the honest one: the dump side was more consistent and won 17 of 24, but the single best lemon was a prompt-only one. Variety went the wrong way on two of the three, too: three of the four dump recipes were the same bone-in bison steak, and the dump lemons all landed on the same layout. So there's still work to do on getting four sessions to go four different ways.
+**Quick mode passed.** It beat the prompt alone in 65 of 96 head-to-heads (25 lost, 6 tied) and scored 1.12 points higher on average, p = 0.012. The bar I set beforehand was 0.025. **The full build didn't pass.** It was ahead too (49 won, 23 lost, 24 tied, +0.58), but p = 0.036 misses that bar, so by my own rules I can't call it confirmed.
 
-It's still small (4 runs per side per task), so read it as a direction and not proof. Everything for this round is in [`ab-tests/2026-11-05-recipe-game-lemon-sonnet/`](ab-tests/2026-11-05-recipe-game-lemon-sonnet/): the prompts, the dumps, every build, the screenshots, the grades and the scripts.
+The honest parts:
+
+- Quick mode's win leans a lot on the block game, where it won all 24 head-to-heads. On the other three tasks it's +0.55, which isn't significant by itself. That fourth task is also the one I reworded: my first version asked for a clone of a real game, so it became a genre.
+- On the bento menu the prompt alone scored highest. Both dump modes lost that one.
+- The full build's dump read the block game as a grid editor, so all four of its builds opened on an empty grid. The quick mode builds opened on actual little worlds.
+- Neither dump mode beat the other. The full build won the pelican, quick mode won the color mixer and the block game, and the difference between them isn't significant. Quick mode costs about 14% more tokens than no dump at all. The full build needs a 20 to 40 minute swarm first.
+
+[![All twelve block game builds: prompt only on top, the full build in the middle, quick mode on the bottom](ab-tests/2026-11-13-confirmation-sonnet/t4-blocks/overview.png)](ab-tests/2026-11-13-confirmation-sonnet/t4-blocks/overview.png)
+
+The block game, all twelve builds: prompt only on top, the full build in the middle, quick mode on the bottom. The other three tasks have the same picture ([pelican](ab-tests/2026-11-13-confirmation-sonnet/t1-pelican/overview.png), [color mixer](ab-tests/2026-11-13-confirmation-sonnet/t2-ascii/overview.png), [bento menu](ab-tests/2026-11-13-confirmation-sonnet/t3-bento/overview.png)).
+
+One more thing came out of it. Before I looked at any scores, I checked what the graders had actually opened, and they'd been skimming: about 80% of the screenshots and none of the code. So I added a second round of grading where they had to open everything, and wrote down in advance that a second round can't confirm anything by itself. In that round the full build did a lot better (+1.03, p = 0.0008, and it won the bento menu) and quick mode held (+1.16, p = 0.0045). Each build in the picture has both scores (the first one is the original round, "full evidence" is the open-everything round). So the full build stays "not confirmed", and the more careful read says it's probably better than the first round made it look.
+
+On variety: prompt only made basically the same design four times on every task. Each dump mode was clearly more varied on two tasks and about as samey as the prompt on the other two, and no build broke what its task asked for.
+
+It's still small (4 builds per side per task, AI graders, four little web tasks, and only lite dumps), so read it as what it is: one strict test. Everything is in [`ab-tests/2026-11-13-confirmation-sonnet/`](ab-tests/2026-11-13-confirmation-sonnet/): the prompts, the dumps, every build, the screenshots, the grades and the scripts. The [write-up](ab-tests/2026-11-13-confirmation-sonnet/writeup.md) has all of it, the [design](ab-tests/2026-11-13-confirmation-sonnet/design.md) is what I committed to beforehand, and [`docs/evidence.md`](docs/evidence.md) goes through all 24 tests piece by piece.
 
 ### See it side by side
 
-Live builds from this round, left without a dump and right with one. The preview is a short video of run 1 of each side, filmed in a browser (no sound). Click it to open the page, where the full video plays and you can try all eight builds per task.
+Live builds from the round before this one (0.12.0, on a mammoth steak recipe, tic tac toe and a 3D lemon), left without a dump and right with one. The preview is a short video of run 1 of each side, filmed in a browser (no sound). Click it to open the page, where the full video plays and you can try all eight builds per task.
 
 [![The mammoth steak recipe, tic tac toe and the 3D lemon, prompt only vs prompt + MetaDump](docs/showcase/round-2/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/round-2/)
 
-**[Live page](https://globalanomalyindex.github.io/metadump/showcase/round-2/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/round-2/metadump-ab-round-2.mp4) · 54 of 72 head-to-heads
+**[Live page](https://globalanomalyindex.github.io/metadump/showcase/round-2/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/round-2/metadump-ab-round-2.mp4) · the round before: the dump side won 54 of 72 head-to-heads
 
 ## What makes it work
 
