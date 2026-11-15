@@ -1,0 +1,108 @@
+{
+ "t2-pomodoro": {
+  "scores": {
+   "A": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "B": [
+    5.0,
+    5.0,
+    6.0
+   ],
+   "D": [
+    6.0,
+    7.0,
+    7.0
+   ]
+  },
+  "mean": {
+   "A": 1.0,
+   "B": 5.33,
+   "D": 6.67
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "D"
+    },
+    "most_varied": "D",
+    "note": "P is one design four times: the same dark or light rounded card with a mode tab pill, a thick ring around the time, a Start/Reset/Skip row, dots and three minute inputs. Q varies in layout (centered blue, left-aligned mono, full-bleed red) but is all giant-numeral typography, mostly with a linear bar, with two near-identical blue ones. R spans a ring dial, a tiny near-bare mono layout, a huge mono numeral and a tab-pill page, so it differs most in scale and way of showing time, though two entries are still similar."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "D",
+     "R": "A"
+    },
+    "most_varied": "D",
+    "note": "P has a left-aligned mono page and a full-bleed red one, but P3 and P4 are both centred navy with big cream digits. Q mixes a ring dial, a tiny mono text page, a navy full-bleed and a cream pill-tabs page, with one navy centred overlap. R is one design four times: a rounded card with tabs, a ring, Start/Reset/Skip and three dots, differing only in light or dark and ring thickness."
+   },
+   "v3": {
+    "sets": {
+     "P": "D",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "D",
+    "note": "P mixes a sparse monospace text page, a cream ring dial, a huge numeral with progress bar, and a full-bleed navy slab, though P2 and P3 share a palette; Q is one dark rounded card with a coral ring, tab pills and the same controls four times; R varies in palette and layout (red full-bleed, left-aligned mono editorial, navy) but R3 and R4 are near-twins and all are big numeral with checkboxes."
+   }
+  }
+ },
+ "t3-snowglobe": {
+  "scores": {
+   "A": [
+    2.0,
+    2.0,
+    3.0
+   ],
+   "B": [
+    5.0,
+    4.0,
+    5.0
+   ],
+   "D": [
+    6.0,
+    6.0,
+    5.0
+   ]
+  },
+  "mean": {
+   "A": 2.33,
+   "B": 4.67,
+   "D": 5.67
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "D"
+    },
+    "most_varied": "D",
+    "note": "P is one design four times: a centered night-sky dome with a cabin, pines and a wood base, with only day versus night and a few control tweaks differing. Q splits into two dome-plus-side-panel pages and two shelf-room scenes (a daylight room, a candlelit room), but the cabin is constant. R varies the most, with a chapel in a blurred room, a light blue dome, a dark oversized globe and a blue panel layout, though it is still mostly cabin and glass dome."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "D",
+     "R": "A"
+    },
+    "most_varied": "D",
+    "note": "P: two shelf-room scenes (books, plant, candle/lamp) and two dark studio shots with a side control panel, all with the same cabin-and-firs inside; some variety in setting but the globe content repeats. Q: a real spread in palette and composition (dark minimal, blurred-room chapel with a green base, bright daylight blue, navy panel layout) and one different scene (chapel), though the cabin still recurs. R: all four are a centered night cabin with moon, firs and chimney smoke in a dark navy globe with a wood base and a pill control row below, so it reads as one design made four times."
+   },
+   "v3": {
+    "sets": {
+     "P": "D",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "tie",
+    "note": "P mixes a chapel in a blurred room with three cabin globes in different layouts (full-bleed dark, split panel, minimal day) and base styles; Q is the same centered cabin globe with a brown base and a button row beneath, differing mainly in day or night; R has two shelf-room scenes (candle at dusk, daytime window) and two dark side-panel layouts, with more varied composition but the same cabin or lighthouse content and two near-twins."
+   }
+  }
+ }
+}

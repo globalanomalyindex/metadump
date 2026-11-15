@@ -1,0 +1,598 @@
+{
+ "scores": {
+  "A": {
+   "basic": 8.92,
+   "correctness": 7.83,
+   "usability": 7.0,
+   "craft": 6.75,
+   "code": 8.33,
+   "overall": 7.17,
+   "mean_rank": 5,
+   "per_run_overall": {
+    "A-r1": 7.67,
+    "A-r2": 7.67,
+    "A-r3": 6.83,
+    "A-r4": 6.5
+   }
+  },
+  "C": {
+   "basic": 8.58,
+   "correctness": 8.42,
+   "usability": 8.5,
+   "craft": 8.58,
+   "code": 7.08,
+   "overall": 8.5,
+   "mean_rank": 2,
+   "per_run_overall": {
+    "C-r1": 8.67,
+    "C-r2": 8.33,
+    "C-r3": 8.33,
+    "C-r4": 8.67
+   }
+  },
+  "R": {
+   "basic": 7.25,
+   "correctness": 8.42,
+   "usability": 8.0,
+   "craft": 8.5,
+   "code": 7.08,
+   "overall": 7.75,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "R-r1": 6.33,
+    "R-r2": 8.67,
+    "R-r3": 8.17,
+    "R-r4": 7.83
+   }
+  }
+ },
+ "pairwise": {
+  "R_vs_C": {
+   "wins": 5,
+   "losses": 16,
+   "ties": 3,
+   "win_rate": 0.27,
+   "p": 0.171
+  },
+  "R_vs_A": {
+   "wins": 16,
+   "losses": 6,
+   "ties": 2,
+   "win_rate": 0.71,
+   "p": 0.4
+  },
+  "C_vs_A": {
+   "wins": 20,
+   "losses": 0,
+   "ties": 4,
+   "win_rate": 0.92,
+   "p": 0.029
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 8860,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 272,
+    "clientWidth": 272,
+    "font": 22
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "bytes": 7209,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 272,
+    "clientWidth": 272,
+    "font": 24
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Cannot divide by 0",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "bytes": 6269,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 272,
+    "clientWidth": 272,
+    "font": 30
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Cannot divide by 0",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "bytes": 6821,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 272,
+    "clientWidth": 272,
+    "font": 26
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r1": {
+   "bytes": 9727,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 190,
+    "clientWidth": 190,
+    "font": 28
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "−3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999999999999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r2": {
+   "bytes": 11184,
+   "display_found": true,
+   "display_read_from": "what it announces (a segmented display with no text)",
+   "long_number": {
+    "within": true,
+    "scrollWidth": 284,
+    "clientWidth": 284,
+    "font": null
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999999999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r3": {
+   "bytes": 10462,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 208,
+    "clientWidth": 208,
+    "font": 26
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "−3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r4": {
+   "bytes": 8683,
+   "display_found": true,
+   "long_number": {
+    "within": true,
+    "scrollWidth": 274,
+    "clientWidth": 274,
+    "font": 36
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999999999999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r1": {
+   "bytes": 12636,
+   "display_found": true,
+   "display_read_from": "its text",
+   "long_number": {
+    "within": true,
+    "scrollWidth": 244,
+    "clientWidth": 244,
+    "font": 28
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Cannot divide by zero",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r2": {
+   "bytes": 7436,
+   "display_found": true,
+   "display_read_from": "its text",
+   "long_number": {
+    "within": true,
+    "scrollWidth": 255,
+    "clientWidth": 255,
+    "font": 36
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Cannot divide by zero",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999,999,999,999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r3": {
+   "bytes": 9490,
+   "display_found": true,
+   "display_read_from": "its text",
+   "long_number": {
+    "within": false,
+    "scrollWidth": 318,
+    "clientWidth": 308,
+    "font": 44
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": false,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "−3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Error",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999999999999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 8,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r4": {
+   "bytes": 9073,
+   "display_found": true,
+   "display_read_from": "its text",
+   "long_number": {
+    "within": true,
+    "scrollWidth": 292,
+    "clientWidth": 292,
+    "font": 36
+   },
+   "checks": {
+    "1 add": true,
+    "2 multiply": true,
+    "3 negative": true,
+    "4 decimals": true,
+    "5 chained": true,
+    "6 divide by zero": true,
+    "7 long number": true,
+    "8 clear": true,
+    "9 keyboard": true
+   },
+   "shown": {
+    "1 add": "19",
+    "2 multiply": "72",
+    "3 negative": "-3",
+    "4 decimals": "0.3",
+    "5 chained": "20",
+    "6 divide by zero": "Cannot divide by zero",
+    "6 after clear, 1 + 1 =": "2",
+    "7 long number": "999999999999",
+    "8 clear": "0",
+    "9 keyboard": "20"
+   },
+   "passed": 9,
+   "not_run_count": 0,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 73485,
+   "mean_seconds": 24.5
+  },
+  "C": {
+   "runs": 4,
+   "mean_tokens": 108470,
+   "mean_seconds": 84.3
+  },
+  "R": {
+   "runs": 4,
+   "mean_tokens": 83800,
+   "mean_seconds": 100.8
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 212391,
+   "ms": 1594692,
+   "tool_uses": 47,
+   "agents_spawned": 19
+  }
+ },
+ "agreement_r": 0.77,
+ "notes": {
+  "b1/j1/C-r1": "Clean dark calculator with a 12-digit cap, shows the last expression, labelled keys, live region, good keyboard handling and a clear Error state; slightly small keys on desktop.",
+  "b1/j1/R-r1": "Charming retro LCD design, but the history panel and extra backspace bar overbuild a basic calculator, and the Escape handler contains odd leftover code.",
+  "b1/j1/A-r1": "Solid iOS-style calculator with repeat-equals and percent; equals styled identically to the operators, error message is just Error, and the 15-digit cap overflows the display.",
+  "b1/j1/R-r2": "Polished light calculator with strong hierarchy, thousands separators, repeat-equals, a readable 'Cannot divide by zero' message, labelled keys and screen-reader status; the display shrinks the 12-digit number to fit.",
+  "b1/j1/A-r2": "Compact and correct with a clear error message, but the operator keys have no aria labels and the display has no status role; the dark palette is fine but plain.",
+  "b1/j1/C-r2": "A seven-segment pocket calculator with a distinctive look and a screen-reader live region; limited to 9 digits and larger results turn to Error, and the SVG display code adds weight.",
+  "b1/j2/R-r2": "Clean iOS-style calculator with expression line, grouped digits, clear zero message, aria-live and keyboard; complete and not overbuilt.",
+  "b1/j2/A-r2": "Tidy dark basic calculator with correct results and divide-by-zero message; plain look and small text on long numbers but solid.",
+  "b1/j2/C-r2": "Striking seven-segment pocket calculator with tactile keys and backspace; 8-digit cap and Error display are authentic, though the styling adds code weight.",
+  "b1/j2/A-r1": "Dark orange iOS-like calculator that works well; shows only 'Error' on divide by zero and the 0 key label sits left, slightly less polished.",
+  "b1/j2/R-r1": "Attractive retro LCD design, but the history panel and extra Backspace bar overbuild a basic calculator and add the most code.",
+  "b1/j2/C-r1": "Polished dark blue-accent calculator with expression line, backspace, clear Error state and good phone layout; thin key labels slightly low contrast.",
+  "b1/j3/A-r2": "Clean dark iOS-style calculator, correct results, friendly divide-by-zero message, grouped long numbers; the dim operator keys are a little low in contrast and only two aria attributes.",
+  "b1/j3/C-r2": "Distinctive seven-segment LCD pocket calculator with tactile keys and a good phone layout; caps at 9 digits and the SVG digit code is longer, but the ERR state, 0.3 and clear all work.",
+  "b1/j3/R-r2": "Warm light iOS-like calculator with a good active-operator state and aria labels; correct, compact, and nothing extra.",
+  "b1/j3/C-r1": "Dark panel with a clear blue equals key, a backspace key, a red Error state and a showing expression line; handles every test correctly, with strong accessibility and keyboard support.",
+  "b1/j3/A-r1": "Solid dark calculator with orange operators, but the 0 key's left-aligned label looks off and the long-number line is tiny.",
+  "b1/j3/R-r1": "Charming retro LCD design, but the history panel is padded scope for a basic calculator and pushes the layout off centre.",
+  "b2/j1/C-r3": "Warm, clear and complete with C, CE, backspace and an expression trail, but the pale-peach operators are a bit faint and C plus CE is slightly redundant.",
+  "b2/j1/R-r3": "Distinctive LCD-and-tactile-keys look with a wide zero, accessible and correct, though the skeuomorphic styling and separate Backspace bar add some extra weight.",
+  "b2/j1/A-r3": "Lean, tidy dark calculator that handles the cases well, but there is no backspace, the 'Cannot divide by 0' message is small and plain, and the operator keys are low contrast.",
+  "b2/j1/R-r4": "Polished iOS-style with strong key hierarchy and a red divide-by-zero message, a little overbuilt with 3D bevel and the Backspace bar.",
+  "b2/j1/A-r4": "Minimal and correct with a clear Error display, but the generic orange-and-grey look is plain, there is no backspace, and the '+/-' label is crude.",
+  "b2/j1/C-r4": "Cohesive light design with crisp display hierarchy, clear operator and equals colouring, a backspace icon and a helpful 'Cannot divide by zero' note, all in a compact basic layout.",
+  "b2/j2/R-r4": "Polished iOS-style dark calculator with repeat-equals, C/AC, aria labels and keyboard, though the red zero-error text and extra Backspace bar add a little bulk.",
+  "b2/j2/A-r4": "Clean and small with commas and a sensible layout, but it has almost no ARIA, the error is a bare 'Error', and there is no repeat-equals.",
+  "b2/j2/C-r4": "Calm light theme with good contrast, the active operator is highlighted, the backspace key is compact, the font fits to width, and it has full keyboard and ARIA support.",
+  "b2/j2/A-r3": "Smallest source and a handsome dark layout, but the clear key is always AC, ARIA is minimal, and the error replaces the display with plain text.",
+  "b2/j2/R-r3": "Distinctive LCD-and-hardware look with repeat-equals, percent-aware add/subtract, a clear error caption, and strong tactile keys; slightly more than basic.",
+  "b2/j2/C-r3": "Friendly warm design with a useful C/CE split, thousands separators and a clear error caption; it has no percent key and a slightly odd '≠ a number' string in the source.",
+  "b2/j3/A-r4": "Compact and correct, but no backspace, a generic iOS-clone look, and a bare 'Error' on divide by zero.",
+  "b2/j3/C-r4": "Warm, distinctive palette with clear hierarchy, backspace, a 'Cannot divide by zero' note, solid keyboard and aria support.",
+  "b2/j3/R-r4": "Polished tactile iOS-style device with a clear error message and backspace, though the wide Backspace bar is a bit heavy.",
+  "b2/j3/C-r3": "Friendly light design with C, CE and backspace, flash feedback on keys, a descriptive error line and thorough keyboard support.",
+  "b2/j3/A-r3": "Small and tidy with a clear orange equals key, but the operator keys are low contrast and there is no backspace.",
+  "b2/j3/R-r3": "Distinctive LCD-and-keys look with a monospace readout, backspace and good feedback, but a bit more styled than basic."
+ }
+}

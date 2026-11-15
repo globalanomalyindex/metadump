@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j3","scores":{
+"U":{"fidelity":7,"correctness":7,"craft":5,"usability":6,"overall":6,"note":"Working 32x32 sandbox with 8 blocks, erase, undo and a Generate button, but opens as a blank dark grid with a tiny, low-contrast toolbar."},
+"V":{"fidelity":7,"correctness":7,"craft":6,"usability":6,"overall":6,"note":"Clean 4-block palette with counts and status text, but the empty checkered world has little visual appeal and few blocks."},
+"W":{"fidelity":9,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Opens with a pre-built scene of ground, tree, house and water, 3D-bevelled blocks, 9 palette items, and a layout that works well on mobile."},
+"X":{"fidelity":7,"correctness":7,"craft":6,"usability":6,"overall":6,"note":"Tidy, polished toolbar with keyboard hints, but the empty world gives no first impression and the palette is small."},
+"Y":{"fidelity":8,"correctness":8,"craft":6,"usability":7,"overall":7,"note":"Many tools (Place, Erase, Pick, Fill, Grid) and a starter ground layer, but blocks are plain, it has no sky, and the mobile toolbar is cramped."},
+"Z":{"fidelity":9,"correctness":9,"craft":9,"usability":8,"overall":9,"note":"Best looking: textured pixel blocks, sky with clouds, a generated terrain with trees and water, a New world button, and a clean mobile layout."}},
+"ranking":["Z","W","Y","V","X","U"]}

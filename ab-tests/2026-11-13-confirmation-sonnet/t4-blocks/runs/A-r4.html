@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blockyard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#1d2330;color:#e8ecf3;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+header{display:flex;gap:12px;align-items:center;padding:10px;flex-wrap:wrap;justify-content:center}
+h1{font-size:18px;margin:0 8px 0 0}
+#palette{display:flex;gap:6px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border:3px solid transparent;border-radius:6px;cursor:pointer;position:relative}
+.sw.sel{border-color:#fff}
+.sw span{position:absolute;bottom:-1px;right:3px;font-size:10px;color:#000;background:#fffa;border-radius:3px;padding:0 2px}
+button{background:#3a4560;color:#fff;border:0;border-radius:6px;padding:8px 12px;cursor:pointer}
+button:hover{background:#4c5a7c}
+button.on{background:#c0562b}
+#wrap{position:relative}
+canvas{image-rendering:pixelated;border:4px solid #0d111a;border-radius:4px;cursor:crosshair;max-width:96vw;touch-action:none}
+#info{font-size:13px;padding:8px;opacity:.85}
+</style>
+</head>
+<body>
+<header>
+<h1>Blockyard 32x32</h1>
+<div id="palette"></div>
+<button id="tool">Mode: Place</button>
+<button id="undo">Undo</button>
+<button id="clear">Clear</button>
+<button id="save">Save</button>
+</header>
+<div id="wrap"><canvas id="c" width="640" height="640"></canvas></div>
+<div id="info">Left click/drag: use tool. Right click: erase. Keys 1-8 select block. Blocks: <b id="count">0</b> | Cell: <b id="pos">-</b></div>
+<script>
+const N=32,S=20;
+const TYPES=[
+ {n:'Grass',c:'#5fae4b',d:'#3f7d32'},
+ {n:'Dirt',c:'#8a5a36',d:'#62401f'},
+ {n:'Stone',c:'#8d939c',d:'#646a73'},
+ {n:'Wood',c:'#b8863f',d:'#85601f'},
+ {n:'Brick',c:'#b8473a',d:'#842d24'},
+ {n:'Water',c:'#3b82d6',d:'#285ea1'},
+ {n:'Sand',c:'#e6cf8b',d:'#bfa662'},
+ {n:'Glass',c:'#a8e4ee',d:'#6fb6c4'}
+];
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let world=new Array(N*N).fill(0);
+try{const s=JSON.parse(localStorage.getItem('blockyard'));if(s&&s.length===N*N)world=s}catch(e){}
+let sel=1,mode='place',hist=[],hover=-1,drawing=false,stroke=null;
+const pal=document.getElementById('palette');
+TYPES.forEach((t,i)=>{const d=document.createElement('div');d.className='sw';d.style.background=t.c;d.title=t.n;d.innerHTML='<span>'+(i+1)+'</span>';d.onclick=()=>{sel=i+1;mode='place';upd()};pal.appendChild(d)});
+function upd(){[...pal.children].forEach((e,i)=>e.classList.toggle('sel',sel===i+1));
+ const t=document.getElementById('tool');t.textContent='Mode: '+(mode==='place'?'Place '+TYPES[sel-1].n:'Erase');t.classList.toggle('on',mode==='erase');
+ document.getElementById('count').textContent=world.filter(v=>v).length;
+ try{localStorage.setItem('blockyard',JSON.stringify(world))}catch(e){}
+ draw()}
+function draw(){
+ ctx.fillStyle='#bfe3f5';ctx.fillRect(0,0,640,640);
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+  const v=world[y*N+x];
+  if(v){const t=TYPES[v-1];ctx.fillStyle=t.c;ctx.fillRect(x*S,y*S,S,S);
+   ctx.fillStyle=t.d;ctx.fillRect(x*S,y*S+S-3,S,3);ctx.fillRect(x*S+S-3,y*S,3,S);
+   ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(x*S,y*S,S,2);ctx.fillRect(x*S,y*S,2,S);}
+ }
+ ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.beginPath();
+ for(let i=0;i<=N;i++){ctx.moveTo(i*S+.5,0);ctx.lineTo(i*S+.5,640);ctx.moveTo(0,i*S+.5);ctx.lineTo(640,i*S+.5)}
+ ctx.stroke();
+ if(hover>=0){const x=hover%N,y=(hover/N)|0;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(x*S+1,y*S+1,S-2,S-2);
+  ctx.fillStyle=mode==='place'?TYPES[sel-1].c+'99':'#0006';ctx.fillRect(x*S,y*S,S,S)}
+}
+function cell(e){const r=cv.getBoundingClientRect();const x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N);
+ return x<0||y<0||x>=N||y>=N?-1:y*N+x}
+function apply(i,erase){if(i<0)return;const nv=erase||mode==='erase'?0:sel;if(world[i]===nv)return;
+ stroke.push([i,world[i]]);world[i]=nv;upd()}
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('pointerdown',e=>{drawing=true;cv.setPointerCapture(e.pointerId);stroke=[];apply(cell(e),e.button===2)});
+cv.addEventListener('pointermove',e=>{hover=cell(e);const i=hover;
+ document.getElementById('pos').textContent=i<0?'-':(i%N)+','+((i/N)|0);
+ if(drawing)apply(i,e.buttons===2);else draw()});
+cv.addEventListener('pointerup',()=>{drawing=false;if(stroke&&stroke.length)hist.push(stroke);stroke=null});
+cv.addEventListener('pointerleave',()=>{hover=-1;draw()});
+document.getElementById('tool').onclick=()=>{mode=mode==='place'?'erase':'place';upd()};
+function undo(){const s=hist.pop();if(!s)return;s.reverse().forEach(([i,v])=>world[i]=v);upd()}
+document.getElementById('undo').onclick=undo;
+document.getElementById('clear').onclick=()=>{if(world.some(v=>v)){hist.push(world.map((v,i)=>[i,v]).filter(a=>a[1]));world.fill(0);upd()}};
+document.getElementById('save').onclick=()=>{const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='blockyard.png';a.click()};
+addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='8'){sel=+e.key;mode='place';upd()}
+ else if(e.key==='e')document.getElementById('tool').click();
+ else if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo()}});
+upd();
+</script>
+</body>
+</html>

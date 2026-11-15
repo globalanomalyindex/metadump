@@ -14,3 +14,8 @@
 # Recorded videos for social posts; rebuild with record.mjs
 **/video/
 **/variety/
+
+# The released skill a test compares against; recreate with: git archive <commit> skills/metadump | tar -x -C <test>/skill-prev
+**/skill-prev/
+# Deal ledgers are per-machine state (deal.py)
+**/.deals/

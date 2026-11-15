@@ -1,0 +1,30 @@
+{
+  "request": "a simple block-building sandbox game with a 32x32 block world",
+  "thesis": "The pleasure is instant, tactile placing and breaking of chunky blocks until a small world looks like yours.",
+  "job": ["open and see a 32x32 world already there", "pick a block type", "place blocks by click or drag", "break blocks", "undo a mistake", "see what is selected and where the cursor is", "save/keep the world (reloads intact)", "start over with a fresh or empty world"],
+  "disciplines": {
+    "game design": {"principles": ["zero-friction first action", "creative freedom over goals", "immediate feedback per click"], "steps": ["seed a starting world", "give a palette", "allow place+break"], "tricks": ["pre-built terrain so the canvas is never blank", "drag-paint with line interpolation between mouse events"], "tests": ["can a stranger place a block in under 3 seconds"]},
+    "interaction design": {"principles": ["hover ghost shows what will happen", "left place, right break, keys 1-9 pick", "big hit targets"], "tricks": ["suppress context menu on the canvas", "pointer events plus pointer capture so drag works outside canvas", "touch support via pointer events"], "tests": ["drag across 10 cells fills all with no gaps", "right-click erases not menu"]},
+    "visual design": {"principles": ["blocks read from texture and bevel", "limited palette cohesion"], "tricks": ["per-block light top edge and dark bottom edge", "tiny deterministic noise speckle per cell"], "tests": ["each block type distinguishable at a glance"]},
+    "front-end code": {"principles": ["state in one 2D array, render from it", "canvas with devicePixelRatio scaling"], "tricks": ["Uint8Array 32*32", "redraw only on change", "localStorage in try/catch"], "tests": ["state array changes after click", "reload restores"]}
+  },
+  "the_thing": {
+    "parts": ["32x32 grid", "block palette", "place tool", "break tool", "cursor highlight", "persistence", "reset"],
+    "expectations": ["blocks like dirt, grass, stone, wood, leaves, water, sand, glass", "sky above, ground below", "click to place"],
+    "kinds": [{"name": "side-view 2D", "what": "Terraria-like cross-section, gravity-free placing, sky and ground"}, {"name": "top-down grid", "what": "map painter with block tiles"}, {"name": "isometric", "what": "3D-looking stacked cubes on a 32x32 floor"}, {"name": "first-person voxel", "what": "WebGL Minecraft style"}]
+  },
+  "specifics": {
+    "blocks": {"keywords": {"1": ["block", "place", "break", "32x32", "world", "sandbox"], "2": ["palette", "hotbar", "grass", "dirt", "stone", "wood", "water", "sand"], "3": ["bevel", "ghost preview", "flood fill", "heightmap"]}, "descriptions": ["grass tops dirt, dirt over stone", "water translucent", "glass nearly transparent with highlight"], "behaviors": ["select swatch -> cursor places that type", "right-click -> air"], "tokens": {"cell size": "16 to 24 px", "palette size": "6 to 9 types", "bevel": "2 to 3 px"}},
+    "world": {"keywords": {"1": ["32x32", "grid"], "2": ["sky gradient", "terrain", "trees", "clouds"], "3": ["value-noise hills"]}, "descriptions": ["ground line around row 20 to 24 with gentle hills", "a tree or two for a hint of what to build"], "behaviors": ["reset regenerates starting terrain; clear empties"], "tokens": {"ground height": "rows 18 to 24 of 32"}},
+    "feedback": {"keywords": {"1": ["hover", "selected"], "2": ["coordinates readout", "block count"], "3": ["pop animation"]}, "descriptions": ["status shows x,y and block under cursor"], "behaviors": ["place -> brief scale pop"], "tokens": {"pop": "80 to 140 ms"}}
+  },
+  "anti_keywords": [
+    {"not": "inventory, crafting, health, mobs, day-night, multiplayer, physics (size word: simple)", "instead": "just place, break, palette, undo, save, reset"},
+    {"not": "blank grey grid on load", "instead": "seeded terrain with sky"},
+    {"not": "tiny cells under 10 px", "instead": "16 to 24 px chunky cells that fit the viewport"},
+    {"not": "state only in the DOM or a fake click", "instead": "single array, render from it"},
+    {"not": "context menu on right click", "instead": "preventDefault, right = break"}
+  ],
+  "checks": ["click places the selected block and the array changes", "right-click clears", "drag leaves no gaps", "keys 1-9 select, Ctrl/Cmd+Z undoes", "reload restores world", "fits 375 px phone width, touch works", "no external requests"],
+  "built": ["side-view 2D"]
+}

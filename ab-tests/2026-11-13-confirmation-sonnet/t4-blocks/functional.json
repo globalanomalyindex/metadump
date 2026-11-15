@@ -1,0 +1,470 @@
+{
+ "A-r1": {
+  "bytes": 5656,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "2",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.79
+   },
+   {
+    "control": "3",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.78
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r2": {
+  "bytes": 6091,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "2",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.2
+   },
+   {
+    "control": "3",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.2
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": false,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 3,
+  "failed": 1,
+  "not_run": 0
+ },
+ "A-r3": {
+  "bytes": 5255,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Erase 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.32
+   },
+   {
+    "control": "Grass 1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.32
+   },
+   {
+    "control": "Dirt 2",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.33
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r4": {
+  "bytes": 5294,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "2",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.54
+   },
+   {
+    "control": "3",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.51
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r1": {
+  "bytes": 10247,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Grass 1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.29
+   },
+   {
+    "control": "Wood 2",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.04
+   },
+   {
+    "control": "Stone 3",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.02
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r2": {
+  "bytes": 8618,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Grass 1 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.89
+   },
+   {
+    "control": "Stone 2 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.47
+   },
+   {
+    "control": "Wood 3 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.48
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r3": {
+  "bytes": 10179,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Grass 1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "Stone 2",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.77
+   },
+   {
+    "control": "Wood 3",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.79
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r4": {
+  "bytes": 8996,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "1 Grass 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "2 Stone 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.24
+   },
+   {
+    "control": "3 Wood 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.23
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r1": {
+  "bytes": 9429,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "32 by 32 block world",
+    "kind": "canvas",
+    "verb": "dragged",
+    "change_pct": 0.87
+   },
+   {
+    "control": "Grass",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.21
+   },
+   {
+    "control": "#palette > button:nth-of-type(1) > canvas",
+    "kind": "canvas",
+    "verb": "dragged",
+    "change_pct": 0.0
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r2": {
+  "bytes": 7307,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "32 by 32 block world",
+    "kind": "canvas",
+    "verb": "dragged",
+    "change_pct": 0.58
+   },
+   {
+    "control": "0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.61
+   },
+   {
+    "control": "1",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.42
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r3": {
+  "bytes": 7710,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Erase",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.27
+   },
+   {
+    "control": "Grass",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.27
+   },
+   {
+    "control": "Dirt",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.27
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": false,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 3,
+  "failed": 1,
+  "not_run": 0
+ },
+ "Q-r4": {
+  "bytes": 9461,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Place",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "Erase",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.68
+   },
+   {
+    "control": "Undo",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.13
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "blocks": {
+   "games_named": []
+  },
+  "checks": {
+   "responds": true,
+   "no_script_errors": true,
+   "world_32": true,
+   "own_game": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ }
+}

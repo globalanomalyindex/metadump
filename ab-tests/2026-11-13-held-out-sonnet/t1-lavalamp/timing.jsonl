@@ -1,0 +1,13 @@
+{"run": "A-r3", "tokens": 75866, "ms": 32936, "tool_uses": 2}
+{"run": "A-r4", "tokens": 70521, "ms": 34036, "tool_uses": 2}
+{"run": "A-r1", "tokens": 77076, "ms": 39971, "tool_uses": 2}
+{"run": "A-r2", "tokens": 77520, "ms": 56704, "tool_uses": 2}
+{"run": "dump", "tokens": 196987, "ms": 1484171, "tool_uses": 34, "agents_spawned": 21}
+{"run": "B-r3", "tokens": 118542, "ms": 143410, "tool_uses": 15}
+{"run": "B-r2", "tokens": 119697, "ms": 156830, "tool_uses": 12}
+{"run": "C-r1", "tokens": 122839, "ms": 166173, "tool_uses": 17}
+{"run": "C-r4", "tokens": 122095, "ms": 172783, "tool_uses": 15}
+{"run": "B-r4", "tokens": 123128, "ms": 185873, "tool_uses": 12}
+{"run": "C-r3", "tokens": 127273, "ms": 206601, "tool_uses": 18}
+{"run": "B-r1", "tokens": 134491, "ms": 224157, "tool_uses": 27}
+{"run": "C-r2", "tokens": 131798, "ms": 224860, "tool_uses": 21}

@@ -1,0 +1,302 @@
+{
+ "t1-pelican": {
+  "scores": {
+   "A": [
+    2.0,
+    2.0,
+    3.0
+   ],
+   "F": [
+    4.0,
+    4.0,
+    6.0
+   ],
+   "Q": [
+    2.0,
+    2.0,
+    2.0
+   ]
+  },
+  "mean": {
+   "A": 2.33,
+   "F": 4.67,
+   "Q": 2.0
+  },
+  "breaks": {
+   "A": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "F": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "Q": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "mean_breaks": {
+   "A": 0.0,
+   "F": 0.0,
+   "Q": 0.0
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "F",
+     "R": "Q"
+    },
+    "most_varied": "F",
+    "note": "All three sets repeat one template: flat side-view pelican on a red bike, blue sky, sun, hills, scrolling dashed road, pause/speed controls. P and R differ only in small details (helmet, bell, trees, page background); Q varies a bit more (cargo bike with fish crate, teal and blue frames, dusk gradient, rpm cadence and chain detail, no clouds). No design breaks the fixed task."
+   },
+   "v2": {
+    "sets": {
+     "P": "F",
+     "Q": "Q",
+     "R": "A"
+    },
+    "most_varied": "F",
+    "note": "All twelve are the same flat side-view pelican on a bike with sky, hills, scrolling road and a control bar; P differs a little more (cargo bike with basket, racing bike with dropped bars, different bikes and palettes, no helmet), while Q and R repeat the red or teal bike, blue helmet, pale-blue sky and hills almost identically, with only small scene changes (trees, night mode, dark page). None breaks the fixed requirements."
+   },
+   "v3": {
+    "sets": {
+     "P": "Q",
+     "Q": "A",
+     "R": "F"
+    },
+    "most_varied": "F",
+    "note": "P is one design four times: same side-view red/teal bike, sunny sky, green hills, grey road, pelican pose and Pause/Speed controls, differing only in small details like a helmet or page colour. Q repeats the same scene and pelican with small additions (night mode, reverse, dark page, handlebar bell). R varies bike type (cargo bike with crate, racing bike with big wheels, plain bike with click-to-honk), road scroll and palette, so it is the most varied but still the same recipe. No design breaks the fixed pelican, bike and animated SVG."
+   }
+  }
+ },
+ "t2-ascii": {
+  "scores": {
+   "A": [
+    3.0,
+    2.0,
+    2.0
+   ],
+   "F": [
+    2.0,
+    3.0,
+    3.0
+   ],
+   "Q": [
+    7.0,
+    7.0,
+    7.0
+   ]
+  },
+  "mean": {
+   "A": 2.33,
+   "F": 2.67,
+   "Q": 7.0
+  },
+  "breaks": {
+   "A": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "F": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "Q": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "mean_breaks": {
+   "A": 0.0,
+   "F": 0.0,
+   "Q": 0.0
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "F",
+     "R": "Q"
+    },
+    "most_varied": "Q",
+    "note": "P is four paint-on-a-grid canvases with a control sidebar and light/paint/average modes (they differ mainly in input: swatches, drop bowl, RGB sliders, two-colour strip); Q is four versions of 'two colours, one ratio slider, channel mean vs linear light' with only the layout and theme changing; R differs most: drop ink on a field, a pigment-pot bowl painted onto a grid, three movable sources with a field of glyph gradients, and a pigment-count bowl with a tiny glyph preview and kept mixes. All twelve are colour-mixing, ASCII-drawn, interactive and simple, so none break what the task fixes."
+   },
+   "v2": {
+    "sets": {
+     "P": "F",
+     "Q": "Q",
+     "R": "A"
+    },
+    "most_varied": "Q",
+    "note": "P is four two-colour-plus-ratio-slider mixers (circle, command prompt, shaded box, side-by-side model compare) with the same channel-mean vs linear-light toggle; R is four near-identical blank black brush canvases with RGB sliders, swatches and Paint/Light/Average modes, differing mostly in panel layout; Q ranges over a three-source field with draggable probes, a pigment bowl with kept mixes, a pot-and-grid painter and an R/G/B ink-drop field. No design breaks the fixed points, though R1 and R4 show no ASCII until you paint."
+   },
+   "v3": {
+    "sets": {
+     "P": "Q",
+     "Q": "A",
+     "R": "F"
+    },
+    "most_varied": "Q",
+    "note": "P differs a lot (pigment bowl with glyph blob, three draggable light sources, ink-drop field, pigment pots painted onto a grid, with differing layouts, glyph sets and dark looks); Q repeats one light-theme paint-on-black-canvas with RGB/swatch, mode, brush-size and flow controls three times, with only Q4 a bowl-plus-canvas variant; R is four two-colour ratio mixers with a channel-mean vs linear-light toggle, differing mainly in layout (typed prompt, side-by-side compare, circle, framed card). None clearly break the fixed points, though Q1 to Q3 open as empty black canvases and P1 opens with an empty bowl."
+   }
+  }
+ },
+ "t3-bento": {
+  "scores": {
+   "A": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "F": [
+    8.0,
+    8.0,
+    8.0
+   ],
+   "Q": [
+    3.0,
+    4.0,
+    3.0
+   ]
+  },
+  "mean": {
+   "A": 2.0,
+   "F": 8.0,
+   "Q": 3.33
+  },
+  "breaks": {
+   "A": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "F": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "Q": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "mean_breaks": {
+   "A": 0.0,
+   "F": 0.0,
+   "Q": 0.0
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "F",
+     "R": "Q"
+    },
+    "most_varied": "F",
+    "note": "P is one design four times: all Ember & Oak, Georgia serif on cream and espresso, a pill nav and a bento panel dropping down below it. Q has four brands (Tinwell, Tin & Ember, Kiln & Kettle, Kettle & Ember) with condensed type, a dark theme, a tin-stack handle, a floating popover and an always-visible folded tile strip, so the collapse itself differs. R is mostly Ember & Oak in warm browns, with the same inline drop-down panel and only small differences in nav shape, panel placement and tile content (R4 renames the brand). None of the twelve breaks the fixed points: each is a coffee-company bento menu that collapses and expands."
+   },
+   "v2": {
+    "sets": {
+     "P": "F",
+     "Q": "Q",
+     "R": "A"
+    },
+    "most_varied": "F",
+    "note": "P has four different brands (Kiln & Kettle, Kettle & Ember, Tin & Ember, Tinwell) with different type, a dark theme, tile-row vs popover vs tin-stack concepts and varied compartment content. Q is mostly the same cream and brown serif Ember & Oak pill menu with only Kettle & Crema as a minor variant, and R is near-identical (Ember & Oak, dark pill header, serif headline, same panel pattern); no set has designs that break the fixed bento, collapsible, coffee-component requirements."
+   },
+   "v3": {
+    "sets": {
+     "P": "Q",
+     "Q": "A",
+     "R": "F"
+    },
+    "most_varied": "F",
+    "note": "P and Q are near-clones: cream page, Georgia serif headline, dark pill nav with Menu button and a cart pill, panel dropping below with similar tiles (P1 is Kettle & Crema, the rest Ember & Oak; Q is Ember & Oak four times). R differs in brand, type and layout: a tile strip that folds to a row, a huge condensed headline with a floating panel, a stacked-tin metaphor, and a dark-mode page. All twelve designs are bento menus that collapse, so none break the fixed parts."
+   }
+  }
+ },
+ "t4-blocks": {
+  "scores": {
+   "A": [
+    2.0,
+    3.0,
+    2.0
+   ],
+   "F": [
+    4.0,
+    2.0,
+    2.0
+   ],
+   "Q": [
+    6.0,
+    6.0,
+    4.0
+   ]
+  },
+  "mean": {
+   "A": 2.33,
+   "F": 2.67,
+   "Q": 5.33
+  },
+  "breaks": {
+   "A": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "F": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "Q": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "mean_breaks": {
+   "A": 0.0,
+   "F": 0.0,
+   "Q": 0.0
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "F",
+     "R": "Q"
+    },
+    "most_varied": "Q",
+    "note": "P is one design four times: flat 2D side-on grid, dark theme, colour-swatch palette plus erase/undo/clear, differing only in side panel vs toolbar and a pre-laid ground in P2. Q stays 2D top-down on dark but varies column-height stacking (Q1), a plain 4-kind toolbar (Q2) and inventory counts per block (Q3, Q4 near-identical); R spans side-view terrain, a sky-and-clouds scene, an isometric 3D-looking heightmap and a village scene, so it differs most; none break the 32x32, block-building or simple requirements."
+   },
+   "v2": {
+    "sets": {
+     "P": "F",
+     "Q": "Q",
+     "R": "A"
+    },
+    "most_varied": "Q",
+    "note": "P is one design four times: an empty 2D top-down 32x32 grid with a swatch toolbar over a dark page, differing only in swatch count and small chrome. Q spans an isometric heightmap island, a side-view build with a prebuilt house and tree, and two near-identical sky-and-clouds side views. R is mostly the same empty dark 2D grid with a palette, plus a ground-filled side view and a sidebar-palette layout. No design breaks the fixed 32x32 block-sandbox brief."
+   },
+   "v3": {
+    "sets": {
+     "P": "Q",
+     "Q": "A",
+     "R": "F"
+    },
+    "most_varied": "Q",
+    "note": "P is mostly 2D side-view 32x32 grids (P1, P3, P4, with differing skies, textures, and seeded terrain) plus one isometric 3D heightmap (P2), so it has one real outlier; Q is four flat 32x32 paint grids with a swatch toolbar (Q3 sidebar and Q4 pre-filled ground are minor changes) and R is likewise four flat grids with different toolbars (R3 adds stackable column height, R4 adds quadrant guides), so both repeat one design. No design breaks the 32x32 sandbox, add/remove, simple or unnamed constraints."
+   }
+  }
+ }
+}

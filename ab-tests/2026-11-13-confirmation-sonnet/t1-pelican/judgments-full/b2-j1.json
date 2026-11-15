@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"fidelity": 9, "correctness": 9, "craft": 9, "usability": 9, "overall": 9, "note": "Large, well-outlined pelican with wing gripping the bars, IK legs, spinning spokes, visible bell with ding bubble, road-scroll toggle, good phone layout and reduced-motion handling."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Clean parallax scene with trees and clouds and a charming pelican, but the bike is small, the wing does not reach the grip, and the bell gives only text feedback."},
+"W": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Helmeted pelican with wing on the bars, honk visual, live readout and keyboard shortcuts; cadence reads 0 at start and the readout text is tiny on mobile."},
+"X": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 6, "overall": 7, "note": "Attractive scene with helmet and trees, but the arm is a thin stub, the bell is a checkbox whose puff effect is barely visible, and the pelican is small."},
+"Y": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 7, "overall": 6, "note": "Many features (night mode, reverse, synth bell) but the pelican looks blobby, the legs and feet are crude, and the grey-green ground band is awkward."},
+"Z": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 8, "overall": 7, "note": "Cute thick-outlined pelican and a visible bell, but the sky is plain, the wing hangs behind rather than gripping the bars, and the scenery is sparse."}
+}, "ranking": ["U", "W", "V", "X", "Z", "Y"]}

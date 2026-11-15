@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"likeness": 7, "visuals": 5, "motion": 5, "presentation": 6, "overall": 5, "note": "Clear dome-on-base with a cabin, but flat and cartoonish, the base is an odd trapezoid, and snow hangs at the top at rest."},
+"V": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 7, "overall": 7, "note": "Warm shelf scene with a tilting globe on shake and a cozy cabin, though the dome interior looks hazy and the bright wall is a bit plain."},
+"W": {"likeness": 5, "visuals": 6, "motion": 6, "presentation": 6, "overall": 5, "note": "Beautiful glassy sphere with glitter, but there is no scene inside, so it reads as a crystal ball more than a snow globe, and the controls spill below the fold."},
+"X": {"likeness": 9, "visuals": 8, "motion": 7, "presentation": 7, "overall": 8, "note": "Large, convincing dome with a lit cabin, snowy ground, brass collar and wooden base; fine flakes churn well, though the side panel is heavy."},
+"Y": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 8, "overall": 9, "note": "Polished night scene with moon, smoking cabin and pines, snow that settles into drifts, a base that tilts on shake and a clean phone layout."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 6, "overall": 7, "note": "Rich room diorama with lamp, window and books, but the globe is small and cluttered, which makes the actual subject secondary."}
+}, "ranking": ["Y", "X", "V", "Z", "U", "W"]}

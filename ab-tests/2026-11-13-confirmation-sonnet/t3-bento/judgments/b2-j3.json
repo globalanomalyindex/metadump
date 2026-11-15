@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"fidelity": 8, "correctness": 7, "craft": 8, "usability": 7, "overall": 7.5, "note": "Rich, well-built bento with working roast, subscription, cafe and guide controls, but the logo text vanishes on mobile and the debug state line clutters the page."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 7.5, "note": "Bold poster-style page with a tidy floating bento panel and working controls, though the panel covers the headline and the intro text is cramped."},
+"W": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Compact, coherent bento drop-down with varied tiles and a working bag stepper, but fairly thin in content."},
+"X": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 6, "overall": 6.5, "note": "Inventive stacked-tins concept with a good grid, but the tiles are small, rotated and text-light, and the header sits awkwardly."},
+"Y": {"fidelity": 7, "correctness": 5, "craft": 6, "usability": 5, "overall": 5.5, "note": "Ambitious ordering UI with a good tile layout, but the size pills are nearly invisible on the dark card and the page is empty at rest."},
+"Z": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 9, "overall": 8.8, "note": "Cleanest and most complete bento menu, with collapsible tiles, roast and bag state, Escape and click-outside handling, and a layout that holds up on mobile."}
+}, "ranking": ["Z", "V", "U", "W", "X", "Y"]}

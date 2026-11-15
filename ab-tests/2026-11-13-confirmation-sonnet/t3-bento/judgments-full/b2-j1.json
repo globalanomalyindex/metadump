@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Distinctive tin-stack collapse where tiles fly out of the trigger into a bento grid that works as real navigation with a live readout, though the widget is small and its tile text is tiny."},
+"V": {"fidelity": 9, "correctness": 9, "craft": 8, "usability": 8, "overall": 8, "note": "Clean pill trigger unfolds a well-composed bento panel with working roast, grind, cadence, bag, accordion tiles, inert handling and Escape, though text is small and it is more a mini shop than a menu."},
+"W": {"fidelity": 7, "correctness": 6, "craft": 6, "usability": 6, "overall": 6, "note": "Competent category and order bento but the size chips in the hero tile are nearly invisible cream-on-cream, it reads more like an order widget than a site menu, and the layout is plain."},
+"X": {"fidelity": 9, "correctness": 9, "craft": 8, "usability": 9, "overall": 9, "note": "The menu lives inside a dark rounded nav bar and expands into a named-area bento with tiles as destinations, roast cycling, stepper, validated email form, arrow-key navigation and a current-page marker."},
+"Y": {"fidelity": 8, "correctness": 7, "craft": 8, "usability": 7, "overall": 8, "note": "Richest drawer with six-column bento, roast chips, subscription segment, cafes, accordion and dark mode, but the Bag button is inert, the shop tile has a lot of dead space, and the page leans on a monospace state readout."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Dot-grid handle opens a floating bento popover with brew, roast, stepper, subscription switch and taproom links with 44px targets and persisted state, but it covers the headline and the hero page copy spacing is sloppy."}
+},
+"ranking": ["X", "V", "Z", "U", "Y", "W"]}

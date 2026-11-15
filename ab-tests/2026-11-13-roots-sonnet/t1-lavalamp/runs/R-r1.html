@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+  :root {
+    --bg: #09050f;
+    --panel: rgba(20, 12, 32, 0.78);
+    --line: rgba(255, 255, 255, 0.12);
+    --text: #e9dff5;
+    --dim: #9b8bb0;
+    --accent: #ff7a1a;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #stage { flex: 1; min-height: 0; position: relative; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  canvas.grabbing { cursor: grabbing; }
+  #panel {
+    display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; justify-content: center;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+  }
+  .group { display: flex; align-items: center; gap: 10px; }
+  .label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  button {
+    font: inherit; color: var(--text); background: rgba(255,255,255,.06);
+    border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; min-height: 40px; cursor: pointer;
+  }
+  button:hover { background: rgba(255,255,255,.12); }
+  button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  #power { display: inline-flex; align-items: center; gap: 10px; padding: 0 16px 0 8px; }
+  #power .knob {
+    width: 26px; height: 26px; border-radius: 50%; background: #3a3046; border: 1px solid var(--line);
+    box-shadow: inset 0 0 0 4px #1b1326; transition: background .3s, box-shadow .3s;
+  }
+  #power[aria-pressed="true"] .knob { background: var(--accent); box-shadow: 0 0 14px var(--accent), inset 0 0 0 4px #2a1408; }
+  input[type=range] { width: 150px; height: 40px; accent-color: var(--accent); background: transparent; }
+  .swatches { display: flex; gap: 8px; }
+  .swatch {
+    width: 40px; height: 40px; padding: 0; border-radius: 50%; border: 2px solid transparent;
+  }
+  .swatch[aria-pressed="true"] { border-color: #fff; }
+  #status { min-width: 92px; color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+  @media (max-width: 560px) {
+    #panel { gap: 8px 14px; padding-top: 8px; }
+    input[type=range] { width: 120px; }
+    #status { min-width: 0; width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="lamp" aria-label="A lava lamp. Drag the wax, or click the liquid to add a blob." role="img"></canvas></div>
+<div id="panel">
+  <button id="power" aria-pressed="true" title="Space"><span class="knob"></span><span>Power</span></button>
+  <div class="group"><label class="label" for="heat">Heat</label><input id="heat" type="range" min="0" max="100" value="60"><span id="heatv" class="label" style="min-width:2ch">60</span></div>
+  <div class="group"><span class="label">Wax</span><div class="swatches" id="swatches"></div></div>
+  <div class="group"><button id="add">Add blob</button><button id="reset">Reset</button></div>
+  <div id="status" role="status" aria-live="polite">flowing</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- palettes ----------
+  var PALETTES = [
+    { name: 'Sunset',     core: '#ffeaa6', rim: '#ff7418', liqTop: '#3a0a4a', liqBot: '#9c1470', glow: '#ff5a3c' },
+    { name: 'Lagoon',     core: '#eaffb4', rim: '#79e82a', liqTop: '#04323a', liqBot: '#0b7a78', glow: '#3cffc0' },
+    { name: 'Bubblegum',  core: '#ffe2f2', rim: '#ff4fa8', liqTop: '#1a1060', liqBot: '#4a2ab0', glow: '#c06bff' },
+    { name: 'Ice',        core: '#e2fcff', rim: '#2ec4ff', liqTop: '#050f3a', liqBot: '#0b3d9a', glow: '#3c8cff' },
+    { name: 'Ember',      core: '#fff2c4', rim: '#ffb000', liqTop: '#3a0505', liqBot: '#961c10', glow: '#ff8a1c' }
+  ];
+  function hex(h) { return [parseInt(h.substr(1,2),16), parseInt(h.substr(3,2),16), parseInt(h.substr(5,2),16)]; }
+  function mix(a, b, t) { return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+  function rgb(c, a) { return 'rgba(' + (c[0]|0) + ',' + (c[1]|0) + ',' + (c[2]|0) + ',' + (a == null ? 1 : a) + ')'; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+
+  // ---------- state ----------
+  var GLASS_TOP = 90, GLASS_BOT = 470, HW_TOP = 42, HW_BOT = 92;
+  var MAX_BLOBS = 16;
+  var state = {
+    on: true,
+    warm: 1,         // lamp temperature 0..1
+    heat: 0.6,
+    palette: 0,
+    time: 0,
+    blobs: [],
+    grab: null,      // {blob, x, y}
+    hover: null
+  };
+  var cur = {};      // current eased colours as rgb arrays
+  var target = {};
+  function setTarget(i, snap) {
+    var p = PALETTES[i];
+    ['core','rim','liqTop','liqBot','glow'].forEach(function (k) {
+      target[k] = hex(p[k]);
+      if (snap || !cur[k]) cur[k] = target[k].slice();
+    });
+  }
+  setTarget(0, true);
+
+  function hwAt(y) { return HW_TOP + (HW_BOT - HW_TOP) * clamp((y - GLASS_TOP) / (GLASS_BOT - GLASS_TOP), 0, 1); }
+
+  function makeBlob(x, y, r, t) {
+    return { x: x, y: y, r: r, vx: 0, vy: 0, t: t, grow: 0, dying: false, sens: 0.75 + Math.random() * 0.5, phase: Math.random() * 6.28 };
+  }
+  function targetCount() { return Math.round(6 + state.heat * 6); }
+
+  function seed() {
+    state.blobs = [];
+    var n = targetCount();
+    for (var i = 0; i < n; i++) {
+      var r = 14 + Math.random() * 26;
+      var y = 130 + Math.random() * 300;
+      var b = makeBlob((Math.random() - 0.5) * 60, y, r, Math.random());
+      b.grow = 1;
+      state.blobs.push(b);
+    }
+  }
+
+  // ---------- canvas ----------
+  var canvas = document.getElementById('lamp');
+  var ctx = canvas.getContext('2d');
+  var CW = 0, CH = 0, S = 1, OX = 0, OY = 0, DPR = 1;
+  function resize() {
+    var r = canvas.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    CW = Math.max(1, r.width); CH = Math.max(1, r.height);
+    canvas.width = Math.round(CW * DPR); canvas.height = Math.round(CH * DPR);
+    S = Math.min(CH / 700, CW / 330);
+    OX = CW / 2; OY = (CH - 660 * S) / 2;
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(document.getElementById('stage'));
+  window.addEventListener('resize', resize);
+  resize();
+
+  var FW = 95, FH = 190, FS = 2;     // field grid, 2 lamp units per cell
+  var off = document.createElement('canvas'); off.width = FW; off.height = FH;
+  var octx = off.getContext('2d');
+  var img = octx.createImageData(FW, FH);
+
+  // ---------- simulation ----------
+  var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var POOL_SURFACE = GLASS_BOT - 40;
+
+  function poolSurface(x) {
+    return POOL_SURFACE + 5 * Math.sin(x * 0.045 + state.time * 0.6) + 3 * Math.sin(x * 0.11 - state.time * 0.9);
+  }
+
+  function step(dt) {
+    if (reduceMotion) dt *= 0.4;
+    state.time += dt;
+    // lamp temperature
+    if (state.on) state.warm = Math.min(1, state.warm + dt / 8);
+    else state.warm = Math.max(0, state.warm - dt / 10);
+
+    var w = state.warm, h = state.heat;
+    var heatRate = (0.10 + h * 0.34) * w;
+    var buoy = (0.55 + h * 0.9) * 34;
+    var coolGen = 0.02 + (1 - w) * 0.28;
+    var blobs = state.blobs;
+
+    // keep blob count near target (only while lamp is on)
+    var live = blobs.filter(function (b) { return !b.dying; });
+    var want = targetCount();
+    if (state.on && live.length < Math.min(want, 12) && Math.random() < dt * 0.5) {
+      var nb = makeBlob((Math.random() - 0.5) * 50, GLASS_BOT - 20, 12 + Math.random() * 22, 0.5);
+      blobs.push(nb);
+    } else if (live.length > want && Math.random() < dt * 0.5) {
+      // retire the one sitting lowest and coldest
+      var cand = null;
+      live.forEach(function (b) { if (!state.grab || state.grab.blob !== b) if (!cand || b.y > cand.y) cand = b; });
+      if (cand && cand.y > GLASS_BOT - 80) cand.dying = true;
+    }
+
+    for (var i = blobs.length - 1; i >= 0; i--) {
+      var b = blobs[i];
+      if (b.dying) { b.grow -= dt * 0.5; if (b.grow <= 0) { blobs.splice(i, 1); continue; } }
+      else if (b.grow < 1) b.grow = Math.min(1, b.grow + dt * 0.6);
+
+      var held = state.grab && state.grab.blob === b;
+      var nearBottom = clamp((b.y - (GLASS_BOT - 120)) / 90, 0, 1);
+      var nearTop = clamp(((GLASS_TOP + 110) - b.y) / 90, 0, 1);
+      b.t += (heatRate * b.sens * nearBottom - coolGen - 0.34 * nearTop) * dt;
+      b.t = clamp(b.t, 0, 1);
+
+      var ay = -(b.t - 0.5) * buoy * (0.7 + b.r / 60);
+      var ax = Math.sin(state.time * 0.25 + b.phase) * 1.6;
+      // gentle separation so blobs do not stack on one spot
+      for (var j = 0; j < blobs.length; j++) {
+        if (j === i) continue;
+        var o = blobs[j];
+        var dx = b.x - o.x, dy = b.y - o.y, d2 = dx * dx + dy * dy, min = (b.r + o.r) * 0.55;
+        if (d2 < min * min && d2 > 0.01) { var d = Math.sqrt(d2); ax += dx / d * (min - d) * 0.5; ay += dy / d * (min - d) * 0.15; }
+      }
+      // pointer hover pushes wax away
+      if (state.hover && !state.grab) {
+        var hx = b.x - state.hover.x, hy = b.y - state.hover.y, hd = Math.sqrt(hx * hx + hy * hy);
+        var reach = b.r * 1.6 + 22;
+        if (hd < reach && hd > 0.1) { var f = (1 - hd / reach) * 70; ax += hx / hd * f; ay += hy / hd * f; }
+      }
+      if (held) {
+        ax += (state.grab.x - b.x) * 14; ay += (state.grab.y - b.y) * 14;
+        b.vx *= Math.exp(-5 * dt); b.vy *= Math.exp(-5 * dt);
+      }
+      var damp = Math.exp(-1.15 * dt);
+      b.vx = (b.vx + ax * dt) * damp; b.vy = (b.vy + ay * dt) * damp;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+
+      // walls (viscous: kill the velocity, no rebound)
+      var lim = hwAt(b.y) - b.r * 0.55;
+      if (b.x > lim) { b.x = lim; b.vx = Math.min(b.vx, 0) * 0.2; }
+      if (b.x < -lim) { b.x = -lim; b.vx = Math.max(b.vx, 0) * 0.2; }
+      var floor = GLASS_BOT - b.r * 0.5, ceil = GLASS_TOP + b.r * 0.6;
+      if (b.y > floor) { b.y = floor; b.vy = Math.min(b.vy, 0) * 0.2; }
+      if (b.y < ceil) { b.y = ceil; b.vy = Math.max(b.vy, 0) * 0.2; }
+    }
+  }
+
+  // ---------- rendering ----------
+  function renderField() {
+    var data = img.data, blobs = state.blobs, n = blobs.length;
+    var bx = new Float32Array(n), by = new Float32Array(n), br2 = new Float32Array(n), bg = new Float32Array(n);
+    for (var k = 0; k < n; k++) {
+      var b = blobs[k];
+      var R = b.r * 1.645 * (0.2 + 0.8 * b.grow);
+      // slightly stretch with vertical speed for a drop-like look is handled via the field below
+      bx[k] = b.x; by[k] = b.y; br2[k] = 1 / (R * R); bg[k] = R;
+    }
+    var core = cur.core, rim = cur.rim;
+    var heatGlow = 0.85 + 0.15 * state.warm;
+    var i = 0;
+    for (var j = 0; j < FH; j++) {
+      var y = GLASS_TOP + (j + 0.5) * FS;
+      for (var c = 0; c < FW; c++, i += 4) {
+        var x = -95 + (c + 0.5) * FS;
+        var f = Math.exp((y - poolSurface(x)) / 16);
+        if (f > 2.6) f = 2.6;
+        for (var m = 0; m < n; m++) {
+          var dx = x - bx[m], dy = (y - by[m]);
+          // egg-shaped: wax is stretched vertically in motion
+          dy *= 0.9;
+          var g = 1 - (dx * dx + dy * dy) * br2[m];
+          if (g > 0) f += g * g * g * 4;
+        }
+        var a = (f - 0.9) / 0.2; a = a < 0 ? 0 : a > 1 ? 1 : a; a = a * a * (3 - 2 * a);
+        if (a <= 0) { data[i + 3] = 0; continue; }
+        var t = (f - 1.6) / 3.2; t = t < 0 ? 0 : t > 1 ? 1 : t; t = Math.pow(t, 1.1);
+        data[i]     = (rim[0] + (core[0] - rim[0]) * t) * heatGlow;
+        data[i + 1] = (rim[1] + (core[1] - rim[1]) * t) * heatGlow;
+        data[i + 2] = (rim[2] + (core[2] - rim[2]) * t) * heatGlow;
+        data[i + 3] = a * 255;
+      }
+    }
+    octx.putImageData(img, 0, 0);
+  }
+
+  function glassPath(c) {
+    c.beginPath();
+    c.moveTo(-HW_TOP, GLASS_TOP); c.lineTo(HW_TOP, GLASS_TOP);
+    c.lineTo(HW_BOT, GLASS_BOT); c.lineTo(-HW_BOT, GLASS_BOT); c.closePath();
+  }
+
+  function draw() {
+    var w = state.warm;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, CW, CH);
+
+    // room
+    ctx.fillStyle = '#09050f'; ctx.fillRect(0, 0, CW, CH);
+    ctx.setTransform(DPR * S, 0, 0, DPR * S, DPR * OX, DPR * OY);
+    var glow = cur.glow;
+    var wallR = ctx.createRadialGradient(0, 330, 20, 0, 330, 520);
+    wallR.addColorStop(0, rgb(glow, 0.30 * w));
+    wallR.addColorStop(0.5, rgb(glow, 0.09 * w));
+    wallR.addColorStop(1, rgb(glow, 0));
+    ctx.fillStyle = wallR; ctx.fillRect(-CW / S, -400, CW / S * 2, 1500);
+
+    // table and light pool on it
+    ctx.fillStyle = '#120a1c'; ctx.fillRect(-CW / S, 640, CW / S * 2, 400);
+    var floorG = ctx.createRadialGradient(0, 650, 10, 0, 650, 260);
+    floorG.addColorStop(0, rgb(glow, 0.55 * w)); floorG.addColorStop(1, rgb(glow, 0));
+    ctx.save(); ctx.translate(0, 650); ctx.scale(1, 0.18); ctx.translate(0, -650);
+    ctx.fillStyle = floorG; ctx.fillRect(-300, 390, 600, 520); ctx.restore();
+
+    // glass interior
+    ctx.save();
+    glassPath(ctx); ctx.clip();
+    var lg = ctx.createLinearGradient(0, GLASS_TOP, 0, GLASS_BOT);
+    lg.addColorStop(0, rgb(cur.liqTop)); lg.addColorStop(1, rgb(cur.liqBot));
+    ctx.fillStyle = lg; ctx.fillRect(-100, GLASS_TOP, 200, 390);
+    // bulb glow in the liquid
+    var bulb = ctx.createRadialGradient(0, GLASS_BOT + 10, 5, 0, GLASS_BOT + 10, 230);
+    bulb.addColorStop(0, rgb(glow, 0.75 * w)); bulb.addColorStop(1, rgb(glow, 0));
+    ctx.fillStyle = bulb; ctx.fillRect(-100, GLASS_TOP, 200, 390);
+
+    renderField();
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(off, -95, GLASS_TOP, FW * FS, FH * FS);
+
+    // cold lamp is dark
+    ctx.fillStyle = 'rgba(6,3,12,' + (0.62 * (1 - w)).toFixed(3) + ')';
+    ctx.fillRect(-100, GLASS_TOP, 200, 390);
+    // soft shading toward the sides for a rounded look
+    var side = ctx.createLinearGradient(-HW_BOT, 0, HW_BOT, 0);
+    side.addColorStop(0, 'rgba(0,0,0,0.38)'); side.addColorStop(0.22, 'rgba(0,0,0,0)');
+    side.addColorStop(0.8, 'rgba(0,0,0,0)'); side.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.fillStyle = side; ctx.fillRect(-100, GLASS_TOP, 200, 390);
+    ctx.restore();
+
+    // glass highlights
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.beginPath();
+    ctx.moveTo(-34, GLASS_TOP + 14); ctx.lineTo(-27, GLASS_TOP + 14);
+    ctx.lineTo(-66, GLASS_BOT - 28); ctx.lineTo(-75, GLASS_BOT - 28); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.07)';
+    ctx.beginPath();
+    ctx.moveTo(30, GLASS_TOP + 20); ctx.lineTo(33, GLASS_TOP + 20);
+    ctx.lineTo(60, GLASS_BOT - 60); ctx.lineTo(55, GLASS_BOT - 60); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1.5;
+    glassPath(ctx); ctx.stroke();
+    ctx.restore();
+
+    // cap
+    var capG = ctx.createLinearGradient(-48, 0, 48, 0);
+    capG.addColorStop(0, '#6f7483'); capG.addColorStop(0.3, '#e9ecf3'); capG.addColorStop(0.55, '#a5aab8'); capG.addColorStop(1, '#4b4f5c');
+    ctx.fillStyle = capG;
+    ctx.beginPath();
+    ctx.moveTo(-50, 100); ctx.lineTo(-47, 86);
+    ctx.quadraticCurveTo(-46, 50, 0, 44);
+    ctx.quadraticCurveTo(46, 50, 47, 86);
+    ctx.lineTo(50, 100); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(-49, 92, 98, 3);
+    ctx.fillStyle = rgb(glow, 0.18 * w); ctx.fillRect(-50, 96, 100, 4);
+
+    // base
+    var baseG = ctx.createLinearGradient(-130, 0, 130, 0);
+    baseG.addColorStop(0, '#4a4d59'); baseG.addColorStop(0.22, '#d6d9e2'); baseG.addColorStop(0.42, '#8c91a0');
+    baseG.addColorStop(0.7, '#aab0bf'); baseG.addColorStop(1, '#3a3d48');
+    ctx.fillStyle = baseG;
+    ctx.beginPath();
+    ctx.moveTo(-98, 468); ctx.lineTo(98, 468);
+    ctx.quadraticCurveTo(80, 560, 132, 640);
+    ctx.lineTo(-132, 640);
+    ctx.quadraticCurveTo(-80, 560, -98, 468);
+    ctx.closePath(); ctx.fill();
+    // warm light spill on the chrome
+    var spill = ctx.createLinearGradient(0, 468, 0, 640);
+    spill.addColorStop(0, rgb(glow, 0.22 * w)); spill.addColorStop(1, rgb(glow, 0.04 * w));
+    ctx.fillStyle = spill;
+    ctx.beginPath();
+    ctx.moveTo(-98, 468); ctx.lineTo(98, 468);
+    ctx.quadraticCurveTo(80, 560, 132, 640); ctx.lineTo(-132, 640);
+    ctx.quadraticCurveTo(-80, 560, -98, 468); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-100, 466, 200, 5);
+    // foot ring
+    ctx.fillStyle = '#2b2d36'; ctx.fillRect(-136, 636, 272, 8);
+
+    // switch on the base
+    ctx.beginPath(); ctx.arc(0, 590, 13, 0, 6.2832);
+    ctx.fillStyle = '#1d1a24'; ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 590, 8, 0, 6.2832);
+    ctx.fillStyle = state.on ? rgb(mix([90, 60, 40], glow, 0.9)) : '#4a4352'; ctx.fill();
+    if (state.on) {
+      var sg = ctx.createRadialGradient(0, 590, 2, 0, 590, 26);
+      sg.addColorStop(0, rgb(glow, 0.6)); sg.addColorStop(1, rgb(glow, 0));
+      ctx.fillStyle = sg; ctx.fillRect(-30, 560, 60, 60);
+    }
+  }
+
+  // ---------- loop ----------
+  var last = 0, acc = 0, statusAcc = 0;
+  function frame(ts) {
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
+    last = ts;
+    step(dt);
+    // ease colours
+    var k = 1 - Math.exp(-dt * 3);
+    for (var key in target) cur[key] = mix(cur[key], target[key], k);
+    draw();
+    statusAcc += dt;
+    if (statusAcc > 0.25) { statusAcc = 0; updateStatus(); }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- UI ----------
+  var elPower = document.getElementById('power');
+  var elHeat = document.getElementById('heat');
+  var elHeatV = document.getElementById('heatv');
+  var elSw = document.getElementById('swatches');
+  var elStatus = document.getElementById('status');
+
+  function updateStatus() {
+    var text;
+    if (state.on && state.warm < 0.99) text = 'warming ' + Math.round(state.warm * 100) + '%';
+    else if (state.on) text = 'flowing, ' + state.blobs.filter(function (b) { return !b.dying; }).length + ' blobs';
+    else if (state.warm > 0.01) text = 'cooling';
+    else text = 'off';
+    if (elStatus.textContent !== text) elStatus.textContent = text;
+  }
+
+  function setPower(on) {
+    state.on = on;
+    elPower.setAttribute('aria-pressed', on ? 'true' : 'false');
+    updateStatus();
+  }
+  function setHeat(v) {
+    state.heat = clamp(v, 0, 1);
+    elHeat.value = Math.round(state.heat * 100);
+    elHeatV.textContent = elHeat.value;
+  }
+  function setPalette(i) {
+    state.palette = i;
+    setTarget(i, false);
+    var sws = elSw.children;
+    for (var k = 0; k < sws.length; k++) sws[k].setAttribute('aria-pressed', k === i ? 'true' : 'false');
+    var p = PALETTES[i];
+    elPower.style.setProperty('--accent', p.rim);
+    elHeat.style.accentColor = p.rim;
+  }
+  function addBlob(x, y) {
+    var live = state.blobs.filter(function (b) { return !b.dying; });
+    if (live.length >= MAX_BLOBS) {
+      // make room by retiring the oldest-sitting one
+      var old = live[0]; old.dying = true;
+    }
+    var b = makeBlob(x == null ? (Math.random() - 0.5) * 60 : x, y == null ? GLASS_BOT - 30 : y, 14 + Math.random() * 20, 0.85);
+    state.blobs.push(b);
+    return b;
+  }
+
+  PALETTES.forEach(function (p, i) {
+    var b = document.createElement('button');
+    b.className = 'swatch'; b.type = 'button';
+    b.setAttribute('aria-label', p.name + ' wax'); b.title = p.name;
+    b.style.background = 'radial-gradient(circle at 38% 35%, ' + p.core + ', ' + p.rim + ' 62%, ' + p.liqBot + ')';
+    b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.addEventListener('click', function () { setPalette(i); });
+    elSw.appendChild(b);
+  });
+  elPower.addEventListener('click', function () { setPower(!state.on); });
+  elHeat.addEventListener('input', function () { setHeat(elHeat.value / 100); });
+  document.getElementById('add').addEventListener('click', function () { addBlob(); });
+  document.getElementById('reset').addEventListener('click', function () {
+    setHeat(0.6); setPalette(0); setPower(true); state.warm = 1; state.grab = null; seed();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var tag = e.target && e.target.tagName;
+    if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') { e.preventDefault(); setPower(!state.on); }
+    else if (tag !== 'INPUT' && (e.key === 'ArrowUp' || e.key === 'ArrowRight')) { setHeat(state.heat + 0.05); }
+    else if (tag !== 'INPUT' && (e.key === 'ArrowDown' || e.key === 'ArrowLeft')) { setHeat(state.heat - 0.05); }
+    else if (e.key >= '1' && e.key <= String(PALETTES.length)) { setPalette(+e.key - 1); }
+  });
+  document.addEventListener('visibilitychange', function () { last = 0; });
+
+  // pointer: drag wax, click liquid for a new blob, click the switch to toggle
+  function toLamp(e) {
+    var r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left - OX) / S, y: (e.clientY - r.top - OY) / S };
+  }
+  function insideGlass(p) {
+    return p.y > GLASS_TOP && p.y < GLASS_BOT && Math.abs(p.x) < hwAt(p.y);
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    var p = toLamp(e);
+    if (Math.hypot(p.x, p.y - 590) < 18) { setPower(!state.on); return; }
+    if (!insideGlass(p)) return;
+    var best = null, bd = 1e9;
+    state.blobs.forEach(function (b) {
+      var d = Math.hypot(b.x - p.x, b.y - p.y);
+      if (d < b.r * 1.4 && d < bd) { best = b; bd = d; }
+    });
+    if (!best) best = addBlob(p.x, p.y);
+    state.grab = { blob: best, x: p.x, y: p.y };
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('grabbing');
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    var p = toLamp(e);
+    state.hover = insideGlass(p) ? p : null;
+    if (state.grab) {
+      state.grab.x = clamp(p.x, -hwAt(p.y) + 10, hwAt(p.y) - 10);
+      state.grab.y = clamp(p.y, GLASS_TOP + 10, GLASS_BOT - 10);
+    }
+  });
+  function release() { state.grab = null; canvas.classList.remove('grabbing'); }
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('pointerleave', function () { state.hover = null; });
+
+  setHeat(0.6);
+  setPalette(0);
+  seed();
+  requestAnimationFrame(frame);
+
+  // small hook for inspection
+  window.lavaLamp = state;
+})();
+</script>
+</body>
+</html>

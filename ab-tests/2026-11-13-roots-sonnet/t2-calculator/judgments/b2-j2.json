@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"basic": 7, "correctness": 8, "usability": 8, "craft": 8, "code": 6, "overall": 7.5, "note": "Polished iOS-style dark calculator with repeat-equals, C/AC, aria labels and keyboard, though the red zero-error text and extra Backspace bar add a little bulk."},
+"V": {"basic": 9, "correctness": 7, "usability": 6, "craft": 6, "code": 7, "overall": 6.5, "note": "Clean and small with commas and a sensible layout, but it has almost no ARIA, the error is a bare 'Error', and there is no repeat-equals."},
+"W": {"basic": 8, "correctness": 8, "usability": 8, "craft": 8, "code": 6, "overall": 8, "note": "Calm light theme with good contrast, the active operator is highlighted, the backspace key is compact, the font fits to width, and it has full keyboard and ARIA support."},
+"X": {"basic": 9, "correctness": 7, "usability": 6, "craft": 6, "code": 7, "overall": 6.5, "note": "Smallest source and a handsome dark layout, but the clear key is always AC, ARIA is minimal, and the error replaces the display with plain text."},
+"Y": {"basic": 7, "correctness": 9, "usability": 8, "craft": 9, "code": 6, "overall": 8.5, "note": "Distinctive LCD-and-hardware look with repeat-equals, percent-aware add/subtract, a clear error caption, and strong tactile keys; slightly more than basic."},
+"Z": {"basic": 8, "correctness": 8, "usability": 8, "craft": 8, "code": 6, "overall": 8, "note": "Friendly warm design with a useful C/CE split, thousands separators and a clear error caption; it has no percent key and a slightly odd '≠ a number' string in the source."}
+},
+"ranking": ["Y", "Z", "W", "U", "X", "V"]}

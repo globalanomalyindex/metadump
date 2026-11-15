@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{
+  --bg:#2b3f57; --ink:#f4f1ea; --dim:rgba(244,241,234,.82); --line:rgba(244,241,234,.28);
+  --btn:#f4f1ea; --btn-ink:#1d2b3b; --pip:rgba(244,241,234,.22);
+}
+body[data-phase="short"]{--bg:#8f4f00;--btn-ink:#4a2b00}
+body[data-phase="long"]{--bg:#5b3fa8;--btn-ink:#2c1a5e}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font:16px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  transition:background .6s ease;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px 16px;min-height:100vh;
+}
+main{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.ahead{font-size:.95rem;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:10px}
+.pips{display:flex;gap:10px;align-items:center}
+.pip{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:transparent;transition:background .3s,border-color .3s}
+.pip.on{background:var(--ink);border-color:var(--ink)}
+.pips .rest{width:26px;height:16px;border-radius:8px;border:2px solid var(--line);margin-left:6px;transition:background .3s}
+.pips .rest.on{background:var(--ink);border-color:var(--ink)}
+.phase{font-size:1.1rem;letter-spacing:.22em;text-transform:uppercase;font-weight:600;margin-top:6px}
+.state{color:var(--dim);min-height:1.4em;font-size:.95rem}
+.clock{
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum";
+  font-size:clamp(72px,24vw,170px);font-weight:700;line-height:1;letter-spacing:-.02em;
+  font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;margin:4px 0;
+}
+body.paused .clock{opacity:.6;animation:none}
+body.done .clock{animation:flash .7s ease-in-out 3}
+@keyframes flash{50%{opacity:.25}}
+.bar{width:min(100%,360px);height:6px;background:var(--pip);border-radius:3px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--ink);border-radius:3px}
+button{font:inherit;color:inherit;cursor:pointer}
+.primary{
+  min-width:200px;min-height:64px;padding:0 36px;border:0;border-radius:32px;
+  background:var(--btn);color:var(--btn-ink);font-size:1.3rem;font-weight:700;letter-spacing:.04em;
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.primary:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.primary:active{transform:translateY(0) scale(.98)}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.sec{min-height:44px;padding:0 18px;border-radius:22px;border:1.5px solid var(--line);background:transparent;transition:background .15s,border-color .15s}
+.sec:hover{background:rgba(255,255,255,.12);border-color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.opts{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;color:var(--dim);font-size:.9rem;margin-top:6px}
+.opts label{display:flex;gap:8px;align-items:center;min-height:32px;cursor:pointer}
+.opts input{width:24px;height:24px;accent-color:#f4f1ea}
+.opts select{font:inherit;color:var(--ink);background:rgba(0,0,0,.2);border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;min-height:32px}
+.opts select option{color:#111}
+.count{font-size:.95rem;color:var(--dim)}
+.count b{color:var(--ink)}
+.toast{min-height:1.4em;font-size:.9rem;color:var(--dim)}
+.toast button{border:0;background:none;text-decoration:underline;padding:4px 6px;color:var(--ink)}
+.keys{font-size:.8rem;color:var(--dim);opacity:.8}
+kbd{font:inherit;border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:420px){.keys{display:none}.primary{min-width:180px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body data-phase="work">
+<main>
+  <div class="ahead">
+    <div class="pips" id="pips" aria-hidden="true"></div>
+    <div id="ahead">Long break after 4 pomodoros</div>
+  </div>
+  <div class="phase" id="phase">Focus</div>
+  <div class="clock" id="clock" role="timer" aria-label="Time remaining">25:00</div>
+  <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+  <div class="state" id="state">Ready</div>
+  <button class="primary" id="go" type="button">Start</button>
+  <div class="row">
+    <button class="sec" id="reset" type="button">Reset</button>
+    <button class="sec" id="skip" type="button">Skip</button>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="toast" id="toast"></div>
+  <div class="opts">
+    <label><input type="checkbox" id="auto"> Start next automatically</label>
+    <label><input type="checkbox" id="sound" checked> Chime</label>
+    <label>Lengths
+      <select id="preset" aria-label="Interval lengths">
+        <option value="25,5,15">25 / 5 / 15 min</option>
+        <option value="50,10,30">50 / 10 / 30 min</option>
+        <option value="15,3,10">15 / 3 / 10 min</option>
+        <option value="1,1,1">Demo 1 / 1 / 1 min</option>
+      </select>
+    </label>
+    <button class="sec" id="clear" type="button">Clear count</button>
+  </div>
+  <div class="keys"><kbd>Space</kbd> start / pause &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>S</kbd> skip</div>
+  <div class="sr" id="live" aria-live="polite"></div>
+</main>
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var NAMES = {work:'Focus', short:'Short break', long:'Long break'};
+  var S = {
+    phase:'work', running:false, endAt:0, remaining:25*60000,
+    count:0, auto:false, sound:true, preset:'25,5,15'
+  };
+  var handle = null, audio = null, undoCount = null, undoTimer = null, flashTimer = null;
+
+  try{
+    var saved = JSON.parse(localStorage.getItem('pomodoro-v1')||'null');
+    if(saved){ S.count=saved.count|0; S.auto=!!saved.auto; S.sound=saved.sound!==false; if(saved.preset) S.preset=saved.preset; }
+  }catch(e){}
+  function persist(){ try{ localStorage.setItem('pomodoro-v1', JSON.stringify({count:S.count,auto:S.auto,sound:S.sound,preset:S.preset})); }catch(e){} }
+
+  function lens(){ var p=S.preset.split(',').map(Number); return {work:p[0]*60000, short:p[1]*60000, long:p[2]*60000}; }
+  function full(){ return lens()[S.phase]; }
+  function left(){ return S.running ? Math.max(0, S.endAt-Date.now()) : S.remaining; }
+  function fmt(ms){ var s=Math.ceil(ms/1000), m=Math.floor(s/60); s=s%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  function say(t){ $('live').textContent=''; setTimeout(function(){$('live').textContent=t;},30); }
+
+  function render(){
+    var ms = left(), idle = !S.running && S.remaining===full();
+    $('clock').textContent = fmt(ms);
+    $('phase').textContent = NAMES[S.phase];
+    document.body.dataset.phase = S.phase;
+    document.body.classList.toggle('paused', !S.running && !idle);
+    $('fill').style.width = (100*(1-ms/full()))+'%';
+    $('go').textContent = S.running ? 'Pause' : (idle ? 'Start' : 'Resume');
+    $('state').textContent = S.running ? 'Running' : (idle ? 'Ready' : 'Paused');
+    var filled = S.phase==='long' ? 4 : S.count%4, h='';
+    for(var i=0;i<4;i++) h+='<span class="pip'+(i<filled?' on':'')+'"></span>';
+    h+='<span class="rest'+(S.phase==='long'?' on':'')+'"></span>';
+    $('pips').innerHTML = h;
+    var toGo = 4 - (S.count%4);
+    $('ahead').textContent = S.phase==='long' ? 'Long break: you finished four' :
+      S.phase==='short' ? 'Short break, then '+(toGo===1?'one more':toGo+' more')+' until the long break' :
+      (toGo===1 ? 'Finish this one for the long break' : 'Long break in '+toGo+' pomodoros');
+    $('count').innerHTML = 'Finished today: <b>'+S.count+'</b>';
+    $('auto').checked=S.auto; $('sound').checked=S.sound; $('preset').value=S.preset;
+    document.title = (S.running ? fmt(ms)+' · ' : (S.remaining<full()?'⏸ '+fmt(ms)+' · ':'')) + NAMES[S.phase];
+  }
+
+  function stopTick(){ if(handle){ clearInterval(handle); handle=null; } }
+  function startTick(){ stopTick(); handle=setInterval(tick,250); }
+
+  function tick(){
+    if(!S.running) return;
+    if(S.endAt-Date.now() <= 0) finish(); else render();
+  }
+
+  function begin(){
+    if(S.running) return;
+    ensureAudio();
+    document.body.classList.remove('done');
+    S.endAt = Date.now()+S.remaining; S.running=true;
+    startTick(); render();
+    say(NAMES[S.phase]+' running');
+  }
+  function pause(){
+    if(!S.running) return;
+    S.remaining = Math.max(0,S.endAt-Date.now()); S.running=false;
+    stopTick(); render(); say('Paused at '+fmt(S.remaining));
+  }
+  function setPhase(p){ S.phase=p; S.remaining=full(); S.running=false; stopTick(); }
+
+  function finish(){
+    stopTick(); S.running=false;
+    var was = S.phase;
+    if(was==='work'){ S.count++; persist(); setPhase(S.count%4===0?'long':'short'); }
+    else setPhase('work');
+    chime(was==='work');
+    document.body.classList.add('done');
+    clearTimeout(flashTimer); flashTimer=setTimeout(function(){document.body.classList.remove('done')},2200);
+    say(NAMES[was]+' finished. '+NAMES[S.phase]+' is next.');
+    render();
+    if(S.auto){ document.body.classList.remove('done'); begin(); }
+    else $('state').textContent = NAMES[was]+' done. Press Start for '+NAMES[S.phase].toLowerCase();
+  }
+
+  function resetInterval(){
+    stopTick(); S.running=false; S.remaining=full();
+    document.body.classList.remove('done'); render(); say('Interval reset');
+  }
+  function skip(){
+    /* skipping a work interval does not count it as finished */
+    var next = S.phase==='work' ? 'short' : 'work';
+    setPhase(next); document.body.classList.remove('done'); render(); say('Skipped to '+NAMES[S.phase]);
+  }
+
+  function ensureAudio(){
+    if(!S.sound||audio) return;
+    try{ var C=window.AudioContext||window.webkitAudioContext; if(C) audio=new C(); }catch(e){}
+    if(audio&&audio.state==='suspended') audio.resume();
+  }
+  function chime(up){
+    if(!S.sound||!audio) return;
+    try{
+      var notes = up ? [660,880,1100] : [880,660];
+      notes.forEach(function(f,i){
+        var o=audio.createOscillator(), g=audio.createGain(), t=audio.currentTime+i*.22;
+        o.type='sine'; o.frequency.value=f;
+        g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.25,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+.6);
+        o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t+.65);
+      });
+    }catch(e){}
+  }
+
+  function clearCount(){
+    if(!S.count) return;
+    undoCount=S.count; S.count=0; persist();
+    if(S.phase==='long') setPhase('work');
+    render();
+    $('toast').innerHTML='Count cleared. <button type="button" id="undo">Undo</button>';
+    $('undo').onclick=function(){ S.count=undoCount; undoCount=null; persist(); $('toast').textContent=''; render(); };
+    clearTimeout(undoTimer); undoTimer=setTimeout(function(){ $('toast').textContent=''; undoCount=null; },8000);
+  }
+
+  $('go').onclick=function(){ S.running?pause():begin(); };
+  $('reset').onclick=resetInterval;
+  $('skip').onclick=skip;
+  $('clear').onclick=clearCount;
+  $('auto').onchange=function(){ S.auto=this.checked; persist(); };
+  $('sound').onchange=function(){ S.sound=this.checked; if(S.sound) ensureAudio(); persist(); };
+  $('preset').onchange=function(){
+    S.preset=this.value; persist();
+    if(S.running){ S.endAt=Date.now()+full(); }
+    S.remaining=full(); render();
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var t=e.target.tagName;
+    if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA') return;
+    if(e.code==='Space'){ if(t==='BUTTON') return; e.preventDefault(); S.running?pause():begin(); }
+    else if(e.key==='r'||e.key==='R') resetInterval();
+    else if(e.key==='s'||e.key==='S') skip();
+  });
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) tick(); });
+
+  S.remaining=full();
+  render();
+})();
+</script>
+</body>
+</html>

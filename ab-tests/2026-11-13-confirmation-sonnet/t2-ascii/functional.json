@@ -1,0 +1,470 @@
+{
+ "A-r1": {
+  "bytes": 12311,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Red",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.97
+   },
+   {
+    "control": "Yellow",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 2.08
+   },
+   {
+    "control": "Blue",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 2.11
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 2276,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r2": {
+  "bytes": 14808,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "ASCII painting grid",
+    "kind": "canvas",
+    "verb": "dragged",
+    "change_pct": 0.59
+   },
+   {
+    "control": "255",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 1.15
+   },
+   {
+    "control": "120",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 1.04
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 309,
+   "canvas_share": 0.393939208984375
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r3": {
+  "bytes": 10965,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "#ff0000",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "#00ff00",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.73
+   },
+   {
+    "control": "#0000ff",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.73
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 242,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r4": {
+  "bytes": 11887,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "255",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 2.17
+   },
+   {
+    "control": "120",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 2.36
+   },
+   {
+    "control": "40",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 2.36
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 316,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r1": {
+  "bytes": 13178,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Remove Red",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.31
+   },
+   {
+    "control": "Add Red",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.4
+   },
+   {
+    "control": "Remove Yellow",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.19
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 506,
+   "canvas_share": 0.3194322509765625
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r2": {
+  "bytes": 10340,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Add Red",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 3.65
+   },
+   {
+    "control": "Add Yellow",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 3.77
+   },
+   {
+    "control": "Add Blue",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 4.25
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 974,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r3": {
+  "bytes": 10899,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Light +",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "Paint -",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 99.82
+   },
+   {
+    "control": "R Red",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 1586,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r4": {
+  "bytes": 10757,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Source A amount",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 14.26
+   },
+   {
+    "control": "Source A color #ff2a2a",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "Source A color #ffa31a",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.18
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 1809,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r1": {
+  "bytes": 13410,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Color mixer. Left and right arrows chang",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "Color A hex",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.21
+   },
+   {
+    "control": "Color B hex",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.04
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 957,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": false,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 2,
+  "failed": 1,
+  "not_run": 0
+ },
+ "F-r2": {
+  "bytes": 12978,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Color A hex",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.69
+   },
+   {
+    "control": "Color B hex",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.62
+   },
+   {
+    "control": "Ratio, percent of B",
+    "kind": "range",
+    "verb": "slid",
+    "change_pct": 4.22
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 745,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r3": {
+  "bytes": 9283,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Hex A",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.36
+   },
+   {
+    "control": "Hex B",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.34
+   },
+   {
+    "control": "swap A/B",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 2.1
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 728,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r4": {
+  "bytes": 9850,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "#794B8D",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 3.53
+   },
+   {
+    "control": "Color A hex",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.61
+   },
+   {
+    "control": "Color B hex",
+    "kind": "text",
+    "verb": "typed in",
+    "change_pct": 0.58
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "ascii": {
+   "mono_chars": 1104,
+   "canvas_share": 0
+  },
+  "checks": {
+   "responds": true,
+   "ascii_text": true,
+   "no_script_errors": true
+  },
+  "passed": 3,
+  "failed": 0,
+  "not_run": 0
+ }
+}

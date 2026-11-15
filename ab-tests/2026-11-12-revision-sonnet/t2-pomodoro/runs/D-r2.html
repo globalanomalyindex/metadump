@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>25:00 Focus · Pomodoro</title>
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1d1b;--mute:#6b6a64;--line:#cfcbc0;--accent:#b3321f}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ece9e1;--mute:#a09d93;--line:#3a3935;--accent:#ff8a73}}
+body[data-phase="short"],body[data-phase="long"]{--accent:#2d6a4f}
+@media (prefers-color-scheme:dark){body[data-phase="short"],body[data-phase="long"]{--accent:#7fd1a6}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;display:flex;align-items:center;justify-content:center;padding:16px}
+main{width:100%;max-width:640px;text-align:center}
+.phase{font-size:clamp(14px,2.4vw,18px);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 8px;font-weight:700}
+#clock{font-size:clamp(64px,22vw,180px);line-height:1;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:0}
+body[data-state="paused"] #clock{opacity:.55}
+.status{margin:18px 0 0;font-size:clamp(15px,3.4vw,18px)}
+.next,.count{margin:6px 0 0;color:var(--mute);font-size:clamp(13px,3vw,15px)}
+.controls{display:flex;gap:12px;justify-content:center;margin-top:36px;flex-wrap:wrap;align-items:center}
+button{font:inherit;color:var(--fg);background:transparent;border:2px solid var(--fg);min-height:48px;padding:0 20px;cursor:pointer;border-radius:4px}
+button:hover{background:var(--fg);color:var(--bg)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+#toggle{min-width:160px;min-height:56px;font-size:20px;font-weight:700;background:var(--fg);color:var(--bg)}
+#toggle:hover{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.minor{border-color:var(--line);color:var(--mute);font-size:14px;min-width:88px}
+.minor:hover{background:transparent;color:var(--fg);border-color:var(--fg)}
+.controls .gap{width:24px}
+.hint{margin-top:28px;color:var(--mute);font-size:13px}
+kbd{font:inherit;border-bottom:1px solid var(--mute)}
+.sr{position:absolute;left:-9999px}
+</style>
+</head>
+<body data-phase="focus" data-state="idle">
+<main>
+  <p class="phase" id="phase">Focus</p>
+  <h1 id="clock" style="font-size:inherit;margin:0" aria-hidden="true"></h1>
+  <p class="status" id="status">Time to focus!</p>
+  <p class="next" id="next">Press Start to begin a 25 minute focus session.</p>
+  <p class="count" id="count">Finished: 0 of 4 focus sessions</p>
+  <div class="controls">
+    <button id="toggle" type="button">Start</button>
+    <span class="gap"></span>
+    <button id="skip" class="minor" type="button">Skip</button>
+    <button id="reset" class="minor" type="button">Reset</button>
+  </div>
+  <p class="hint"><kbd>Space</kbd> start / pause</p>
+  <div class="sr" role="status" aria-live="polite" id="live"></div>
+</main>
+<script>
+(function(){
+  var MIN={focus:25,short:5,long:30};
+  var NAME={focus:"Focus",short:"Short break",long:"Long break"};
+  var s={phase:"focus",state:"idle",remaining:MIN.focus*60000,end:0,done:0};
+  var timer=null,ctx=null;
+  var $=function(id){return document.getElementById(id)};
+  var clockEl=$("clock");
+
+  function save(){try{sessionStorage.setItem("pomo",JSON.stringify({phase:s.phase,done:s.done}))}catch(e){}}
+  function load(){try{var d=JSON.parse(sessionStorage.getItem("pomo")||"null");if(d&&MIN[d.phase]){s.phase=d.phase;s.done=d.done|0;s.remaining=MIN[s.phase]*60000}}catch(e){}}
+
+  function fmt(ms){var t=Math.max(0,Math.ceil(ms/1000));var m=Math.floor(t/60),r=t%60;return (m<10?"0":"")+m+":"+(r<10?"0":"")+r}
+  function left(){return s.state==="running"?Math.max(0,s.end-Date.now()):s.remaining}
+  function nextPhase(){return s.phase==="focus"?(s.done>0&&s.done%4===0?"long":"short"):"focus"}
+  function say(t){$("live").textContent="";setTimeout(function(){$("live").textContent=t},30)}
+
+  function render(){
+    var ms=left(),txt=fmt(ms);
+    clockEl.textContent=txt;
+    document.body.dataset.phase=s.phase;document.body.dataset.state=s.state;
+    $("phase").textContent=NAME[s.phase];
+    var tg=$("toggle");
+    tg.textContent=s.state==="running"?"Pause":(s.state==="paused"?"Resume":"Start");
+    var st,nx;
+    if(s.state==="running"){st=s.phase==="focus"?"Focusing. One thing only.":"Resting. Step away from the screen.";nx="Next: "+NAME[nextPhase()].toLowerCase()+" ("+MIN[nextPhase()]+" min)."}
+    else if(s.state==="paused"){st="Paused. "+txt+" still on the clock.";nx="Press Resume to carry on."}
+    else if(s.phase==="focus"){st=s.done?"Break over. Time to focus!":"Time to focus!";nx="Press Start to begin a "+MIN.focus+" minute focus session."}
+    else{st=s.phase==="long"?"Focus done. Long break ready.":"Focus done. Short break ready.";nx="Press Start to begin the "+MIN[s.phase]+" minute "+NAME[s.phase].toLowerCase()+"."}
+    $("status").textContent=st;$("next").textContent=nx;
+    var inCycle=s.done%4;
+    $("count").textContent="Finished: "+(s.done>0&&inCycle===0&&s.phase!=="focus"?4:inCycle)+" of 4 focus sessions"+(s.done>=4?" (total "+s.done+")":"");
+    document.title=txt+" "+NAME[s.phase]+" · Pomodoro";
+  }
+
+  function tick(){
+    if(s.state!=="running")return;
+    if(Date.now()>=s.end){finish();return}
+    render();
+  }
+  function startLoop(){stopLoop();timer=setInterval(tick,250)}
+  function stopLoop(){if(timer){clearInterval(timer);timer=null}}
+
+  function beep(){
+    try{
+      if(!ctx)return;
+      [0,0.25,0.5].forEach(function(d){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.frequency.value=880;o.connect(g);g.connect(ctx.destination);
+        var t=ctx.currentTime+d;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+        o.start(t);o.stop(t+0.22);
+      });
+    }catch(e){}
+  }
+
+  function finish(){
+    stopLoop();
+    var ended=s.phase;
+    if(ended==="focus")s.done++;
+    s.phase=nextPhase_after(ended);
+    s.state="idle";s.remaining=MIN[s.phase]*60000;
+    save();beep();
+    render();
+    document.title="Done! "+document.title;
+    say(NAME[ended]+" finished. "+NAME[s.phase]+" is ready.");
+    $("status").textContent=NAME[ended]+" finished. "+NAME[s.phase]+" is ready.";
+  }
+  function nextPhase_after(ended){
+    if(ended==="focus")return s.done%4===0?"long":"short";
+    return "focus";
+  }
+
+  function toggle(){
+    if(!ctx){try{var AC=window.AudioContext||window.webkitAudioContext;if(AC)ctx=new AC()}catch(e){}}
+    if(ctx&&ctx.state==="suspended"){try{ctx.resume()}catch(e){}}
+    if(s.state==="running"){
+      s.remaining=Math.max(0,s.end-Date.now());s.state="paused";stopLoop();say("Paused");
+    }else{
+      s.end=Date.now()+s.remaining;s.state="running";startLoop();say(NAME[s.phase]+" started");
+    }
+    render();
+  }
+  function reset(){
+    stopLoop();s.state="idle";s.remaining=MIN[s.phase]*60000;
+    say("Reset "+NAME[s.phase].toLowerCase());render();
+  }
+  function skip(){
+    stopLoop();var ended=s.phase;
+    if(ended==="focus"){s.phase=(s.done+1)%4===0?"long":"short"}else s.phase="focus";
+    s.state="idle";s.remaining=MIN[s.phase]*60000;save();
+    say("Skipped to "+NAME[s.phase].toLowerCase());render();
+  }
+
+  $("toggle").addEventListener("click",toggle);
+  $("reset").addEventListener("click",reset);
+  $("skip").addEventListener("click",skip);
+  document.addEventListener("keydown",function(e){
+    if((e.code==="Space"||e.key===" ")&&!/^(BUTTON|INPUT|TEXTAREA)$/.test(e.target.tagName)){e.preventDefault();toggle()}
+  });
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)tick()});
+
+  load();render();
+})();
+</script>
+</body>
+</html>

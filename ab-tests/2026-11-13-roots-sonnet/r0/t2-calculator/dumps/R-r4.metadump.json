@@ -1,0 +1,33 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A calculator is a tiny state machine wearing a tactile skin; it is trusted only when every press answers instantly and the arithmetic never lies (0.1+0.2 shows 0.3).",
+  "job": ["see the display and a ready 0", "type digits and a decimal point", "press an operator", "type the second number", "press equals and read the result", "chain operations (2+3+4, or operator after operator)", "repeat equals to repeat the last operation", "correct a mistake: backspace, clear entry, all clear", "flip sign, percent", "use keyboard instead of mouse", "recover from divide by zero", "glance at history/what was just computed", "copy result"],
+  "disciplines": {
+    "interaction design": {"principles": ["every press gives immediate feedback", "display always shows current entry or last result", "predictable chaining", "forgiving: undo last digit"], "steps": ["define states: entering, operator pending, result, error", "map key events to the same handlers as buttons"], "tricks": ["show the pending expression in a small line above the result", "highlight the active operator", "equals repeats last op", "operator pressed twice replaces the first"], "tests": ["2 + 3 = 5", "0.1 + 0.2 = 0.3", "5 / 0 does not crash", "2 + 3 + 4 shows 5 after second plus"]},
+    "visual design": {"principles": ["display is the hero, large and right aligned", "operators visually distinct from digits", "equals is the primary action", "grid rhythm of equal keys"], "steps": ["pick one accent colour", "set a type scale for display vs keys", "assign key groups: digits, functions, operators, equals"], "tricks": ["tabular-nums so digits do not jiggle", "shrink font as digits grow", "soft inner shadow for pressable keys"], "tests": ["can the display and keys be told apart in a squint", "is 12 digit number still inside the display"]},
+    "motion": {"principles": ["press feedback under 100ms", "motion confirms, never delays"], "steps": ["active scale on press", "flash on result"], "tricks": ["scale .96 on :active", "brief highlight on operator toggle"], "tests": ["rapid typing never queues animation"]},
+    "accessibility": {"principles": ["real buttons", "keyboard operable", "live region for display", "contrast 4.5:1"], "steps": ["aria-label on symbol keys (divide, multiply, minus)", "aria-live=polite on result", "focus-visible ring"], "tricks": ["prefers-reduced-motion respected"], "tests": ["Tab reaches every key", "screen reader reads the result"]},
+    "front-end code": {"principles": ["state in one object, render from state", "numbers as strings while typing, numbers when computing", "no eval"], "steps": ["state {current, previous, op, justEvaluated, error}", "handlers input/op/equals/clear/back/sign/percent", "format with toLocaleString-ish grouping"], "tricks": ["round to 12 significant digits via toPrecision then Number to kill float noise", "exponent formatting for huge values", "keydown mapping: Enter and = equal, Escape clear, Backspace back, / prevents quick-find"], "tests": ["no external requests", "works from file://"]}
+  },
+  "the_thing": {
+    "parts": ["display", "expression line", "digit keys 0-9", "decimal point", "operators + - x /", "equals", "AC / C", "backspace", "+/-", "%"],
+    "expectations": ["right-aligned numbers", "0 initially", "decimal only once per number", "no leading zeros (007)", "keyboard works", "divide by zero shows a message and recovers on next press"],
+    "kinds": [{"name": "pocket four-function calculator", "what": "classic grid, display on top, operators right column"}, {"name": "tape calculator", "what": "scrolling history of lines"}, {"name": "scientific", "what": "adds functions"}]
+  },
+  "specifics": {
+    "layout": {"keywords": {"1": ["calculator", "display", "buttons", "digits", "operators", "equals", "clear"], "2": ["4x5 grid", "right aligned", "expression line", "history"], "3": ["tabular numerals", "key travel", "bezel"]}, "descriptions": ["4 columns, 5 rows; 0 spans two columns", "equals fills right-bottom"], "behaviors": ["narrow phone: keys stay at least 56px tall"], "tokens": {"gap": "8 to 12 px", "key_height": "56 to 72 px", "radius": "14 to 22 px", "width": "300 to 360 px"}},
+    "colour": {"keywords": {"1": ["dark", "accent"], "2": ["warm orange operators", "neutral digits"], "3": ["two-tone keys"]}, "descriptions": ["digits mid-grey, functions lighter grey, operators accent, equals strongest"], "behaviors": ["active operator inverts colours"], "tokens": {"bg": "near-black or warm paper", "accent": "orange, teal or lime options", "display_size": "40 to 64 px"}},
+    "state and maths": {"keywords": {"1": ["add", "subtract", "multiply", "divide", "equals", "clear"], "2": ["chaining", "repeat equals", "percent", "negate"], "3": ["float correction", "operator replacement"]}, "descriptions": ["percent: current/100", "after result, typing a digit starts new number; operator continues from result"], "behaviors": ["divide by zero -> Cannot divide by zero, next digit clears", "backspace on result clears it to 0"], "tokens": {"max_digits": "12 to 16", "precision": "12 significant digits"}},
+    "copy": {"keywords": {"1": ["AC", "C", "="], "2": ["Cannot divide by zero"], "3": ["x and divide glyphs"]}, "descriptions": ["use true glyphs: x ÷ − +"], "behaviors": [], "tokens": {}}
+  },
+  "anti_keywords": [
+    {"not": "eval() on a string", "instead": "explicit state machine with operator table"},
+    {"not": "0.30000000000000004 on screen", "instead": "round to 12 significant digits"},
+    {"not": "ragged left-aligned display", "instead": "right aligned, tabular, auto-shrinking"},
+    {"not": "all keys the same colour", "instead": "three key roles plus an unmistakable equals"},
+    {"not": "mouse-only", "instead": "full keyboard map and visible focus"},
+    {"not": "dead end on NaN/Infinity", "instead": "readable error that clears itself"}
+  ],
+  "built": ["pocket four-function calculator"],
+  "checks": ["Does 0.1 + 0.2 show 0.3?", "Does 2 + 3 + 4 = give 9 and show 5 mid-chain?", "Does 5 / 0 show an error and recover?", "Does the keyboard work?", "Does a long number fit the display?", "Are all keys real buttons with labels?", "Does it fit a phone width?"]
+}

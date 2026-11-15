@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiln &amp; Kettle Roasters - Bento Menu</title>
+<style>
+:root{
+  --ground:#2A1F1A; --ground-2:#372a23; --cream:#F2E9DC; --cream-2:#E6D9C6; --ink:#2A1F1A;
+  --muted:#b9a995; --accent:#C9822B; --accent-ink:#2A1F1A; --line:rgba(242,233,220,.16);
+  --gap:12px; --radius:20px; --page:#EFE6D8;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font:16px/1.45 "Helvetica Neue",Arial,sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* page behind the menu */
+.site{max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+.bar{display:flex;align-items:center;justify-content:space-between;min-height:56px}
+.brand{font:800 22px/1 "Arial Narrow","Helvetica Neue",Impact,sans-serif;letter-spacing:.08em;text-transform:uppercase;font-stretch:condensed}
+.brand span{color:var(--accent)}
+.hero{padding:64px 0 24px}
+.hero h1{font:800 clamp(48px,11vw,120px)/.9 "Arial Narrow","Helvetica Neue",Impact,sans-serif;font-stretch:condensed;text-transform:uppercase;letter-spacing:-.01em;margin:0 0 16px;max-width:9ch}
+.hero p{max-width:44ch;font-size:18px;margin:0 0 20px}
+.where{display:inline-flex;gap:8px;align-items:center;background:var(--ground);color:var(--cream);padding:10px 16px;border-radius:999px;font-size:14px}
+.where b{color:var(--accent)}
+
+/* handle + panel */
+.menu{position:relative}
+.handle{display:flex;align-items:center;gap:10px;height:48px;min-width:48px;padding:0 16px 0 14px;border:0;border-radius:16px;background:var(--ground);color:var(--cream);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:13px;transition:background .2s,transform .2s var(--ease)}
+.handle:hover{background:var(--ground-2)}
+.handle:active{transform:scale(.97)}
+.dots{display:grid;grid-template-columns:repeat(3,5px);gap:3px}
+.dots i{width:5px;height:5px;border-radius:2px;background:currentColor;transition:transform .35s var(--ease),background .2s}
+.handle[aria-expanded="true"] .dots i{background:var(--accent)}
+.handle[aria-expanded="true"] .dots i:nth-child(odd){transform:scale(.6)}
+.handle[aria-expanded="true"] .dots i:nth-child(5){transform:scale(1.5)}
+
+.panel{position:absolute;right:0;top:calc(100% + 10px);z-index:10;width:min(760px,calc(100vw - 32px));
+  background:var(--ground);color:var(--cream);border-radius:28px;padding:var(--gap);
+  box-shadow:0 24px 60px -12px rgba(42,31,26,.55);
+  transform-origin:100% 0;transition:transform .34s var(--ease),opacity .2s ease,visibility 0s linear .34s;
+  transform:scale(.2);opacity:0;visibility:hidden}
+.menu[data-open="true"] .panel{transform:none;opacity:1;visibility:visible;transition-delay:0s}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:var(--gap)}
+.cell{min-height:104px;position:relative;border-radius:var(--radius);padding:16px;background:var(--ground-2);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-width:0;
+  opacity:0;transform:translateY(14px) scale(.94);transition:opacity .2s,transform .3s var(--ease);transition-delay:0ms}
+.menu[data-open="true"] .cell{opacity:1;transform:none;transition-delay:calc(60ms + var(--i)*45ms)}
+.cell h2,.cell h3{margin:0 0 6px;font:800 14px/1.1 "Arial Narrow","Helvetica Neue",Impact,sans-serif;font-stretch:condensed;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cell .big{font:800 clamp(30px,5vw,46px)/.92 "Arial Narrow","Helvetica Neue",Impact,sans-serif;font-stretch:condensed;text-transform:uppercase;margin:0}
+.cell p{margin:0;font-size:14px;color:var(--cream-2)}
+
+.hero-cell{min-height:230px;grid-column:span 3;grid-row:span 2;background:linear-gradient(160deg,#4a3226 0%,#2e2019 70%);}
+.hero-cell::after{content:"";position:absolute;right:-30px;bottom:-34px;width:150px;height:190px;border-radius:26px 26px 14px 14px;background:linear-gradient(90deg,var(--cream) 0 70%,var(--cream-2) 70%);transform:rotate(8deg);opacity:.95}
+.hero-cell::before{content:"";position:absolute;right:16px;bottom:44px;width:70px;height:46px;background:var(--roast,#6b3f24);border-radius:8px;z-index:1;transform:rotate(8deg);transition:background .3s}
+.hero-cell .txt{position:relative;z-index:2;max-width:60%}
+.hero-cell a{position:relative;z-index:2;align-self:flex-start}
+.brew{grid-column:span 3}
+.roast{grid-column:span 3}
+.cart{grid-column:span 2;background:var(--cream);color:var(--ink)}
+.cart h3{color:#6b5a4b}
+.cart p{color:#4a3a2e}
+.sub{grid-column:span 2}
+.hours{grid-column:span 2;background:var(--accent);color:var(--accent-ink)}
+.hours h3,.hours p{color:var(--accent-ink)}
+
+.link{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:14px;background:var(--cream);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;border:0}
+.link:hover{background:#fff}
+
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--cream);font-weight:600;font-size:14px;transition:background .2s,color .2s}
+.seg button:hover{background:rgba(242,233,220,.1)}
+.seg button[aria-pressed="true"]{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+.swatch{display:flex;gap:6px;align-items:center}
+.swatch i{flex:1;height:10px;border-radius:5px;background:var(--line)}
+.swatch i.on{background:var(--accent)}
+
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:44px;height:44px;border-radius:14px;border:0;background:var(--ground);color:var(--cream);font-size:22px;font-weight:700}
+.qty button:hover{background:var(--ground-2)}
+.qty output{font:800 38px/1 "Arial Narrow",Impact,sans-serif;min-width:1.4ch;text-align:center}
+
+.switch{flex-wrap:wrap;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;width:100%;padding:0;background:none;border:0;text-align:left}
+.track{flex:none;width:52px;height:30px;border-radius:15px;background:rgba(242,233,220,.2);position:relative;transition:background .2s}
+.track::after{content:"";position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:var(--cream);transition:transform .25s var(--ease)}
+.switch[aria-checked="true"] .track{background:var(--accent)}
+.switch[aria-checked="true"] .track::after{transform:translateX(22px);background:var(--ground)}
+
+.status{grid-column:1/-1;min-height:36px;align-self:center;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 6px;font-size:14px;color:var(--muted);opacity:0;transition:opacity .3s .5s}
+.menu[data-open="true"] .status{opacity:1}
+.status kbd{font:inherit;border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.status [data-sel]{color:var(--cream)}
+
+.toast{margin-top:20px;font-size:15px}
+.toast b{background:var(--ground);color:var(--cream);padding:2px 8px;border-radius:6px}
+
+@media (max-width:640px){
+  .panel{left:0;right:0;width:auto;border-radius:24px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .hero-cell{grid-column:span 2;grid-row:span 1;min-height:250px}
+  .brew,.roast{grid-column:span 2}
+  .cart,.sub{grid-column:span 1}
+  .hours{grid-column:span 2}
+  .hero-cell .txt{max-width:55%}
+  .panel{max-height:calc(100vh - 110px);overflow:auto}
+  .menu{position:static}
+  .bar{position:relative}
+  .panel{top:76px;left:16px;right:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .panel,.cell,.status,.dots i,.track::after,.handle{transition:opacity .15s linear !important;transform:none !important;transition-delay:0s !important}
+}
+</style>
+</head>
+<body>
+<div class="site">
+  <header class="bar">
+    <div class="brand">Kiln <span>&amp;</span> Kettle</div>
+    <nav class="menu" id="menu" data-open="false" aria-label="Main">
+      <button class="handle" id="handle" type="button" aria-expanded="false" aria-controls="panel">
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span id="handleLabel">Menu</span>
+      </button>
+      <div class="panel" id="panel" inert>
+        <div class="grid">
+          <article class="cell hero-cell" style="--i:0">
+            <div class="txt">
+              <h2>Roast of the week</h2>
+              <p class="big" id="heroName">Ember Ridge</p>
+              <p id="heroNote">Medium roast, Huila. Toffee, orange peel.</p>
+            </div>
+            <a class="link" href="#shop" data-go="Shop beans">Shop beans</a>
+          </article>
+
+          <section class="cell brew" style="--i:1" aria-labelledby="hBrew">
+            <h3 id="hBrew">Brew method</h3>
+            <div class="seg" role="group" aria-label="Brew method" id="brew">
+              <button type="button" aria-pressed="true" data-v="Pour-over">Pour-over</button>
+              <button type="button" aria-pressed="false" data-v="Espresso">Espresso</button>
+              <button type="button" aria-pressed="false" data-v="Cold brew">Cold brew</button>
+            </div>
+          </section>
+
+          <section class="cell roast" style="--i:2" aria-labelledby="hRoast">
+            <h3 id="hRoast">Roast level: <span id="roastName">Medium</span></h3>
+            <div class="swatch" aria-hidden="true" id="swatch"><i></i><i class="on"></i><i></i><i></i></div>
+            <div class="seg" role="group" aria-label="Roast level" id="roast">
+              <button type="button" aria-pressed="false" data-v="Light">Light</button>
+              <button type="button" aria-pressed="true" data-v="Medium">Medium</button>
+              <button type="button" aria-pressed="false" data-v="Dark">Dark</button>
+            </div>
+          </section>
+
+          <section class="cell cart" style="--i:3" aria-labelledby="hCart">
+            <h3 id="hCart">Bags (340 g)</h3>
+            <div class="qty">
+              <button type="button" id="minus" aria-label="Remove one bag">&minus;</button>
+              <output id="qty" aria-live="polite">0</output>
+              <button type="button" id="plus" aria-label="Add one bag">+</button>
+            </div>
+          </section>
+
+          <section class="cell sub" style="--i:4" aria-labelledby="hSub">
+            <h3 id="hSub">Subscription</h3>
+            <button class="switch" id="sub" type="button" role="switch" aria-checked="false" aria-labelledby="hSub subState">
+              <span id="subState">Every 2 weeks: off</span><span class="track"></span>
+            </button>
+          </section>
+
+          <section class="cell hours" style="--i:5" aria-labelledby="hHours">
+            <h3 id="hHours">Taproom hours</h3>
+            <p class="big" style="font-size:30px" id="hours">7am to 3pm</p>
+            <a class="link" href="#visit" data-go="Visit us" style="background:var(--ground);color:var(--cream)">Visit us</a>
+          </section>
+
+          <div class="status" aria-live="polite">
+            <span id="summary">Pour-over, Medium roast, 0 bags</span>
+            <span><kbd>Esc</kbd> to fold</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <h1>Slow roasted, small batch</h1>
+    <p>Beans from nine farms, roasted in a converted kiln shed and posted the same week.</p>
+    <span class="where">Now viewing: <b id="where">Home</b></span>
+    <p class="toast" id="toast" aria-live="polite">Open the menu to build your order.</p>
+  </main>
+</div>
+
+<script>
+(function(){
+  var menu=document.getElementById('menu'), handle=document.getElementById('handle'),
+      panel=document.getElementById('panel'), label=document.getElementById('handleLabel');
+  var state={open:false,brew:'Pour-over',roast:'Medium',qty:0,sub:false};
+  var notes={Light:['Aurora Lot','Light roast, Yirgacheffe. Jasmine, lemon.','#a9733f'],
+             Medium:['Ember Ridge','Medium roast, Huila. Toffee, orange peel.','#6b3f24'],
+             Dark:['Kiln Black','Dark roast, Sumatra. Cocoa nib, smoke.','#2b1a12']};
+  var roasts=['Light','Medium','Dark'];
+
+  try{var s=JSON.parse(localStorage.getItem('kk-menu')||'null'); if(s){state.brew=s.brew||state.brew;state.roast=s.roast||state.roast;state.qty=s.qty|0;state.sub=!!s.sub;}}catch(e){}
+
+  function setOpen(v,focusHandle){
+    state.open=v;
+    menu.dataset.open=v;
+    handle.setAttribute('aria-expanded',v);
+    label.textContent=v?'Close':'Menu';
+    if(v){panel.removeAttribute('inert')}else{panel.setAttribute('inert','')}
+    if(!v&&focusHandle)handle.focus();
+  }
+  function render(){
+    document.querySelectorAll('#brew button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.v===state.brew)});
+    document.querySelectorAll('#roast button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.v===state.roast)});
+    var idx=roasts.indexOf(state.roast);
+    document.querySelectorAll('#swatch i').forEach(function(el,i){el.classList.toggle('on',i<=idx+1)});
+    var n=notes[state.roast];
+    document.getElementById('roastName').textContent=state.roast;
+    document.getElementById('heroName').textContent=n[0];
+    document.getElementById('heroNote').textContent=n[1];
+    document.querySelector('.hero-cell').style.setProperty('--roast',n[2]);
+    document.getElementById('qty').textContent=state.qty;
+    document.getElementById('minus').disabled=state.qty===0;
+    var sub=document.getElementById('sub');
+    sub.setAttribute('aria-checked',state.sub);
+    document.getElementById('subState').textContent='Every 2 weeks: '+(state.sub?'on':'off');
+    var bags=state.qty+(state.qty===1?' bag':' bags');
+    var sum=state.brew+', '+state.roast+' roast, '+bags+(state.sub?', subscribed':'');
+    document.getElementById('summary').textContent=sum;
+    document.getElementById('toast').innerHTML=state.qty?'Your order: <b>'+sum+'</b>':'Open the menu to build your order.';
+    try{localStorage.setItem('kk-menu',JSON.stringify({brew:state.brew,roast:state.roast,qty:state.qty,sub:state.sub}))}catch(e){}
+  }
+
+  handle.addEventListener('click',function(){setOpen(!state.open)});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&state.open){setOpen(false,true)}});
+  document.addEventListener('click',function(e){if(state.open&&!menu.contains(e.target))setOpen(false)});
+
+  document.getElementById('brew').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;state.brew=b.dataset.v;render()});
+  document.getElementById('roast').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;state.roast=b.dataset.v;render()});
+  document.getElementById('plus').addEventListener('click',function(){state.qty=Math.min(9,state.qty+1);render()});
+  document.getElementById('minus').addEventListener('click',function(){state.qty=Math.max(0,state.qty-1);render()});
+  document.getElementById('sub').addEventListener('click',function(){state.sub=!state.sub;render()});
+  panel.querySelectorAll('[data-go]').forEach(function(a){a.addEventListener('click',function(e){
+    e.preventDefault();document.getElementById('where').textContent=a.dataset.go;setOpen(false,true);
+  })});
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j2","scores":{
+"U":{"fidelity":9,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Charming helmeted pelican with a clear pouch, spinning spokes and a scrolling scene, though the ring-bell checkbox is an odd control."},
+"V":{"fidelity":8,"correctness":7,"craft":7,"usability":7,"overall":7,"note":"Readable pelican with night mode and reverse, but the body floats above the frame and the legs look thin and awkward."},
+"W":{"fidelity":8,"correctness":8,"craft":7,"usability":7,"overall":7,"note":"Clean and correct with a grey wing, but the scene is sparse with a washed-out sky and a small pelican."},
+"X":{"fidelity":9,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Vivid, well-posed pelican with a helmet, a wing on the handlebar and good hills, and a useful status readout."},
+"Y":{"fidelity":8,"correctness":8,"craft":8,"usability":7,"overall":8,"note":"Nice scenery with trees and the pelican's feet on the pedals, but the wing is a flat grey slab and the controls are minimal."},
+"Z":{"fidelity":10,"correctness":9,"craft":9,"usability":9,"overall":9,"note":"Largest and most convincing rider, with a wing gripping the handlebar, a chain, a sunset gradient and a ding bubble, and it adapts well to a phone."}},
+"ranking":["Z","X","U","Y","W","V"]}

@@ -1,0 +1,161 @@
+{
+ "t1-fieldguide": {
+  "scores": {
+   "A": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "B": [
+    4.0,
+    3.0,
+    4.0
+   ],
+   "C": [
+    5.0,
+    5.0,
+    6.0
+   ]
+  },
+  "mean": {
+   "A": 1.0,
+   "B": 3.67,
+   "C": 5.33
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "C"
+    },
+    "most_varied": "C",
+    "note": "P is one entry written four times: a glowing-ridge charcoal Cinderback/ember-backed dragon with the same At a Glance table, Identification and Similar Species layout. Q and R vary names, settings and entry structure (trace-first, scholarly record, plate-caption style), but both keep converging on a wingless monitor-like animal with a banded tail and orange throat flash; Q has one gliding outlier and R has a witness-file framing and one winged outlier."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "C",
+     "R": "A"
+    },
+    "most_varied": "C",
+    "note": "P: all four use the same taxonomic-record template; P2-P4 are near-duplicates (wingless ember/ash wyrm, black jaw, 5-7 tail bands, juvenile synonym), with only P1 (winged glider drake) differing. Q: shares a template and the field-mark vocabulary, but the species, settings (karst, fjord, uplands) and framings differ, with Q4 a scholar's file with a named witness and Q3 opening on traces. R: essentially one cinderback ember-seam winged dragon four times, with the same At a Glance table, similar-species table and numbers."
+   },
+   "v3": {
+    "sets": {
+     "P": "C",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "C",
+    "note": "P has four distinct species and framings (taxonomic record, plate-style entry, scholar file with disputed witness, sign-led fjord wyrm with table) though all share a sober naturalist register and Komodo comparisons; Q is one Cinderback ember-seam dragon with near-identical At a Glance table, Similar Species table and headings four times; R repeats the same scaffold (Names, Identification, Komodo scale, black jaw, 1871 synonyms) and recurring ash/cinder wyrms, with R3 and R4 diverging somewhat in voice and structure."
+   }
+  }
+ },
+ "t2-pomodoro": {
+  "scores": {
+   "A": [
+    1.0,
+    1.0,
+    2.0
+   ],
+   "B": [
+    4.0,
+    5.0,
+    5.0
+   ],
+   "C": [
+    8.0,
+    9.0,
+    8.0
+   ]
+  },
+  "mean": {
+   "A": 1.33,
+   "B": 4.67,
+   "C": 8.33
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "C"
+    },
+    "most_varied": "C",
+    "note": "P is one design four times: dark or cream card, tab pill, coral ring, three buttons, dots and settings inputs, differing only in minor tweaks. Q is a full-bleed centered big-numeral layout repeated in blue and red with small changes (tabs, bar, checkboxes), so it varies mostly in colour and details. R differs in layout (centered, left-aligned monospace, pip-bar panel, hero count card, ASCII terminal), type and the way it shows progress and mode."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "C",
+     "R": "A"
+    },
+    "most_varied": "C",
+    "note": "P is all a big centered numeral with pill buttons and dots, varying mainly in background colour and type (P3 and P4 are near twins in navy); Q differs in layout and idea (card with a pomodoro-count hero numeral, ASCII-progress terminal, segmented cycle bar, full-bleed red); R is one ring-in-a-card with tabs, buttons and dots, only recoloured or reweighted."
+   },
+   "v3": {
+    "sets": {
+     "P": "C",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "C",
+    "note": "P mixes a terminal/ASCII-bar text layout, a tabbed card with a large serif count, a full-bleed red screen and a segmented cycle-bar design; Q is the same dark/light ring-in-a-card with a pill tab row and settings inputs four times; R has a red full-bleed, a mono left-aligned page and two near-identical navy centered pages (R3, R4), so it is only partly varied."
+   }
+  }
+ },
+ "t3-snowglobe": {
+  "scores": {
+   "A": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "B": [
+    4.0,
+    4.0,
+    4.0
+   ],
+   "C": [
+    8.0,
+    8.0,
+    9.0
+   ]
+  },
+  "mean": {
+   "A": 2.0,
+   "B": 4.0,
+   "C": 8.33
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "C"
+    },
+    "most_varied": "C",
+    "note": "P is one design four times (night cabin with pines and moon in a centered globe on a wooden base, pill buttons below; only P3 goes daytime). Q repeats the cabin and pines in all four, with two dark side-panel globes and two shelf rooms (day vs candle), so only staging differs. R has genuinely different scenes: window-lit shelf with a tiny globe, a rooftops city, an empty aurora-glitter globe, and a lighthouse in a room."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "C",
+     "R": "A"
+    },
+    "most_varied": "C",
+    "note": "P is mostly a cabin-and-pines globe on a wooden base four times, varied only by room context (shelf with lamp/candle vs dark studio with side panel); Q ranges from a glitter-only aurora globe to a lighthouse, a rooftop city and a tiny globe in a furnished room, with different compositions and UI; R is the same centered night cabin with moon, pines, wood base and pill controls four times."
+   },
+   "v3": {
+    "sets": {
+     "P": "C",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "C",
+    "note": "P has four distinct takes (lighthouse close-up, empty glitter-only dome, whole shelf room with a tiny globe, fisheye city rooftops) with different compositions and UI; Q is the same snowy cabin-and-pines globe on a wooden base four times with the same Shake/Night/Music box controls; R repeats the cabin (three of four) but varies framing (shelf room with candle, shelf with window, side-panel studio), so it sits in between."
+   }
+  }
+ }
+}

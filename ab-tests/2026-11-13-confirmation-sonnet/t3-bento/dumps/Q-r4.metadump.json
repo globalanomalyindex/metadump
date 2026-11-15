@@ -1,0 +1,99 @@
+{
+  "request": "a bento box-inspired collapsible UI menu component for a fictional coffee company site",
+  "thesis": "A menu that opens like a lacquered bento lid: a trigger collapses into a compact bar and unfolds into an asymmetric grid of compartments, each a different size, each holding one destination, like a lunch box packed by hand.",
+  "job": [
+    "see the closed menu bar/trigger and know it opens",
+    "open it by click, tap, Enter or Space",
+    "scan the compartments and spot the featured one",
+    "hover/focus a compartment and see it respond",
+    "pick a destination (it marks as current, a status line says so)",
+    "use a compartment's own control (quantity, roast toggle, newsletter email)",
+    "collapse it by trigger, Escape, outside click or after picking",
+    "do all of it by keyboard, on a phone, with reduced motion"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["disclosure pattern: button controls a region", "state must be visible: open, current, hover, focus", "one clear primary path, others secondary"],
+      "steps": ["closed -> open -> choose -> collapse"],
+      "tricks": ["close on Escape and return focus to trigger", "outside click closes", "roving arrow-key focus across tiles"],
+      "tests": ["tab through with no mouse", "open twice in a row, state still right"]
+    },
+    "visual design": {
+      "principles": ["compartments differ in size but share gutters and radius", "one dominant tile, several quiet ones", "warm coffee palette with one sharp accent"],
+      "steps": [],
+      "tricks": ["grid-template-areas with spans for the bento rhythm", "inner tile shadow like a tray inset"],
+      "tests": ["squint: is there one featured tile?", "does a stranger say bento?"]
+    },
+    "motion": {
+      "principles": ["transform and opacity only", "stagger tiles so the box 'packs' itself"],
+      "steps": [],
+      "tricks": ["grid-template-rows 0fr to 1fr for height collapse", "reverse stagger on close is faster"],
+      "tests": ["reduced motion removes movement"]
+    },
+    "accessibility": {
+      "principles": ["aria-expanded, aria-controls", "visible focus ring", "contrast 4.5:1"],
+      "steps": [],
+      "tricks": ["hidden tiles get inert/visibility hidden when closed"],
+      "tests": ["tab order while closed skips tiles"]
+    },
+    "front-end code": {
+      "principles": ["one state object, render from it", "no external requests"],
+      "steps": [],
+      "tricks": ["CSS custom properties for palette", "inline SVG icons"],
+      "tests": ["works from file://"]
+    }
+  },
+  "the_thing": {
+    "parts": ["trigger bar with brand mark and label", "compartment grid", "featured tile", "link tiles", "utility tile (cart count / quantity)", "status line"],
+    "expectations": ["collapses and expands", "tiles are clickable", "responsive down to a phone", "looks like a coffee brand"],
+    "kinds": [
+      {"name": "dropdown bento panel from a nav bar", "what": "classic: bar with trigger, grid unfolds beneath"},
+      {"name": "accordion bento", "what": "tiles individually expand in place"},
+      {"name": "full-screen takeover bento", "what": "menu fills the viewport"}
+    ]
+  },
+  "specifics": {
+    "brand": {
+      "keywords": {"1": ["coffee", "menu", "bento", "collapsible"], "2": ["roast", "beans", "brew", "cafe", "subscription"], "3": ["crema", "single origin", "pour-over", "cupping notes"]},
+      "descriptions": ["fictional roaster, e.g. Ember & Oak Coffee Roasters, small-batch", "tile copy short: verb + noun"],
+      "behaviors": [],
+      "tokens": {"espresso": "#2a1a12 to #3b2418", "cream": "#f4ead8 to #fbf5e9", "caramel accent": "#c8782f to #d98a3d", "sage": "#8a9a6b to #a3b18a", "radius": "14 to 22px", "gap": "8 to 14px"}
+    },
+    "layout": {
+      "keywords": {"1": ["grid", "tiles", "compartments"], "2": ["spans", "featured", "gutter"], "3": ["grid-template-areas", "tray inset", "lid"]},
+      "descriptions": ["4-col desktop, 2-col phone", "featured tile spans 2x2", "one wide tile spans 2 cols"],
+      "behaviors": [],
+      "tokens": {"panel width": "520 to 720px", "tile min height": "84 to 120px"}
+    },
+    "motion": {
+      "keywords": {"1": ["collapse", "expand"], "2": ["stagger", "ease-out"], "3": ["0fr to 1fr", "spring-ish cubic-bezier"]},
+      "descriptions": [],
+      "behaviors": ["open: panel height grows, tiles rise in with stagger 30 to 60ms", "close: quicker, no stagger"],
+      "tokens": {"open": "320 to 500ms", "close": "180 to 260ms", "stagger": "30 to 60ms"}
+    },
+    "states": {
+      "keywords": {"1": ["open", "closed", "current"], "2": ["hover", "focus-visible", "pressed"], "3": ["aria-current", "inert"]},
+      "descriptions": [],
+      "behaviors": ["picking a tile sets current, updates status line, collapses menu", "roast toggle cycles light/medium/dark and recolors its tile", "bag quantity +/- updates cart count in trigger", "email field validates on submit and says so"],
+      "tokens": {}
+    }
+  },
+  "anti_keywords": [
+    {"not": "generic equal-size card grid", "instead": "spans and a clear featured tile"},
+    {"not": "plain white dropdown list", "instead": "tray-like compartments with inset depth"},
+    {"not": "purple gradient or stock SaaS look", "instead": "roasted browns, cream, caramel"},
+    {"not": "buttons that do nothing", "instead": "every tile updates visible state"},
+    {"not": "bounce or long easing past 500ms", "instead": "fast ease-out with brief stagger"},
+    {"not": "external fonts, images, CDNs", "instead": "system serif/sans stack, inline SVG"}
+  ],
+  "checks": [
+    "closed: aria-expanded=false and tiles unreachable by Tab",
+    "click trigger: opens, aria-expanded=true",
+    "Escape closes and focus returns to trigger",
+    "clicking a tile marks it current and status text changes",
+    "quantity plus raises cart count",
+    "looks right at 375px wide",
+    "no network requests"
+  ],
+  "built": ["dropdown bento panel from a nav bar"]
+}

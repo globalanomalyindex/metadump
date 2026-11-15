@@ -1,0 +1,124 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A basic calculator is a tool people trust with money and homework; the interesting part is that it feels like a physical object (weighty keys, a readable display) while never lying about arithmetic.",
+  "job": [
+    "open it, see a zero on the display",
+    "type digits and a decimal point, see them appear",
+    "pick an operator (+ - × ÷), see which one is pending",
+    "type the second number, press equals, read the result",
+    "chain operations (2 + 3 × 4 style left-to-right, or equals-less chaining)",
+    "repeat equals to repeat the last operation",
+    "correct a mistake: backspace, clear entry, all clear",
+    "flip sign, percent",
+    "use keyboard instead of mouse",
+    "hit an error (divide by zero) and recover",
+    "read a long number without it overflowing",
+    "glance at the history/expression line to know what was done"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["every press gets immediate feedback", "state is always visible: pending operator, current entry", "big targets, no accidental destructive taps", "keyboard parity with mouse"],
+      "steps": ["map the key set", "define the state machine", "define each key's effect in each state", "add keyboard map"],
+      "tricks": ["highlight the pending operator key", "AC becomes C when there is an entry", "pressing an operator twice replaces it", "equals repeats last op", "backspace only edits the entry being typed"],
+      "tests": ["2+3= gives 5", "pressing = twice with 2+3 gives 8", "5 / 0 shows an error, next digit recovers", "0.1+0.2 shows 0.3", "type 1 2 3 backspace gives 12"]
+    },
+    "visual design": {
+      "principles": ["display is the hero, high contrast, tabular numerals", "operator keys distinct from digits, equals the strongest", "consistent grid and gaps", "one accent colour"],
+      "steps": ["pick object metaphor", "pick palette", "set type scale", "lay out 4x5 grid"],
+      "tricks": ["font-variant-numeric: tabular-nums", "shrink font as digits grow", "inset display, raised keys", "pressed state moves key down 1-2px"],
+      "tests": ["squint test: display, then equals, then operators", "contrast at least 4.5:1", "works at 320 px wide"]
+    },
+    "motion": {
+      "principles": ["feedback is fast, under 120 ms", "motion confirms, never decorates"],
+      "tricks": ["key press scale 0.96 to 0.98", "display value flicks or fades 80 ms on new result", "respect prefers-reduced-motion"],
+      "tests": ["rapid tapping never queues animation lag"]
+    },
+    "accessibility": {
+      "principles": ["real buttons with labels", "live region announces the display", "visible focus ring"],
+      "tricks": ["aria-label 'divide', 'multiply', 'minus'", "role=status aria-live=polite on display"],
+      "tests": ["tab through every key", "screen reader reads result"]
+    },
+    "front-end code": {
+      "principles": ["one state object, one render function", "pure compute function for arithmetic", "no external requests"],
+      "steps": ["state {display, acc, op, fresh, expr}", "input handlers", "compute", "render", "keyboard listener"],
+      "tricks": ["round results to 12 significant digits to kill float noise", "use toPrecision then Number", "switch to exponent for very large values", "data-attributes for key dispatch"],
+      "tests": ["0.1+0.2", "1/3 fits display", "999999999999*999999999999 does not break layout", "- 5 negative entry"]
+    }
+  },
+  "the_thing": {
+    "parts": ["display with current value", "expression/history line", "digit keys 0-9", "decimal point", "operators + - × ÷", "equals", "AC / C", "backspace", "plus-minus", "percent"],
+    "expectations": ["works like a pocket calculator", "immediate evaluation chaining left to right", "no surprise rounding", "keyboard works", "zero shown at start", "error does not brick it"],
+    "kinds": [
+      {"name": "pocket calculator", "what": "classic 4x5 key grid, left-to-right immediate execution, single display"},
+      {"name": "tape calculator", "what": "adding-machine style with a scrolling tape of past lines"},
+      {"name": "expression calculator", "what": "type a full expression and evaluate with precedence"},
+      {"name": "retro LCD calculator", "what": "seven-segment-feel display, grey plastic keys"}
+    ]
+  },
+  "specifics": {
+    "layout": {
+      "keywords": {"1": ["calculator", "digits", "operators", "equals", "display", "clear"], "2": ["4-column grid", "wide zero key", "history line", "pending operator highlight"], "3": ["tabular-nums", "container query sizing", "thumb zone", "key travel"]},
+      "descriptions": ["display on top spanning full width, keys below in a 4-column grid", "zero spans two columns or sits at bottom left", "equals at bottom right in accent colour"],
+      "behaviors": ["window narrower: calculator keeps max-width 360 to 420 px and centres", "display shrinks font when digits exceed about 9"],
+      "tokens": {"key gap": "8 to 12 px", "key radius": "12 to 20 px", "calculator width": "320 to 400 px", "display height": "96 to 140 px", "display font": "40 to 64 px, shrinks to 24 px"}
+    },
+    "colour_and_material": {
+      "keywords": {"1": ["dark", "accent", "contrast"], "2": ["warm orange equals", "muted function keys", "soft shadow"], "3": ["inset display", "bakelite", "braun ET66 inspired", "matte plastic"]},
+      "descriptions": ["Braun-like: off-white body, charcoal digits keys, one orange equals, slim grey function keys", "or dark graphite with amber operators"],
+      "behaviors": ["pressed key darkens 6 to 10 percent", "active operator inverts colours"],
+      "tokens": {"body": "#e9e6df or #1d1f24", "display bg": "#c9d1b8 to #14161a", "accent": "#e8590c to #ff9f0a", "text": "#16181d or #f4f4f2"}
+    },
+    "typography": {
+      "keywords": {"1": ["numbers", "legible"], "2": ["monospace-feel digits", "tabular figures"], "3": ["system-ui numerics", "ui-rounded", "SF Mono fallback to ui-monospace"]},
+      "descriptions": ["no web fonts: use system stack: ui-rounded, system-ui, -apple-system, Segoe UI, sans-serif; digits in ui-monospace or tabular-nums"],
+      "behaviors": ["weight 300 to 500 on display, 500 to 600 on keys"],
+      "tokens": {"key label": "20 to 28 px", "history line": "13 to 16 px"}
+    },
+    "motion": {
+      "keywords": {"1": ["press", "feedback"], "2": ["key depress", "display flash"], "3": ["spring", "ripple"]},
+      "descriptions": ["short scale-down on active, quick return"],
+      "behaviors": ["result change: 90 ms opacity/translate settle"],
+      "tokens": {"press": "60 to 120 ms", "result settle": "120 to 200 ms", "scale": "0.95 to 0.98"}
+    },
+    "logic": {
+      "keywords": {"1": ["add", "subtract", "multiply", "divide", "equals", "clear"], "2": ["chaining", "repeat equals", "decimal guard", "divide by zero error"], "3": ["float rounding", "sign toggle on result", "percent as fraction of accumulator"]},
+      "descriptions": ["state machine: entering first, operator chosen, entering second, result shown", "percent: with a pending op a+b% means b% of a; alone it divides by 100"],
+      "behaviors": ["digit after result starts new number", "operator after result continues with it", "second decimal point ignored", "leading zeros collapsed", "backspace on single digit returns 0", "max 12 digits entered"],
+      "tokens": {"significant digits": "10 to 12", "max entry length": "12 to 15"}
+    },
+    "keyboard": {
+      "keywords": {"1": ["keyboard", "enter", "escape", "backspace"], "2": ["numpad", "* and / keys"], "3": ["preventDefault on slash for quick find"]},
+      "descriptions": ["0-9 . + - * / Enter = Backspace Escape % supported"],
+      "behaviors": ["pressed key visually flashes its on-screen twin"],
+      "tokens": {}
+    },
+    "copy_and_states": {
+      "keywords": {"1": ["0", "Error"], "2": ["Cannot divide by zero"], "3": ["empty state is a zero"]},
+      "descriptions": ["error text short, in display, clears on next input"],
+      "behaviors": ["AC resets everything", "C clears current entry"],
+      "tokens": {}
+    }
+  },
+  "anti_keywords": [
+    {"not": "eval() of a typed string", "instead": "explicit state machine with a pure compute function"},
+    {"not": "0.30000000000000004 on screen", "instead": "round to 12 significant digits"},
+    {"not": "buttons that are divs", "instead": "real button elements with aria-labels"},
+    {"not": "display overflowing the card", "instead": "auto-shrink font and exponent notation"},
+    {"not": "generic glossy purple gradient", "instead": "one committed material: Braun-style off-white and orange, or graphite and amber"},
+    {"not": "operator shown only after press with no cue", "instead": "pending operator key stays highlighted"},
+    {"not": "NaN or Infinity shown", "instead": "friendly Error that recovers on next key"}
+  ],
+  "checks": [
+    "Does 2 + 3 = show 5 and = again show 8?",
+    "Does 0.1 + 0.2 show 0.3?",
+    "Does 5 / 0 show an error and recover?",
+    "Does a long number stay inside the display?",
+    "Do keyboard digits, operators, Enter, Backspace and Escape work?",
+    "Is the pending operator visible?",
+    "Do backspace, +/-, % and AC work?",
+    "Is every key a labelled button with a focus ring?",
+    "Does it fit at 320 px wide?",
+    "Are there zero external requests?"
+  ],
+  "built": ["pocket calculator"]
+}

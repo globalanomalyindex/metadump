@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+:root{--wax:#ff4d2e;--wax2:#ffb347;--liquid:#2a0a3a;--liquid2:#5a1450;--glow:255,90,50}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(ellipse at 50% 60%,#1c1226,#09060d 70%);color:#e9dff0;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:36px;align-items:center;justify-content:center;padding:20px;overflow-x:hidden}
+.lamp{position:relative;width:240px;height:560px;filter:drop-shadow(0 0 calc(var(--on,1)*70px) rgba(var(--glow),.45));transition:filter .8s}
+.cap{position:absolute;left:78px;top:0;width:84px;height:46px;background:linear-gradient(90deg,#6b6270,#d8d0dc 35%,#8d8492 60%,#4e4654);clip-path:polygon(30% 0,70% 0,100% 100%,0 100%);border-radius:6px}
+.glass{position:absolute;left:0;top:40px;width:240px;height:400px;clip-path:polygon(33% 0,67% 0,92% 100%,8% 100%);background:linear-gradient(var(--liquid2),var(--liquid));cursor:grab;touch-action:none}
+.glass canvas{width:100%;height:100%;display:block;image-rendering:auto}
+.shine{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.22),transparent 18%,transparent 70%,rgba(255,255,255,.12) 90%,transparent);}
+.dark{position:absolute;inset:0;background:#05030a;opacity:.82;pointer-events:none;transition:opacity .8s}
+.on .dark{opacity:0}
+.base{position:absolute;left:14px;top:432px;width:212px;height:128px;background:linear-gradient(90deg,#4e4654,#cfc6d4 30%,#8d8492 62%,#3f3845);clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);border-radius:0 0 18px 18px}
+.base i{position:absolute;left:50%;bottom:22px;width:10px;height:10px;border-radius:50%;transform:translateX(-50%);background:#400;box-shadow:0 0 0 3px #2b2630;transition:.3s}
+.on .base i{background:#ff6a3a;box-shadow:0 0 0 3px #2b2630,0 0 14px 4px rgba(var(--glow),.9)}
+.panel{width:290px;background:#16101c;border:1px solid #2e2438;border-radius:14px;padding:18px;display:grid;gap:16px}
+h1{margin:0;font-size:18px;letter-spacing:.04em}
+label{display:grid;gap:6px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#a898b6}
+label span b{float:right;color:#fff;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--wax)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;color:#fff;background:#2a2033;border:1px solid #43344f;border-radius:8px;padding:8px 12px;cursor:pointer}
+button:hover{background:#38294400;border-color:#7a5f90}
+button:focus-visible,input:focus-visible{outline:2px solid #ffb347;outline-offset:2px}
+.sw{width:34px;height:34px;padding:0;border-radius:50%;border:2px solid transparent}
+.sw[aria-pressed=true]{border-color:#fff}
+#power[aria-pressed=true]{background:#7a2a14;border-color:#ff6a3a}
+.stat{font-size:12px;color:#a898b6;display:flex;justify-content:space-between}
+.stat b{color:#fff}
+.hint{font-size:12px;color:#85769a;margin:0}
+</style>
+</head>
+<body>
+<div class="lamp on" id="lamp">
+  <div class="cap"></div>
+  <div class="glass" id="glass" title="Click to add a blob, drag to stir">
+    <canvas id="cv" width="120" height="260"></canvas>
+    <div class="shine"></div><div class="dark"></div>
+  </div>
+  <div class="base"><i></i></div>
+</div>
+
+<div class="panel">
+  <h1>LAVA LAMP</h1>
+  <div class="row"><button id="power" aria-pressed="true">Lamp: on</button><button id="shake">Shake</button><button id="addb">Add blob</button><button id="rmb">Remove</button></div>
+  <label><span>Heat <b id="hv">60%</b></span><input id="heat" type="range" min="0" max="100" value="60"></label>
+  <label><span>Thickness <b id="tv">50%</b></span><input id="visc" type="range" min="0" max="100" value="50"></label>
+  <div><label style="margin-bottom:8px">Wax color</label>
+    <div class="row" id="swatches"></div></div>
+  <div class="stat"><span>Blobs <b id="nb">0</b></span><span>Rising <b id="nr">0</b></span><span>Temp <b id="tm">0</b>&deg;C</span></div>
+  <p class="hint">Click the glass to drop in wax, drag to stir. Warm it up and the wax rises; it cools at the top and sinks.</p>
+</div>
+
+<script>
+(function(){
+const W=120,H=260;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const img=ctx.createImageData(W,H),px=img.data;
+const lamp=document.getElementById('lamp'),glass=document.getElementById('glass');
+const palettes=[
+ {n:'Ember',a:[255,70,40],b:[255,190,80],liq:['#5a1450','#2a0a3a'],glow:'255,90,50'},
+ {n:'Lime',a:[120,230,40],b:[230,255,90],liq:['#0d4a5a','#06222e'],glow:'140,240,60'},
+ {n:'Magenta',a:[255,50,170],b:[255,150,220],liq:['#2a1a6a','#120a38'],glow:'255,70,190'},
+ {n:'Aqua',a:[30,200,220],b:[150,250,240],liq:['#4a1a5a','#1d0a30'],glow:'50,210,230'},
+ {n:'Gold',a:[255,170,20],b:[255,235,120],liq:['#6a1a1a','#2d0a10'],glow:'255,180,40'}
+];
+let pal=palettes[0],on=true,heat=.6,visc=.5,temp=24;
+const state={blobs:[],pool:[]};
+const hw=y=>{const t=y/H;return W*(.33+(.92-.33)*0)*0+ (W*.5)*(.34+.58*t)-4};
+function mk(x,y){const r=9+Math.random()*8;return{x:x??W/2+(Math.random()-.5)*40,y:y??H-20-Math.random()*40,vx:0,vy:0,r,t:Math.random()*.4+.1}}
+for(let i=0;i<9;i++)state.blobs.push(mk());
+// bottom pool & top cap fields
+const pool=[];for(let i=0;i<6;i++)pool.push({x:10+i*20,y:H+14,r:30});
+const topc=[{x:W/2,y:-10,r:22}];
+
+// swatches
+const sw=document.getElementById('swatches');
+palettes.forEach((p,i)=>{const b=document.createElement('button');b.className='sw';b.title=p.n;b.setAttribute('aria-label',p.n);
+ b.style.background=`linear-gradient(135deg,rgb(${p.b}),rgb(${p.a}))`;b.setAttribute('aria-pressed',i==0);
+ b.onclick=()=>{pal=p;[...sw.children].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  document.documentElement.style.setProperty('--liquid2',p.liq[0]);document.documentElement.style.setProperty('--liquid',p.liq[1]);
+  document.documentElement.style.setProperty('--glow',p.glow)};
+ sw.appendChild(b)});
+
+const $=id=>document.getElementById(id);
+$('heat').oninput=e=>{heat=e.target.value/100;$('hv').textContent=e.target.value+'%'};
+$('visc').oninput=e=>{visc=e.target.value/100;$('tv').textContent=e.target.value+'%'};
+$('power').onclick=e=>{on=!on;e.target.setAttribute('aria-pressed',on);e.target.textContent='Lamp: '+(on?'on':'off');lamp.classList.toggle('on',on);lamp.style.setProperty('--on',on?1:0)};
+$('shake').onclick=()=>state.blobs.forEach(b=>{b.vx+=(Math.random()-.5)*4;b.vy+=(Math.random()-.5)*4});
+$('addb').onclick=()=>{if(state.blobs.length<16)state.blobs.push(mk())};
+$('rmb').onclick=()=>{if(state.blobs.length>2)state.blobs.pop()};
+
+// pointer: click adds blob, drag stirs
+let drag=null;
+function pos(e){const r=glass.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+glass.addEventListener('pointerdown',e=>{glass.setPointerCapture(e.pointerId);const p=pos(e);drag={x:p.x,y:p.y,moved:0};glass.style.cursor='grabbing'});
+glass.addEventListener('pointermove',e=>{if(!drag)return;const p=pos(e),dx=p.x-drag.x,dy=p.y-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);
+ for(const b of state.blobs){const d=Math.hypot(b.x-p.x,b.y-p.y);if(d<b.r+16){b.vx+=dx*.12;b.vy+=dy*.12}}drag.x=p.x;drag.y=p.y});
+glass.addEventListener('pointerup',e=>{if(drag&&drag.moved<6&&state.blobs.length<16){const p=pos(e);state.blobs.push(mk(p.x,p.y))}drag=null;glass.style.cursor='grab'});
+
+function step(dt){
+ const target=on?heat:0;
+ temp+=((20+target*60)-temp)*dt*.15;
+ const warm=Math.max(0,(temp-24)/60);
+ const drag_=.90+visc*.07;
+ let rising=0;
+ for(const b of state.blobs){
+  const nearBottom=b.y>H-55, nearTop=b.y<45;
+  if(nearBottom)b.t+=warm*dt*.5; else b.t-=dt*.05*(1+(nearTop?3:0)*1);
+  if(nearTop)b.t-=dt*.25;
+  b.t=Math.max(0,Math.min(1,b.t));
+  const buoy=(b.t-.45)*warm*(70-visc*35)/b.r*1.6;
+  b.vy-=buoy*dt*3;
+  b.vy+=(b.t<.45?1:0)*dt*2*(1-warm*.5);
+  b.vx+=(Math.random()-.5)*dt*.5;
+  const k=Math.pow(drag_,dt*60);
+  b.vx*=k;b.vy*=k;
+  b.x+=b.vx*dt*20;b.y+=b.vy*dt*20;
+  const lim=hw(b.y)-b.r*.55;
+  if(b.x>W/2+lim){b.x=W/2+lim;b.vx*=-.4}
+  if(b.x<W/2-lim){b.x=W/2-lim;b.vx*=-.4}
+  if(b.y<b.r*.5+8){b.y=b.r*.5+8;b.vy=Math.abs(b.vy)*.2}
+  if(b.y>H-b.r*.4){b.y=H-b.r*.4;b.vy*=-.2}
+  // soft repulsion keeps blobs from fusing totally
+  for(const o of state.blobs){if(o===b)continue;const dx=b.x-o.x,dy=b.y-o.y,d=Math.hypot(dx,dy)||1,m=(b.r+o.r)*.55;
+   if(d<m){const f=(m-d)*.01;b.vx+=dx/d*f;b.vy+=dy/d*f}}
+  if(b.vy<-.15)rising++;
+ }
+ $('nb').textContent=state.blobs.length;$('nr').textContent=rising;$('tm').textContent=Math.round(temp);
+}
+
+function render(){
+ const bl=state.blobs;
+ const ar=pal.a,br=pal.b;
+ const lit=on?1:.25;
+ let i=0;
+ for(let y=0;y<H;y++){
+  for(let x=0;x<W;x++){
+   let f=0;
+   for(let k=0;k<bl.length;k++){const b=bl[k],dx=x-b.x,dy=y-b.y;f+=b.r*b.r/(dx*dx+dy*dy+1)}
+   for(let k=0;k<pool.length;k++){const b=pool[k],dx=x-b.x,dy=y-b.y;f+=b.r*b.r/(dx*dx+dy*dy+1)}
+   const c=topc[0],tx=x-c.x,ty=y-c.y;f+=c.r*c.r/(tx*tx+ty*ty+1)*.8;
+   if(f<.92){px[i+3]=0}
+   else{
+    const t=Math.min(1,(f-1)/2.2);       // 0 edge -> 1 core
+    const heatMix=Math.max(0,Math.min(1,1-y/H*.9));  // lit from the bottom
+    const m=t*.55+heatMix*.45;
+    px[i]=(ar[0]+(br[0]-ar[0])*m)*lit;
+    px[i+1]=(ar[1]+(br[1]-ar[1])*m)*lit;
+    px[i+2]=(ar[2]+(br[2]-ar[2])*m)*lit;
+    px[i+3]=f<1.05?(f-.92)/.13*255:255;
+   }
+   i+=4;
+  }
+ }
+ ctx.putImageData(img,0,0);
+}
+
+let last=performance.now();
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;
+ step(dt);render();requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+// pre-warm so the lamp isn't empty on load
+for(let i=0;i<200;i++)step(.03);
+})();
+</script>
+</body>
+</html>

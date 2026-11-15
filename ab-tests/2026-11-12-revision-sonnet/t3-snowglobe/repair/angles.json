@@ -1,0 +1,27 @@
+[
+  {
+    "angle": "close-up dome",
+    "text": "A tight frame on the glass after one shake: the curve and a hard window highlight fill the top, glitter still falls through the haze past the miniature scene, and the base's full width sits along the bottom edge.",
+    "draws_on": ["fr-00-00-14", "mb-glass", "lens-magnify", "mb-liquid-particles", "sp-glitter-fall", "sp-fall-time"]
+  },
+  {
+    "angle": "shelf in a room",
+    "text": "The dome on its base fills the middle of the frame with a soft room behind it, as on a shelf; a few seconds after a shake, flakes still hang and sink through the water while the scene and the base read in full.",
+    "draws_on": ["mb-base-in-context", "sb-base", "p-souvenir", "mb-composition", "sp-glitter-fall", "sp-fall-time"]
+  },
+  {
+    "angle": "hard shake, long settle",
+    "text": "Caught a few seconds after one hard shake: the whole dome churns with glitter, and the particles keep moving and sink slowly over the base.",
+    "draws_on": ["mo-shake-hard", "sp-glitter-fall", "sp-fall-time", "vs-shake-timing"]
+  },
+  {
+    "angle": "one colour family",
+    "text": "A dome on its base in one colour family: blue-tinted water with white glitter, and a slow tilt that sends the glitter floating down past the scene, with the glass and its highlight carrying the look.",
+    "draws_on": ["sb-colour-cold", "mo-shake-gentle-tilt", "sp-glitter-fall", "vs-scene-subjects"]
+  },
+  {
+    "angle": "long exposure streaks",
+    "text": "One upright frame of the dome on its base, taken with a long exposure: the flakes show as streaks falling through the water, their lengths and the haze showing the settle, with the miniature scene sharp at the bottom.",
+    "draws_on": ["mo-still-reading", "fr-00-00-24", "p-liquid", "sp-glitter-fall"]
+  }
+]

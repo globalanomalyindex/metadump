@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Readable pelican with big pouch, helmet and wing on the handlebar, working pause, speed, reverse and honk controls, though the legs and hip placement are a bit odd."},
+"V": {"fidelity": 7, "correctness": 8, "craft": 9, "usability": 9, "overall": 8, "note": "Most polished in craft, controls and accessibility, but it swaps in a cargo bike with a crate and the S-curved neck and wing are not on the handlebar."},
+"W": {"fidelity": 9, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Clean and correct pelican on a regular bike with pause, speed and honk, but the legs and pedals look slightly tangled."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Large, well-drawn bike and pelican with a nice pouch and chain details, a hand-on-bar wing, and pause, cadence and click-to-honk controls."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Layered parallax hills, a bell and a speed readout, but the pelican's neck is faint and the legs and frame are thin."},
+"Z": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Cute outlined pelican with a clear neck and bill that reads well, a simple bike and few controls (pause, speed)."}
+},
+"ranking": ["U", "X", "Z", "V", "W", "Y"]}

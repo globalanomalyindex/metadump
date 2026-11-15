@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Simple, complete two-color ASCII mixer with ratio bar, linear/sRGB models, keyboard shortcuts and validation; only the gradient bar overflows on mobile."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Pigment pots plus three mixing models feeding a painted ASCII grid; seeded demo shows mixing at once, responsive, but grander than 'simple'."},
+"W": {"fidelity": 6, "correctness": 7, "craft": 5, "usability": 5, "overall": 5, "note": "Bowl-and-brush painter opens on an empty dotted canvas with only a one-line ASCII bowl, and on mobile the controls are clipped off the right edge."},
+"X": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 7, "note": "Animated ASCII bowl that ripples to each mixed color is charming and simple, but starts empty and the Black pigment label is nearly invisible."},
+"Y": {"fidelity": 6, "correctness": 7, "craft": 7, "usability": 6, "overall": 6, "note": "Full paint program with many controls and a bolted-on two-color mixer, which overshoots 'simple' and splits focus, though painting and mixing work."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Two-color ratio mixer with command prompt, history and arrow keys works well, but the dither glyph field looks noisy and the placeholder prompt is cut off on mobile."}
+},
+"ranking": ["U", "V", "X", "Z", "Y", "W"]}

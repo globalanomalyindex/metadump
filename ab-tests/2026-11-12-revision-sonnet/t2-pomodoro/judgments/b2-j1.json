@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j1","scores":{
+"U":{"simple":6,"correctness":9,"usability":9,"craft":8,"code":6,"overall":8,"note":"Huge clear timer, progress bar, endAt-based timing, live region and Resume state, but adds persistence, presets, auto-start and clear-count that pad a simple timer."},
+"V":{"simple":9,"correctness":9,"usability":8,"craft":8,"code":8,"overall":8.5,"note":"Clean warm design with mode tabs, progress bar, pause state labelled, aria and live region; lean and well-scoped, only a small phone-width weakness."},
+"W":{"simple":8,"correctness":7,"usability":5,"craft":7,"code":8,"overall":6,"note":"Nice dark card with ring, but pause shows Start instead of Resume, no aria or live region or reduced motion, and no reset shortcut."},
+"X":{"simple":8,"correctness":9.5,"usability":9,"craft":9,"code":7,"overall":9,"note":"Best balance: ring with state text, Resume label, announced session end, aria-pressed tabs, undo on reset and shortcut hints, without bloat."},
+"Y":{"simple":8,"correctness":7,"usability":5,"craft":7,"code":8,"overall":6,"note":"Same dark-card ring as W with duration inputs; works but pause reads Start, no aria or live region, and a leftover dead expression in the dots code."},
+"Z":{"simple":5,"correctness":8,"usability":6,"craft":6,"code":6,"overall":5.5,"note":"Distinct monospace look but wordy status copy, two reset buttons and a confirm-to-reset step that made reset not work in one press; no visual progress and clumsy phone layout."}
+},"ranking":["X","V","U","Z","W","Y"]}

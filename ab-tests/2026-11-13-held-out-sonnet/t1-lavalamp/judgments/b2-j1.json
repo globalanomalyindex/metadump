@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"likeness": 6, "visuals": 7, "motion": 4, "presentation": 8, "overall": 6, "note": "Warm, cohesive egg-shaped lamp with a lovely glow and clean phone layout, but the wax is a big mass up top and a pool below with little visible stretching or splitting."},
+"V": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 6, "overall": 8, "note": "Most convincing lamp with a chrome base and cap, glowing violet liquid and merging, splitting wax blobs, though the phone view crops the cap and the panel is a bit generic."},
+"W": {"likeness": 5, "visuals": 3, "motion": 4, "presentation": 5, "overall": 4, "note": "Pixelated, jagged wax edges and a dark, dull tube; blobs rise but one big mass dominates and the glow is weak."},
+"X": {"likeness": 8, "visuals": 7, "motion": 6, "presentation": 8, "overall": 7, "note": "Atmospheric purple lamp with a bright wax pool and a tidy compact control bar, but the wax reads as small soft circles that merge only a little."},
+"Y": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Clear lava lamp with pink-orange metaball wax that merges and stretches, but the glass is flat and the base plain."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 4, "presentation": 8, "overall": 7, "note": "Polished chrome lamp and staged shelf scene with a nice glow, but the wax clings to one cluster near the top and barely moves."}
+}, "ranking": ["V", "X", "Z", "Y", "U", "W"]}

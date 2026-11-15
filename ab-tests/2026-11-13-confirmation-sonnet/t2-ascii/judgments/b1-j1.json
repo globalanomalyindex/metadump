@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Simple, faithful two-color mixer with a ratio slider, glyph-shaded preview and hex/rgb readout, but the ASCII picture is a small muted box and the mix is visually flat."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 9, "usability": 8, "overall": 8, "note": "Pigment pots, selectable mixing models and a colorful painted ASCII grid make a rich, visibly working engine, though it is somewhat more than 'simple'."},
+"W": {"fidelity": 6, "correctness": 6, "craft": 5, "usability": 5, "overall": 5, "note": "Bowl-and-canvas concept works but the canvas looks empty and dotted at rest, the glyph grid does not fill its panel, and the first controls change little visibly."},
+"X": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 6, "overall": 6, "note": "Pigment-parts mixer with ASCII bowl and light/paint modes works and shows blending, but starts empty and dark so the first view conveys little, and the glyph blob is dim."},
+"Y": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Paint-on-grid with RGB sliders, mix modes and a two-color mixer is full-featured and interactive, but the sparse dotted glyphs are small and the panel is crowded for 'simple'."},
+"Z": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Two-color ratio mixer with a command prompt is compact and works, but the glyph field looks like noisy purple punctuation and the prompt input is more obscure than a simple interaction needs."}
+},
+"ranking": ["V", "U", "Y", "X", "Z", "W"]}

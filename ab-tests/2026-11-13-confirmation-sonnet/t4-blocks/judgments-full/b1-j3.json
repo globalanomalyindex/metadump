@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 5, "usability": 6, "overall": 6, "note": "Works with Erase, Grid, Undo, Generate and Clear, but opens as an empty dark grid with faint lines and low-contrast, flat blocks."},
+"V": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Clean, accessible, with per-kind counts, hover ghost, status text and large touch targets, but only 4 kinds and an empty start that feels bare."},
+"W": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Pre-built scene with house, tree, pond and 9 beveled blocks plus erase, Undo, Clear and persistence; sky-less dark background keeps it a bit plain."},
+"X": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Polished with DPR-aware canvas, pop animation, confirm-to-clear and 8-cell guides, yet only 4 kinds and an empty start."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 6, "usability": 7, "overall": 7, "note": "Pre-filled ground with 10 colors, Place, Erase, Pick, Fill, Grid and Undo tools gives the most functionality, though visuals are plain and some key labels are hard to read."},
+"Z": {"fidelity": 9, "correctness": 9, "craft": 10, "usability": 8, "overall": 9, "note": "Textured blocks, sky gradient, clouds, generated terrain with trees and water, line-interpolated drags, New world and Undo make it a charming, complete sandbox."}
+},
+"ranking": ["Z", "W", "Y", "V", "X", "U"]}

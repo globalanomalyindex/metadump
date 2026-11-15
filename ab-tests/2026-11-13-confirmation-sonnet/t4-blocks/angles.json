@@ -1,0 +1,48 @@
+[
+  {
+    "angle": "flat block grid",
+    "text": "A top-down field of square cells with a drawn grid; a click puts the selected block into a cell, a right-click takes it out.",
+    "draws_on": [
+      "sb-grid-cells",
+      "cv-place-remove",
+      "cv-target-shown"
+    ]
+  },
+  {
+    "angle": "toy box with a palette",
+    "text": "Two or three block kinds on one row, picked by number keys; a click places the selected kind, a right-click takes a block back out, and each block sits on a tidy grid with a count of the kinds in use.",
+    "draws_on": [
+      "w-kinds",
+      "cv-keys",
+      "sr-palette",
+      "cp-hick"
+    ]
+  },
+  {
+    "angle": "stacked columns",
+    "text": "A 32 by 32 base where each click adds one block to the column under the pointer, up to a height cap, and a right-click takes the top block back down.",
+    "draws_on": [
+      "sr-grid-columns",
+      "w-dimension",
+      "w-edges"
+    ]
+  },
+  {
+    "angle": "paint-by-cell stroke",
+    "text": "Press and drag across the grid to lay blocks along the path, one per cell crossed; a right-click drag takes them back out, and a short pause shows the stroke's end.",
+    "draws_on": [
+      "q-block-building",
+      "cv-place-remove",
+      "cv-feedback"
+    ]
+  },
+  {
+    "angle": "ghost-preview grid",
+    "text": "A translucent preview of the chosen block sits on the empty cell under the pointer; a click places it, a right-click removes a placed block, and a line of text names that cell's column and row.",
+    "draws_on": [
+      "cv-preview-before-click",
+      "ctl-select-and-place",
+      "cv-target-shown"
+    ]
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "request": "a bento box-inspired collapsible UI menu component for a fictional coffee company site",
+  "thesis": "A menu that opens like a lacquered bento lid: unequal compartments of one tight grid, each holding one small thing, collapsing back to a single pill.",
+  "job": ["see a closed trigger/pill that says menu", "open it (click, Enter/Space)", "scan compartments of different sizes", "pick a destination (beans, brew gear, subscribe, visit, story)", "interact with a compartment state (choose roast, toggle grind or size, add to order count)", "see the chosen state reflected", "collapse it again (button, Esc, outside click)", "use it by keyboard and on a phone"],
+  "disciplines": {
+    "interaction design": {"principles": ["disclosure pattern: button controls a region", "state is visible", "reversible"], "steps": ["trigger", "expand", "choose", "collapse"], "tricks": ["aria-expanded + aria-controls", "Esc closes and returns focus to trigger", "grid-template-rows 0fr to 1fr animates height without JS measuring"], "tests": ["tab through whole menu", "close with Esc", "click outside"]},
+    "visual design": {"principles": ["unequal tiles, equal gutters", "one radius family, nested radii = outer minus gap", "one accent"], "steps": ["lay 4-col grid", "assign spans", "tint tiles"], "tricks": ["a tile with a big number or glyph reads at a glance", "slightly different tile tints from one hue family"], "tests": ["squint: do sizes form a clear hierarchy", "no tile empty"]},
+    "motion": {"principles": ["lid opens, tiles settle in staggered", "fast out"], "steps": ["height reveal", "stagger tiles 30-60ms"], "tricks": ["transform+opacity only for tiles"], "tests": ["reduced-motion removes movement"]},
+    "front-end code": {"principles": ["semantic buttons", "one state object, render from it"], "steps": [], "tricks": ["CSS variables for theme", "data attributes for state"], "tests": ["no console errors", "works from file://"]}
+  },
+  "the_thing": {
+    "parts": ["trigger pill", "collapsible panel", "bento grid of compartments", "compartment tiles with title+content", "selected-state indicators", "close affordance"],
+    "expectations": ["rounded compartments", "snug uniform gap", "mixed tile sizes", "calm warm palette"],
+    "kinds": [{"name": "dropdown bento panel", "what": "pill trigger opens a grid panel below it"}, {"name": "accordion bento", "what": "each tile expands in place"}, {"name": "sidebar bento drawer", "what": "tiles stack in a slide-out"}]
+  },
+  "specifics": {
+    "brand": {"keywords": {"1": ["coffee", "menu", "bento", "collapsible"], "2": ["roast", "beans", "brew", "cup", "subscription"], "3": ["crema", "single origin", "pour-over", "cupping", "washed process"]}, "descriptions": ["fictional brand: Kettle & Crema Roasters", "voice: short, warm, a bit wry"], "tokens": {}},
+    "layout": {"keywords": {"1": ["bento", "grid", "compartments"], "2": ["span", "gap", "radius"], "3": ["asymmetric tiling", "grid-auto-flow dense"]}, "descriptions": ["4 columns desktop, 2 on phone", "one hero tile spans 2x2, one wide tile spans 2x1"], "behaviors": ["on narrow screens spans collapse to 2 cols"], "tokens": {"gap": "8 to 14 px", "radius": "14 to 24 px", "panel padding": "10 to 16 px"}},
+    "color": {"keywords": {"1": ["coffee", "warm"], "2": ["espresso", "cream", "caramel"], "3": ["oat", "terracotta", "sage as counterpoint"]}, "descriptions": ["cream page, espresso ink, caramel accent"], "tokens": {"espresso": "#2a1a12 to #3b2418", "cream": "#f6ecdc to #fbf4e8", "caramel": "#c8803a to #d99a4e", "sage": "#8a9a7b"}},
+    "motion": {"keywords": {"1": ["collapse", "expand"], "2": ["stagger", "ease-out"], "3": ["0fr to 1fr rows"]}, "descriptions": [], "behaviors": ["open: panel grows, tiles rise 8px and fade in"], "tokens": {"panel": "280 to 450 ms", "stagger": "30 to 60 ms", "ease": "cubic-bezier(.2,.8,.2,1)"}},
+    "states": {"keywords": {"1": ["selected", "open", "closed"], "2": ["hover", "focus-visible", "pressed", "count"], "3": ["roving selection"]}, "descriptions": ["roast: 3-way segmented; grind toggle; cup counter with + and -; selected label echoed in trigger or order tile"], "behaviors": ["choice updates a summary line", "counter clamps 0 to 9"], "tokens": {}}
+  },
+  "anti_keywords": [
+    {"not": "equal-size card grid", "instead": "clear size hierarchy with a hero tile"},
+    {"not": "dropdown list of links", "instead": "compartments with content inside"},
+    {"not": "purple gradient, glass blur", "instead": "matte warm tiles with hairline borders"},
+    {"not": "decorative-only tiles", "instead": "every tile does something or goes somewhere"},
+    {"not": "mega-menu with dozens of items", "instead": "menu is not a full site: 5 to 7 tiles"},
+    {"not": "external fonts or images", "instead": "system serif/sans stack, inline SVG or CSS shapes"}
+  ],
+  "checks": ["trigger toggles aria-expanded", "Esc closes", "roast selection updates summary", "counter changes number", "phone width has no horizontal scroll", "no network requests"],
+  "built": ["dropdown bento panel"]
+}

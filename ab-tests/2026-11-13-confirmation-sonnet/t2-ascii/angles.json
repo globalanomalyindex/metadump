@@ -1,0 +1,66 @@
+[
+  {
+    "angle": "ratio dial",
+    "text": "A simple interactive ASCII color-mixing program on one terminal screen: two color chips, a bar showing the ratio between them, and a large ASCII swatch of the mix with its hex value. Arrow keys move the ratio and the screen repaints on each press.",
+    "draws_on": [
+      "req-interactive",
+      "ia-ratio-change",
+      "ia-feedback",
+      "rr-readout",
+      "opt-key-map"
+    ]
+  },
+  {
+    "angle": "shaded picture",
+    "text": "The mix fills the screen as a field of ASCII characters from sparse to dense: density carries brightness, the glyph color carries hue, and the hex value sits underneath. Keys move the ratio and the field re-shades on each press.",
+    "draws_on": [
+      "rr-ramp",
+      "tr-glyph-ramp",
+      "req-ascii",
+      "req-color-mixing"
+    ]
+  },
+  {
+    "angle": "model comparer",
+    "text": "Two block-swatch columns of the same pair, one per mixing model (channel mean and linear light), each labelled with its value in ASCII. One ratio control moves both columns at once, so the difference between the models shows as the ratio changes.",
+    "draws_on": [
+      "cp-mixing-models",
+      "cp-linear-light",
+      "mm-average-srgb",
+      "mm-linear-light",
+      "opt-two-readout",
+      "req-interactive"
+    ]
+  },
+  {
+    "angle": "command-line mixer",
+    "text": "A prompt line under a live ASCII swatch. A person types a ratio or a color and presses Enter, and the swatch and its value update at once; the arrow keys step the same ratio live between entries.",
+    "draws_on": [
+      "q-interactive",
+      "opt-color-entry",
+      "ia-state",
+      "rr-labelled"
+    ]
+  },
+  {
+    "angle": "mix function with a readout",
+    "text": "A simple engine built from a pure function that takes two colors and a ratio and returns one color, with a thin interactive loop around it. The picture is a labelled ASCII cell with its hex value printed on the mix, and a test calls the function directly.",
+    "draws_on": [
+      "mm-ratio-n",
+      "rr-labelled",
+      "q-simple",
+      "req-engine",
+      "opt-model-switch"
+    ]
+  },
+  {
+    "angle": "ratio strip",
+    "text": "A row of block cells running from the first color to the second, twenty steps wide, with the chosen step marked. A swatch and a hex value sit beside the row, and the keys step along it.",
+    "draws_on": [
+      "opt-step-size",
+      "rr-swatch",
+      "ia-ratio-change",
+      "req-ascii"
+    ]
+  }
+]

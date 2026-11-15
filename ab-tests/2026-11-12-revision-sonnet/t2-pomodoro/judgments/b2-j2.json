@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"simple": 7, "correctness": 9, "usability": 9, "craft": 9, "code": 7, "overall": 9, "note": "Polished ring dial with clear phase and state, solid timestamp-based timing, live-region announcements and keyboard shortcuts, slightly padded by undo-reset and skip."},
+"V": {"simple": 8, "correctness": 7, "usability": 5, "craft": 7, "code": 8, "overall": 6, "note": "Handsome compact card with working timer and auto-advance, but no aria state, no timer role, no live announcements and the finish silently jumps phase."},
+"W": {"simple": 5, "correctness": 8, "usability": 8, "craft": 6, "code": 5, "overall": 6, "note": "Big clear clock and thoughtful status text with confirm-reset and auto-start options, but overbuilt with a reset-whole-cycle flow, notifications and a plain, cramped phone layout."},
+"X": {"simple": 8, "correctness": 7, "usability": 5, "craft": 6, "code": 8, "overall": 5, "note": "Lean and correct, but the ring is a thin line, nothing is announced to screen readers and the finish switches phase with only a beep."},
+"Y": {"simple": 9, "correctness": 9, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Genuinely simple and complete: huge clock, progress bar, mode tabs, a finished hold state with Start next button, live announcements, and a clean phone layout."},
+"Z": {"simple": 5, "correctness": 8, "usability": 8, "craft": 8, "code": 5, "overall": 7, "note": "Bold full-colour phases with a giant clock and good phone layout, but padded with presets, persistence, auto-start and clear-count undo, and skip from focus always goes to a short break."}
+}, "ranking": ["Y", "U", "Z", "W", "V", "X"]}

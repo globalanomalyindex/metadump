@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root { --bg:#14161a; --body:#1f2227; --key:#2c3037; --keyh:#363b43; --op:#3b4a63; --oph:#475a7a; --acc:#f2a33a; --acch:#ffb85c; --txt:#eef0f3; --dim:#8a919c; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--txt); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:16px; }
+  .calc { width:100%; max-width:340px; background:var(--body); border-radius:22px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+  .display { background:#0e1013; border-radius:14px; padding:14px 16px; margin-bottom:16px; text-align:right; min-height:104px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden; }
+  .expr { color:var(--dim); font-size:15px; min-height:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .val { font-size:44px; font-weight:300; line-height:1.15; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .keys { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  button { font:inherit; font-size:22px; color:var(--txt); background:var(--key); border:0; border-radius:12px; height:60px; cursor:pointer; transition:background .12s, transform .08s; }
+  button:hover { background:var(--keyh); }
+  button:active { transform:scale(.95); }
+  button:focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
+  button.op { background:var(--op); }
+  button.op:hover { background:var(--oph); }
+  button.op.active { background:var(--acc); color:#1a1205; }
+  button.eq { background:var(--acc); color:#1a1205; font-weight:600; }
+  button.eq:hover { background:var(--acch); }
+  button.fn { color:var(--acc); }
+  .span2 { grid-column:span 2; }
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="display" aria-live="polite">
+    <div class="expr" id="expr"></div>
+    <div class="val" id="val">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="fn" data-a="clear" id="clr">AC</button>
+    <button class="fn" data-a="sign">+/-</button>
+    <button class="fn" data-a="pct">%</button>
+    <button class="op" data-a="op" data-v="/">÷</button>
+    <button data-a="d" data-v="7">7</button>
+    <button data-a="d" data-v="8">8</button>
+    <button data-a="d" data-v="9">9</button>
+    <button class="op" data-a="op" data-v="*">×</button>
+    <button data-a="d" data-v="4">4</button>
+    <button data-a="d" data-v="5">5</button>
+    <button data-a="d" data-v="6">6</button>
+    <button class="op" data-a="op" data-v="-">−</button>
+    <button data-a="d" data-v="1">1</button>
+    <button data-a="d" data-v="2">2</button>
+    <button data-a="d" data-v="3">3</button>
+    <button class="op" data-a="op" data-v="+">+</button>
+    <button data-a="d" data-v="0" class="span2">0</button>
+    <button data-a="dot">.</button>
+    <button class="eq" data-a="eq">=</button>
+  </div>
+</main>
+<script>
+(function(){
+  var SYM = {'+':'+','-':'−','*':'×','/':'÷'};
+  var s = { cur:'0', prev:null, op:null, fresh:true, err:false, last:null };
+  var valEl = document.getElementById('val'), exprEl = document.getElementById('expr'), clr = document.getElementById('clr');
+
+  function fmt(str){
+    if (s.err) return str;
+    var neg = str[0]==='-', t = neg?str.slice(1):str, p = t.split('.');
+    p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg?'-':'') + p.join('.');
+  }
+  function num(n){
+    if (!isFinite(n)) return null;
+    var r = parseFloat(n.toPrecision(12));
+    var str = String(r);
+    if (/e/.test(str)) str = r.toExponential(6).replace(/\.?0+e/,'e');
+    return str;
+  }
+  function calc(a,b,op){
+    a = parseFloat(a); b = parseFloat(b);
+    var r = op==='+'?a+b : op==='-'?a-b : op==='*'?a*b : (b===0?NaN:a/b);
+    return num(r);
+  }
+  function fail(){ s = { cur:'Cannot divide by 0', prev:null, op:null, fresh:true, err:true, last:null }; }
+  function render(){
+    valEl.textContent = fmt(s.cur);
+    var len = valEl.textContent.length;
+    valEl.style.fontSize = s.err ? '22px' : (len>14?'24px':len>11?'30px':len>8?'36px':'44px');
+    exprEl.textContent = s.last ? s.last : (s.op ? fmt(s.prev)+' '+SYM[s.op] : '');
+    clr.textContent = (s.cur!=='0' && !s.fresh) ? 'C' : 'AC';
+    document.querySelectorAll('button.op').forEach(function(b){
+      b.classList.toggle('active', s.op===b.dataset.v && s.fresh && !s.err);
+    });
+  }
+  function digit(d){
+    if (s.err) s = { cur:'0', prev:null, op:null, fresh:true, err:false, last:null };
+    if (s.last) { s.last = null; }
+    if (s.fresh) { s.cur = d; s.fresh = false; }
+    else if (s.cur.replace(/[-.]/g,'').length < 12) s.cur = s.cur==='0' ? d : s.cur + d;
+  }
+  function dot(){
+    if (s.err) s = { cur:'0', prev:null, op:null, fresh:true, err:false, last:null };
+    s.last = null;
+    if (s.fresh) { s.cur = '0.'; s.fresh = false; }
+    else if (s.cur.indexOf('.')<0) s.cur += '.';
+  }
+  function operator(o){
+    if (s.err) return;
+    s.last = null;
+    if (s.op && !s.fresh) {
+      var r = calc(s.prev, s.cur, s.op);
+      if (r===null) { fail(); return; }
+      s.prev = r; s.cur = r;
+    } else if (!s.op) s.prev = s.cur;
+    s.op = o; s.fresh = true;
+  }
+  function equals(){
+    if (s.err || !s.op) return;
+    var r = calc(s.prev, s.cur, s.op);
+    if (r===null) { fail(); return; }
+    s.last = fmt(s.prev)+' '+SYM[s.op]+' '+fmt(s.cur)+' =';
+    s.cur = r; s.prev = null; s.op = null; s.fresh = true;
+  }
+  function clear(){
+    if (s.cur!=='0' && !s.fresh && !s.err) { s.cur='0'; s.fresh=true; }
+    else s = { cur:'0', prev:null, op:null, fresh:true, err:false, last:null };
+  }
+  function sign(){
+    if (s.err || s.cur==='0') return;
+    s.cur = s.cur[0]==='-' ? s.cur.slice(1) : '-'+s.cur;
+  }
+  function pct(){
+    if (s.err) return;
+    var r = num(parseFloat(s.cur)/100);
+    s.cur = r; s.fresh = true;
+  }
+  function back(){
+    if (s.err || s.fresh) return;
+    s.cur = s.cur.length>1 && !(s.cur.length===2 && s.cur[0]==='-') ? s.cur.slice(0,-1) : '0';
+  }
+  function act(a,v){
+    if (a==='d') digit(v); else if (a==='dot') dot(); else if (a==='op') operator(v);
+    else if (a==='eq') equals(); else if (a==='clear') clear(); else if (a==='sign') sign(); else if (a==='pct') pct();
+    render();
+  }
+  document.getElementById('keys').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (b) act(b.dataset.a, b.dataset.v);
+  });
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^[0-9]$/.test(k)) act('d', k);
+    else if (k==='.' || k===',') act('dot');
+    else if ('+-*/'.indexOf(k)>=0) act('op', k);
+    else if (k==='x' || k==='X') act('op','*');
+    else if (k==='Enter' || k==='=') { e.preventDefault(); act('eq'); }
+    else if (k==='Escape' || k==='c' || k==='C') act('clear');
+    else if (k==='%') act('pct');
+    else if (k==='Backspace') { back(); render(); }
+    else return;
+    if (k==='/' || k==='Enter') e.preventDefault();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

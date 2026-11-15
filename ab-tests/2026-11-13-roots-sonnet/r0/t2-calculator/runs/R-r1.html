@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{--bg:#121317;--body:#1e1f25;--digit:#34363f;--fn:#4a4d58;--accent:#ff9f43;--text:#f4f4f6;--muted:#9a9ca8}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+.calc{width:100%;max-width:360px;background:var(--body);border-radius:28px;padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06)}
+.screen{padding:14px 10px 18px;text-align:right;min-height:130px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.expr{height:22px;color:var(--muted);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.result{font-size:56px;font-weight:300;font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap;transition:font-size .12s}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+button{font:inherit;font-size:24px;height:68px;border:0;border-radius:20px;color:var(--text);background:var(--digit);cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35);transition:transform .1s,filter .1s}
+button:hover{filter:brightness(1.12)}
+button:active{transform:translateY(2px) scale(.96);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.fn{background:var(--fn)}
+.op{background:var(--accent);color:#1b1206;font-size:28px}
+.op.active{background:#fff;color:var(--accent)}
+.zero{grid-column:span 2}
+@media(max-width:360px){button{height:58px;font-size:21px}.result{font-size:46px}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="screen">
+    <div class="expr" id="expr"></div>
+    <div class="result" id="result" role="status" aria-live="polite">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="AC" aria-label="All clear" id="ac">AC</button>
+    <button class="fn" data-k="neg" aria-label="Toggle sign">+/−</button>
+    <button class="fn" data-k="pct" aria-label="Percent">%</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="op" data-k="=" aria-label="Equals">=</button>
+  </div>
+</main>
+<script>
+(function(){
+  var S={entry:"0",acc:null,op:null,fresh:true,last:null,lastOp:null,err:false,expr:""};
+  var $r=document.getElementById("result"),$e=document.getElementById("expr");
+  var sym={"+":"+","-":"−","*":"×","/":"÷"};
+  function clean(n){return parseFloat(n.toPrecision(12));}
+  function calc(a,op,b){
+    if(op==="+")return a+b; if(op==="-")return a-b; if(op==="*")return a*b;
+    if(op==="/")return b===0?NaN:a/b; return b;
+  }
+  function fmt(s){
+    if(S.err)return "Error";
+    var n=Number(s);
+    if(typeof s==="string"&&s.indexOf("e")<0&&/^-?\d*\.?\d*$/.test(s)&&!isFinite(n)===false&&s.length<=12)return addCommas(s);
+    if(Math.abs(n)>=1e12||(Math.abs(n)<1e-9&&n!==0))return n.toExponential(5).replace(/\.?0+e/,"e");
+    return addCommas(String(clean(n)));
+  }
+  function addCommas(s){
+    var p=s.split("."),i=p[0],neg=i[0]==="-";if(neg)i=i.slice(1);
+    i=i.replace(/\B(?=(\d{3})+(?!\d))/g,",");
+    return (neg?"-":"")+i+(p.length>1?"."+p[1]:"");
+  }
+  function render(){
+    var t=fmt(S.entry);
+    $r.textContent=t;
+    $r.style.fontSize=t.length>14?"30px":t.length>11?"38px":t.length>8?"46px":"";
+    $e.textContent=S.expr;
+    var btns=document.querySelectorAll(".op");
+    for(var i=0;i<btns.length;i++){
+      var k=btns[i].getAttribute("data-k");
+      btns[i].classList.toggle("active",S.op===k&&S.fresh&&S.acc!==null&&k!=="=");
+    }
+    document.getElementById("ac").textContent=(S.entry!=="0"&&!S.fresh&&!S.err)?"C":"AC";
+  }
+  function digit(d){
+    if(S.err)reset();
+    if(S.fresh){S.entry=d;S.fresh=false;if(S.op===null&&S.lastOp){S.acc=null;S.expr="";}}
+    else if(S.entry.replace(/[-.]/g,"").length<12)S.entry=S.entry==="0"?d:(S.entry==="-0"?"-"+d:S.entry+d);
+  }
+  function dot(){
+    if(S.err)reset();
+    if(S.fresh){S.entry="0.";S.fresh=false;return;}
+    if(S.entry.indexOf(".")<0)S.entry+=".";
+  }
+  function reset(){S={entry:"0",acc:null,op:null,fresh:true,last:null,lastOp:null,err:false,expr:""};}
+  function operate(o){
+    if(S.err)return;
+    var cur=parseFloat(S.entry);
+    if(S.op!==null&&!S.fresh){
+      var r=calc(S.acc,S.op,cur);
+      if(isNaN(r)){fail();return;}
+      S.acc=clean(r);S.entry=String(S.acc);
+    }else if(S.acc===null||S.op===null){S.acc=cur;}
+    S.op=o;S.fresh=true;S.lastOp=null;
+    S.expr=fmt(String(S.acc))+" "+sym[o];
+  }
+  function fail(){S.err=true;S.acc=null;S.op=null;S.fresh=true;S.expr="";}
+  function equals(){
+    if(S.err)return;
+    var cur=parseFloat(S.entry),r,a;
+    if(S.op!==null){
+      a=S.acc;var b=S.fresh&&S.acc!==null&&S.op&&false?a:cur;
+      r=calc(a,S.op,b);
+      if(isNaN(r)){fail();return;}
+      S.expr=fmt(String(a))+" "+sym[S.op]+" "+fmt(String(b))+" =";
+      S.lastOp=S.op;S.last=b;
+    }else if(S.lastOp){
+      r=calc(cur,S.lastOp,S.last);
+      if(isNaN(r)){fail();return;}
+      S.expr=fmt(String(cur))+" "+sym[S.lastOp]+" "+fmt(String(S.last))+" =";
+    }else return;
+    r=clean(r);S.entry=String(r);S.acc=r;S.op=null;S.fresh=true;
+  }
+  function press(k){
+    if(k>="0"&&k<="9"&&k.length===1)digit(k);
+    else if(k===".")dot();
+    else if("+-*/".indexOf(k)>=0)operate(k);
+    else if(k==="=")equals();
+    else if(k==="AC"){ if($("ac").textContent==="C"&&!S.err){S.entry="0";S.fresh=true;} else reset(); }
+    else if(k==="back"){
+      if(S.err){reset();}
+      else if(!S.fresh){S.entry=S.entry.length>1&&!(S.entry.length===2&&S.entry[0]==="-")?S.entry.slice(0,-1):"0";}
+    }
+    else if(k==="neg"&&!S.err){
+      if(S.entry!=="0"){S.entry=S.entry[0]==="-"?S.entry.slice(1):"-"+S.entry;if(S.fresh&&S.op===null)S.acc=parseFloat(S.entry);}
+    }
+    else if(k==="pct"&&!S.err){
+      S.entry=String(clean(parseFloat(S.entry)/100));S.fresh=false;
+    }
+    render();
+  }
+  function $(id){return document.getElementById(id);}
+  document.getElementById("keys").addEventListener("click",function(e){
+    var b=e.target.closest("button");if(b)press(b.getAttribute("data-k"));
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,m=null;
+    if(/^[0-9]$/.test(k))m=k;
+    else if(k==="."||k===",")m=".";
+    else if("+-*/".indexOf(k)>=0)m=k;
+    else if(k==="x"||k==="X")m="*";
+    else if(k==="Enter"||k==="="){m="=";e.preventDefault();}
+    else if(k==="Backspace")m="back";
+    else if(k==="Escape"||k==="Delete")m="AC";
+    else if(k==="%")m="pct";
+    if(m===null)return;
+    if(k==="/")e.preventDefault();
+    press(m);
+    var el=document.querySelector('[data-k="'+(m==="back"?"AC":m)+'"]');
+    if(el&&m!=="back"){el.classList.add("hit");}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

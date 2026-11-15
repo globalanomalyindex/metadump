@@ -105,7 +105,7 @@ Or just ask your agent to update it for you. `claude plugin list` shows which ve
 
 ## Use
 
-/metadump:metadump in your agent, or just ask for one: "make a metadump for ...", and attach photos or files or paste links to pages or videos if you have them. Say "lite" if you want it fast or "deep" if you want everything.
+/metadump:metadump in your agent, or just ask for one: "make a metadump for ...", and attach photos or files or paste links to pages or videos if you have them. Say "quick" if you want it in about a minute with no agents (the model just writes out what it knows first, which is where this whole idea started), "lite" if you want a small swarm, or "deep" if you want everything.
 
 It saves to `metadumps/<slug>.metadump.json` in your project. Scratch work goes in `metadumps/.work/`, and you can delete that whenever.
 
@@ -121,19 +121,22 @@ Once a dump exists, you don't have to do anything. Any skill working in that pro
 .claude-plugin/              plugin + marketplace manifest
 skills/metadump/
   SKILL.md                   how the skill works (create mode + use mode)
-  references/                the full procedure, worker briefs, format, mechanisms, export rules
+  references/                the full procedure, worker briefs, format, mechanisms, export rules, and quick mode on one page
   scripts/finalize.py        builds and checks the dump (Python 3.9+, no installs)
   scripts/index.workflow.js  the subagent fan-out for the Workflow tool
   scripts/webpages.py        fetches, cleans and screenshots pages
   scripts/video.py           video info, captions, frames and timing
   scripts/images.py          collects images, samples colors, makes the moodboard
   scripts/tools.py           shows which optional tools you have
+  scripts/deal.py            deals each session a different angle and half of the dump
+  scripts/look.py, play.py   renders what got built, plays it, and lists what breaks
   scripts/cdp.py, pixels.py  the headless Chrome driver and PNG decoder (plain Python)
   evals/                     test prompts
 tests/                       tests for all of it (one of them drives your Chrome if you have it)
 ab-tests/                    the A/B tests: prompts, dumps, builds, screenshots, grades, scripts
 examples/metadumps/          dumps made with this
 GLOSSARY.md, docs/adr/       the words and decisions behind it
+docs/evidence.md             what the A/B tests found, piece by piece, and what stayed because of it
 docs/clean-room/             how the page scraper got written without copying anyone
 ```
 

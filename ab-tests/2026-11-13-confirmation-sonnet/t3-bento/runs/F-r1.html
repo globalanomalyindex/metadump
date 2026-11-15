@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tin &amp; Ember Bento Menu</title>
+<style>
+:root{
+  --ground:#1d1715; --ground-2:#2c2826; --cream:#efe6d8; --cream-2:#e4d6c3; --ink:#3b2a22;
+  --accent:#c4552d; --accent-ink:#fff6ee; --line:rgba(239,230,216,.16);
+  --gap:10px; --r:18px;
+  --label:"Arial Narrow","Roboto Condensed","Helvetica Neue Condensed","Franklin Gothic Medium Cond","Impact",sans-serif;
+  --body:-apple-system,"Segoe UI",system-ui,Helvetica,Arial,sans-serif;
+  --open-ms:300ms; --close-ms:130ms;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--cream);font-family:var(--body);min-height:100vh;line-height:1.4}
+a{color:inherit}
+.site{max-width:1080px;margin:0 auto;padding:0 16px 48px}
+header.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;position:relative;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--label);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:20px}
+.brand i{width:30px;height:30px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-style:normal;color:var(--accent-ink);font-size:16px}
+.bar-right{display:flex;align-items:center;gap:12px}
+.bag{font-family:var(--label);text-transform:uppercase;letter-spacing:.08em;font-size:14px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.bag b{background:var(--cream);color:var(--ink);border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:13px;padding:0 6px;transition:transform .2s}
+.bag b.bump{transform:scale(1.35)}
+
+/* trigger: a small pile of tins that is also the handle */
+.trigger{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 16px 0 52px;border-radius:999px;border:0;background:var(--cream);color:var(--ink);font-family:var(--label);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:15px;cursor:pointer}
+.trigger .pile{position:absolute;left:10px;top:50%;width:30px;height:30px;transform:translateY(-50%)}
+.pile s{position:absolute;left:0;right:0;height:10px;border-radius:4px;background:var(--ground);transition:transform .25s}
+.pile s:nth-child(1){top:2px;transform:rotate(-6deg);background:#5a4034}
+.pile s:nth-child(2){top:10px;transform:rotate(3deg);background:var(--accent)}
+.pile s:nth-child(3){top:18px;transform:rotate(-2deg);background:var(--ground)}
+.trigger[aria-expanded="true"] .pile s:nth-child(1){transform:translateX(-4px) rotate(-14deg)}
+.trigger[aria-expanded="true"] .pile s:nth-child(2){transform:translateX(4px) rotate(10deg)}
+.trigger:hover{background:#fff4e4}
+.trigger:focus-visible,.cell:focus-visible,.bag:focus-visible{outline:3px solid #ffd49a;outline-offset:3px}
+
+/* panel */
+.panel{position:absolute;right:16px;top:100%;width:min(720px,calc(100vw - 32px));z-index:10;visibility:hidden;pointer-events:none;
+  transition:visibility 0s linear calc(var(--close-ms) + 120ms)}
+.panel.open{visibility:visible;pointer-events:auto;transition:visibility 0s}
+.shell{position:relative}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:112px;gap:var(--gap);padding:var(--gap);border-radius:calc(var(--r) + 8px);position:relative;
+  background:rgba(29,23,21,.0);}
+.panel.open .grid{background:rgba(44,40,38,.96);box-shadow:0 24px 60px rgba(0,0,0,.55);transition:background var(--open-ms) ease-out,box-shadow var(--open-ms) ease-out}
+.cell{position:relative;overflow:hidden;border-radius:var(--r);padding:14px 16px;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;min-height:44px;
+  background:var(--ground-2);color:var(--cream);border:1px solid var(--line);
+  transform:translate(var(--tx,0),var(--ty,0)) rotate(var(--rot,0deg)) scale(var(--sc,1));opacity:1;
+  transition:transform var(--close-ms) cubic-bezier(.5,0,.8,.4) var(--dc,0ms),opacity var(--close-ms) linear var(--dc,0ms),box-shadow .2s,filter .2s;will-change:transform}
+.panel:not(.open) .cell{opacity:0}
+.panel.open .cell{transition:transform var(--open-ms) cubic-bezier(.16,.8,.3,1) var(--do,0ms),opacity 140ms linear var(--do,0ms),box-shadow .2s,filter .2s}
+.cell:hover{filter:brightness(1.08);box-shadow:inset 0 0 0 2px rgba(255,212,154,.55)}
+.cell[aria-current="page"]{box-shadow:inset 0 0 0 3px #ffd49a}
+.cell .k{font-family:var(--label);font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.cell .t{font-family:var(--label);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:22px;line-height:1.05}
+.cell .d{font-size:13px;opacity:.85;max-width:30ch}
+.cell .ico{position:absolute;right:12px;top:12px;width:26px;height:26px;opacity:.9}
+.hero{grid-column:span 2;grid-row:span 2;background:linear-gradient(160deg,#3a2a22 0%,#1d1715 70%);padding:18px}
+.hero .t{font-size:clamp(30px,5vw,46px)}
+.hero svg.beans{position:absolute;right:-6px;top:-4px;width:46%;height:auto;opacity:.95}
+.hero .t{font-size:clamp(26px,4vw,38px)}
+.wide{grid-column:span 2}
+.cream{background:var(--cream);color:var(--ink);border-color:transparent}
+.hot{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.dark{background:var(--ground)}
+.cta{background:var(--cream-2);color:var(--ink)}
+
+/* status page behind */
+main{padding:56px 0 0}
+main .stage{border-radius:28px;border:1px solid var(--line);padding:clamp(24px,5vw,56px);background:linear-gradient(180deg,#241c19,#1d1715)}
+.stage .eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:13px;opacity:.7}
+.stage h1{font-family:var(--label);text-transform:uppercase;letter-spacing:.03em;font-size:clamp(40px,8vw,88px);line-height:.95;margin:10px 0 16px;font-weight:700}
+.stage p{max-width:52ch;opacity:.85;margin:0 0 20px}
+.status{display:inline-flex;gap:10px;align-items:center;font-family:var(--label);text-transform:uppercase;letter-spacing:.08em;font-size:14px;padding:8px 14px;border-radius:999px;background:var(--ground-2);border:1px solid var(--line)}
+.status em{font-style:normal;color:#ffd49a}
+.hint{margin-top:18px;font-size:13px;opacity:.6}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:104px}
+  .hero{grid-column:span 2;grid-row:span 2}
+  .panel{right:16px;left:16px;width:auto}
+  .brand{font-size:17px}
+  .bag span.lbl{display:none}
+  .cell .t{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){
+  .cell,.panel.open .cell{transform:none!important;transition:opacity 150ms linear!important}
+  .pile s,.bag b{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="site">
+  <header class="bar" id="bar">
+    <div class="brand"><i aria-hidden="true">T</i> Tin &amp; Ember</div>
+    <div class="bar-right">
+      <a class="bag" href="#bag" id="bagLink"><span class="lbl">Bag</span><b id="bagCount" aria-live="polite">0</b></a>
+      <button class="trigger" id="trigger" type="button" aria-expanded="false" aria-controls="panel">
+        <span class="pile" aria-hidden="true"><s></s><s></s><s></s></span>
+        <span id="trigLabel">Menu</span>
+      </button>
+    </div>
+    <nav class="panel" id="panel" aria-label="Tin &amp; Ember">
+      <div class="shell">
+        <div class="grid" id="grid">
+          <a class="cell hero" href="#shop" data-page="Shop beans">
+            <svg class="beans" viewBox="0 0 200 160" aria-hidden="true">
+              <g fill="#5a4034" stroke="#2c2826" stroke-width="2">
+                <ellipse cx="60" cy="50" rx="34" ry="46" transform="rotate(-30 60 50)"/>
+                <ellipse cx="130" cy="70" rx="34" ry="46" transform="rotate(25 130 70)" fill="#7a5744"/>
+                <ellipse cx="90" cy="125" rx="32" ry="42" transform="rotate(-70 90 125)" fill="#3f2d25"/>
+              </g>
+              <g fill="none" stroke="#1d1715" stroke-width="4" stroke-linecap="round">
+                <path d="M40 78 C55 55 68 40 82 22"/><path d="M112 98 C124 75 140 58 152 42"/><path d="M62 140 C78 122 98 110 120 106"/>
+              </g>
+            </svg>
+            <span class="k">Roasted this week</span>
+            <span class="t">Shop beans</span>
+            <span class="d">Single origins and house blends, tinned fresh.</span>
+          </a>
+          <a class="cell cream wide" href="#subscriptions" data-page="Subscriptions">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5"/></svg>
+            <span class="k">Never run dry</span>
+            <span class="t">Subscriptions</span>
+          </a>
+          <a class="cell hot" href="#quiz" data-page="Coffee quiz">
+            <span class="k">2 minutes</span>
+            <span class="t">Coffee quiz</span>
+          </a>
+          <a class="cell dark" href="#cafes" data-page="Cafes">
+            <span class="k">Find us</span>
+            <span class="t">Cafes</span>
+          </a>
+          <a class="cell cream wide" href="#guides" data-page="Brew guides">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8h11v6a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V8zM16 10h2a2 2 0 0 1 0 4h-2M8 3v2M12 3v2"/></svg>
+            <span class="k">Pour, press, drip</span>
+            <span class="t">Brew guides</span>
+          </a>
+          <a class="cell dark" href="#wholesale" data-page="Wholesale">
+            <span class="k">For shops</span>
+            <span class="t">Wholesale</span>
+          </a>
+          <a class="cell cta" href="#order" data-action="add">
+            <span class="k" id="orderK">Add a tin</span>
+            <span class="t">Order now</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="stage">
+      <div class="eyebrow">Small-batch roasters</div>
+      <h1>Coffee, tinned<br>and tidy.</h1>
+      <p>Open the menu: the tins lift out of the pile into one grid. Pick a compartment to move around the site; Order now adds a tin to your bag.</p>
+      <div class="status" role="status">Viewing <em id="where">Home</em> &middot; Menu <em id="menuState">closed</em></div>
+      <div class="hint">Esc closes the menu and returns to the handle. A click outside also folds it away.</div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var trigger=document.getElementById('trigger'),
+      panel=document.getElementById('panel'),
+      grid=document.getElementById('grid'),
+      cells=[].slice.call(grid.querySelectorAll('.cell')),
+      where=document.getElementById('where'),
+      menuState=document.getElementById('menuState'),
+      bagCount=document.getElementById('bagCount'),
+      trigLabel=document.getElementById('trigLabel'),
+      orderK=document.getElementById('orderK');
+  var state={open:false,page:'Home',bag:0};
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* each cell is parked at the pile (the trigger) when closed */
+  function park(){
+    var tr=trigger.getBoundingClientRect(), pr=panel.getBoundingClientRect();
+    var cx=tr.left+tr.width/2, cy=tr.top+tr.height/2;
+    cells.forEach(function(c,i){
+      var x=pr.left+10+c.offsetLeft+c.offsetWidth/2, y=pr.top+10+c.offsetTop+c.offsetHeight/2;
+      /* offsetLeft is relative to grid (padding box) so remove double padding */
+      x=pr.left+c.offsetLeft+c.offsetWidth/2; y=pr.top+c.offsetTop+c.offsetHeight/2;
+      c.style.setProperty('--tx',(cx-x)+'px');
+      c.style.setProperty('--ty',(cy-y)+'px');
+      c.style.setProperty('--sc','0.12');
+      c.style.setProperty('--rot',((i%3)-1)*7+'deg');
+      c.style.setProperty('--do',(i*38)+'ms');
+      c.style.setProperty('--dc',((cells.length-1-i)*10)+'ms');
+    });
+  }
+  function settle(){
+    cells.forEach(function(c){
+      c.style.setProperty('--tx','0px');c.style.setProperty('--ty','0px');
+      c.style.setProperty('--sc','1');c.style.setProperty('--rot','0deg');
+    });
+  }
+  function render(){
+    panel.classList.toggle('open',state.open);
+    trigger.setAttribute('aria-expanded',String(state.open));
+    trigLabel.textContent=state.open?'Close':'Menu';
+    menuState.textContent=state.open?'open':'closed';
+    cells.forEach(function(c){
+      c.tabIndex=state.open?0:-1;
+      c.setAttribute('aria-hidden',state.open?'false':'true');
+      var cur=c.dataset.page&&c.dataset.page===state.page;
+      if(cur)c.setAttribute('aria-current','page');else c.removeAttribute('aria-current');
+    });
+    where.textContent=state.page;
+    bagCount.textContent=state.bag;
+    orderK.textContent=state.bag?('In your bag: '+state.bag):'Add a tin';
+    if(state.open){settle();}else{park();}
+  }
+  function set(open,focusTrigger){
+    if(state.open===open)return;
+    if(open){park();void grid.offsetWidth;} /* start from the pile */
+    state.open=open;
+    render();
+    if(open){var f=cells[0];setTimeout(function(){f.focus({preventScroll:true});},reduce.matches?0:60);}
+    else if(focusTrigger){trigger.focus();}
+  }
+  trigger.addEventListener('click',function(){set(!state.open,false);});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&state.open){set(false,true);}
+  });
+  document.addEventListener('click',function(e){
+    if(state.open&&!panel.contains(e.target)&&!trigger.contains(e.target))set(false,false);
+  });
+  panel.addEventListener('focusout',function(e){
+    if(state.open&&e.relatedTarget&&!panel.contains(e.relatedTarget)&&e.relatedTarget!==trigger)set(false,false);
+  });
+  cells.forEach(function(c){
+    c.addEventListener('click',function(e){
+      e.preventDefault();
+      if(c.dataset.action==='add'){
+        state.bag++;render();
+        bagCount.classList.add('bump');setTimeout(function(){bagCount.classList.remove('bump');},220);
+        return;
+      }
+      state.page=c.dataset.page;
+      set(false,true);
+      render();
+    });
+  });
+  document.getElementById('bagLink').addEventListener('click',function(e){e.preventDefault();state.page='Bag ('+state.bag+')';render();});
+  var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(!state.open)park();},80);});
+  /* first paint: park without animating */
+  var saved=panel.style.transition;
+  cells.forEach(function(c){c.style.transition='none';});
+  render();void grid.offsetWidth;
+  cells.forEach(function(c){c.style.transition='';});
+  window.addEventListener('load',function(){if(!state.open)park();});
+})();
+</script>
+</body>
+</html>

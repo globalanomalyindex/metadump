@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j3","scores":{
+"U":{"basic":9,"correctness":8,"usability":6,"craft":6,"code":9,"overall":6,"note":"Compact and correct, but no backspace, a generic iOS-clone look, and a bare 'Error' on divide by zero."},
+"V":{"basic":9,"correctness":9,"usability":9,"craft":9,"code":8,"overall":9,"note":"Warm, distinctive palette with clear hierarchy, backspace, a 'Cannot divide by zero' note, solid keyboard and aria support."},
+"W":{"basic":8,"correctness":9,"usability":8,"craft":8,"code":8,"overall":8,"note":"Polished tactile iOS-style device with a clear error message and backspace, though the wide Backspace bar is a bit heavy."},
+"X":{"basic":8,"correctness":9,"usability":9,"craft":9,"code":8,"overall":9,"note":"Friendly light design with C, CE and backspace, flash feedback on keys, a descriptive error line and thorough keyboard support."},
+"Y":{"basic":9,"correctness":8,"usability":7,"craft":7,"code":9,"overall":7,"note":"Small and tidy with a clear orange equals key, but the operator keys are low contrast and there is no backspace."},
+"Z":{"basic":8,"correctness":9,"usability":8,"craft":9,"code":8,"overall":8,"note":"Distinctive LCD-and-keys look with a monospace readout, backspace and good feedback, but a bit more styled than basic."}},
+"ranking":["V","X","W","Z","Y","U"]}

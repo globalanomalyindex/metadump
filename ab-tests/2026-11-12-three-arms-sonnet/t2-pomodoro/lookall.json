@@ -1,0 +1,87 @@
+{
+ "A-r1": {
+  "findings": {
+   "hover-static": 1
+  },
+  "played": 0,
+  "at_rest": 1,
+  "details": []
+ },
+ "A-r2": {
+  "findings": {
+   "small-target": 2,
+   "hover-static": 1
+  },
+  "played": 0,
+  "at_rest": 3,
+  "details": []
+ },
+ "A-r3": {
+  "findings": {
+   "hover-static": 1
+  },
+  "played": 0,
+  "at_rest": 1,
+  "details": []
+ },
+ "A-r4": {
+  "findings": {
+   "hover-static": 1
+  },
+  "played": 0,
+  "at_rest": 1,
+  "details": []
+ },
+ "B-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r2": {
+  "findings": {
+   "small-target": 2
+  },
+  "played": 0,
+  "at_rest": 2,
+  "details": []
+ },
+ "B-r3": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r2": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r3": {
+  "findings": {
+   "small-target": 1
+  },
+  "played": 0,
+  "at_rest": 1,
+  "details": []
+ },
+ "C-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ }
+}

@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root {
+    --bg: #07090d;
+    --panel: #0d1117;
+    --key: rgba(255,255,255,.055);
+    --key-hover: rgba(255,255,255,.1);
+    --key-edge: rgba(190,215,255,.16);
+    --digit: #e6f1ff;
+    --dim: #7e8ea6;
+    --accent: #ff9f43;
+    --accent-soft: rgba(255,159,67,.16);
+    --func: #8fd3ff;
+    --err: #ff6b7a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background:
+      radial-gradient(520px 380px at 18% 12%, rgba(70,120,255,.22), transparent 70%),
+      radial-gradient(480px 360px at 85% 90%, rgba(255,140,60,.16), transparent 70%),
+      var(--bg);
+    color: var(--digit);
+    font-family: ui-rounded, "SF Pro Rounded", -apple-system, "Segoe UI", system-ui, sans-serif;
+    display: grid; place-items: center; padding: 16px;
+  }
+  .calc {
+    width: min(340px, 100%);
+    padding: 16px;
+    border-radius: 28px;
+    background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.015)), var(--panel);
+    border: 1px solid rgba(190,215,255,.14);
+    box-shadow: 0 30px 60px -20px #000, inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .display {
+    height: 108px; padding: 10px 14px 12px; margin-bottom: 14px;
+    border-radius: 18px;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(190,215,255,.08);
+    display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
+    overflow: hidden;
+  }
+  .trail {
+    display: flex; gap: 8px; align-items: center; justify-content: flex-end;
+    width: 100%; min-height: 22px; font-size: 14px; color: var(--dim);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .pending {
+    display: none; min-width: 22px; height: 22px; line-height: 22px; text-align: center;
+    border-radius: 11px; background: var(--accent-soft); color: var(--accent); font-weight: 700;
+  }
+  .pending.on { display: inline-block; }
+  #out {
+    width: 100%; text-align: right; font-weight: 300; letter-spacing: -.5px;
+    font-size: 48px; line-height: 1.1; color: var(--digit);
+    font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden;
+  }
+  #out.err { color: var(--err); text-shadow: none; font-size: 36px; }
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  button {
+    font: inherit; font-size: 22px; color: var(--digit);
+    height: 58px; border-radius: 16px; cursor: pointer;
+    background: var(--key);
+    border: 1px solid var(--key-edge);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    backdrop-filter: blur(6px);
+    transition: background .12s, transform .08s, box-shadow .12s;
+  }
+  button:hover { background: var(--key-hover); }
+  button:active, button.press { transform: scale(.95); background: rgba(255,255,255,.18); }
+  button:focus-visible { outline: 2px solid var(--func); outline-offset: 2px; }
+  button.fn { color: var(--func); font-size: 19px; }
+  button.op { color: var(--accent); font-size: 26px; border-color: rgba(255,159,67,.3); }
+  button.op.active { background: var(--accent); color: #1a1006; }
+  button.eq { grid-column: span 2; background: var(--accent); color: #1a1006; border-color: transparent; font-weight: 700; }
+  button.eq:hover { background: #ffb066; }
+  button.eq:active, button.eq.press { background: #e68a2e; }
+  .hint { margin: 12px 4px 0; font-size: 13px; color: var(--dim); text-align: center; }
+  @media (max-width: 360px) { button { height: 52px; } }
+  @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="display">
+    <div class="trail"><span id="expr"></span><span class="pending" id="pend" aria-hidden="true"></span></div>
+    <div id="out" role="status" aria-live="polite" aria-atomic="true">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="C" aria-label="Clear all">C</button>
+    <button class="fn" data-k="CE" aria-label="Clear entry">CE</button>
+    <button class="fn" data-k="Backspace" aria-label="Backspace">⌫</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+
+    <button class="fn" data-k="neg" aria-label="Toggle sign">±</button>
+    <button data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="op" data-k="%" aria-label="Percent" style="font-size:22px">%</button>
+
+    <button class="eq" data-k="=" aria-label="Equals" style="grid-column: 1 / -1">=</button>
+  </div>
+  <p class="hint">Keyboard: digits, + − * /, Enter, Backspace, Esc, Delete</p>
+</main>
+
+<script>
+(function () {
+  var MAXD = 12;
+  var s = { entry: '0', fresh: true, acc: null, op: null, lastOp: null, lastArg: null, justEq: false, error: false, expr: '' };
+  var out = document.getElementById('out'), exprEl = document.getElementById('expr'), pend = document.getElementById('pend');
+  var SYM = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+  function fmt(n) {
+    if (!isFinite(n)) return null;
+    var r = Number(n.toPrecision(MAXD));
+    var str = String(r);
+    if (/e/i.test(str)) {
+      str = r.toExponential(Math.max(0, MAXD - 6)).replace(/\.?0+e/, 'e');
+    }
+    return str;
+  }
+  function addCommas(str) {
+    if (/e/i.test(str) || str === 'Error') return str;
+    var neg = str[0] === '-', body = neg ? str.slice(1) : str;
+    var parts = body.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + parts.join('.');
+  }
+  function render() {
+    var text = s.error ? 'Error' : addCommas(s.entry);
+    out.textContent = text;
+    out.className = s.error ? 'err' : '';
+    var size = 48, len = text.length;
+    if (!s.error) size = len > 14 ? 26 : len > 11 ? 32 : len > 8 ? 40 : 48;
+    if (!s.error) out.style.fontSize = size + 'px'; else out.style.fontSize = '';
+    exprEl.textContent = s.expr;
+    if (s.op && !s.error) { pend.textContent = SYM[s.op]; pend.classList.add('on'); }
+    else pend.classList.remove('on');
+    var btns = document.querySelectorAll('button.op');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('active', !!s.op && s.fresh && btns[i].dataset.k === s.op && !s.error);
+    }
+  }
+  function val() { return parseFloat(s.entry); }
+  function setResult(n) {
+    var f = fmt(n);
+    if (f === null) { s.error = true; s.entry = '0'; return false; }
+    s.entry = f; return true;
+  }
+  function compute(a, op, b) {
+    if (op === '+') return a + b;
+    if (op === '-') return a - b;
+    if (op === '*') return a * b;
+    if (op === '/') return b === 0 ? NaN : a / b;
+  }
+  function reset() {
+    s = { entry: '0', fresh: true, acc: null, op: null, lastOp: null, lastArg: null, justEq: false, error: false, expr: '' };
+  }
+
+  function digit(d) {
+    if (s.error) reset();
+    if (s.justEq) { s.acc = null; s.op = null; s.expr = ''; s.justEq = false; s.fresh = true; }
+    if (s.fresh) { s.entry = d; s.fresh = false; }
+    else {
+      var digits = s.entry.replace(/[-.]/g, '').length;
+      if (digits >= MAXD) return;
+      s.entry = s.entry === '0' ? d : s.entry === '-0' ? '-' + d : s.entry + d;
+    }
+  }
+  function dot() {
+    if (s.error) reset();
+    if (s.justEq) { s.acc = null; s.op = null; s.expr = ''; s.justEq = false; s.fresh = true; }
+    if (s.fresh) { s.entry = '0.'; s.fresh = false; return; }
+    if (s.entry.indexOf('.') === -1) s.entry += '.';
+  }
+  function operator(o) {
+    if (s.error) return;
+    if (s.op && s.fresh && !s.justEq) { // replace pending operator
+      s.op = o; s.expr = fmt(s.acc) + ' ' + SYM[o]; return;
+    }
+    if (s.op && !s.fresh) {
+      var r = compute(s.acc, s.op, val());
+      if (isNaN(r)) { s.error = true; s.entry = '0'; s.op = null; s.acc = null; s.expr = ''; return; }
+      s.acc = Number(r.toPrecision(MAXD));
+      if (!setResult(s.acc)) return;
+    } else {
+      s.acc = val();
+    }
+    s.op = o; s.fresh = true; s.justEq = false;
+    s.expr = fmt(s.acc) + ' ' + SYM[o];
+  }
+  function equals() {
+    if (s.error) return;
+    var a, op, b;
+    if (s.op && !(s.fresh && s.justEq)) {
+      a = s.acc; op = s.op; b = val();
+      s.lastOp = op; s.lastArg = b;
+    } else if (s.lastOp !== null && s.justEq) {
+      a = val(); op = s.lastOp; b = s.lastArg;
+    } else return;
+    var r = compute(a, op, b);
+    s.expr = fmt(a) + ' ' + SYM[op] + ' ' + fmt(b) + ' =';
+    if (isNaN(r)) { s.error = true; s.entry = '0'; s.op = null; s.acc = null; s.justEq = false; return; }
+    s.acc = null; s.op = null; s.fresh = true; s.justEq = true;
+    setResult(r);
+  }
+  function percent() {
+    if (s.error) return;
+    var v = val();
+    if (s.op && s.acc !== null) v = s.acc * v / 100; else v = v / 100;
+    setResult(v); s.fresh = false;
+    if (s.justEq) { s.justEq = false; s.expr = ''; }
+  }
+  function negate() {
+    if (s.error) return;
+    if (s.fresh && s.op) { s.entry = '-0'; s.fresh = false; return; }
+    if (s.entry === '0' && s.fresh) { s.entry = '-0'; s.fresh = false; return; }
+    s.entry = s.entry[0] === '-' ? s.entry.slice(1) : '-' + s.entry;
+    if (s.justEq) { s.justEq = false; s.acc = null; s.op = null; s.expr = ''; s.fresh = false; }
+  }
+  function back() {
+    if (s.error) { reset(); return; }
+    if (s.fresh) return;
+    s.entry = s.entry.slice(0, -1);
+    if (s.entry === '' || s.entry === '-') { s.entry = '0'; s.fresh = true; }
+  }
+  function clearEntry() {
+    if (s.error) { reset(); return; }
+    s.entry = '0'; s.fresh = true;
+    if (s.justEq) { s.expr = ''; s.justEq = false; }
+  }
+
+  function press(k) {
+    if (/^[0-9]$/.test(k)) digit(k);
+    else if (k === '.') dot();
+    else if (k === '+' || k === '-' || k === '*' || k === '/') operator(k);
+    else if (k === '=') equals();
+    else if (k === 'C') reset();
+    else if (k === 'CE') clearEntry();
+    else if (k === 'Backspace') back();
+    else if (k === 'neg') negate();
+    else if (k === '%') percent();
+    render();
+  }
+
+  document.getElementById('keys').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (b) press(b.dataset.k);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key, map = k;
+    if (k === 'Enter') map = '=';
+    else if (k === 'Escape') map = 'C';
+    else if (k === 'Delete') map = 'CE';
+    else if (k === ',') map = '.';
+    else if (k === 'x' || k === 'X') map = '*';
+    else if (!/^([0-9]|[.+\-*\/=%]|Backspace)$/.test(k)) return;
+    e.preventDefault();
+    press(map);
+    var sel = map === 'neg' ? 'neg' : map;
+    var btn = document.querySelector('button[data-k="' + sel.replace(/"/g, '') + '"]');
+    if (btn) { btn.classList.add('press'); setTimeout(function () { btn.classList.remove('press'); }, 120); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

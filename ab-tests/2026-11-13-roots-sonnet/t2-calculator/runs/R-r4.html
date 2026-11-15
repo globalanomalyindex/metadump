@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{
+  --bg:#d9d4cb; --body:#222225; --body2:#2c2c30; --digit:#3d3d42; --digit-b:#2a2a2e;
+  --util:#a8a8ae; --util-b:#76767c; --util-t:#17171a; --accent:#ff9f0a; --accent-b:#b86f00;
+  --text:#f4f1ea; --dim:#8f8f96;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(circle at 30% 20%,#e8e3da,var(--bg));display:flex;align-items:center;justify-content:center;font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+.calc{width:100%;max-width:360px;background:linear-gradient(180deg,var(--body2),var(--body));border-radius:28px;padding:18px;box-shadow:0 2px 0 #4a4a50 inset,0 30px 60px -20px rgba(0,0,0,.55),0 8px 0 #111}
+.display{background:#121214;border-radius:16px;padding:12px 16px 10px;text-align:right;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:inset 0 3px 10px rgba(0,0,0,.6);margin-bottom:16px;overflow:hidden}
+.expr{color:var(--dim);font-size:15px;min-height:20px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.value{color:var(--text);font-size:56px;line-height:1.1;font-weight:300;font-variant-numeric:tabular-nums;white-space:nowrap;transition:font-size .08s}
+.value.flash{animation:flash .22s ease-out}
+.value.err{color:#ff6b5e;font-size:26px;font-weight:500}
+@keyframes flash{from{color:var(--accent)}to{color:var(--text)}}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+button{font:inherit;font-size:24px;height:64px;border:0;border-radius:18px;cursor:pointer;color:var(--text);background:var(--digit);box-shadow:0 4px 0 var(--digit-b);transition:transform .06s,box-shadow .06s,filter .1s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:hover{filter:brightness(1.12)}
+button:active,button.press{transform:translateY(3px);box-shadow:0 1px 0 var(--digit-b)}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.util{background:var(--util);color:var(--util-t);box-shadow:0 4px 0 var(--util-b)}
+.util:active,.util.press{box-shadow:0 1px 0 var(--util-b)}
+.op{background:#e08600;color:#fff;box-shadow:0 4px 0 var(--accent-b);font-size:28px}
+.op:active,.op.press{box-shadow:0 1px 0 var(--accent-b)}
+.op.active{background:#fff;color:#e08600}
+.eq{background:var(--accent);color:#1a1000;box-shadow:0 4px 0 var(--accent-b);font-weight:600}
+.eq:active,.eq.press{box-shadow:0 1px 0 var(--accent-b)}
+.zero{grid-column:span 2;text-align:left;padding-left:28px}
+@media (max-width:380px){button{height:58px;font-size:22px}.value{font-size:48px}.keys{gap:10px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="display">
+    <div class="expr" id="expr"></div>
+    <div class="value" id="value" role="status" aria-live="polite">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="util" data-k="clear" id="clr" aria-label="All clear">AC</button>
+    <button class="util" data-k="neg" aria-label="Plus minus">±</button>
+    <button class="util" data-k="pct" aria-label="Percent">%</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+  <button class="util" data-k="back" aria-label="Backspace" style="width:100%;margin-top:12px;height:44px;font-size:18px">⌫ Backspace</button>
+</main>
+<script>
+(function(){
+  var SYM={'+':'+','-':'−','*':'×','/':'÷'};
+  var s;
+  function reset(){s={cur:'0',prev:null,op:null,overwrite:true,lastOp:null,lastB:null,expr:'',err:false,justEq:false};}
+  reset();
+
+  function num(x){return parseFloat(x);}
+  function fmt(n){
+    if(!isFinite(n))return null;
+    n=parseFloat(n.toPrecision(12));
+    var a=Math.abs(n);
+    if(a!==0&&(a>=1e12||a<1e-9))return n.toExponential(6).replace(/\.?0+e/,'e').replace('e+','e');
+    return String(n);
+  }
+  function calc(a,op,b){
+    switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;case '/':return b===0?NaN:a/b;}
+    return b;
+  }
+  function fail(){reset();s.err=true;s.cur='Cannot divide by zero';s.overwrite=true;}
+
+  function digit(d){
+    if(s.err)reset();
+    if(s.justEq){s.expr='';s.justEq=false;s.prev=null;s.op=null;}
+    if(s.overwrite){s.cur=d;s.overwrite=(d==='0'&&false);}
+    else{
+      if(s.cur.replace(/[-.]/g,'').length>=12)return;
+      s.cur=(s.cur==='0')?d:s.cur+d;
+    }
+    s.overwrite=false;
+  }
+  function dot(){
+    if(s.err)reset();
+    if(s.justEq){s.expr='';s.justEq=false;s.prev=null;s.op=null;s.overwrite=true;}
+    if(s.overwrite){s.cur='0.';s.overwrite=false;return;}
+    if(s.cur.indexOf('.')<0)s.cur+='.';
+  }
+  function operator(o){
+    if(s.err)return;
+    if(s.op&&!s.overwrite){
+      var r=calc(num(s.prev),s.op,num(s.cur));var f=fmt(r);
+      if(f===null){fail();return;}
+      s.cur=f;
+    }
+    s.prev=s.cur;s.op=o;s.overwrite=true;s.justEq=false;
+    s.expr=s.prev+' '+SYM[o];
+  }
+  function equals(){
+    if(s.err)return;
+    var a,b,op;
+    if(s.op){a=num(s.prev);b=num(s.cur);op=s.op;s.lastOp=op;s.lastB=b;}
+    else if(s.lastOp){a=num(s.cur);b=s.lastB;op=s.lastOp;}
+    else return;
+    var r=calc(a,op,b),f=fmt(r);
+    if(f===null){fail();return;}
+    s.expr=fmt(a)+' '+SYM[op]+' '+fmt(b)+' =';
+    s.cur=f;s.prev=null;s.op=null;s.overwrite=true;s.justEq=true;
+    flash=true;
+  }
+  function neg(){
+    if(s.err)return;
+    if(s.cur==='0')return;
+    s.cur=s.cur.charAt(0)==='-'?s.cur.slice(1):'-'+s.cur;
+    if(s.overwrite&&s.justEq){/* keeps result editable */}
+  }
+  function pct(){
+    if(s.err)return;
+    var c=num(s.cur),r;
+    if(s.op&&(s.op==='+'||s.op==='-'))r=num(s.prev)*c/100;else r=c/100;
+    var f=fmt(r);if(f===null)return;
+    s.cur=f;s.overwrite=false;
+  }
+  function back(){
+    if(s.err){reset();return;}
+    if(s.overwrite)return;
+    s.cur=s.cur.length<=1||(s.cur.length===2&&s.cur.charAt(0)==='-')?'0':s.cur.slice(0,-1);
+  }
+  function clear(){
+    if(s.err||s.cur==='0'&&!s.op||!s.hasEntry){reset();return;}
+    s.cur='0';s.overwrite=true; // clear entry
+  }
+
+  var flash=false;
+  var elV=document.getElementById('value'),elE=document.getElementById('expr'),clr=document.getElementById('clr');
+
+  function press(k){
+    flash=false;
+    if(k>='0'&&k<='9'&&k.length===1)digit(k);
+    else if(k==='.')dot();
+    else if(k==='+'||k==='-'||k==='*'||k==='/')operator(k);
+    else if(k==='=')equals();
+    else if(k==='neg')neg();
+    else if(k==='pct')pct();
+    else if(k==='back')back();
+    else if(k==='clear'){
+      if(clr.textContent==='C'&&!s.err){s.cur='0';s.overwrite=true;}else reset();
+    }
+    render();
+  }
+
+  function render(){
+    elV.textContent=s.cur;
+    elV.classList.toggle('err',s.err);
+    var len=s.cur.length,size=56;
+    if(!s.err){if(len>8)size=44;if(len>11)size=36;if(len>14)size=30;elV.style.fontSize=size+'px';}
+    else elV.style.fontSize='';
+    elE.textContent=s.err?'':s.expr;
+    var showC=!s.err&&!s.overwrite&&s.cur!=='0';
+    clr.textContent=showC?'C':'AC';
+    clr.setAttribute('aria-label',showC?'Clear entry':'All clear');
+    document.querySelectorAll('.op').forEach(function(b){
+      b.classList.toggle('active',!!s.op&&s.overwrite&&b.dataset.k===s.op);
+    });
+    if(flash){elV.classList.remove('flash');void elV.offsetWidth;elV.classList.add('flash');}
+  }
+
+  document.getElementById('keys').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(b)press(b.dataset.k);
+  });
+  document.querySelector('.calc > button[data-k="back"]').addEventListener('click',function(){press('back');});
+
+  var MAP={'Enter':'=','=':'=','Escape':'clear','Backspace':'back','Delete':'clear',',':'.','.':'.','%':'pct','x':'*','X':'*','*':'*','/':'/','+':'+','-':'-'};
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=null;
+    if(/^[0-9]$/.test(e.key))k=e.key;else if(MAP[e.key])k=MAP[e.key];
+    if(!k)return;
+    if(e.key==='Enter'&&document.activeElement&&document.activeElement.tagName==='BUTTON')e.preventDefault();
+    e.preventDefault();
+    var sel=document.querySelector('[data-k="'+k+'"]');
+    if(sel){sel.classList.add('press');setTimeout(function(){sel.classList.remove('press');},110);}
+    press(k);
+  });
+  render();
+  window.__calc={press:press,state:function(){return s;}};
+})();
+</script>
+</body>
+</html>

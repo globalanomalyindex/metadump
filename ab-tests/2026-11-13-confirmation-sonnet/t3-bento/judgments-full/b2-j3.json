@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Polished pill bar that unfolds a six-tile bento with working roast, qty, subscription, cafe, accordion and save controls, inert handling and Escape/outside close."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Distinctive popover bento from a dots handle with working brew, roast, qty and switch tiles, but the hero bag art is odd and the page copy is cramped."},
+"W": {"fidelity": 9, "correctness": 9, "craft": 8, "usability": 9, "overall": 8, "note": "Compact true navigation bento with featured tile, roast cycler, qty, newsletter validation, current-page marking and arrow-key navigation."},
+"X": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Inventive tins-lift-out-of-stack animation and a clear bento nav grid, though tile text is small and the mobile layout drops the nav below the copy."},
+"Y": {"fidelity": 6, "correctness": 6, "craft": 7, "usability": 6, "overall": 6, "note": "Works as a drinks ordering panel rather than a site menu, with unselected size chips nearly invisible on the dark hero tile and a bare page behind it."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Neat unfolding box with bean illustration, radio chips, nested accordions and status line, a bit dense and light on actual navigation destinations."}
+},
+"ranking": ["U", "W", "Z", "X", "V", "Y"]}

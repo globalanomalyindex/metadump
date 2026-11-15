@@ -1,0 +1,222 @@
+{
+ "state": {
+  "t1-pelican/judgments-full/b1-j1": "accepted, attempt 1",
+  "t1-pelican/judgments-full/b1-j2": "accepted, attempt 1",
+  "t1-pelican/judgments-full/b1-j3": "accepted, attempt 1",
+  "t1-pelican/judgments-full/b2-j1": "accepted, attempt 1",
+  "t1-pelican/judgments-full/b2-j2": "accepted, attempt 1",
+  "t1-pelican/judgments-full/b2-j3": "accepted, attempt 1",
+  "t2-ascii/judgments-full/b1-j1": "accepted, attempt 1",
+  "t2-ascii/judgments-full/b1-j2": "accepted, attempt 1",
+  "t2-ascii/judgments-full/b1-j3": "accepted, attempt 1",
+  "t2-ascii/judgments-full/b2-j1": "accepted, attempt 1",
+  "t2-ascii/judgments-full/b2-j2": "accepted, attempt 1",
+  "t2-ascii/judgments-full/b2-j3": "accepted, attempt 1",
+  "t3-bento/judgments-full/b1-j1": "accepted, attempt 1",
+  "t3-bento/judgments-full/b1-j2": "accepted, attempt 1",
+  "t3-bento/judgments-full/b1-j3": "accepted, attempt 1",
+  "t3-bento/judgments-full/b2-j1": "accepted, attempt 1",
+  "t3-bento/judgments-full/b2-j2": "accepted, attempt 1",
+  "t3-bento/judgments-full/b2-j3": "accepted, attempt 1",
+  "t4-blocks/judgments-full/b1-j1": "accepted, attempt 1",
+  "t4-blocks/judgments-full/b1-j2": "accepted, attempt 1",
+  "t4-blocks/judgments-full/b1-j3": "accepted, attempt 1",
+  "t4-blocks/judgments-full/b2-j1": "accepted, attempt 1",
+  "t4-blocks/judgments-full/b2-j2": "accepted, attempt 1",
+  "t4-blocks/judgments-full/b2-j3": "accepted, attempt 1"
+ },
+ "attempts": {
+  "t1-pelican/judgments-full/b1-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-aec0eefc5808d36d8.jsonl"
+   }
+  ],
+  "t1-pelican/judgments-full/b1-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a7e8362b729ea5de2.jsonl"
+   }
+  ],
+  "t1-pelican/judgments-full/b1-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a17c9d85df2ad2bb8.jsonl"
+   }
+  ],
+  "t1-pelican/judgments-full/b2-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-ad391f984ac2dec65.jsonl"
+   }
+  ],
+  "t1-pelican/judgments-full/b2-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-aed2b7732ea7a01e0.jsonl"
+   }
+  ],
+  "t1-pelican/judgments-full/b2-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a7c85286ecd129609.jsonl"
+   }
+  ],
+  "t2-ascii/judgments-full/b1-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-ace7dd76a78a3cd2f.jsonl"
+   }
+  ],
+  "t2-ascii/judgments-full/b1-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a2d64a5e5532d0ff6.jsonl"
+   }
+  ],
+  "t2-ascii/judgments-full/b1-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a549fa41244779513.jsonl"
+   }
+  ],
+  "t2-ascii/judgments-full/b2-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-ac5d0b99f61edc2bf.jsonl"
+   }
+  ],
+  "t2-ascii/judgments-full/b2-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-adaf43f323a5fb399.jsonl"
+   }
+  ],
+  "t2-ascii/judgments-full/b2-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a4960cfad2f6a9b05.jsonl"
+   }
+  ],
+  "t3-bento/judgments-full/b1-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a1bd24a563ea670ad.jsonl"
+   }
+  ],
+  "t3-bento/judgments-full/b1-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a5708967fb1845968.jsonl"
+   }
+  ],
+  "t3-bento/judgments-full/b1-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a17a002666cbdcd70.jsonl"
+   }
+  ],
+  "t3-bento/judgments-full/b2-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a13feda121c96455c.jsonl"
+   }
+  ],
+  "t3-bento/judgments-full/b2-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a74a88dc824164b06.jsonl"
+   }
+  ],
+  "t3-bento/judgments-full/b2-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a3de328fb02c466ab.jsonl"
+   }
+  ],
+  "t4-blocks/judgments-full/b1-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a83b07e8f62521f2c.jsonl"
+   }
+  ],
+  "t4-blocks/judgments-full/b1-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a1fda08da102562e8.jsonl"
+   }
+  ],
+  "t4-blocks/judgments-full/b1-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-acc538f61c39de6c8.jsonl"
+   }
+  ],
+  "t4-blocks/judgments-full/b2-j1": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-adbcc3537ccca172a.jsonl"
+   }
+  ],
+  "t4-blocks/judgments-full/b2-j2": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a6447ca9e66c51434.jsonl"
+   }
+  ],
+  "t4-blocks/judgments-full/b2-j3": [
+   {
+    "images_opened": 18,
+    "sources_read": 6,
+    "complete": true,
+    "transcript": "agent-a1d59a96ccadd9306.jsonl"
+   }
+  ]
+ }
+}

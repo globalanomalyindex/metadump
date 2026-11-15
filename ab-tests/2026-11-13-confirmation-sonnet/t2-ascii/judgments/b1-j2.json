@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 5, "overall": 6, "note": "Pigment-bowl mixer with a glyph blob and paint/light modes is on-brief, but the dark, dim glyphs are barely visible at rest and the mix reads weakly."},
+"V": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Full painting canvas with RGB sliders, three mix modes and a two-colour mixer is rich, though it opens mostly empty and has many controls."},
+"W": {"fidelity": 6, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Clean two-colour ratio mixer with a glyph ramp, command prompt and mean versus linear modes; it is focused but narrow and less playful."},
+"X": {"fidelity": 7, "correctness": 5, "craft": 5, "usability": 5, "overall": 5, "note": "Bowl-and-brush design is sound, but the blank black canvas has a faint dot grid that only fills part of its width, and clicking a pigment shows no visible result."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Polished dark UI with pigment pots, paint/light/naive models and a pre-painted colourful ASCII grid, so the mixing shows at once; the grid is drawable."},
+"Z": {"fidelity": 7, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Compact, well-made A/B mixer with a shaded glyph preview, a hex readout and full keyboard shortcuts, but it only mixes two colours."}
+},
+"ranking": ["Y", "Z", "V", "W", "U", "X"]}

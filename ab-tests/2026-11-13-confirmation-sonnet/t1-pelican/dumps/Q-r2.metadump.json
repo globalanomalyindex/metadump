@@ -1,0 +1,25 @@
+{
+  "request": "an SVG animation of a pelican riding a bike",
+  "thesis": "A pelican's absurd anatomy (huge pouched bill, tiny legs, stubby body) forced onto a bicycle's mechanics is funny only if the pedalling, wheels and balance actually work.",
+  "job": ["open page and see the scene already moving", "recognise pelican and bike at a glance", "watch pedalling, spinning wheels, bobbing body, moving scenery", "pause/play the animation", "change speed", "see state change (button label, speed readout)", "optionally honk/flap or toggle a detail"],
+  "disciplines": {
+    "character animation": {"principles": ["squash and stretch", "secondary motion", "overlap and follow-through", "anticipation"], "steps": ["block pose", "loop cycle", "add secondary motion"], "tricks": ["offset phase of body bob at 2x pedal frequency", "head lags body", "bill pouch swings"], "tests": ["does the loop seam show", "does the foot stay on the pedal"]},
+    "svg craft": {"principles": ["grouped transforms", "transform-origin at pivots", "viewBox scaling"], "steps": ["build parts as groups", "animate groups with CSS/JS"], "tricks": ["compute leg two-bone IK in JS so feet track pedals", "spokes via stroke-dasharray or rotated lines", "requestAnimationFrame with a time variable for pause"], "tests": ["works at phone width", "no external requests"]},
+    "bicycle mechanics": {"principles": ["crank rotates, pedals stay level", "wheels rotate in proportion to ground speed", "chain connects crank to rear wheel"], "steps": [], "tricks": ["counter-rotate pedals so they stay horizontal", "opposite pedal 180 degrees apart"], "tests": ["wheel speed matches scenery speed"]}
+  },
+  "the_thing": {"parts": ["pelican: long bill with pouch, round eye, white body, wing, tail, tiny legs and webbed feet", "bike: two spoked wheels, frame, fork, handlebar, saddle, crank, pedals, chain"], "expectations": ["pelican sits on saddle, wing on handlebar, feet on pedals", "road and scenery scroll", "loops forever"], "kinds": [{"name": "side-view cartoon on a scrolling road", "what": "classic"}, {"name": "treadmill-style fixed bike", "what": "background static"}, {"name": "cyclist in a race with finish line", "what": "goal"}]},
+  "specifics": {
+    "shape": {"keywords": {"1": ["pelican", "bike", "SVG", "animation"], "2": ["pouched bill", "spoked wheels", "pedals", "handlebar"], "3": ["Brown pelican hooked bill tip", "crank-counter-rotation"]}, "descriptions": ["bill about 40 percent of body length, orange-yellow with a hooked tip, pouch sagging below", "wheels large and thin, body small on top"], "behaviors": ["pedal speed drives wheel speed", "speed slider changes all rates"], "tokens": {"wheel radius": "50 to 70 px in 600 wide viewBox", "pedal period": "0.6 to 1.2 s", "body bob": "2 to 5 px"}},
+    "colour": {"keywords": {"1": ["white", "orange bill"], "2": ["sky gradient", "warm sunset"], "3": ["teal bike frame"]}, "descriptions": ["pelican off-white with grey wing edge", "bike in a saturated contrast colour"], "behaviors": [], "tokens": {"sky": "pale blue to peach", "bill": "#f2a33a to #e8892a"}},
+    "motion": {"keywords": {"1": ["pedalling", "spinning"], "2": ["bobbing", "scrolling clouds", "road dashes"], "3": ["parallax", "feather flutter"]}, "descriptions": ["far layers move slower than near"], "behaviors": ["pause freezes everything at current phase"], "tokens": {"cloud speed": "10 to 25 px/s", "road dash speed": "matches wheel"}}
+  },
+  "anti_keywords": [
+    {"not": "static drawing with only one CSS spin", "instead": "legs driven by crank angle so knees bend and feet track pedals"},
+    {"not": "pedals rotating with the crank like a fan", "instead": "pedals counter-rotate to stay level"},
+    {"not": "wheels spinning while ground stands still", "instead": "road marks and scenery scroll at wheel speed"},
+    {"not": "generic duck or seagull with a tiny beak", "instead": "huge pouched bill dominates the silhouette"},
+    {"not": "controls that do nothing", "instead": "pause and speed update animation and visible readout"}
+  ],
+  "checks": ["open with no click: it moves", "pause button changes label and freezes", "speed slider changes wheel rate and readout", "feet stay on pedals", "pelican reads at a glance", "fits phone width"],
+  "built": ["side-view cartoon on a scrolling road"]
+}

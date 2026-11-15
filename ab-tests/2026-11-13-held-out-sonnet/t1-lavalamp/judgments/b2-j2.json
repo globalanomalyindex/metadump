@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"likeness": 8, "visuals": 7, "motion": 6, "presentation": 7, "overall": 7, "note": "Elegant glowing violet lamp with a good base and cap, but the wax is small soft round dots that cluster at the top rather than stretching and merging."},
+"V": {"likeness": 6, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Clear lamp shape with glow and decent merging blobs, but the glass is murky, the base is a plain cone, and the panel looks like a generic UI."},
+"W": {"likeness": 8, "visuals": 8, "motion": 4, "presentation": 8, "overall": 7, "note": "The best-crafted drawing, with polished chrome, a pooled wax layer and a staged shelf, but the wax stays stuck in one clump near the top so the motion is weak."},
+"X": {"likeness": 5, "visuals": 3, "motion": 5, "presentation": 5, "overall": 4, "note": "The wax renders as jagged pixelated blocks, the glass is nearly invisible, and the wax settles into one big blob."},
+"Y": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 7, "overall": 8, "note": "The most convincing lava lamp: rich pooled wax, blobs that rise, merge and split with drips, hot-bulb glow, and a stir and cooling interaction that works."},
+"Z": {"likeness": 6, "visuals": 6, "motion": 4, "presentation": 6, "overall": 5, "note": "Moody amber glow, but the bulbous vessel is unusual, the wax is a flat mass that barely moves, and the panel is cramped."}
+}, "ranking": ["Y", "W", "U", "V", "Z", "X"]}

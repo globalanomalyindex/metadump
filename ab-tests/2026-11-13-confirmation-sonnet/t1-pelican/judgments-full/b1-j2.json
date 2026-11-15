@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clear pelican with pouch, pedalling legs and scrolling scenery plus pause, speed and honk, though the honk has little visible effect and the pose is a bit stiff."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Large, charming pelican in a helmet with a wing on the handlebar, smooth pedalling, reverse, distance and honk counters and a HONK text on click."},
+"W": {"fidelity": 7, "correctness": 9, "craft": 9, "usability": 9, "overall": 9, "note": "Most polished: expressive pelican, detailed chain, wheel and rack, gentle eased start and stop, audio bell, reduced-motion handling and 44px controls; the cargo bike is an embellishment."},
+"X": {"fidelity": 7, "correctness": 6, "craft": 5, "usability": 6, "overall": 6, "note": "Works, but the straight vertical legs look awkward, the cloud collides with the sun and the bird is simplistic."},
+"Y": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clean outlined pelican with a swinging pouch and good pedalling, but the bird is small and the controls are minimal."},
+"Z": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Detailed large bicycle with toothed chainring and a hidden click-to-honk, but the pelican reads less clearly, the road moves slowly and the honk has little feedback."}
+},
+"ranking": ["W", "V", "U", "Y", "Z", "X"]}

@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j1","scores":{
+"U":{"simple":8,"correctness":9,"usability":9,"craft":8,"code":7,"overall":8.5,"note":"Huge legible time and mode, drift-free end-time clock, auto phase switch with chime and cue, role=timer and aria-live, keyboard shortcuts; phone layout is a little loose and the confirm() dialog is a minor wart."},
+"V":{"simple":6,"correctness":8,"usability":8,"craft":8,"code":6,"overall":7,"note":"Warm, polished and accessible with a progress road to the long break, but localStorage restore, auto-advance and the road widget overbuild a simple timer and the source is long."},
+"W":{"simple":7,"correctness":8,"usability":6,"craft":8,"code":7,"overall":7,"note":"Attractive ring card with tabs and settings, accurate countdown and auto switching, but no screen-reader semantics, a new AudioContext per beep and only Space/R shortcuts."},
+"X":{"simple":4,"correctness":8,"usability":6,"craft":7,"code":5,"overall":5.5,"note":"Distinctive terminal look with solid logic, but the ASCII bar, text-only buttons, reset confirmation, auto and sound toggles are overbuilt and the status text is dense on phones."},
+"Y":{"simple":9,"correctness":8,"usability":6,"craft":7,"code":9,"overall":7,"note":"Genuinely simple and tidy ring timer with tabs, but it plays a beep and switches silently with no status, has no skip or timer semantics, and lacks keyboard shortcuts beyond Space."},
+"Z":{"simple":7,"correctness":9,"usability":9,"craft":9,"code":7,"overall":9,"note":"Bold full-bleed colour per phase, huge time, progress bar, accurate timing, clear status, screen-reader timer text, keyboard shortcuts and good phone layout; slightly many options but cohesive."}},
+"ranking":["Z","U","V","W","Y","X"]}

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kettle &amp; Crema Menu</title>
+<style>
+:root{--espresso:#2f1d14;--cream:#f8efe0;--oat:#efe0c8;--caramel:#c8803a;--caramel-d:#a5611f;--sage:#8a9a7b;--terra:#c1623f;--gap:10px;--r:20px;--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--cream);color:var(--espresso);font-family:Georgia,"Iowan Old Style",serif;padding:20px 16px 60px}
+header.site{max-width:760px;margin:0 auto 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-weight:700;font-size:1.25rem;letter-spacing:.01em}
+.logo span{color:var(--caramel-d);font-style:italic}
+.wrap{max-width:760px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--caramel);outline-offset:2px}
+.trigger:hover{background:#4a2d1d}.trigger{transition:background .2s;display:inline-flex;align-items:center;gap:10px;background:var(--espresso);color:var(--cream);border:0;border-radius:999px;padding:12px 20px;font-size:1rem;font-family:system-ui,sans-serif;font-weight:600}
+.trigger .bars{width:18px;height:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px}
+.trigger .bars i{background:var(--caramel);border-radius:2px;transition:transform .35s var(--ease)}
+.trigger[aria-expanded=true] .bars i:nth-child(1){transform:translateX(2px)}
+.trigger[aria-expanded=true] .bars i:nth-child(4){transform:translateX(-2px)}
+.trigger .sum{font-weight:400;opacity:.75;font-size:.85rem}
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
+.panel.open{grid-template-rows:1fr}
+.panel>div{overflow:hidden;min-height:0;padding-bottom:6px}
+.panel[inert]{visibility:hidden;transition:grid-template-rows .45s var(--ease),visibility 0s .45s}
+.bento{margin-top:12px;padding:12px;background:var(--oat);border-radius:28px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(104px,auto);gap:var(--gap);border:1px solid #dcc6a3}
+.tile{background:var(--cream);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;border:1px solid #e5d3b4;opacity:0;transform:translateY(10px);transition:opacity .35s var(--ease),transform .35s var(--ease);font-family:system-ui,sans-serif;font-size:.9rem;position:relative}
+.panel.open .tile{opacity:1;transform:none;transition-delay:calc(var(--i)*45ms + 80ms)}
+.tile h3{margin:0;font:700 .72rem system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--caramel-d)}
+.t-hero{grid-column:span 2;grid-row:span 2;background:var(--espresso);color:var(--cream);border-color:var(--espresso)}
+.t-hero h3{color:var(--caramel)}
+.t-hero .big{font:italic 700 clamp(1.5rem,4vw,2.1rem)/1.05 Georgia,serif;margin:auto 0 0}
+.t-wide{grid-column:span 2}.t-full{grid-column:1/-1;min-height:0}.tile{color:var(--espresso)}.t-hero,.t-terra{color:var(--cream)}.big small{display:block;font:400 .85rem system-ui,sans-serif;opacity:.8;margin-top:6px}
+a.tile,button.tile{text-decoration:none;text-align:left;cursor:pointer}
+a.tile:hover,button.tile:hover{border-color:var(--caramel);transform:translateY(-2px)}
+.t-sage{background:#dfe5d4;border-color:#c5cfb5}
+.t-terra{background:var(--terra);color:#fff7ee;border-color:var(--terra)}
+.t-terra h3{color:#ffe0c4}
+.seg{display:flex;background:var(--oat);border-radius:999px;padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:none;border-radius:999px;padding:7px 4px;font-size:.8rem;font-weight:600}
+.seg button[aria-checked=true]{background:var(--espresso);color:var(--cream)}
+.count{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+.count button{width:36px;height:36px;border-radius:50%;border:1px solid var(--espresso);background:none;font-size:1.2rem;line-height:1}
+.count button:hover{background:var(--espresso);color:var(--cream)}
+.count output{font:700 1.8rem Georgia,serif}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+.sw button{width:46px;height:26px;border-radius:999px;border:0;background:#b9a98f;position:relative;transition:background .25s}
+.sw button::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s var(--ease)}
+.sw button[aria-checked=true]{background:var(--caramel-d)}
+.sw button[aria-checked=true]::after{transform:translateX(20px)}
+.cup{width:44px;height:44px}
+.order{margin:16px 2px 8px;font:.95rem system-ui,sans-serif;min-height:1.4em}
+.hint{margin:40px auto 0;max-width:760px;opacity:.7;font:.85rem system-ui,sans-serif}
+@media(max-width:560px){.bento{grid-template-columns:repeat(2,1fr)}.t-hero{grid-column:span 2;grid-row:span 1;min-height:150px}.trigger .sum{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;transition-delay:0s!important}.tile{transform:none!important}}
+</style>
+</head>
+<body>
+<header class="site"><div class="logo">Kettle <span>&amp;</span> Crema</div><div style="font:.85rem system-ui,sans-serif;opacity:.7">Roasters since 1998</div></header>
+<div class="wrap" id="menu">
+  <button class="trigger" id="trigger" aria-expanded="false" aria-controls="panel"><span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="tlabel">Menu</span><span class="sum" id="tsum"></span></button>
+  <div class="panel" id="panel" inert role="region" aria-label="Site menu"><div>
+    <div class="bento">
+      <a class="tile t-hero" href="#beans" style="--i:0"><h3>Fresh this week</h3>
+        <svg class="cup" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 18h28v10a12 12 0 0 1-12 12h-4A12 12 0 0 1 8 28z" fill="#c8803a"/><path d="M36 21h3a5 5 0 0 1 0 10h-4" fill="none" stroke="#c8803a" stroke-width="3"/><path d="M16 12c-2-3 2-4 0-7M24 12c-2-3 2-4 0-7" stroke="#f8efe0" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <p class="big">Shop our beans<small>Ethiopia Guji, Colombia Huila, a dark Sumatra.</small></p></a>
+      <div class="tile" style="--i:1"><h3>Roast</h3>
+        <div class="seg" role="radiogroup" aria-label="Roast level" data-group="roast">
+          <button role="radio" aria-checked="false" data-v="Light">Light</button>
+          <button role="radio" aria-checked="true" data-v="Medium">Med</button>
+          <button role="radio" aria-checked="false" data-v="Dark">Dark</button></div></div>
+      <div class="tile t-sage" style="--i:2"><h3>Grind</h3>
+        <div class="sw"><span id="grindlbl">Whole bean</span><button role="switch" aria-checked="false" aria-label="Ground for me" id="grind"></button></div></div>
+      <div class="tile t-wide" style="--i:3"><h3>Bags in order</h3>
+        <div class="count"><button id="minus" aria-label="Fewer bags">&minus;</button><output id="n" aria-live="polite">1</output><button id="plus" aria-label="More bags">+</button></div></div>
+      <a class="tile t-terra" href="#subscribe" style="--i:4"><h3>Subscribe</h3><span>Save 15% on every bag</span></a>
+      <a class="tile" href="#brew" style="--i:5"><h3>Brew gear</h3><span>Kettles, drippers, scales</span></a>
+      <a class="tile t-wide" href="#visit" style="--i:6"><h3>Visit the bar</h3><span>Open 7 to 3 daily &middot; 14 Harbor Lane</span></a>
+      <a class="tile t-full" href="#story" style="--i:7"><h3>Our story</h3><span>Three roasters, one rusty drum, 1998.</span></a>
+    </div>
+    <p class="order" id="order"></p>
+  </div></div>
+</div>
+<p class="hint" id="hint">Press Esc to fold the menu away.</p>
+<script>
+(function(){
+  var st={open:false,roast:"Medium",ground:false,n:1};
+  var $=function(i){return document.getElementById(i)};
+  var trigger=$("trigger"),panel=$("panel");
+  function render(){
+    trigger.setAttribute("aria-expanded",st.open);
+    $("tlabel").textContent=st.open?"Close":"Menu";
+    panel.classList.toggle("open",st.open);
+    if(st.open)panel.removeAttribute("inert");else panel.setAttribute("inert","");
+    document.querySelectorAll('[data-group=roast] button').forEach(function(b){b.setAttribute("aria-checked",b.dataset.v===st.roast)});
+    $("grind").setAttribute("aria-checked",st.ground);
+    $("grindlbl").textContent=st.ground?"Ground for me":"Whole bean";
+    $("n").textContent=st.n;
+    var s=st.n+" × "+st.roast.toLowerCase()+(st.ground?", ground":", whole");
+    $("order").textContent="Your pick: "+s;
+    $("tsum").textContent=st.open?"":"· "+s;
+  }
+  trigger.addEventListener("click",function(){st.open=!st.open;render()});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&st.open){st.open=false;render();trigger.focus()}});
+  document.addEventListener("click",function(e){if(st.open&&!$("menu").contains(e.target)){st.open=false;render()}});
+  document.querySelectorAll('[data-group=roast] button').forEach(function(b){b.addEventListener("click",function(){st.roast=b.dataset.v;render()})});
+  $("grind").addEventListener("click",function(){st.ground=!st.ground;render()});
+  $("plus").addEventListener("click",function(){st.n=Math.min(9,st.n+1);render()});
+  $("minus").addEventListener("click",function(){st.n=Math.max(0,st.n-1);render()});
+  document.querySelectorAll("a.tile").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();$("hint").textContent="Going to: "+a.querySelector("h3").textContent})});
+  render();
+})();
+</script>
+</body>
+</html>

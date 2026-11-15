@@ -1,0 +1,80 @@
+{
+ "R_vs_C": {
+  "tasks": [
+   "t1-lavalamp",
+   "t2-calculator"
+  ],
+  "per_task": {
+   "t1-lavalamp": {
+    "C_mean": 7.58,
+    "R_mean": 7.25,
+    "diff": -0.33
+   },
+   "t2-calculator": {
+    "C_mean": 8.5,
+    "R_mean": 7.75,
+    "diff": -0.75
+   }
+  },
+  "pooled_mean_diff": -0.541,
+  "p_two_sided": 0.28,
+  "p_one_sided_R_better": 0.8704,
+  "splits": 4900,
+  "wins": 14,
+  "losses": 27,
+  "ties": 7,
+  "win_rate": 0.36
+ },
+ "R_vs_A": {
+  "tasks": [
+   "t1-lavalamp",
+   "t2-calculator"
+  ],
+  "per_task": {
+   "t1-lavalamp": {
+    "A_mean": 5.25,
+    "R_mean": 7.25,
+    "diff": 2.0
+   },
+   "t2-calculator": {
+    "A_mean": 7.17,
+    "R_mean": 7.75,
+    "diff": 0.58
+   }
+  },
+  "pooled_mean_diff": 1.291,
+  "p_two_sided": 0.0384,
+  "p_one_sided_R_better": 0.0192,
+  "splits": 4900,
+  "wins": 35,
+  "losses": 8,
+  "ties": 5,
+  "win_rate": 0.78
+ },
+ "C_vs_A": {
+  "tasks": [
+   "t1-lavalamp",
+   "t2-calculator"
+  ],
+  "per_task": {
+   "t1-lavalamp": {
+    "A_mean": 5.25,
+    "C_mean": 7.58,
+    "diff": 2.33
+   },
+   "t2-calculator": {
+    "A_mean": 7.17,
+    "C_mean": 8.5,
+    "diff": 1.33
+   }
+  },
+  "pooled_mean_diff": 1.833,
+  "p_two_sided": 0.0004,
+  "p_one_sided_C_better": 0.0002,
+  "splits": 4900,
+  "wins": 44,
+  "losses": 0,
+  "ties": 4,
+  "win_rate": 0.96
+ }
+}

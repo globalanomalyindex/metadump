@@ -1,0 +1,30 @@
+{
+  "request": "an SVG animation of a pelican riding a bike",
+  "thesis": "A pelican is all bill and pouch and long legs, a bike is all circles and triangles: the joke is a bird built wrong for pedalling doing it with total commitment.",
+  "job": ["open the file and see a pelican on a bike at once", "watch the ride loop: wheels spin, legs pedal, scenery slides, body bobs", "interact: pause/play, speed control, maybe ring the bell or click the pelican", "see state change on screen (speed readout, paused label)", "leave it running without it drifting or stalling"],
+  "disciplines": {
+    "svg illustration": {"principles": ["simple readable silhouettes", "layered groups with named ids", "consistent stroke weight and round caps", "limited palette"], "steps": ["block shapes", "assemble parts as groups", "set transform-origin per part", "animate groups"], "tricks": ["transform-box: fill-box with transform-origin center for CSS rotation", "use <use> to duplicate wheels", "stroke-dasharray on tyre for visible spin", "viewBox scaling so it fits any window"], "tests": ["does a stranger say pelican on a bike at a glance", "do the pedals stay attached to the feet", "does it still look right after 20 seconds"]},
+    "animation": {"principles": ["anticipation and overlap", "secondary motion: bill, pouch, feathers lag", "loop seamlessly", "ride speed ties wheel rotation to scenery speed"], "steps": ["wheel rotation", "crank rotation", "leg IK-ish follow", "body bob at 2x pedal frequency", "parallax scroll"], "tricks": ["counter-rotate the pedals so they stay level", "two-bone leg solved in JS each frame from crank position", "scroll ground tiles by exact tile width for seamless loop"], "tests": ["no jump at loop point", "foot tracks pedal exactly"]},
+    "front-end code": {"principles": ["no external requests", "requestAnimationFrame with dt, not frame counts", "state in one object, UI reads it"], "steps": ["state", "update(dt)", "render()", "controls"], "tricks": ["clamp dt after tab switch", "respect prefers-reduced-motion with a gentler default"], "tests": ["buttons change state and the display"]}
+  },
+  "the_thing": {
+    "parts": ["pelican: huge long bill, throat pouch, small head, eye, white-grey body, wing, tail, long thin legs, webbed feet", "bike: two wheels, spokes, frame, fork, handlebars, saddle, crank, chainring, pedals, chain", "setting: road, sky, clouds, hills, sun"],
+    "expectations": ["wheels visibly turn", "legs pedal", "bird sits on saddle, wing or feet on handlebars", "moves forward through scenery"],
+    "kinds": [{"name": "side view cruising", "what": "profile pelican riding left to right across looping countryside"}, {"name": "sunset commute", "what": "silhouette style, warm sky"}, {"name": "racing pelican", "what": "helmet, speed lines, aero tuck"}]
+  },
+  "specifics": {
+    "pelican": {"keywords": {"1": ["pelican", "bill", "pouch", "riding"], "2": ["long legs", "webbed feet", "wing on handlebar", "head bob", "white plumage"], "3": ["gular pouch", "primary feathers", "hunched aero tuck", "yellow bill with orange tip"]}, "descriptions": ["bill length about 40 percent of body", "pouch sags and swings with bumps", "neck an S curve"], "behaviors": ["body bobs twice per pedal revolution", "bill dips on bumps", "tail feathers flutter in wind"], "tokens": {"body": "white to cream #f4efe6 to #fff", "bill": "yellow to orange #f2b632 to #f08a24", "pouch": "pinkish orange #f0a070 to #e8905a", "legs": "orange #e9822b to #d9701c"}},
+    "bike": {"keywords": {"1": ["bike", "wheels", "pedals"], "2": ["spokes", "chain", "frame", "handlebars"], "3": ["diamond frame", "chainring", "dashed tyre for spin"]}, "descriptions": ["wheel radius 40 to 55 units in a 600 wide view", "wheelbase about 2.2 wheel diameters"], "behaviors": ["wheel angle = distance / radius", "crank turns at ratio to wheel"], "tokens": {"frame": "red, teal or mustard", "tyre stroke": "5 to 8 px", "spin": "1 to 3 turns per second"}},
+    "scene": {"keywords": {"1": ["road", "sky", "scrolling"], "2": ["parallax", "clouds", "hills", "road dashes"], "3": ["layered ridges", "tree tiles", "sun"]}, "descriptions": ["far layers move slower: 0.1, 0.3, 1.0 times ground speed"], "behaviors": ["tiles wrap seamlessly"], "tokens": {"sky": "light blue to peach", "ground": "grey road with cream dashes"}},
+    "controls": {"keywords": {"1": ["pause", "speed"], "2": ["bell", "readout"], "3": ["keyboard space toggle"]}, "descriptions": ["pause button, speed slider, bell on click of pelican"], "behaviors": ["slider changes speed live, readout shows km/h", "pause freezes everything, label flips to Play"], "tokens": {"speed": "0 to 3x"}}
+  },
+  "anti_keywords": [
+    {"not": "static drawing with CSS pulse", "instead": "real wheel spin, pedal cranks and legs that follow them"},
+    {"not": "feet floating off pedals", "instead": "solve the legs from the crank each frame"},
+    {"not": "scenery that jumps at loop", "instead": "wrap by exact tile width"},
+    {"not": "generic cartoon bird that could be a duck", "instead": "enormous bill with a drooping pouch"},
+    {"not": "external fonts, libraries, images", "instead": "inline everything"}
+  ],
+  "checks": ["pelican recognisable by the bill alone", "feet stay on pedals at every angle", "pause and speed visibly change state", "looks right after 20 s", "fits phone width"],
+  "built": ["side view cruising"]
+}

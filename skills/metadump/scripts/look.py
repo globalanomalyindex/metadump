@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Look at what you built: render a page headlessly, screenshot it, and list what a grader would see (ADR 0018).
+"""Look at what you built: render a page headlessly, screenshot it, play it, and list what a grader would see
+(ADRs 0018, 0020).
 
 Builders that read a meta dump have more to fit into a design than builders that don't, and in A/B tests 16 and 17
 the dump builds shipped clipped timelines, overlapping icons and wrapped rows that nobody looked at. This renders the
 page in the local Chromium-family browser (through cdp.py, nothing installed), screenshots it at desktop and phone
 widths, hovers the main control and clicks the main toggle when it finds one, and runs a few layout checks: content
-running off the screen, content clipped by an ancestor, controls that overlap, and tiny targets. The findings are
-things to look at, not rules; the builder reads the screenshots and decides.
+running off the screen, content clipped by an ancestor, controls that overlap, and tiny targets. Then it plays the
+page (play.py): it acts on everything a person could, tabs through it, and after every action checks what holds for
+any page, because in test 19 the defects that cost points only existed once the page was used. It prints an account
+of what the page said and lays every state out on one sheet. The findings are things to look at, not rules; the
+builder reads them and decides.
 
-Usage: python3 look.py <page.html> [--out DIR] [--hover SELECTOR] [--click SELECTOR] [--json]
+Usage: python3 look.py <page.html> [--out DIR] [--play STEPS]... [--no-walk] [--hover SELECTOR] [--click SELECTOR] [--json]
 Python 3.9+, standard library only. Without a browser it says so and exits 0.
 """
 import argparse
@@ -22,6 +26,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cdp  # noqa: E402
 import pixels  # noqa: E402
+import play  # noqa: E402
 import tools  # noqa: E402
 
 DESKTOP = (1280, 800)
@@ -180,24 +185,44 @@ def _write(out_dir, name, data):
     return path
 
 
-def look(path, out_dir, hover=None, click=None, browser_path=None):
-    """Render `path`, screenshot it and run the checks. Returns {file, url, shots, findings, hover, toggle}."""
+def look(path, out_dir, hover=None, click=None, browser_path=None, plays=(), walk=True):
+    """Render `path`, screenshot it, run the checks, then play it (ADR 0020): walk everything a person could act
+    on, and run each scripted play in `plays`. Returns {file, url, shots, findings, hover, toggle, played, plays}."""
     os.makedirs(out_dir, exist_ok=True)
     url = pathlib.Path(path).resolve().as_uri()
-    result = {"file": os.path.abspath(path), "url": url, "shots": [], "findings": [], "hover": None, "toggle": None}
+    result = {"file": os.path.abspath(path), "url": url, "shots": [], "findings": [], "hover": None, "toggle": None,
+              "played": {}, "plays": []}
     with cdp.Browser(path=browser_path, width=DESKTOP[0], height=DESKTOP[1]) as browser:
         page = browser.new_page()
+        play.install(page)
         page.navigate(url, settle=0.3)
         result["shots"].append({"name": "desktop", "viewport": list(DESKTOP), "path": _write(out_dir, "desktop", page.screenshot())})
         result["findings"] += [dict(f, state="desktop") for f in page.evaluate(CHECKS_JS)]
+
+        visual = {"desktop": page.evaluate("__look.mainVisual()")}
+        moves = page.evaluate("__look.motion()")
 
         target = page.evaluate(_pick_js(MAIN_CONTROL_JS, hover))
         if target:
             clip = _pad(target["rect"], 40, DESKTOP[0], DESKTOP[1])
             before = page.screenshot(clip=clip)
+            label = page.evaluate("__look.textBoxAt(%f, %f)" % (target["x"], target["y"]))
+            at_rest = play.contrast(page.screenshot(clip=label)) if label else None
+            began = time.time()
             _mouse(page, "mouseMoved", target["x"], target["y"])
-            time.sleep(SETTLE)
+            through = []                              # the label's contrast on the way to the hovered look
+            for moment in (0.1, 0.25, 0.5):
+                time.sleep(max(0.0, began + moment - time.time()))
+                if moment == 0.1:
+                    during = page.evaluate("__look.motion()")
+                    moves = {"long": max(moves["long"], during["long"]), "endless": max(moves["endless"], during["endless"]),
+                             "asks": moves["asks"]}
+                if label:
+                    through.append(play.contrast(page.screenshot(clip=label)))
+            time.sleep(max(0.0, began + SETTLE - time.time()))
             after = page.screenshot(clip=clip)
+            settled = play.contrast(page.screenshot(clip=label)) if label else None
+            result["findings"] += _washed_out(target["selector"], at_rest, through, settled)
             changed = _differs(before, after)
             result["hover"] = {"selector": target["selector"], "changed": changed,
                                "path": _write(out_dir, "hover", after)}
@@ -220,10 +245,28 @@ def look(path, out_dir, hover=None, click=None, browser_path=None):
             result["shots"].append({"name": "open", "viewport": list(DESKTOP), "path": result["toggle"]["path"]})
             result["findings"] += [dict(f, state="open") for f in page.evaluate(CHECKS_JS)]
 
+        if not moves["asks"] and (moves["endless"] or moves["long"]):
+            result["findings"].append({"kind": "no-reduced-motion", "selector": "html", "state": "desktop",
+                                       "detail": "%d animation%s here (%d never stop%s) and the page never asks "
+                                                 "prefers-reduced-motion" % (moves["endless"] + moves["long"],
+                                                                             " runs" if moves["endless"] + moves["long"] == 1 else "s run",
+                                                                             moves["endless"], "s" if moves["endless"] == 1 else "")})
+        _play(page, url, "desktop", DESKTOP, out_dir, result, walk)
+        for n, script in enumerate(plays, 1):
+            page.navigate(url, settle=0.3)
+            known = {(f["kind"], f["selector"]) for f in result["findings"]}
+            ran = play.run(page, script, checks_js=CHECKS_JS, known=known)
+            result["plays"].append({"script": script, "actions": ran["actions"], "expects": ran["expects"]})
+            result["shots"].append({"name": "play-%d" % n, "viewport": list(DESKTOP),
+                                    "path": _write(out_dir, "play-%d" % n, page.screenshot())})
+            result["findings"] += [dict(f, state="play %d%s" % (n, ", " + f["state"] if f.get("state") else "")) for f in ran["findings"]]
+
         page.set_viewport(PHONE[0], PHONE[1], mobile=True)
         page.navigate(url, settle=0.3)
         result["shots"].append({"name": "phone", "viewport": list(PHONE), "path": _write(out_dir, "phone", page.screenshot())})
         result["findings"] += [dict(f, state="phone") for f in page.evaluate(CHECKS_JS)]
+        visual["phone"] = page.evaluate("__look.mainVisual()")
+        result["findings"] += _covered(visual)
         if toggle:
             t2 = page.evaluate(_pick_js(TOGGLE_JS, click))
             if t2:
@@ -232,8 +275,83 @@ def look(path, out_dir, hover=None, click=None, browser_path=None):
                 time.sleep(SETTLE)
                 result["shots"].append({"name": "phone-open", "viewport": list(PHONE), "path": _write(out_dir, "phone-open", page.screenshot())})
                 result["findings"] += [dict(f, state="phone-open") for f in page.evaluate(CHECKS_JS)]
+        _play(page, url, "phone", PHONE, out_dir, result, walk)
+        result["sheet"] = _sheet(page, out_dir, result["shots"])
     result["findings"] = _dedupe(result["findings"])
     return result
+
+
+SHEET_WIDTH = 1300
+SHOT_LABELS = {"desktop": "desktop 1280x800, as loaded", "hover": "pointer resting on the main control", "open": "main toggle open",
+               "desktop-played": "desktop, after the walk", "phone": "phone 390x844, as loaded", "phone-open": "phone, toggle open",
+               "phone-played": "phone, after the walk"}
+
+
+def _sheet(page, out_dir, shots):
+    """Every shot side by side on one labelled image, laid out by the browser: one Read instead of five."""
+    tiles = []
+    for shot in shots:
+        n = shot["name"]
+        label = SHOT_LABELS.get(n) or ("after scripted play %s" % n.split("-")[-1] if n.startswith("play-") else n)
+        tiles.append('<figure><img src="%s"><figcaption>%s</figcaption></figure>' % (os.path.basename(shot["path"]), label))
+    html = ('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#18181b;color:#e4e4e7;font:13px/1.4 system-ui,sans-serif}'
+            'main{display:flex;flex-wrap:wrap;gap:14px;padding:14px;align-items:flex-start}figure{margin:0}'
+            'img{display:block;max-height:400px;max-width:640px;border:1px solid #52525b}figcaption{padding-top:4px}</style>'
+            '<main>%s</main>' % "".join(tiles))
+    source = os.path.join(out_dir, "sheet.html")
+    with open(source, "w", encoding="utf-8") as f:
+        f.write(html)
+    page.set_viewport(SHEET_WIDTH, 800, mobile=False)
+    page.navigate(pathlib.Path(source).resolve().as_uri(), settle=0.3)
+    height = page.evaluate("Math.ceil(document.documentElement.scrollHeight)")
+    data = page.screenshot(clip={"x": 0, "y": 0, "width": SHEET_WIDTH, "height": min(int(height), 4000)})
+    return _write(out_dir, "sheet", data)
+
+
+COVERED = 0.30        # share of the main visual under other elements on a phone before it is worth saying
+COVERED_MORE = 0.15   # ...and how much more than on a laptop, so a heads-up display that is there by design stays quiet
+
+
+def _covered(visual):
+    """A panel that sits beside the main visual on a laptop and on top of it on a phone (test 19's lemons)."""
+    desk, phone = visual.get("desktop"), visual.get("phone")
+    if not desk or not phone or desk["key"] != phone["key"]:
+        return []
+    if phone["covered"] >= COVERED and phone["covered"] - desk["covered"] >= COVERED_MORE:
+        return [{"kind": "covered", "selector": phone["show"], "state": "phone",
+                 "detail": "%s covers %d%% of it at phone width (%d%% at desktop width)"
+                           % (phone["by"] or "other content", round(100 * phone["covered"]), round(100 * desk["covered"]))}]
+    return []
+
+
+def _washed_out(selector, at_rest, through, settled):
+    """A label that could be read before the hover and can't be read partway through it, or once it has settled."""
+    if not at_rest or at_rest < 3 or settled is None:
+        return []
+    worst = min([c for c in through if c] + [settled])
+    if worst >= 3 or worst >= 0.6 * at_rest:
+        return []
+    when = "while the pointer rests on it" if settled < 3 else "partway through its hover transition"
+    return [{"kind": "washed-out", "selector": selector, "state": "desktop",
+             "detail": "its label drops to %.1f:1 against what is behind it %s (%.1f:1 at rest)" % (worst, when, at_rest)}]
+
+
+def _play(page, url, name, viewport, out_dir, result, walk=True):
+    """Play the page from a fresh load at this viewport (play.py), and keep what the walk found."""
+    page.navigate(url, settle=0.3)
+    if name == "desktop":
+        result["findings"] += [dict(f, state=name) for f in play.focus_walk(page)]
+    if not walk:
+        return
+    known = {(f["kind"], f["selector"]) for f in result["findings"]}
+    walked = play.walk(page, checks_js=CHECKS_JS, known=known)
+    result["played"][name] = walked["steps"]
+    if any(s["changed"] is not False for s in walked["steps"]):
+        result["shots"].append({"name": name + "-played", "viewport": list(viewport),
+                                "path": _write(out_dir, name + "-played", page.screenshot())})
+    if name == "desktop":
+        result["findings"] += [dict(f, state=name) for f in play.unreachable(walked["steps"])]
+    result["findings"] += [dict(f, state="%s, %s" % (name, f["state"]) if f.get("state") else name) for f in walked["findings"]]
 
 
 def _pick_js(default_js, selector):
@@ -245,34 +363,54 @@ def _pick_js(default_js, selector):
             " expanded: el.getAttribute('aria-expanded')}; })()" % (json.dumps(selector), json.dumps(selector)))
 
 
+PLAYED = ("uneven", "js-error", "dead")   # found by playing: one finding per element, with every width it showed at
+
+
 def _dedupe(findings):
-    seen, out = set(), []
+    seen, out = {}, []
     for f in findings:
-        key = (f["kind"], f["selector"], f.get("detail"))
+        key = (f["kind"], f["selector"]) if f["kind"] in PLAYED else (f["kind"], f["selector"], f.get("detail"))
         if key not in seen:
-            seen.add(key)
+            seen[key] = f
             out.append(f)
+        elif f["kind"] in PLAYED and f.get("state") and f["state"] not in seen[key]["state"].split(", "):
+            seen[key]["state"] += ", " + f["state"]
     return out
 
 
 def report(result):
     lines = ["Looked at %s" % result["file"]]
     for shot in result["shots"]:
-        lines.append("  %-10s %dx%d  %s" % (shot["name"], shot["viewport"][0], shot["viewport"][1], shot["path"]))
+        lines.append("  %-14s %dx%d  %s" % (shot["name"], shot["viewport"][0], shot["viewport"][1], shot["path"]))
+    if result.get("sheet"):
+        lines.append("  %-14s all of the above on one labelled image: %s" % ("sheet", result["sheet"]))
     if result.get("hover"):
         h = result["hover"]
         lines.append("  hover on %s: %s" % (h["selector"], "something changes" if h["changed"] else "nothing visible changes"))
     if result.get("toggle"):
         t = result["toggle"]
         lines.append("  clicked %s: aria-expanded %s -> %s" % (t["selector"], t.get("before"), t.get("after")))
+    played = result.get("played") or {}
+    told = {name: play.account(played[name]) for name in ("desktop", "phone") if played.get(name)}
+    if len(told) == 2 and told["desktop"] == told["phone"]:
+        told = {"desktop and phone": told["desktop"]}
+    for name, account in told.items():
+        lines.append("Played it at %s width, %d actions:" % (name, len(played[name.split(" ")[0]])))
+        lines += ["  %d. %s" % (i, line) for i, line in enumerate(account, 1)]
+    for n, ran in enumerate(result.get("plays") or [], 1):
+        failed = sum(1 for e in ran["expects"] if not e["ok"])
+        held = ("no expectations" if not ran["expects"] else "all %d expectations held" % len(ran["expects"]) if not failed
+                else "%d of %d expectations failed" % (failed, len(ran["expects"])))
+        lines.append("Play %d: %d actions, %s" % (n, ran["actions"], held))
     if result["findings"]:
         lines.append("Things to look at (not rules):")
         for f in result["findings"]:
             lines.append("  - %-13s %-28s %s  [%s]" % (f["kind"], f["selector"], f.get("detail", ""), f.get("state", "")))
     else:
         lines.append("No layout problems found by the checks.")
-    lines.append("Read the screenshots with the Read tool. Then ask: does it read as the user's words, at full strength? "
-                 "Fix what you see and look again.")
+    lines.append("Read the desktop and phone shots with the Read tool%s. Then two questions. Would a stranger who saw it for one "
+                 "second name what the user asked for, or something else? And does it read as the user's words, at full strength? "
+                 "Fix what you see and look again." % ("; the sheet lays every state side by side for a quick pass" if result.get("sheet") else ""))
     return "\n".join(lines)
 
 
@@ -282,6 +420,10 @@ def main(argv=None):
     ap.add_argument("--out", help="folder for the screenshots (default: a temp folder)")
     ap.add_argument("--hover", help="CSS selector of the control to hover (default: the largest button)")
     ap.add_argument("--click", help="CSS selector of the toggle to click (default: the first [aria-expanded] or summary)")
+    ap.add_argument("--play", action="append", default=[], metavar="STEPS",
+                    help="a scripted play to run from a fresh load, steps split by ';': click SEL; hover SEL; type TEXT into SEL; "
+                         "press KEY; drag SEL by DX,DY; wait MS; expect TEXT; expect SEL says TEXT; expect no TEXT. Repeatable")
+    ap.add_argument("--no-walk", action="store_true", help="skip the automatic walk (scripted plays still run)")
     ap.add_argument("--json", action="store_true", help="print the result as JSON")
     args = ap.parse_args(argv)
     found = tools.find_browser()
@@ -290,7 +432,8 @@ def main(argv=None):
         return 0
     out_dir = args.out or tempfile.mkdtemp(prefix="look-")
     try:
-        result = look(args.page, out_dir, hover=args.hover, click=args.click, browser_path=found["path"])
+        result = look(args.page, out_dir, hover=args.hover, click=args.click, browser_path=found["path"],
+                      plays=args.play, walk=not args.no_walk)
     except (cdp.BrowserUnavailable, cdp.CDPError, OSError) as exc:
         print("The browser could not render the page (%s); skip this step." % exc)
         return 0

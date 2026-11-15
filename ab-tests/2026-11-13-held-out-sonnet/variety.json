@@ -1,0 +1,108 @@
+{
+ "t1-lavalamp": {
+  "scores": {
+   "A": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "B": [
+    8.0,
+    8.0,
+    8.0
+   ],
+   "C": [
+    5.0,
+    6.0,
+    5.0
+   ]
+  },
+  "mean": {
+   "A": 2.0,
+   "B": 8.0,
+   "C": 5.33
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "C"
+    },
+    "most_varied": "B",
+    "note": "P is one design four times: a tapered lamp on the left with brass or steel caps, a dark glass panel of heat/blob sliders and four swatches on the right, and a glowing pink/orange palette. Q ranges widely: a squat bell jar with a bottom dock, a giant globe, a lamp in a room scene with a shelf and plant, and a full-width bottle with a toggle and time controls. R mostly repeats the tall rocket-style lamp, but it varies the layout (centred dock, side panel) and one lamp is a round bulb shape."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "C",
+     "R": "A"
+    },
+    "most_varied": "B",
+    "note": "P mixes a rocket lamp, a teardrop, a spherical globe on a stand and a squat amber bell, with different layouts (side panel, bottom bar, tiny console) and moods. Q has two near-identical tall rocket lamps plus one bulbous lamp and one panel variant, so shape and layout repeat more. R is one tapered lamp with a side control card four times, varying mainly cap and base metal and wax colour."
+   },
+   "v3": {
+    "sets": {
+     "P": "C",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "B",
+    "note": "P has one bulbous lamp (P1) but P2-P4 are the same tall rocket-shaped metallic lamp with blurry blobs and a control panel or bar; Q is four near-identical tapered cone lamps with a brass or chrome cap, a right-hand glass panel with sliders and swatches, differing mainly in wax colour and a pixelated render in Q2; R varies the silhouette (squat amber bulb, round globe, tall tapered stage-lit lamp, framed bulb-shaped lamp), the palette, the scene (shelf with props, a floor, a framed stage) and the control layout (bottom bar vs side panel)."
+   }
+  }
+ },
+ "t2-calculator": {
+  "scores": {
+   "A": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "B": [
+    5.0,
+    5.0,
+    5.0
+   ],
+   "C": [
+    5.0,
+    6.0,
+    5.0
+   ]
+  },
+  "mean": {
+   "A": 1.0,
+   "B": 5.0,
+   "C": 5.33
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "B",
+     "R": "C"
+    },
+    "most_varied": "tie",
+    "note": "P is one dark rounded calculator with an orange operator column and a flat black display, four times with only minor color tweaks. Q mixes two retro 7-segment LCD skeuo takes with a light neumorphic one and a dark glass one (with a full-width equals), and R mixes cream, dark blue outline, sage, and another LCD with a wide equals; both repeat the 4x5 grid and the LCD or cream archetype once."
+   },
+   "v2": {
+    "sets": {
+     "P": "B",
+     "Q": "C",
+     "R": "A"
+    },
+    "most_varied": "C",
+    "note": "P and Q each mix a dark glass or flat dark take, a cream/light take and an LCD retro take, but P has two near-duplicate LCD calculators (P2/P4) and Q has two similar cream ones (Q1/Q4), with Q varying key layout more (wide 0, wide =, 5-column LCD). R is the same dark iOS-style calculator four times with only accent colour tweaks."
+   },
+   "v3": {
+    "sets": {
+     "P": "C",
+     "Q": "A",
+     "R": "B"
+    },
+    "most_varied": "tie",
+    "note": "Q is one dark calculator with orange keys and a 4x5 grid made four times, differing only in grey and orange tints. P and R each have one 7-segment LCD (P1, R1/R3 are near-twins in R) plus light and dark flat takes, with some key-layout changes (wide 0, wide = row, \u00b1 position); R has two near-duplicate LCD skeuomorphs and P has two similar cream/orange flat ones, so they come out about equal."
+   }
+  }
+ }
+}

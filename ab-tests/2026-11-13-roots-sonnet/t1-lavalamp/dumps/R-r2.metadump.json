@@ -1,0 +1,98 @@
+{
+  "request": "a lava lamp",
+  "thesis": "A slow, warm, hypnotic liquid toy: wax blobs that merge and split in glowing liquid, lit from below, that you want to watch and poke.",
+  "job": [
+    "open the page and see a lamp glowing at once",
+    "watch blobs rise, merge, pinch off, sink",
+    "turn the lamp on/off (heater) and watch it warm up or cool and freeze",
+    "change wax and liquid colour",
+    "adjust heat (speed), blob count, blob size",
+    "poke/drag a blob or shake the lamp, see it react",
+    "pause / reset",
+    "keyboard use of every control, state shown in the UI"
+  ],
+  "disciplines": {
+    "physics_simulation": {
+      "principles": ["wax density vs liquid changes with temperature", "heat from the base drives convection", "surface tension merges and splits blobs"],
+      "steps": ["blobs as particles with radius", "temperature per blob: heats near bottom, cools near top", "buoyancy force from temperature", "drag/damping, wall bounce", "render metaballs"],
+      "tricks": ["metaball field summed r^2/d^2", "threshold the field for a crisp edge", "low-res field upscaled is cheap and soft", "blur+contrast (gooey filter) gives merging for free", "cap dt on tab return"],
+      "tests": ["do blobs merge and pinch off?", "does a cold lamp go still?", "no blob stuck on glass forever"]
+    },
+    "rendering": {
+      "principles": ["field threshold looks liquid", "light comes from below, glows through wax", "glass has highlights and rim"],
+      "steps": ["offscreen low-res field", "colour by gradient vs height", "composite glass, glow, cap, base"],
+      "tricks": ["per-pixel field with gradient colour at ~1/3 res then smooth-scale", "additive bloom behind", "rim light along edge by field near threshold"],
+      "tests": ["fps steady", "crisp on retina"]
+    },
+    "visual_design": {
+      "principles": ["one hot colour pair against a dark room", "glow is the subject", "silhouette of the lamp is recognisable"],
+      "steps": ["dark room bg with lamp-coloured light spill", "lamp silhouette", "controls quiet"],
+      "tricks": ["bg tinted by wax colour", "floor reflection"],
+      "tests": ["name it lava lamp at a glance"]
+    },
+    "interaction_design": {
+      "principles": ["every control changes visible state immediately", "show state in text too"],
+      "steps": ["power toggle", "colour presets", "sliders", "drag blobs"],
+      "tricks": ["pointer capture", "warm-up delay feels real"],
+      "tests": ["each control changes the lamp"]
+    },
+    "accessibility_and_code": {
+      "principles": ["real buttons, labels, focus rings", "respect reduced motion by slowing"],
+      "steps": ["aria-pressed on toggles", "aria-live status"],
+      "tricks": ["single rAF loop", "DPR cap 2"],
+      "tests": ["tab through all controls", "no console errors"]
+    }
+  },
+  "the_thing": {
+    "parts": ["tapered glass tube (cone/rocket shape)", "coloured liquid", "wax blobs", "bulb/glow at bottom", "metal base", "metal cap"],
+    "expectations": ["slow motion", "blobs merge and split", "warm glow", "rise when hot, sink when cooling", "takes minutes to warm"],
+    "kinds": [
+      {"name": "classic rocket lamp", "what": "tapered glass, orange wax in yellow-ish liquid, chrome base and cap"},
+      {"name": "neon pop lamp", "what": "magenta wax in cyan liquid"},
+      {"name": "glitter lamp", "what": "flakes drifting in liquid"},
+      {"name": "flat wall panel", "what": "rectangular backlit blobs"}
+    ]
+  },
+  "specifics": {
+    "shape": {
+      "keywords": {"1": ["lava lamp", "blobs", "wax", "glow"], "2": ["tapered glass", "chrome base", "cap", "metaballs"], "3": ["Mathmos", "Astro", "convection", "paraffin", "bulb"]},
+      "descriptions": ["lamp is wide at bottom narrowing to top, then flare to a cap", "blobs confined by the glass profile"],
+      "behaviors": ["blob squeezes against taper", "pool of wax at bottom when cold"],
+      "tokens": {"lamp height to width": "2.8 to 3.4", "base height": "14 to 20% of lamp"}
+    },
+    "colour": {
+      "keywords": {"1": ["orange", "glow"], "2": ["amber", "magenta", "teal", "dark room"], "3": ["gradient by temperature", "bloom", "rim light"]},
+      "descriptions": ["wax lighter and hotter at bottom, deeper at top", "liquid darkest at top, brightest near bulb"],
+      "behaviors": ["colour shifts with preset"],
+      "tokens": {"wax": "#ff5a1f to #ffb347", "liquid": "#3a0d2a to #8a1f3a", "room": "#07040a to #120714"}
+    },
+    "motion": {
+      "keywords": {"1": ["slow", "rise", "sink"], "2": ["merge", "split", "wobble"], "3": ["buoyancy", "drag", "thermal"]},
+      "descriptions": ["one blob cycle takes 20 to 60 s at normal heat"],
+      "behaviors": ["heat up: bottom blob lifts and neck stretches", "cool: blobs slow, sink, pool"],
+      "tokens": {"heat up time": "6 to 20 s (accelerated)", "blobs": "6 to 12", "radius": "0.05 to 0.13 of lamp width fraction", "damping": "0.97 to 0.995"}
+    },
+    "controls": {
+      "keywords": {"1": ["on/off", "color", "heat"], "2": ["blob count", "size", "pause", "shake"], "3": ["presets"]},
+      "descriptions": ["status text: warming, flowing, cooling, off"],
+      "behaviors": ["drag blob to move, release and it carries on", "shake adds impulse"],
+      "tokens": {"slider steps": "continuous", "button height": "40 to 48 px"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "bouncing circles on flat bg", "instead": "tapered glass, merging field, glow, base and cap"},
+    {"not": "fast jittery motion", "instead": "slow thermal drift with long necks"},
+    {"not": "static decoration", "instead": "heater that really changes physics"},
+    {"not": "blob hard-edged individual circles", "instead": "field threshold so they fuse"},
+    {"not": "flat single-colour wax", "instead": "temperature gradient inside wax"}
+  ],
+  "checks": [
+    "would a stranger say lava lamp at a glance?",
+    "do blobs visibly merge and split?",
+    "does the power switch warm up and cool down?",
+    "does every control change the lamp and its status text?",
+    "can a blob be dragged?",
+    "keyboard operable?"
+  ],
+  "built": ["classic rocket lamp"]
+}

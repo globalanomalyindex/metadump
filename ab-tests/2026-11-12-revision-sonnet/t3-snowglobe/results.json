@@ -1,0 +1,283 @@
+{
+ "scores": {
+  "A": {
+   "likeness": 7.83,
+   "visuals": 6.92,
+   "motion": 6.58,
+   "presentation": 7.33,
+   "overall": 7.08,
+   "mean_rank": 3.08,
+   "per_run_overall": {
+    "A-r1": 8.67,
+    "A-r2": 6.67,
+    "A-r3": 8.33,
+    "A-r4": 4.67
+   }
+  },
+  "B": {
+   "likeness": 7.92,
+   "visuals": 7.83,
+   "motion": 7.0,
+   "presentation": 6.42,
+   "overall": 7.25,
+   "mean_rank": 2.83,
+   "per_run_overall": {
+    "B-r1": 7.33,
+    "B-r2": 5.67,
+    "B-r3": 8.67,
+    "B-r4": 7.33
+   }
+  },
+  "D": {
+   "likeness": 7.42,
+   "visuals": 6.33,
+   "motion": 6.08,
+   "presentation": 6.25,
+   "overall": 6.08,
+   "mean_rank": 4.58,
+   "per_run_overall": {
+    "D-r1": 5.33,
+    "D-r2": 6.0,
+    "D-r3": 6.33,
+    "D-r4": 6.67
+   }
+  }
+ },
+ "pairwise": {
+  "D_vs_B": {
+   "wins": 3,
+   "losses": 20,
+   "ties": 1,
+   "win_rate": 0.15,
+   "p": 0.171
+  },
+  "D_vs_A": {
+   "wins": 7,
+   "losses": 17,
+   "ties": 0,
+   "win_rate": 0.29,
+   "p": 0.343
+  },
+  "B_vs_A": {
+   "wins": 9,
+   "losses": 11,
+   "ties": 4,
+   "win_rate": 0.46,
+   "p": 0.971
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 25461,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 1.71,
+   "shake_change_pct": 4.05,
+   "click_change_pct": 2.54,
+   "moves_untouched": true,
+   "changes_when_shaken": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "bytes": 16601,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 1.14,
+   "shake_change_pct": 2.29,
+   "click_change_pct": 1.98,
+   "moves_untouched": true,
+   "changes_when_shaken": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "bytes": 16105,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 0.06,
+   "shake_change_pct": 4.2,
+   "click_change_pct": 1.22,
+   "moves_untouched": true,
+   "changes_when_shaken": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "bytes": 14263,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 0.79,
+   "shake_change_pct": 3.49,
+   "click_change_pct": 0.8,
+   "moves_untouched": true,
+   "changes_when_shaken": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "bytes": 24324,
+   "renderer": "canvas2d",
+   "main_visual": "#cv",
+   "untouched_change_pct": 3.65,
+   "shake_change_pct": 3.41,
+   "click_change_pct": 1.67,
+   "moves_untouched": true,
+   "changes_when_shaken": false,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "bytes": 33707,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 9.68,
+   "shake_change_pct": 5.82,
+   "click_change_pct": 6.15,
+   "moves_untouched": true,
+   "changes_when_shaken": false,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "bytes": 25378,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 0.5,
+   "shake_change_pct": 5.88,
+   "click_change_pct": 0.7,
+   "moves_untouched": true,
+   "changes_when_shaken": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "bytes": 31178,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 4.43,
+   "shake_change_pct": 4.15,
+   "click_change_pct": 0.54,
+   "moves_untouched": true,
+   "changes_when_shaken": false,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "D-r1": {
+   "bytes": 14481,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 0.0,
+   "shake_change_pct": 9.98,
+   "click_change_pct": 1.43,
+   "moves_untouched": false,
+   "changes_when_shaken": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "D-r2": {
+   "bytes": 23340,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 10.47,
+   "shake_change_pct": 13.9,
+   "click_change_pct": 3.26,
+   "moves_untouched": true,
+   "changes_when_shaken": false,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "D-r3": {
+   "bytes": 20787,
+   "renderer": "canvas2d",
+   "main_visual": "#globe",
+   "untouched_change_pct": 10.06,
+   "shake_change_pct": 8.83,
+   "click_change_pct": 1.84,
+   "moves_untouched": true,
+   "changes_when_shaken": false,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "D-r4": {
+   "bytes": 16521,
+   "renderer": "canvas2d",
+   "main_visual": "#c",
+   "untouched_change_pct": 2.79,
+   "shake_change_pct": 3.9,
+   "click_change_pct": 1.39,
+   "moves_untouched": true,
+   "changes_when_shaken": false,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 85526,
+   "mean_seconds": 83.7
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 127115,
+   "mean_seconds": 208.5
+  },
+  "D": {
+   "runs": 4,
+   "mean_tokens": 120439,
+   "mean_seconds": 165.4
+  }
+ },
+ "agreement_r": 0.81,
+ "notes": {
+  "b1/j1/B-r1": "Richest glass and a dense, believable churn with a cabin, trees and snowman, but the dome overlaps the base awkwardly and the control panel crowds the globe.",
+  "b1/j1/D-r1": "Clean classic globe on a maroon and gold base, but the dome is a big empty pale-blue field, the scene is tiny and the white snow barely shows against it.",
+  "b1/j1/A-r1": "Night scene with a moon, glowing windows, chimney smoke and plenty of crisp snow, with a gold-trimmed base; reads clearly as a snow globe, and the phone layout works.",
+  "b1/j1/D-r2": "The room backdrop and green base are charming, but the chapel and trees look washed out behind a hazy dome and the flakes are faint.",
+  "b1/j1/A-r2": "Simple, polished night cottage with good snow density and drift on shake, a restrained layout and a good phone fit, but the glass is flatter and the base plain.",
+  "b1/j1/B-r2": "Ambitious shelf room with a candle, books and a plant, but the globe is small, the snow is sparse, the panel overlaps the scene and the phone view hides the controls.",
+  "b1/j2/D-r2": "Charming chapel on a green and gold base in a blurred room, but the snow haze washes out the scene and the flakes read as soft blobs.",
+  "b1/j2/A-r2": "Clear night globe with a cottage and falling snow, but the flat base, floating gold plate and control row feel plain.",
+  "b1/j2/B-r2": "Lovely shelf vignette with candle, books and a tilting base, but the control panel covers the scene, the globe is small and the phone view hides its controls.",
+  "b1/j2/A-r1": "Polished night cabin with a strong dome rim, moon, chimney smoke and dense snow that settles into a drift, in a clean layout that works on a phone.",
+  "b1/j2/D-r1": "Bright blue glass with a nice base, but the flakes are barely visible, the scene is tiny and the odd dome tilt on shake looks like a bug.",
+  "b1/j2/B-r1": "Rich depth with a hill, pines, snowman and thick glitter that churns and settles, but the dome overlaps the base awkwardly and the panel is busy.",
+  "b1/j3/A-r2": "Clean night cottage globe with moon and snowy trees, believable flakes and gold base, though the base is plain and the scene a bit small.",
+  "b1/j3/B-r2": "Charming shelf-and-candle room but the globe is small, the control panel overlaps the scene and the dome has odd glass segments; phone view crops the globe.",
+  "b1/j3/D-r2": "Nice framed room with gold-and-green base, but the chapel is washed out by fog-like snow and the flakes look hazy.",
+  "b1/j3/B-r1": "Rich glass, depth and hills with glitter churning, though the busy control panel crowds the globe and the scene is murky.",
+  "b1/j3/A-r1": "The most iconic: deep night dome, glowing cabin, moon, heaped snow and brass plaque, with a clear shake and settle and a tidy phone layout.",
+  "b1/j3/D-r1": "Pretty blue glass dome on a burgundy base, but it is empty at rest, the scene is tiny and the glitter reads as sparse sparkle.",
+  "b2/j1/B-r3": "Convincing glass dome on a brass collar and wood base with a lit cabin, but the scene is small and the side panel crowds the desktop and phone layouts.",
+  "b2/j1/D-r3": "Clear dome and base, but the scene is dim and tiny, the blue base is bland, and snow sits as an odd cluster at rest.",
+  "b2/j1/A-r3": "Moonlit night cabin with pines, stars, smoke and a glowing window, a settled snow mound and a clean centered layout that works on phone.",
+  "b2/j1/D-r4": "Large glassy dome with lively falling snow and a cozy cabin, but the black angular base looks off and the controls crowd the bottom edge.",
+  "b2/j1/B-r4": "Charming shelf room staging, but the globe sits tilted at rest, the glass looks milky and the base is clumsy.",
+  "b2/j1/A-r4": "Flat daytime scene, the base is a clipped brown blob and the snow bunches at the top of the dome instead of falling convincingly.",
+  "b2/j2/D-r4": "Good snowfall and cozy cabin, but the blocky white highlights and skewed black base look off, and the readout text is crowded below.",
+  "b2/j2/A-r4": "Clean, clear flat daytime globe on a brown base, but snow clumps at the top and the whole thing is simple and washed out.",
+  "b2/j2/B-r4": "Charming shelf-room staging with a tilting globe and glitter on the ground, though the globe sits awkwardly on a wide base and the room is busy.",
+  "b2/j2/A-r3": "Elegant night scene with moon, smoke and glowing windows and tidy controls, but the globe starts fully settled and the shake is modest.",
+  "b2/j2/D-r3": "Nice blue glass and brass collar, but the scene is dim and flat and the snow clusters in a clump instead of filling the dome.",
+  "b2/j2/B-r3": "Most convincing glass, brass collar and wood base with a lit cabin and fine glitter that swirls and clears from the top, with sensible controls.",
+  "b2/j3/A-r4": "Flat clipart globe with a wedge-shaped base and snow bunched at the top that never visibly settles, and the globe floats loose from the base.",
+  "b2/j3/B-r4": "Charming shelf room staging with a convincing tilting globe, though the base looks lopsided at rest and the dome is rather pale.",
+  "b2/j3/D-r4": "Moody blue dome with nice glass highlights and a cabin, but the base is a dark flat slab and the controls are cropped at the bottom.",
+  "b2/j3/B-r3": "Best glass, brass collar and wood base with a rich cabin; the snow churns and settles believably, though the side panel is busy.",
+  "b2/j3/A-r3": "Polished night scene with moon, chimney smoke and glowing windows, but the dome is too short and the shake barely adds snow.",
+  "b2/j3/D-r3": "Clean blue glass dome on a brass collar with swirling flakes, but the cabin is washed out and the framed panel feels generic."
+ }
+}

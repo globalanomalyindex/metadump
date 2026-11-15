@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"likeness": 8, "visuals": 8, "motion": 8, "presentation": 6, "overall": 7, "note": "Richest glass and a dense, believable churn with a cabin, trees and snowman, but the dome overlaps the base awkwardly and the control panel crowds the globe."},
+"V": {"likeness": 7, "visuals": 6, "motion": 4, "presentation": 6, "overall": 5, "note": "Clean classic globe on a maroon and gold base, but the dome is a big empty pale-blue field, the scene is tiny and the white snow barely shows against it."},
+"W": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 8, "note": "Night scene with a moon, glowing windows, chimney smoke and plenty of crisp snow, with a gold-trimmed base; reads clearly as a snow globe, and the phone layout works."},
+"X": {"likeness": 7, "visuals": 6, "motion": 5, "presentation": 6, "overall": 5, "note": "The room backdrop and green base are charming, but the chapel and trees look washed out behind a hazy dome and the flakes are faint."},
+"Y": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 8, "overall": 7, "note": "Simple, polished night cottage with good snow density and drift on shake, a restrained layout and a good phone fit, but the glass is flatter and the base plain."},
+"Z": {"likeness": 7, "visuals": 7, "motion": 5, "presentation": 5, "overall": 6, "note": "Ambitious shelf room with a candle, books and a plant, but the globe is small, the snow is sparse, the panel overlaps the scene and the phone view hides the controls."}
+},
+"ranking": ["W", "U", "Y", "Z", "V", "X"]}

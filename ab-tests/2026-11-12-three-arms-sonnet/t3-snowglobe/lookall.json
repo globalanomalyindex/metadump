@@ -1,0 +1,95 @@
+{
+ "A-r1": {
+  "findings": {
+   "small-target": 2
+  },
+  "played": 0,
+  "at_rest": 2,
+  "details": []
+ },
+ "A-r2": {
+  "findings": {
+   "small-target": 2
+  },
+  "played": 0,
+  "at_rest": 2,
+  "details": []
+ },
+ "A-r3": {
+  "findings": {
+   "small-target": 1,
+   "hover-static": 1
+  },
+  "played": 0,
+  "at_rest": 2,
+  "details": []
+ },
+ "A-r4": {
+  "findings": {
+   "small-target": 1
+  },
+  "played": 0,
+  "at_rest": 1,
+  "details": []
+ },
+ "B-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r2": {
+  "findings": {
+   "overlap": 7,
+   "focus-hidden": 1,
+   "no-keyboard": 1,
+   "cut-off": 1
+  },
+  "played": 2,
+  "at_rest": 8,
+  "details": [
+   "focus-hidden #s0: the Tab key lands on 2 controls nobody can see (#s0, #w1): collapsed, covered or off screen, but still in the tab order [desktop]",
+   "no-keyboard div:nth-of-type(2) > div > label:nth-of-type(1): 6 things here answer a click but the Tab key never reaches it: not a button or link, and no tabindex [desktop]"
+  ]
+ },
+ "B-r3": {
+  "findings": {
+   "overflow": 2
+  },
+  "played": 0,
+  "at_rest": 2,
+  "details": []
+ },
+ "B-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r2": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r3": {
+  "findings": {
+   "overlap": 4
+  },
+  "played": 0,
+  "at_rest": 4,
+  "details": []
+ },
+ "C-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ }
+}

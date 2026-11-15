@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j2","scores":{
+"U":{"fidelity":9,"correctness":9,"craft":8,"usability":8,"overall":8,"note":"Pre-built 32x32 scene with bevelled blocks, 9 types, undo, drag-place; dark empty sky is plain and tiny status text."},
+"V":{"fidelity":8,"correctness":7,"craft":5,"usability":7,"overall":6,"note":"Works with a Generate button, but opens empty with flat colors and stray grid-line artifacts, little visual character."},
+"W":{"fidelity":7,"correctness":8,"craft":7,"usability":7,"overall":6,"note":"Clean toolbar with per-block counts, but only four blocks, empty start and faint checkerboard with artifact lines."},
+"X":{"fidelity":8,"correctness":8,"craft":6,"usability":8,"overall":7,"note":"Fill, pick and place/erase modes with 9 block types and a ground pre-filled, but plain look and grid lines bleed through blocks."},
+"Y":{"fidelity":10,"correctness":9,"craft":10,"usability":9,"overall":10,"note":"Textured blocks, sky, clouds and a generated landscape with trees and water; polished, responsive, new-world and undo controls."},
+"Z":{"fidelity":7,"correctness":8,"craft":7,"usability":8,"overall":7,"note":"Neat labelled toolbar with key hints and responsive wrapping, but only four blocks and an empty board with little visual interest."}},
+"ranking":["Y","U","X","Z","W","V"]}

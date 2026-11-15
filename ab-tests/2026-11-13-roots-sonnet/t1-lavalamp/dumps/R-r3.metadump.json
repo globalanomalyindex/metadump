@@ -1,0 +1,98 @@
+{
+  "request": "a lava lamp",
+  "thesis": "A slow, warm, hypnotic object: wax blobs that merge, stretch, pinch off and sink under a glowing bulb, inside a glass-and-metal lamp you want to stare at.",
+  "job": [
+    "open the page and see a lamp already running, wax already moving",
+    "watch blobs rise, merge, stretch, split, cool and sink",
+    "turn the lamp on/off (bulb heats and cools; wax stops/starts)",
+    "change heat (hotter = faster, bigger rise; cooler = sluggish)",
+    "change wax and liquid colour (presets)",
+    "shake/stir or poke wax with the pointer",
+    "toggle room light (dark room shows the glow)",
+    "see state readouts update (temperature, on/off, blob count)"
+  ],
+  "disciplines": {
+    "physical simulation": {
+      "principles": ["wax density changes with temperature", "heat at base, cooling at top", "surface tension makes blobs round and merge", "viscosity makes everything slow"],
+      "steps": ["model blobs as circles with temperature", "heat near bottom, cool near top", "buoyancy from temperature", "damp velocity heavily", "render by metaball field"],
+      "tricks": ["metaball threshold on summed 1/r^2 field gives merge/pinch for free", "render field at low res on small canvas and upscale with smoothing", "pool of wax at the base as a wide blob row", "vertical wobble from slow noise"],
+      "tests": ["do blobs merge and split", "do they never all stick top or bottom", "does it still move after 5 minutes"]
+    },
+    "visual design": {
+      "principles": ["glow is the light source", "silhouette of the lamp is the identity", "contrast of hot wax vs dark room"],
+      "steps": ["dark room gradient", "lamp body: cap, glass, base", "bulb glow behind", "highlights on glass"],
+      "tricks": ["specular vertical streak on glass", "radial glow below, fading up", "rim light on blobs via field gradient", "subtle liquid tint gradient hot-at-bottom"],
+      "tests": ["name it at a glance as a lava lamp", "is the lamp shape clearly a rocket/tapered bottle"]
+    },
+    "interaction design": {
+      "principles": ["every control changes visible state", "physical metaphors: switch, dial"],
+      "steps": ["switch", "heat slider", "colour swatches", "stir button", "pointer poke"],
+      "tricks": ["readouts that update live", "keyboard accessible controls"],
+      "tests": ["toggle power and see wax cool and stop", "slide heat and see speed change"]
+    },
+    "front-end code": {
+      "principles": ["single file", "requestAnimationFrame with dt", "no external requests"],
+      "steps": ["canvas for lamp, DOM for controls", "devicePixelRatio aware", "pause when hidden", "prefers-reduced-motion slows"],
+      "tricks": ["offscreen low-res field canvas", "ImageData per-pixel colour ramp"],
+      "tests": ["no console errors", "works at phone width"]
+    },
+    "accessibility": {
+      "principles": ["labels for controls", "reduced motion", "contrast of text"],
+      "steps": [], "tricks": ["aria-live readouts"], "tests": ["tab through controls"]
+    }
+  },
+  "the_thing": {
+    "parts": ["tapered glass vessel", "metal cap on top", "metal base with bulb", "liquid (tinted water/oil)", "wax blobs", "bulb glow", "power switch", "cord"],
+    "expectations": ["slow motion", "blobs merge and split", "glow from below", "takes time to warm up", "wax pools at bottom when cold"],
+    "kinds": [
+      {"name": "classic rocket lamp, orange wax in yellow-ish liquid", "what": "tapered glass over a bulb base, red/orange wax, dark room"},
+      {"name": "purple wax in blue liquid", "what": "cool-coloured classic"},
+      {"name": "green wax in clear liquid", "what": "acid look"},
+      {"name": "glitter lamp", "what": "sparkles drifting"},
+      {"name": "flat cartoon lamp", "what": "vector minimal"}
+    ]
+  },
+  "specifics": {
+    "shape": {
+      "keywords": {"1": ["lava lamp", "wax blobs", "glass", "glow"], "2": ["tapered vessel", "cap", "base", "metaball"], "3": ["bulb halo", "meniscus", "pinch-off", "tendril"]},
+      "descriptions": ["vessel is wide at bottom narrowing up, then slightly shoulder at top", "cap is a small dome, base a wide truncated cone"],
+      "behaviors": ["blob stretches into a neck then splits"],
+      "tokens": {"vessel width ratio bottom:top": "2.2:1 to 3:1", "lamp height": "70 to 85% of viewport height", "blob radius": "20 to 70 px at 600px tall lamp"}
+    },
+    "colour": {
+      "keywords": {"1": ["orange wax", "warm glow"], "2": ["amber", "magenta", "teal liquid"], "3": ["additive glow", "rim light"]},
+      "descriptions": ["hot wax brighter, cooler wax deeper", "liquid darker at top"],
+      "behaviors": ["wax brightens as it heats"],
+      "tokens": {"room background": "#0b0710 to #1a0c14", "orange wax": "#ff6a1a to #ffb347", "liquid": "#2a0a20 to #5a1030", "bulb glow": "#ffcf7a to #ff8a2a", "metal": "#2b2b33 to #6b6b78"}
+    },
+    "motion": {
+      "keywords": {"1": ["rise", "sink", "merge", "split"], "2": ["slow", "viscous", "warm-up"], "3": ["thermal convection"]},
+      "descriptions": ["blobs cross lamp in 12 to 40 seconds", "warm-up 8 to 20 seconds"],
+      "behaviors": ["power off: temperatures decay, wax sinks and pools", "power on: base heats, pooled wax lifts"],
+      "tokens": {"velocity damping per second": "0.6 to 0.9", "buoyancy accel": "8 to 30 px/s2", "temp decay": "0.02 to 0.08 per sec"}
+    },
+    "states_and_copy": {
+      "keywords": {"1": ["on", "off", "heat", "colour", "stir"], "2": ["warming up", "cooling", "blobs"], "3": []},
+      "descriptions": ["readouts: status text, temperature in C, blob count"],
+      "behaviors": ["switch toggles status text to Warming up, Running, Cooling, Off"],
+      "tokens": {"temp range": "20 to 70 C", "blob count": "7 to 12"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "bouncing circles with blur", "instead": "true metaball field with merging necks and a hard-ish glossy edge"},
+    {"not": "fast screensaver motion", "instead": "viscous slowness, 15+ seconds per rise"},
+    {"not": "flat lamp without glass", "instead": "highlight streaks, cap, base, glow bleeding onto the room"},
+    {"not": "controls that do nothing", "instead": "every control changes the sim and a readout"},
+    {"not": "purple-on-white web card", "instead": "dark room where the lamp is the light"}
+  ],
+  "checks": [
+    "would a stranger say lava lamp at a glance",
+    "do blobs merge and split",
+    "does power off stop and pool the wax; does power on bring it back",
+    "does heat slider change speed and temperature readout",
+    "do colour swatches recolour wax and liquid",
+    "does stir / poke move wax",
+    "does it work at phone width with no external requests"
+  ],
+  "built": ["classic rocket lamp, orange wax in yellow-ish liquid"]
+}

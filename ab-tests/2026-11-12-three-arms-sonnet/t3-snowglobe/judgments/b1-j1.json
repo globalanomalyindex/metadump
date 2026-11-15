@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 7, "overall": 8, "note": "Convincing glass dome with gold collar and wood base, a cozy hollow scene and glittery churn, though the control panel is a bit busy."},
+"V": {"likeness": 7, "visuals": 8, "motion": 7, "presentation": 7, "overall": 7, "note": "Fisheye-distorted rooftop city with lit windows is inventive and rich, but odd translucent rectangle reflections and the pedestal base read less like a classic snow globe."},
+"W": {"likeness": 9, "visuals": 7, "motion": 7, "presentation": 7, "overall": 7, "note": "Classic, clean globe with cabin, moon, snowdrift and a brass plaque; snow is plentiful but the scene is small and the controls sit below the fold."},
+"X": {"likeness": 5, "visuals": 7, "motion": 7, "presentation": 6, "overall": 6, "note": "Beautiful lighthouse scene and glass, but there is no base so it reads as a bubble on a table and the layout is crowded."},
+"Y": {"likeness": 8, "visuals": 6, "motion": 7, "presentation": 7, "overall": 7, "note": "Tidy and legible with falling snow and settling drift, but the flat base and plain gradients feel simplistic."},
+"Z": {"likeness": 8, "visuals": 7, "motion": 6, "presentation": 6, "overall": 7, "note": "Charming shelf staging with candle, books and plant, but the globe is small and washed out, the snow sparse, and the panel overlaps the scene and hides controls on mobile."}
+},
+"ranking": ["U", "W", "V", "Z", "Y", "X"]}

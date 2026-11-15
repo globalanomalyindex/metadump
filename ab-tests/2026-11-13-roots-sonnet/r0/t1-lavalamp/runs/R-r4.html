@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+:root{--wax:#ff7a2a;--wax2:#ffc04a;--liq:#3a1466;--liq2:#15062b;--glow:255,110,40}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(ellipse at 50% 55%,rgba(var(--glow),calc(.05 + .28*var(--heat,0))) 0,transparent 60%),#0b0710;color:#e9dcef;font:15px/1.4 system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:14px;padding:12px;transition:background .5s}
+.lamp{position:relative;width:min(300px,70vw);aspect-ratio:300/600}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+.panel{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:center;max-width:520px}
+button,input{font:inherit}
+button.pw{padding:8px 18px;border-radius:999px;border:1px solid #6b5577;background:#241830;color:#fff;cursor:pointer}
+button.pw[aria-pressed=true]{background:#ff7a2a;color:#220;border-color:#ffb070;box-shadow:0 0 14px rgba(255,122,42,.6)}
+button.sh{padding:8px 14px;border-radius:999px;border:1px solid #6b5577;background:#1b1224;color:#e9dcef;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+label{display:flex;align-items:center;gap:8px}
+.sw{display:flex;gap:8px}
+.sw button{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
+.sw button[aria-pressed=true]{border-color:#fff}
+#status{font-size:13px;opacity:.75;min-height:1.4em;text-align:center}
+</style>
+</head>
+<body>
+<div class="lamp"><canvas id="c" width="600" height="1200" aria-label="Lava lamp. Drag a blob to move it."></canvas></div>
+<div id="status" role="status">Off. Press Power.</div>
+<div class="panel">
+  <button class="pw" id="pw" aria-pressed="false">Power</button>
+  <label>Heat <input type="range" id="heat" min="0.3" max="1.8" step="0.05" value="1"></label>
+  <button class="sh" id="shake">Shake</button>
+  <div class="sw" id="sw" role="group" aria-label="Colour"></div>
+</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=300,H=600,S=2; // logical size, canvas is 2x
+ctx.scale(S,S);
+const FW=100,FH=200,FS=W/FW; // field res
+const fc=document.createElement('canvas');fc.width=FW;fc.height=FH;
+const fx=fc.getContext('2d'),img=fx.createImageData(FW,FH);
+const palettes=[
+ {n:'Classic',wax:[255,110,40],hi:[255,205,90],liq:[58,20,110],liq2:[22,8,48]},
+ {n:'Lime',wax:[150,240,60],hi:[230,255,120],liq:[10,90,100],liq2:[4,36,48]},
+ {n:'Pink',wax:[255,70,160],hi:[255,170,220],liq:[30,50,140],liq2:[10,16,60]},
+ {n:'Amber',wax:[255,170,30],hi:[255,235,140],liq:[130,20,40],liq2:[50,6,16]}
+];
+let pal=palettes[0],on=false,heat=1,temp=0; // temp: lamp warmth 0..1
+const swEl=document.getElementById('sw');
+palettes.forEach((p,i)=>{const b=document.createElement('button');b.style.background='linear-gradient(135deg,rgb('+p.wax+') 50%,rgb('+p.liq+') 50%)';b.title=p.n;b.setAttribute('aria-label',p.n+' colour');b.setAttribute('aria-pressed',i==0);b.onclick=()=>{pal=p;[...swEl.children].forEach((x,j)=>x.setAttribute('aria-pressed',j==i));document.documentElement.style.setProperty('--glow',p.wax.join(','));};swEl.appendChild(b)});
+// glass geometry
+const gTop=70,gBot=500;
+function hw(y){const t=Math.min(1,Math.max(0,(y-gTop)/(gBot-gTop)));const e=t*t*(3-2*t);return 52+e*30+t*14} // half width
+const cx=W/2;
+function glassPath(c){c.beginPath();c.moveTo(cx-hw(gTop),gTop);for(let y=gTop;y<=gBot;y+=6)c.lineTo(cx-hw(y),y);c.lineTo(cx-hw(gBot),gBot);c.lineTo(cx+hw(gBot),gBot);for(let y=gBot;y>=gTop;y-=6)c.lineTo(cx+hw(y),y);c.closePath()}
+// blobs
+const blobs=[];
+function mk(i){const r=14+Math.random()*20;return{x:cx+(Math.random()-.5)*60,y:gBot-12-Math.random()*40,vx:0,vy:0,r:r,t:Math.random()*.4,ph:Math.random()*6}}
+for(let i=0;i<8;i++)blobs.push(mk(i));
+const pool={y:gBot-8}; // pool of wax at base
+let drag=null,statusT=0;
+const st=document.getElementById('status');
+function setStatus(s){st.textContent=s}
+function step(dt){
+ const target=on?1:0;temp+=(target-temp)*(on?0.12:0.05)*dt; // warm-up ~ several s
+ document.documentElement.style.setProperty('--heat',temp.toFixed(3));
+ const k=heat;
+ for(const b of blobs){
+  if(b===drag)continue;
+  const nh=(b.y-gTop)/(gBot-gTop); // 0 top,1 bottom
+  // heat near bottom, cool near top
+  const warm=temp*(0.2+heat*0.5);
+  if(nh>0.8)b.t+=warm*0.5*dt*(nh-0.5);
+  b.t-=(0.045+0.05*(1-nh))*dt*(1-nh*0.4);
+  if(nh<0.25)b.t-=0.12*dt;
+  b.t=Math.max(0,Math.min(1,b.t));
+  const buoy=(b.t-0.42)*(18+14*k)*(0.25+temp*0.75);
+  b.vy-=buoy*dt*0.9;
+  b.vx+=Math.sin(performance.now()/2300+b.ph)*0.8*dt*temp;
+  const drg=Math.pow(0.55,dt);b.vx*=drg;b.vy*=drg;
+  b.x+=b.vx*dt;b.y+=b.vy*dt;
+  // walls
+  const lim=hw(b.y)-b.r*0.65-4;
+  if(b.x>cx+lim){b.x=cx+lim;b.vx*=-.2}
+  if(b.x<cx-lim){b.x=cx-lim;b.vx*=-.2}
+  if(b.y<gTop+b.r*0.75){b.y=gTop+b.r*0.75;b.vy=Math.abs(b.vy)*.1;b.t-=0.1}
+  if(b.y>gBot-b.r*0.4-8){b.y=gBot-b.r*0.4-8;b.vy*=-.1}
+ }
+ // soft repulsion so blobs don't all pile on one spot
+ for(let i=0;i<blobs.length;i++)for(let j=i+1;j<blobs.length;j++){
+  const a=blobs[i],b=blobs[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,m=(a.r+b.r)*0.55;
+  if(d<m){const f=(m-d)*0.6*dt;a.x-=dx/d*f;a.y-=dy/d*f;b.x+=dx/d*f;b.y+=dy/d*f}
+ }
+}
+function field(){
+ const d=img.data;const n=blobs.length;
+ const thr=1;
+ for(let py=0;py<FH;py++){
+  const y=(py+.5)*FS;
+  // pool contribution: wide horizontal source at base
+  for(let px=0;px<FW;px++){
+   const x=(px+.5)*FS;
+   let s=0;
+   for(let i=0;i<n;i++){const b=blobs[i],dx=x-b.x,dy=y-b.y;s+=b.r*b.r/(dx*dx+dy*dy+1)}
+   // pool: a flat wide ellipse
+   const pdx=(x-cx)/hw(gBot)*1.0,pdy=(y-(gBot+4))/ (12+10*(1-temp));
+   s+=0.9/(pdx*pdx*.35+pdy*pdy+0.05)*0.15;
+   const o=(py*FW+px)*4;
+   if(s<0.85){d[o+3]=0;continue}
+   const a=Math.min(1,(s-0.85)/0.3);
+   const core=Math.min(1,(s-1)/2.2);
+   const hy=Math.max(0,Math.min(1,(y-gTop)/(gBot-gTop)));
+   const mix=Math.max(0,core*0.4+(hy*temp)*0.1);
+   const w=pal.wax,h=pal.hi;
+   d[o]=w[0]+(h[0]-w[0])*mix;d[o+1]=w[1]+(h[1]-w[1])*mix;d[o+2]=w[2]+(h[2]-w[2])*mix;
+   const dim=on||temp>0.05?1:0.35+0.65*temp;
+   d[o]*=dim;d[o+1]*=dim;d[o+2]*=dim;
+   d[o+3]=a*255;
+  }
+ }
+ fx.putImageData(img,0,0);
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ const tw=temp;
+ // base
+ ctx.save();
+ let g=ctx.createLinearGradient(0,0,W,0);g.addColorStop(0,'#2a2630');g.addColorStop(.35,'#8c8696');g.addColorStop(.5,'#c8c4d0');g.addColorStop(.7,'#6c6676');g.addColorStop(1,'#25212b');
+ ctx.fillStyle=g;
+ ctx.beginPath();ctx.moveTo(cx-hw(gBot)+6,gBot);ctx.lineTo(cx+hw(gBot)-6,gBot);ctx.lineTo(cx+108,590);ctx.quadraticCurveTo(cx,598,cx-108,590);ctx.closePath();ctx.fill();
+ ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(cx-hw(gBot)+6,gBot,hw(gBot)*2-12,3);
+ ctx.restore();
+ // cap
+ g=ctx.createLinearGradient(0,0,W,0);g.addColorStop(0,'#2a2630');g.addColorStop(.35,'#8c8696');g.addColorStop(.5,'#cfcbd8');g.addColorStop(.7,'#6c6676');g.addColorStop(1,'#25212b');
+ ctx.fillStyle=g;
+ ctx.beginPath();ctx.moveTo(cx-hw(gTop)-2,gTop+2);ctx.lineTo(cx-hw(gTop)+8,20);ctx.quadraticCurveTo(cx,6,cx+hw(gTop)-8,20);ctx.lineTo(cx+hw(gTop)+2,gTop+2);ctx.closePath();ctx.fill();
+ // glass interior
+ ctx.save();glassPath(ctx);ctx.clip();
+ g=ctx.createLinearGradient(0,gTop,0,gBot);
+ const lq=pal.liq,l2=pal.liq2;
+ const lit=0.35+0.65*tw;
+ g.addColorStop(0,'rgb('+l2.map(v=>Math.round(v*lit)).join(',')+')');
+ g.addColorStop(1,'rgb('+lq.map(v=>Math.round(v*(0.4+1.1*tw))).join(',')+')');
+ ctx.fillStyle=g;ctx.fillRect(0,gTop,W,gBot-gTop);
+ // bulb glow
+ const rg=ctx.createRadialGradient(cx,gBot+10,5,cx,gBot+10,200);
+ rg.addColorStop(0,'rgba('+pal.hi.join(',')+','+(0.75*tw)+')');rg.addColorStop(1,'rgba('+pal.wax.join(',')+',0)');
+ ctx.fillStyle=rg;ctx.fillRect(0,gTop,W,gBot-gTop+20);
+ field();
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(fc,0,0,W,H);
+ // blob inner glow
+ ctx.globalCompositeOperation='screen';
+ const rg2=ctx.createLinearGradient(0,gTop,0,gBot);rg2.addColorStop(0,'rgba(0,0,0,0)');rg2.addColorStop(1,'rgba('+pal.wax.join(',')+','+(0.18*tw)+')');
+ ctx.fillStyle=rg2;ctx.fillRect(0,gTop,W,gBot-gTop);
+ ctx.globalCompositeOperation='source-over';
+ ctx.restore();
+ // glass highlights
+ ctx.save();glassPath(ctx);ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke();
+ ctx.clip();
+ let hg=ctx.createLinearGradient(cx-hw(gBot),0,cx-hw(gBot)+40,0);hg.addColorStop(0,'rgba(255,255,255,.22)');hg.addColorStop(1,'rgba(255,255,255,0)');
+ ctx.fillStyle=hg;ctx.fillRect(cx-hw(gBot),gTop,50,gBot-gTop);
+ ctx.fillStyle='rgba(255,255,255,.13)';ctx.beginPath();ctx.moveTo(cx-hw(250)+14,gTop+30);ctx.lineTo(cx-hw(250)+22,gTop+30);ctx.lineTo(cx-hw(400)+26,gBot-40);ctx.lineTo(cx-hw(400)+16,gBot-40);ctx.fill();
+ ctx.restore();
+ // power lamp dot on base
+ ctx.fillStyle=on?'rgba('+pal.hi.join(',')+',.95)':'#3a3440';ctx.beginPath();ctx.arc(cx,570,4,0,6.3);ctx.fill();
+}
+let last=performance.now();
+function loop(t){
+ const dt=Math.min(0.05,(t-last)/1000);last=t;
+ step(dt*1.0);draw();
+ if(on&&temp<0.9)setStatus('Warming up…');else if(on)setStatus('Drag a blob to nudge it.');else if(temp>0.1)setStatus('Cooling down…');else setStatus('Off. Press Power.');
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+// controls
+const pw=document.getElementById('pw');
+pw.onclick=()=>{on=!on;pw.setAttribute('aria-pressed',on)};
+document.getElementById('heat').oninput=e=>{heat=+e.target.value};
+document.getElementById('shake').onclick=()=>{
+ for(const b of blobs){b.vx+=(Math.random()-.5)*140;b.vy+=(Math.random()-.5)*120;b.t=Math.random()*.7}
+};
+// dragging
+function pos(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+cv.addEventListener('pointerdown',e=>{
+ const p=pos(e);let best=null,bd=1e9;
+ for(const b of blobs){const d=Math.hypot(b.x-p.x,b.y-p.y);if(d<bd){bd=d;best=b}}
+ if(best&&bd<best.r+24){drag=best;best.vx=best.vy=0;cv.setPointerCapture(e.pointerId)}
+});
+cv.addEventListener('pointermove',e=>{
+ if(!drag)return;const p=pos(e);
+ const lim=hw(p.y)-drag.r*0.65-4;
+ drag.x=Math.max(cx-lim,Math.min(cx+lim,p.x));drag.y=Math.max(gTop+drag.r,Math.min(gBot-10,p.y));
+ drag.t=Math.min(1,drag.t+0.01);
+});
+const rel=()=>{if(drag){drag.vy=-3;drag=null}};
+cv.addEventListener('pointerup',rel);cv.addEventListener('pointercancel',rel);
+})();
+</script>
+</body>
+</html>

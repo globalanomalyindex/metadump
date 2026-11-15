@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j2","scores":{
+"U":{"basic":8,"correctness":8,"usability":8,"craft":9,"code":7,"overall":8,"note":"Charming pocket-calculator look with an LCD, clear key hierarchy and good a11y, though the 9-digit cap and the faint ERR label are small quirks."},
+"V":{"basic":8,"correctness":8,"usability":8,"craft":7,"code":8,"overall":7,"note":"Clean iOS-style dark calculator with a history line, correct arithmetic and keyboard support, but little ARIA and a generic look."},
+"W":{"basic":6,"correctness":8,"usability":8,"craft":9,"code":5,"overall":7,"note":"Beautiful skeuomorphic LCD and keys with CE and shortcut hints, but it is the largest file and goes past basic."},
+"X":{"basic":8,"correctness":8,"usability":7,"craft":6,"code":8,"overall":6,"note":"Plain, correct dark calculator with a bare Error message and a left-aligned 0 label, so it looks the least finished."},
+"Y":{"basic":9,"correctness":9,"usability":8,"craft":8,"code":8,"overall":8,"note":"Tidy dark theme with a blue accent, expression line, backspace and a red Error, correct and cohesive."},
+"Z":{"basic":9,"correctness":9,"usability":9,"craft":8,"code":8,"overall":9,"note":"Light, legible, well-spaced layout with C, CE and backspace, an expression line and a clear divide-by-zero message that fits the display."}
+},"ranking":["Z","U","Y","V","W","X"]}

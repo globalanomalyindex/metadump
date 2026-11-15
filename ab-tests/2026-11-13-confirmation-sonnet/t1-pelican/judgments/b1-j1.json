@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Detailed bike with chain and spokes and a clear pelican with pouched bill, though the body floats above the seat and the cadence slider works."},
+"V": {"fidelity": 8, "correctness": 7, "craft": 6, "usability": 7, "overall": 6, "note": "Clean but small and simple pelican and bike, with a slightly detached look and a minimal control strip."},
+"W": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Nice hills and clouds and a wing reaching the handlebar with a bell, but the legs are thin and the layout leaves empty space."},
+"X": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Teal bike and a pelican with a crest and a big wing, though the pedal and leg drawing looks awkward."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Charming pelican with a helmet and a clear pouch, a simple bike, and working speed, reverse and honk controls with a distance counter."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Richest scene with a chain, a crate cargo bike, posts and good leg motion, but the added cargo crate goes beyond the plain request."}
+}, "ranking": ["Z", "U", "Y", "W", "X", "V"]}

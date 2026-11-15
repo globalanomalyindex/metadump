@@ -1,0 +1,276 @@
+{
+ "F_vs_A": {
+  "tasks": [
+   "t1-pelican",
+   "t2-ascii",
+   "t3-bento",
+   "t4-blocks"
+  ],
+  "per_task": {
+   "t1-pelican": {
+    "A_mean": 7.17,
+    "F_mean": 8.17,
+    "diff": 1.0
+   },
+   "t2-ascii": {
+    "A_mean": 5.67,
+    "F_mean": 7.08,
+    "diff": 1.42
+   },
+   "t3-bento": {
+    "A_mean": 7.5,
+    "F_mean": 7.17,
+    "diff": -0.33
+   },
+   "t4-blocks": {
+    "A_mean": 5.92,
+    "F_mean": 6.17,
+    "diff": 0.25
+   }
+  },
+  "pooled_mean_diff": 0.584,
+  "p_two_sided": 0.0363,
+  "p_one_sided_F_better": 0.0181,
+  "splits": 24010000,
+  "wins": 49,
+  "losses": 23,
+  "ties": 24,
+  "win_rate": 0.64
+ },
+ "Q_vs_A": {
+  "tasks": [
+   "t1-pelican",
+   "t2-ascii",
+   "t3-bento",
+   "t4-blocks"
+  ],
+  "per_task": {
+   "t1-pelican": {
+    "A_mean": 7.17,
+    "Q_mean": 7.25,
+    "diff": 0.09
+   },
+   "t2-ascii": {
+    "A_mean": 5.67,
+    "Q_mean": 7.92,
+    "diff": 2.25
+   },
+   "t3-bento": {
+    "A_mean": 7.5,
+    "Q_mean": 6.82,
+    "diff": -0.68
+   },
+   "t4-blocks": {
+    "A_mean": 5.92,
+    "Q_mean": 8.75,
+    "diff": 2.83
+   }
+  },
+  "pooled_mean_diff": 1.121,
+  "p_two_sided": 0.0116,
+  "p_one_sided_Q_better": 0.0058,
+  "splits": 24010000,
+  "wins": 65,
+  "losses": 25,
+  "ties": 6,
+  "win_rate": 0.71
+ },
+ "F_vs_Q": {
+  "tasks": [
+   "t1-pelican",
+   "t2-ascii",
+   "t3-bento",
+   "t4-blocks"
+  ],
+  "per_task": {
+   "t1-pelican": {
+    "Q_mean": 7.25,
+    "F_mean": 8.17,
+    "diff": 0.92
+   },
+   "t2-ascii": {
+    "Q_mean": 7.92,
+    "F_mean": 7.08,
+    "diff": -0.83
+   },
+   "t3-bento": {
+    "Q_mean": 6.82,
+    "F_mean": 7.17,
+    "diff": 0.35
+   },
+   "t4-blocks": {
+    "Q_mean": 8.75,
+    "F_mean": 6.17,
+    "diff": -2.58
+   }
+  },
+  "pooled_mean_diff": -0.537,
+  "p_two_sided": 0.1693,
+  "p_one_sided_F_better": 0.9177,
+  "splits": 24010000,
+  "wins": 34,
+  "losses": 54,
+  "ties": 8,
+  "win_rate": 0.4
+ },
+ "owner_worded_tasks_1_to_3": {
+  "F_vs_A": {
+   "tasks": [
+    "t1-pelican",
+    "t2-ascii",
+    "t3-bento"
+   ],
+   "per_task": {
+    "t1-pelican": {
+     "A_mean": 7.17,
+     "F_mean": 8.17,
+     "diff": 1.0
+    },
+    "t2-ascii": {
+     "A_mean": 5.67,
+     "F_mean": 7.08,
+     "diff": 1.42
+    },
+    "t3-bento": {
+     "A_mean": 7.5,
+     "F_mean": 7.17,
+     "diff": -0.33
+    }
+   },
+   "pooled_mean_diff": 0.695,
+   "p_two_sided": 0.0423,
+   "p_one_sided_F_better": 0.0212,
+   "splits": 343000,
+   "wins": 39,
+   "losses": 18,
+   "ties": 15,
+   "win_rate": 0.65
+  },
+  "Q_vs_A": {
+   "tasks": [
+    "t1-pelican",
+    "t2-ascii",
+    "t3-bento"
+   ],
+   "per_task": {
+    "t1-pelican": {
+     "A_mean": 7.17,
+     "Q_mean": 7.25,
+     "diff": 0.09
+    },
+    "t2-ascii": {
+     "A_mean": 5.67,
+     "Q_mean": 7.92,
+     "diff": 2.25
+    },
+    "t3-bento": {
+     "A_mean": 7.5,
+     "Q_mean": 6.82,
+     "diff": -0.68
+    }
+   },
+   "pooled_mean_diff": 0.551,
+   "p_two_sided": 0.2349,
+   "p_one_sided_Q_better": 0.1174,
+   "splits": 343000,
+   "wins": 41,
+   "losses": 25,
+   "ties": 6,
+   "win_rate": 0.61
+  },
+  "F_vs_Q": {
+   "tasks": [
+    "t1-pelican",
+    "t2-ascii",
+    "t3-bento"
+   ],
+   "per_task": {
+    "t1-pelican": {
+     "Q_mean": 7.25,
+     "F_mean": 8.17,
+     "diff": 0.92
+    },
+    "t2-ascii": {
+     "Q_mean": 7.92,
+     "F_mean": 7.08,
+     "diff": -0.83
+    },
+    "t3-bento": {
+     "Q_mean": 6.82,
+     "F_mean": 7.17,
+     "diff": 0.35
+    }
+   },
+   "pooled_mean_diff": 0.144,
+   "p_two_sided": 0.7122,
+   "p_one_sided_F_better": 0.3561,
+   "splits": 343000,
+   "wins": 34,
+   "losses": 30,
+   "ties": 8,
+   "win_rate": 0.53
+  }
+ },
+ "task_4_alone": {
+  "F_vs_A": {
+   "tasks": [
+    "t4-blocks"
+   ],
+   "per_task": {
+    "t4-blocks": {
+     "A_mean": 5.92,
+     "F_mean": 6.17,
+     "diff": 0.25
+    }
+   },
+   "pooled_mean_diff": 0.25,
+   "p_two_sided": 0.7429,
+   "p_one_sided_F_better": 0.3714,
+   "splits": 70,
+   "wins": 10,
+   "losses": 5,
+   "ties": 9,
+   "win_rate": 0.6
+  },
+  "Q_vs_A": {
+   "tasks": [
+    "t4-blocks"
+   ],
+   "per_task": {
+    "t4-blocks": {
+     "A_mean": 5.92,
+     "Q_mean": 8.75,
+     "diff": 2.83
+    }
+   },
+   "pooled_mean_diff": 2.83,
+   "p_two_sided": 0.0286,
+   "p_one_sided_Q_better": 0.0143,
+   "splits": 70,
+   "wins": 24,
+   "losses": 0,
+   "ties": 0,
+   "win_rate": 1.0
+  },
+  "F_vs_Q": {
+   "tasks": [
+    "t4-blocks"
+   ],
+   "per_task": {
+    "t4-blocks": {
+     "Q_mean": 8.75,
+     "F_mean": 6.17,
+     "diff": -2.58
+    }
+   },
+   "pooled_mean_diff": -2.58,
+   "p_two_sided": 0.0286,
+   "p_one_sided_F_better": 1.0,
+   "splits": 70,
+   "wins": 0,
+   "losses": 24,
+   "ties": 0,
+   "win_rate": 0.0
+  }
+ }
+}

@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 7, "presentation": 6, "overall": 8, "note": "Convincing blue-liquid dome with a gold collar, wooden plinth and snowy cabin, but the big slider panel crowds the staging and the snow is faint."},
+"V": {"likeness": 7, "visuals": 8, "motion": 7, "presentation": 7, "overall": 7, "note": "Charming lamplit shelf room with a red music-box base, but the globe is tiny and its scene is hard to read."},
+"W": {"likeness": 9, "visuals": 9, "motion": 7, "presentation": 9, "overall": 9, "note": "Polished night cabin with moon, smoke, pines and a snowy mound inside a clean glass dome on a wooden base, tidy controls, good phone layout."},
+"X": {"likeness": 5, "visuals": 7, "motion": 7, "presentation": 6, "overall": 5, "note": "Beautiful glass and glitter, but no scene inside and the dome overlaps the base oddly, so it reads more as a glitter ball."},
+"Y": {"likeness": 7, "visuals": 5, "motion": 6, "presentation": 7, "overall": 6, "note": "Clear and cheerful daytime snow globe with a cabin, but flat drawing, a thin base and sparse snow."},
+"Z": {"likeness": 8, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Cozy room with a cabin and trees under a pale dome, but the globe sits tilted at rest, the scene looks washed out and the bottom bar is cramped."}
+}, "ranking": ["W", "U", "V", "Z", "Y", "X"]}

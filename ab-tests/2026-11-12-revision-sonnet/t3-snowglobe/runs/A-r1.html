@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snow Globe</title>
+<style>
+  :root{
+    --bg1:#1b1f3a; --bg2:#07080f; --ink:#e9eefc; --muted:#9aa6cf; --accent:#f3c969; --panel:rgba(255,255,255,.07); --line:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:radial-gradient(ellipse at 50% 20%,var(--bg1),var(--bg2) 70%) fixed;
+    color:var(--ink);
+    font-family:ui-serif,Georgia,"Times New Roman",serif;
+    display:flex;flex-direction:column;align-items:center;
+    padding:16px 16px 28px;
+    -webkit-user-select:none;user-select:none;
+  }
+  h1{font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:15px;margin:6px 0 2px;color:var(--accent)}
+  .hint{margin:0 0 6px;font-size:13px;color:var(--muted);font-style:italic;text-align:center}
+  #stage{width:min(100%,520px);will-change:transform;touch-action:none}
+  canvas{width:100%;height:auto;display:block;cursor:grab;touch-action:none}
+  canvas:active{cursor:grabbing}
+  .panel{
+    width:min(100%,520px);margin-top:8px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;font-size:13px;
+  }
+  .panel label{display:flex;flex-direction:column;gap:5px;color:var(--muted)}
+  .panel .row{display:flex;justify-content:space-between}
+  .panel output{color:var(--ink);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  select{background:#12162e;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit}
+  button{
+    font:inherit;font-weight:600;color:#1b1400;background:var(--accent);border:0;border-radius:10px;padding:10px 12px;cursor:pointer;
+    transition:transform .12s ease,filter .12s ease;
+  }
+  button:hover{filter:brightness(1.08)}
+  button:active{transform:scale(.96)}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+  button.ghost[aria-pressed=true]{background:rgba(243,201,105,.18);border-color:var(--accent);color:var(--accent)}
+  button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .wide{grid-column:1/-1}
+  #status{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-variant-numeric:tabular-nums;border-top:1px solid var(--line);padding-top:10px}
+  #status b{color:var(--ink);font-weight:600}
+  @media (max-width:420px){.panel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>Snow Globe</h1>
+<p class="hint">Drag or tap the glass, or press Space, to shake it.</p>
+<div id="stage"><canvas id="c" width="600" height="640" aria-label="A glass snow globe with a tiny winter scene"></canvas></div>
+
+<div class="panel">
+  <button id="shake" class="wide" type="button">Shake the globe</button>
+  <label>Scene
+    <select id="scene">
+      <option value="cabin">Cozy cabin</option>
+      <option value="snowman">Snowman</option>
+      <option value="pines">Pine grove</option>
+    </select>
+  </label>
+  <label><span class="row"><span>Snowfall</span><output id="countOut">450</output></span>
+    <input id="count" type="range" min="100" max="900" step="50" value="450">
+  </label>
+  <button id="night" class="ghost" type="button" aria-pressed="true">Night</button>
+  <button id="music" class="ghost" type="button" aria-pressed="false">Music box: off</button>
+  <div id="status" aria-live="polite">
+    <span>In the air <b id="sAir">0</b></span>
+    <span>Settled <b id="sSet">0</b> (<b id="sPct">0</b>%)</span>
+    <span>Shakes <b id="sShakes">0</b></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var cv = document.getElementById("c"), ctx = cv.getContext("2d");
+  var stage = document.getElementById("stage");
+  var W = 600, H = 640, CX = 300, CY = 270, R = 212;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- state ----------
+  var state = {
+    scene: "cabin", night: true, count: 450, shakes: 0,
+    turb: 0, energy: 0, music: false, time: 0
+  };
+  var COLS = 108, COLW = (2 * R) / COLS, X0 = CX - R;
+  var pile = new Float32Array(COLS);
+  var flakes = [];
+  var stars = [];
+  for (var s = 0; s < 46; s++) stars.push({x: CX - R + Math.random() * 2 * R, y: CY - R + Math.random() * 230, p: Math.random() * 6, r: .6 + Math.random() * 1.2});
+
+  function rnd(a, b){ return a + Math.random() * (b - a); }
+  function ground(x){ var d = (x - CX) / 130; return 398 - 24 * Math.exp(-d * d); }
+  function colOf(x){ return Math.max(0, Math.min(COLS - 1, Math.floor((x - X0) / COLW))); }
+  function pileGain(){ return 2200 / state.count; }
+
+  function makeFlake(inAir){
+    var a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * (R - 12);
+    return {
+      x: CX + Math.cos(a) * r, y: CY + Math.sin(a) * r * 0.9 - 10,
+      vx: 0, vy: 0, r: rnd(1.1, 3.1), fs: rnd(16, 34), ph: rnd(0, 6.28),
+      sw: rnd(.6, 1.8), rest: false, a: rnd(.55, 1)
+    };
+  }
+  function init(n){
+    flakes.length = 0; pile.fill(0);
+    for (var i = 0; i < n; i++) flakes.push(makeFlake());
+    state.count = n;
+  }
+
+  function shake(power){
+    state.shakes++;
+    pile.fill(0);
+    for (var i = 0; i < flakes.length; i++){
+      var f = flakes[i];
+      if (f.rest){
+        f.rest = false;
+        f.x = CX + rnd(-150, 150);
+        f.y = ground(f.x) - rnd(4, 24);
+        f.vy = -rnd(120, 430) * power;
+      } else {
+        f.vy -= rnd(0, 330) * power;
+      }
+      f.vx += rnd(-260, 260) * power;
+    }
+    state.turb = Math.min(1.3, state.turb + power);
+    state.energy = Math.min(1, state.energy + power * .8);
+  }
+
+  // ---------- physics ----------
+  function step(dt){
+    var t = state.time, turb = state.turb;
+    var k = 0.9 - 0.55 * Math.min(1, turb);
+    for (var i = 0; i < flakes.length; i++){
+      var f = flakes[i];
+      if (f.rest) continue;
+      var swayX = Math.sin(t * f.sw + f.ph) * 14;
+      var swirl = Math.sin(f.y * 0.025 + t * 3 + f.ph) * 220 * turb;
+      var swirlY = Math.cos(f.x * 0.025 + t * 2.4 + f.ph) * 130 * turb;
+      f.vx += (swayX + swirl - f.vx) * k * dt * 1.4;
+      f.vy += (f.fs + swirlY - f.vy) * k * dt * 1.4;
+      f.x += f.vx * dt; f.y += f.vy * dt;
+      // glass wall
+      var dx = f.x - CX, dy = f.y - CY, d = Math.sqrt(dx * dx + dy * dy), lim = R - 5;
+      if (d > lim){
+        var nx = dx / d, ny = dy / d, vn = f.vx * nx + f.vy * ny;
+        f.x = CX + nx * lim; f.y = CY + ny * lim;
+        if (vn > 0){ f.vx -= 1.6 * vn * nx; f.vy -= 1.6 * vn * ny; }
+      }
+      // landing
+      var c = colOf(f.x), surf = ground(f.x) - pile[c];
+      if (f.y >= surf){
+        f.rest = true; f.vx = f.vy = 0;
+        var g = pileGain();
+        pile[c] += g * .6;
+        if (c > 0) pile[c - 1] += g * .2;
+        if (c < COLS - 1) pile[c + 1] += g * .2;
+      }
+    }
+    // relax pile
+    var tmp = new Float32Array(COLS);
+    for (var j = 0; j < COLS; j++){
+      var l = pile[j > 0 ? j - 1 : j], r = pile[j < COLS - 1 ? j + 1 : j];
+      tmp[j] = pile[j] + (l + r - 2 * pile[j]) * 0.12;
+    }
+    pile = tmp;
+    state.turb *= Math.exp(-dt / 2.6);
+    state.energy *= Math.exp(-dt * 3.2);
+  }
+
+  // ---------- drawing ----------
+  function roundedPath(x, y, w, h, r){
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  function pine(x, base, h, w){
+    ctx.fillStyle = "#4a2f1d"; ctx.fillRect(x - w * .07, base - h * .12, w * .14, h * .14);
+    var tiers = 3;
+    for (var i = 0; i < tiers; i++){
+      var top = base - h * (0.12 + (i + 1) * (0.88 / tiers)) + h * .05 * i;
+      var bot = base - h * (0.12 + i * (0.88 / tiers) * .72);
+      var half = w * (.5 - i * .1);
+      ctx.fillStyle = state.night ? "#14402f" : "#1f6a46";
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + half, bot); ctx.lineTo(x - half, bot); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#f4f8ff";
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + half * .55, top + (bot - top) * .55);
+      ctx.quadraticCurveTo(x, top + (bot - top) * .42, x - half * .55, top + (bot - top) * .55); ctx.closePath(); ctx.fill();
+    }
+    if (state.night && state.scene === "pines"){
+      var cols = ["#ff5d5d", "#ffd35e", "#6fd0ff", "#9cff8a"];
+      for (var j = 0; j < 7; j++){
+        var a = .5 + .5 * Math.sin(state.time * 2.2 + j * 1.7 + x);
+        var px = x + Math.sin(j * 2.3 + x) * w * .22 * (1 - j / 9);
+        var py = base - h * (.2 + j * .1);
+        ctx.fillStyle = cols[j % 4]; ctx.globalAlpha = .45 + .55 * a;
+        ctx.beginPath(); ctx.arc(px, py, 2.2, 0, 6.29); ctx.fill();
+        ctx.globalAlpha = .25 * a; ctx.beginPath(); ctx.arc(px, py, 6, 0, 6.29); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  function drawCabin(){
+    var gy = ground(300);
+    pine(205, ground(205) + 4, 120, 62);
+    pine(412, ground(412) + 4, 100, 54);
+    var bx = 252, bw = 96, by = gy - 52, bh = 56;
+    // body
+    ctx.fillStyle = "#7a4a2b"; ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = "rgba(0,0,0,.22)"; ctx.lineWidth = 1;
+    for (var i = 1; i < 7; i++){ ctx.beginPath(); ctx.moveTo(bx, by + i * 8); ctx.lineTo(bx + bw, by + i * 8); ctx.stroke(); }
+    // chimney
+    ctx.fillStyle = "#6b3f3a"; ctx.fillRect(bx + 66, by - 40, 14, 34);
+    // roof
+    ctx.fillStyle = "#a63a2f";
+    ctx.beginPath(); ctx.moveTo(bx - 12, by + 2); ctx.lineTo(bx + bw / 2, by - 42); ctx.lineTo(bx + bw + 12, by + 2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#f6f9ff";
+    ctx.beginPath(); ctx.moveTo(bx - 12, by + 2); ctx.lineTo(bx + bw / 2, by - 42); ctx.lineTo(bx + bw + 12, by + 2);
+    ctx.lineTo(bx + bw + 4, by - 3); ctx.quadraticCurveTo(bx + bw / 2, by - 30, bx - 4, by - 3); ctx.closePath(); ctx.fill();
+    ctx.fillRect(bx + 64, by - 44, 18, 5);
+    // door
+    ctx.fillStyle = "#3b2314"; roundedPath(bx + 40, by + 20, 18, 36, 4); ctx.fill();
+    ctx.fillStyle = "#e0b04a"; ctx.beginPath(); ctx.arc(bx + 54, by + 40, 1.4, 0, 6.29); ctx.fill();
+    // windows
+    var lit = state.night;
+    var flick = lit ? .85 + .15 * Math.sin(state.time * 7) * Math.sin(state.time * 3.1) : 0;
+    [[bx + 10, by + 14], [bx + 68, by + 14]].forEach(function(p){
+      ctx.fillStyle = lit ? "rgba(255,200,90," + flick + ")" : "#a9cbe6";
+      ctx.fillRect(p[0], p[1], 18, 16);
+      ctx.strokeStyle = "#f4ead6"; ctx.lineWidth = 2; ctx.strokeRect(p[0], p[1], 18, 16);
+      ctx.beginPath(); ctx.moveTo(p[0] + 9, p[1]); ctx.lineTo(p[0] + 9, p[1] + 16); ctx.moveTo(p[0], p[1] + 8); ctx.lineTo(p[0] + 18, p[1] + 8); ctx.stroke();
+      if (lit){
+        var gr = ctx.createRadialGradient(p[0] + 9, p[1] + 8, 2, p[0] + 9, p[1] + 8, 40);
+        gr.addColorStop(0, "rgba(255,190,80,.35)"); gr.addColorStop(1, "rgba(255,190,80,0)");
+        ctx.fillStyle = gr; ctx.fillRect(p[0] - 32, p[1] - 32, 82, 80);
+      }
+    });
+    // smoke
+    for (var s = 0; s < 6; s++){
+      var ph = ((state.time * .22 + s / 6) % 1);
+      var sx = bx + 73 + Math.sin(ph * 6 + s) * 6 + ph * 14, sy = by - 44 - ph * 60;
+      ctx.fillStyle = "rgba(220,226,240," + ((1 - ph) * .38) + ")";
+      ctx.beginPath(); ctx.arc(sx, sy, 3 + ph * 8, 0, 6.29); ctx.fill();
+    }
+  }
+
+  function drawSnowman(){
+    var gy = ground(300) + 3;
+    pine(180, ground(180) + 4, 105, 54);
+    pine(428, ground(428) + 4, 125, 62);
+    function ball(y, r){
+      var g = ctx.createRadialGradient(300 - r * .35, y - r * .35, r * .1, 300, y, r);
+      g.addColorStop(0, "#ffffff"); g.addColorStop(1, "#cfdcf0");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(300, y, r, 0, 6.29); ctx.fill();
+    }
+    ball(gy - 28, 31); ball(gy - 74, 23); ball(gy - 110, 17);
+    // arms
+    ctx.strokeStyle = "#5a3a22"; ctx.lineWidth = 3; ctx.lineCap = "round";
+    var wave = Math.sin(state.time * 2) * 4;
+    ctx.beginPath(); ctx.moveTo(279, gy - 78); ctx.lineTo(250, gy - 98 + wave); ctx.moveTo(262, gy - 90 + wave * .8); ctx.lineTo(254, gy - 108 + wave); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(321, gy - 78); ctx.lineTo(350, gy - 90); ctx.stroke();
+    // scarf
+    ctx.fillStyle = "#c8323a"; roundedPath(282, gy - 98, 36, 8, 4); ctx.fill();
+    ctx.fillRect(310, gy - 94, 8, 24);
+    // hat
+    ctx.fillStyle = "#1c1c26"; ctx.fillRect(285, gy - 124, 30, 5); ctx.fillRect(290, gy - 142, 20, 20);
+    ctx.fillStyle = "#c8323a"; ctx.fillRect(290, gy - 128, 20, 4);
+    // face
+    ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(294, gy - 113, 1.8, 0, 6.29); ctx.arc(306, gy - 113, 1.8, 0, 6.29); ctx.fill();
+    ctx.fillStyle = "#f08a2c"; ctx.beginPath(); ctx.moveTo(300, gy - 109); ctx.lineTo(315, gy - 106); ctx.lineTo(300, gy - 104); ctx.closePath(); ctx.fill();
+    for (var i = 0; i < 3; i++){ ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(300, gy - 78 + i * 0 + (i - 1) * 0, 0, 0, 1); }
+    ctx.fillStyle = "#222";
+    [-62, -48, -34].forEach(function(o){ ctx.beginPath(); ctx.arc(300, gy + o + 0, 2.2, 0, 6.29); ctx.fill(); });
+    if (state.night){
+      var gl = ctx.createRadialGradient(300, gy - 60, 10, 300, gy - 60, 110);
+      gl.addColorStop(0, "rgba(140,180,255,.18)"); gl.addColorStop(1, "rgba(140,180,255,0)");
+      ctx.fillStyle = gl; ctx.fillRect(180, gy - 170, 240, 200);
+    }
+  }
+
+  function drawPines(){
+    pine(215, ground(215) + 4, 112, 58);
+    pine(385, ground(385) + 4, 128, 64);
+    pine(300, ground(300) + 4, 160, 82);
+    // little sled gift
+    var g = ground(342);
+    ctx.fillStyle = "#c8323a"; ctx.fillRect(336, g - 14, 16, 14);
+    ctx.fillStyle = "#f3c969"; ctx.fillRect(342, g - 14, 4, 14); ctx.fillRect(336, g - 9, 16, 3);
+    ctx.fillStyle = "#f6f9ff"; ctx.fillRect(335, g - 17, 18, 4);
+  }
+
+  function drawWorld(){
+    var t = state.time;
+    // sky
+    var sky = ctx.createLinearGradient(0, CY - R, 0, CY + R);
+    if (state.night){ sky.addColorStop(0, "#0a1033"); sky.addColorStop(.6, "#2b3b7d"); sky.addColorStop(1, "#4b5a9c"); }
+    else { sky.addColorStop(0, "#8ec3ee"); sky.addColorStop(.6, "#d2e8f8"); sky.addColorStop(1, "#f1f8fd"); }
+    ctx.fillStyle = sky; ctx.fillRect(CX - R, CY - R, 2 * R, 2 * R);
+    if (state.night){
+      stars.forEach(function(st){
+        ctx.fillStyle = "rgba(255,255,255," + (.4 + .6 * Math.abs(Math.sin(t * 1.3 + st.p))) + ")";
+        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 6.29); ctx.fill();
+      });
+      var mg = ctx.createRadialGradient(410, 150, 6, 410, 150, 60);
+      mg.addColorStop(0, "rgba(255,248,214,.9)"); mg.addColorStop(.25, "rgba(255,248,214,.25)"); mg.addColorStop(1, "rgba(255,248,214,0)");
+      ctx.fillStyle = mg; ctx.fillRect(340, 80, 140, 140);
+      ctx.fillStyle = "#fff6d6"; ctx.beginPath(); ctx.arc(410, 150, 17, 0, 6.29); ctx.fill();
+      ctx.fillStyle = "#2f3f86"; ctx.beginPath(); ctx.arc(417, 145, 15, 0, 6.29); ctx.fill();
+      ctx.fillStyle = "#fff6d6"; ctx.beginPath(); ctx.arc(410, 150, 17, -2.3, 2.3, false); ctx.arc(400, 150, 14, 2.1, -2.1, true); ctx.fill();
+    } else {
+      var sg = ctx.createRadialGradient(205, 140, 6, 205, 140, 80);
+      sg.addColorStop(0, "rgba(255,244,190,1)"); sg.addColorStop(.3, "rgba(255,244,190,.5)"); sg.addColorStop(1, "rgba(255,244,190,0)");
+      ctx.fillStyle = sg; ctx.fillRect(120, 60, 170, 170);
+    }
+    // far hills
+    ctx.fillStyle = state.night ? "#26336f" : "#bcd5ea";
+    ctx.beginPath(); ctx.moveTo(CX - R, 380);
+    for (var x = CX - R; x <= CX + R; x += 8) ctx.lineTo(x, 340 - 26 * Math.sin((x - 60) * .017) - 14 * Math.sin(x * .041));
+    ctx.lineTo(CX + R, 500); ctx.lineTo(CX - R, 500); ctx.closePath(); ctx.fill();
+    // ground
+    ctx.fillStyle = state.night ? "#3f4a85" : "#e6eef7";
+    ctx.beginPath(); ctx.moveTo(CX - R, 520);
+    for (var gx = CX - R; gx <= CX + R; gx += 6) ctx.lineTo(gx, ground(gx));
+    ctx.lineTo(CX + R, 520); ctx.closePath(); ctx.fill();
+    // scene
+    if (state.scene === "cabin") drawCabin();
+    else if (state.scene === "snowman") drawSnowman();
+    else drawPines();
+    // pile
+    var pg = ctx.createLinearGradient(0, 330, 0, 470);
+    pg.addColorStop(0, "#ffffff"); pg.addColorStop(1, state.night ? "#aebbe6" : "#d6e4f4");
+    ctx.fillStyle = pg;
+    ctx.beginPath(); ctx.moveTo(CX - R, 520);
+    for (var c = 0; c < COLS; c++){
+      var px = X0 + (c + .5) * COLW;
+      ctx.lineTo(px, ground(px) - pile[c] + 1);
+    }
+    ctx.lineTo(CX + R, 520); ctx.closePath(); ctx.fill();
+    // flakes
+    for (var i = 0; i < flakes.length; i++){
+      var f = flakes[i];
+      if (f.rest) continue;
+      ctx.fillStyle = "rgba(255,255,255," + f.a + ")";
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.29); ctx.fill();
+    }
+  }
+
+  function drawBase(){
+    // wooden base
+    var bg = ctx.createLinearGradient(0, 455, 0, 600);
+    bg.addColorStop(0, "#6a3f22"); bg.addColorStop(.5, "#4a2a15"); bg.addColorStop(1, "#2a160a");
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.moveTo(CX - 150, 462); ctx.lineTo(CX + 150, 462); ctx.lineTo(CX + 215, 590);
+    ctx.quadraticCurveTo(CX + 215, 612, CX + 190, 612); ctx.lineTo(CX - 190, 612);
+    ctx.quadraticCurveTo(CX - 215, 612, CX - 215, 590); ctx.closePath(); ctx.fill();
+    // wood highlight
+    ctx.strokeStyle = "rgba(255,200,140,.18)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(CX - 140, 470); ctx.lineTo(CX - 200, 590); ctx.stroke();
+    // brass ring
+    var rg = ctx.createLinearGradient(CX - 170, 0, CX + 170, 0);
+    rg.addColorStop(0, "#8a6521"); rg.addColorStop(.3, "#f6dc8a"); rg.addColorStop(.55, "#b88a2e"); rg.addColorStop(1, "#6a4a14");
+    ctx.fillStyle = rg; roundedPath(CX - 166, 452, 332, 22, 10); ctx.fill();
+    // plaque
+    var pg = ctx.createLinearGradient(0, 520, 0, 566);
+    pg.addColorStop(0, "#f0d58a"); pg.addColorStop(1, "#a67c28");
+    ctx.fillStyle = pg; roundedPath(CX - 105, 520, 210, 50, 8); ctx.fill();
+    ctx.strokeStyle = "rgba(60,35,5,.55)"; ctx.lineWidth = 1.5; roundedPath(CX - 100, 525, 200, 40, 5); ctx.stroke();
+    ctx.fillStyle = "#3a2608"; ctx.textAlign = "center";
+    ctx.font = "italic 600 19px Georgia, 'Times New Roman', serif";
+    var names = {cabin: "Winter Cabin", snowman: "Frosty", pines: "Evergreen Hollow"};
+    ctx.fillText(names[state.scene], CX, 551);
+    ctx.font = "11px Georgia, serif";
+    ctx.fillText(state.night ? "~ a quiet night ~" : "~ a bright morning ~", CX, 563);
+  }
+
+  function drawGlass(){
+    // inner shading
+    var gg = ctx.createRadialGradient(CX, CY, R * .6, CX, CY, R);
+    gg.addColorStop(0, "rgba(180,220,255,0)"); gg.addColorStop(.85, "rgba(180,220,255,.06)"); gg.addColorStop(1, "rgba(200,230,255,.28)");
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 6.29); ctx.fill();
+    // rim
+    ctx.strokeStyle = "rgba(220,238,255,.55)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 6.29); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(CX, CY, R + 5, 0, 6.29); ctx.stroke();
+    // highlights
+    ctx.strokeStyle = "rgba(255,255,255,.65)"; ctx.lineWidth = 7; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(CX, CY, R - 16, Math.PI * 1.08, Math.PI * 1.36); ctx.stroke();
+    ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,.4)";
+    ctx.beginPath(); ctx.arc(CX, CY, R - 16, Math.PI * 1.42, Math.PI * 1.47); ctx.stroke();
+    var hl = ctx.createRadialGradient(CX - 100, CY - 120, 2, CX - 100, CY - 120, 60);
+    hl.addColorStop(0, "rgba(255,255,255,.35)"); hl.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = hl; ctx.beginPath(); ctx.ellipse(CX - 100, CY - 120, 38, 56, -.7, 0, 6.29); ctx.fill();
+    ctx.strokeStyle = "rgba(160,210,255,.28)"; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(CX, CY, R - 14, Math.PI * .12, Math.PI * .38); ctx.stroke();
+  }
+
+  function render(){
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    // soft floor glow
+    var fg = ctx.createRadialGradient(CX, 612, 20, CX, 612, 260);
+    fg.addColorStop(0, "rgba(0,0,0,.45)"); fg.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = fg; ctx.fillRect(0, 560, W, 80);
+    drawBase();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(CX, CY, R, 0, 6.29); ctx.clip();
+    drawWorld();
+    ctx.restore();
+    drawGlass();
+  }
+
+  // ---------- music box (WebAudio, synthesized) ----------
+  var actx = null, musicTimer = null, noteIdx = 0;
+  var melody = [392, 440, 392, 330, 392, 440, 392, 330, 587, 587, 494, 523, 523, 392, 440, 440, 523, 494, 440, 392, 440, 392, 330, 440, 440, 523, 494, 440, 392, 440, 392, 330];
+  function ping(freq){
+    if (!actx) return;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = "triangle"; o.frequency.value = freq;
+    var n = actx.currentTime;
+    g.gain.setValueAtTime(0, n); g.gain.linearRampToValueAtTime(.12, n + .01); g.gain.exponentialRampToValueAtTime(.0008, n + 1.1);
+    o.connect(g); g.connect(actx.destination); o.start(n); o.stop(n + 1.2);
+    var o2 = actx.createOscillator(), g2 = actx.createGain();
+    o2.type = "sine"; o2.frequency.value = freq * 3;
+    g2.gain.setValueAtTime(0, n); g2.gain.linearRampToValueAtTime(.025, n + .005); g2.gain.exponentialRampToValueAtTime(.0005, n + .5);
+    o2.connect(g2); g2.connect(actx.destination); o2.start(n); o2.stop(n + .6);
+  }
+  function setMusic(on){
+    state.music = on;
+    var b = document.getElementById("music");
+    b.setAttribute("aria-pressed", String(on));
+    b.textContent = "Music box: " + (on ? "on" : "off");
+    if (on){
+      try{
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!actx && AC) actx = new AC();
+        if (actx && actx.state === "suspended") actx.resume();
+      }catch(e){ actx = null; }
+      clearInterval(musicTimer);
+      musicTimer = setInterval(function(){ ping(melody[noteIdx++ % melody.length]); gentle(); }, 460);
+    } else { clearInterval(musicTimer); }
+  }
+  // each music-box note nudges the air a little so the snow drifts with it
+  function gentle(){ state.turb = Math.min(.5, state.turb + .05); }
+
+  // ---------- UI ----------
+  var elAir = document.getElementById("sAir"), elSet = document.getElementById("sSet"), elPct = document.getElementById("sPct"), elSh = document.getElementById("sShakes");
+  function updateStatus(){
+    var rest = 0;
+    for (var i = 0; i < flakes.length; i++) if (flakes[i].rest) rest++;
+    var n = flakes.length;
+    elAir.textContent = n - rest; elSet.textContent = rest;
+    elPct.textContent = n ? Math.round(rest / n * 100) : 0; elSh.textContent = state.shakes;
+  }
+  document.getElementById("shake").addEventListener("click", function(){ shake(1); });
+  document.getElementById("scene").addEventListener("change", function(e){ state.scene = e.target.value; });
+  var countIn = document.getElementById("count"), countOut = document.getElementById("countOut");
+  countIn.addEventListener("input", function(){
+    var n = parseInt(countIn.value, 10);
+    countOut.textContent = n;
+    init(n); shake(.5);
+  });
+  var nightBtn = document.getElementById("night");
+  nightBtn.addEventListener("click", function(){
+    state.night = !state.night;
+    nightBtn.setAttribute("aria-pressed", String(state.night));
+    nightBtn.textContent = state.night ? "Night" : "Day";
+  });
+  document.getElementById("music").addEventListener("click", function(){ setMusic(!state.music); });
+  window.addEventListener("keydown", function(e){
+    if (e.code === "Space" && e.target === document.body){ e.preventDefault(); shake(1); }
+  });
+
+  // drag / tap on the globe
+  var drag = null;
+  cv.addEventListener("pointerdown", function(e){
+    cv.setPointerCapture(e.pointerId);
+    drag = {x: e.clientX, y: e.clientY, acc: 0, total: 0};
+  });
+  cv.addEventListener("pointermove", function(e){
+    if (!drag) return;
+    var rect = cv.getBoundingClientRect(), sc = W / rect.width;
+    var dx = (e.clientX - drag.x) * sc, dy = (e.clientY - drag.y) * sc;
+    var sp = Math.sqrt(dx * dx + dy * dy);
+    drag.x = e.clientX; drag.y = e.clientY; drag.acc += sp; drag.total += sp;
+    state.turb = Math.min(1.2, state.turb + sp * .006);
+    state.energy = Math.min(1, state.energy + sp * .004);
+    for (var i = 0; i < flakes.length; i++){ var f = flakes[i]; if (!f.rest){ f.vx += dx * 3 * Math.random(); f.vy += dy * 3 * Math.random(); } }
+    if (drag.acc > 220){ drag.acc = 0; shake(.7); }
+  });
+  function endDrag(){
+    if (drag && drag.total < 8) shake(.6);
+    drag = null;
+  }
+  cv.addEventListener("pointerup", endDrag);
+  cv.addEventListener("pointercancel", function(){ drag = null; });
+
+  // ---------- loop ----------
+  var last = performance.now();
+  function frame(now){
+    var dt = Math.min(.04, (now - last) / 1000); last = now;
+    state.time += dt;
+    step(dt);
+    render();
+    var e = state.energy, ang = reduce ? 0 : Math.sin(state.time * 34) * e * 2.4;
+    var ox = reduce ? 0 : Math.sin(state.time * 41) * e * 7, oy = reduce ? 0 : Math.cos(state.time * 37) * e * 4;
+    stage.style.transform = e > .002 ? "translate(" + ox.toFixed(2) + "px," + oy.toFixed(2) + "px) rotate(" + ang.toFixed(2) + "deg)" : "";
+    updateStatus();
+    requestAnimationFrame(frame);
+  }
+  init(state.count);
+  shake(1);
+  state.shakes = 0;
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+  :root{
+    --room:#0b0710;
+    --glow:255,110,50;
+    --level:0.8;
+    --ink:#f1e6dc;
+    --muted:#a99a96;
+    --panel:rgba(255,255,255,.05);
+    --line:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:var(--room);
+    color:var(--ink);
+    font:15px/1.4 ui-rounded,"Avenir Next",system-ui,-apple-system,"Segoe UI",sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* the room: light pooled low behind the lamp, reaching up a wall */
+  #roomglow{
+    position:fixed;inset:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse 55% 45% at var(--lx,35%) 78%, rgba(var(--glow), calc(var(--level)*.42)), transparent 70%),
+      radial-gradient(ellipse 30% 70% at var(--lx,35%) 60%, rgba(var(--glow), calc(var(--level)*.14)), transparent 70%);
+    transition:background .4s;
+  }
+  main{
+    position:relative;
+    max-width:900px;margin:0 auto;padding:16px;
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:24px 48px;
+    min-height:100vh;
+  }
+  .stage{flex:0 1 380px;width:min(100%,380px)}
+  canvas{display:block;width:100%;height:auto;touch-action:manipulation;cursor:pointer}
+  .panel{
+    flex:1 1 260px;max-width:340px;
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:20px;backdrop-filter:blur(6px);
+  }
+  h1{margin:0 0 2px;font-size:20px;font-weight:600;letter-spacing:.02em}
+  .sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .row{margin:14px 0}
+  label,.lbl{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  button{
+    font:inherit;color:var(--ink);background:rgba(255,255,255,.07);
+    border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-height:44px;cursor:pointer;
+  }
+  button:hover{background:rgba(255,255,255,.13)}
+  button:focus-visible,input:focus-visible{outline:3px solid #ffd9a0;outline-offset:2px}
+  .power{display:flex;align-items:center;gap:10px;width:100%;justify-content:space-between}
+  .power .dot{width:12px;height:12px;border-radius:50%;background:#554;box-shadow:none;transition:.3s}
+  .power[aria-pressed="true"] .dot{background:rgb(var(--glow));box-shadow:0 0 12px 3px rgba(var(--glow),.8)}
+  input[type=range]{width:100%;height:32px;accent-color:rgb(var(--glow))}
+  .swatches{display:flex;gap:10px}
+  .swatches button{flex:1;display:flex;align-items:center;gap:8px;justify-content:center;padding:8px 6px}
+  .swatches button i{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.5)}
+  .swatches button[aria-checked="true"]{border-color:rgb(var(--glow));background:rgba(var(--glow),.18)}
+  .status{
+    margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
+    color:var(--ink);font-size:14px;min-height:42px;
+  }
+  .status small{display:block;color:var(--muted);margin-top:2px}
+  .hint{color:var(--muted);font-size:12px;margin-top:10px}
+  @media (max-width:640px){
+    main{padding:12px;gap:16px}
+    .stage{width:min(78vw,340px)}
+    .panel{max-width:none;width:100%}
+  }
+</style>
+</head>
+<body>
+<div id="roomglow"></div>
+<main>
+  <div class="stage">
+    <canvas id="lamp" width="400" height="640" aria-label="A glass lava lamp with wax blobs rising and sinking. Click the glass to stir the wax." role="img"></canvas>
+  </div>
+  <section class="panel" aria-label="Lamp controls">
+    <h1>Lava lamp</h1>
+    <p class="sub">A bulb below warms the wax; warm wax climbs, cools, and falls.</p>
+
+    <div class="row">
+      <button id="power" class="power" type="button" aria-pressed="true"><span>Lamp</span><span id="powerTxt">On</span><span class="dot"></span></button>
+    </div>
+    <div class="row">
+      <label for="heat">Bulb heat <span id="heatVal">70%</span></label>
+      <input id="heat" type="range" min="20" max="100" value="70">
+    </div>
+    <div class="row">
+      <span class="lbl" id="cwl">Colourway</span>
+      <div class="swatches" role="radiogroup" aria-labelledby="cwl" id="swatches"></div>
+    </div>
+    <div class="row">
+      <button id="stir" type="button">Stir the wax</button>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <p class="hint">Click the glass to nudge the wax away from your finger.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var cv = document.getElementById('lamp');
+  var ctx = cv.getContext('2d');
+  var W = 400, H = 640, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * DPR; cv.height = H * DPR;
+
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- colourways: wax in one saturated hue, liquid in its own family ---------- */
+  var WAYS = [
+    {name:'Ember',  wax:[255,86,40],  waxHi:[255,170,90],  liq:[150,60,12],  glow:'255,110,50', room:'#0d0707'},
+    {name:'Orchid', wax:[255,120,235],waxHi:[255,200,250], liq:[78,28,150],  glow:'180,90,255', room:'#08060f'},
+    {name:'Lagoon', wax:[70,235,200], waxHi:[190,255,240], liq:[8,76,120],   glow:'60,200,230', room:'#050b0f'}
+  ];
+  var way = 0;
+
+  /* ---------- vessel outline: a round globe with a short neck ---------- */
+  var PTS = [[88,30],[96,52],[112,100],[138,150],[154,210],[160,270],[150,330],[124,385],[98,425],[86,450]]; // [halfwidth, y] top to bottom (y offset by 70 below)
+  // convert to [y, hw]
+  var VP = [[70,34],[96,38],[128,56],[160,94],[200,128],[250,150],[300,152],[350,140],[395,114],[430,86],[462,66]];
+  var CX = 200, TOP = 70, BOT = 462;
+  function hw(y){
+    if (y <= VP[0][0]) return VP[0][1];
+    for (var i=1;i<VP.length;i++){
+      if (y <= VP[i][0]){
+        var a=VP[i-1], b=VP[i], t=(y-a[0])/(b[0]-a[0]);
+        return a[1]+(b[1]-a[1])*t;
+      }
+    }
+    return VP[VP.length-1][1];
+  }
+  function vesselPath(){
+    var p = new Path2D();
+    p.moveTo(CX-VP[0][1], VP[0][0]);
+    var i, m;
+    for (i=1;i<VP.length;i++){
+      m = [CX-(VP[i-1][1]+VP[i][1])/2, (VP[i-1][0]+VP[i][0])/2];
+      p.quadraticCurveTo(CX-VP[i-1][1], VP[i-1][0], m[0], m[1]);
+    }
+    p.lineTo(CX-VP[VP.length-1][1], VP[VP.length-1][0]);
+    p.lineTo(CX+VP[VP.length-1][1], VP[VP.length-1][0]);
+    for (i=VP.length-1;i>=1;i--){
+      m = [CX+(VP[i-1][1]+VP[i][1])/2, (VP[i-1][0]+VP[i][0])/2];
+      p.quadraticCurveTo(CX+VP[i][1], VP[i][0], m[0], m[1]);
+    }
+    p.lineTo(CX+VP[0][1], VP[0][0]);
+    p.closePath();
+    return p;
+  }
+  var VESSEL = vesselPath();
+
+  /* ---------- wax simulation ---------- */
+  var power = true, heat = 0.7, level = 0.0; // level: how lit the lamp is (follows power, eased)
+  var blobs = [], pool = [];
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+  var N = 7;
+  function makeBlob(i){
+    var big = i % 3 === 0;
+    var r = big ? rnd(24,32) : rnd(13,21);
+    return {x: CX + rnd(-40,40), y: rnd(300,430), r: r, T: rnd(0.2,0.8), vx:0, vy:0,
+            ph: rnd(0,6.28), k: rnd(0.8,1.25), lag: rnd(0.8,1.25)};
+  }
+  for (var i=0;i<N;i++) blobs.push(makeBlob(i));
+  // the pool of settled wax across the bottom
+  for (i=0;i<6;i++) pool.push({x: CX - 75 + i*30, ph: rnd(0,6.28), r: 26});
+
+  var simT = 0;
+  function step(dt){
+    simT += dt;
+    var lit = power ? 1 : 0;
+    level += (lit*(0.35+0.65*heat) - level) * Math.min(1, dt*(power?0.5:0.25));
+    var span = BOT - TOP;
+    for (var i=0;i<blobs.length;i++){
+      var b = blobs[i];
+      var depth = Math.max(0, Math.min(1, (b.y - TOP) / span)); // 0 top .. 1 bottom
+      // the bulb heats wax at the base; the upper glass sheds heat; the middle cools slowly
+      var hot = power ? heat * 0.55 * smooth(0.72, 0.95, depth) : 0;
+      var cold = 0.55 * (1 - smooth(0.08, 0.4, depth)) + 0.03 + (power ? 0 : 0.08);
+      b.T += (hot - cold * b.lag) * dt;
+      if (b.T > 1.1) b.T = 1.1; if (b.T < 0) b.T = 0;
+      // buoyancy flips with temperature
+      var want = -(b.T - 0.5) * 95 * b.k * (0.5 + 0.7*heat);
+      b.vy += (want - b.vy) * Math.min(1, dt*1.3);
+      // slow side drift, and loose attraction toward the centre line
+      b.vx += (Math.sin(simT*0.35 + b.ph)*10 - b.vx) * Math.min(1, dt*0.8);
+      b.vx += (CX - b.x) * dt * 0.05;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      // collide softly with the glass
+      var lim = hw(b.y) - b.r*0.55 - 4;
+      if (b.x > CX + lim){ b.x = CX + lim; b.vx *= -0.3; }
+      if (b.x < CX - lim){ b.x = CX - lim; b.vx *= -0.3; }
+      var top = TOP + b.r + 8, floor = BOT - b.r*0.55 - 14;
+      if (b.y < top){ b.y = top; b.vy *= 0.2; b.T -= dt*0.05; }
+      if (b.y > floor){ b.y = floor; b.vy *= 0.2; }
+      // blobs nudge each other apart a little so they stay distinct
+      for (var j=i+1;j<blobs.length;j++){
+        var c = blobs[j], dx = b.x-c.x, dy = b.y-c.y, d = Math.sqrt(dx*dx+dy*dy)+0.01, m = (b.r+c.r)*0.55;
+        if (d < m){ var f=(m-d)*0.4*dt*8; b.x+=dx/d*f; c.x-=dx/d*f; }
+      }
+    }
+  }
+  // warm it up so the lamp is already mid-cycle on load
+  for (i=0;i<2400;i++) step(1/30);
+
+  /* ---------- wax field (low-res metaballs, upscaled) ---------- */
+  var S = 2, FW = Math.ceil(W/S), FH = Math.ceil((BOT+20)/S);
+  var fc = document.createElement('canvas'); fc.width = FW; fc.height = FH;
+  var fx = fc.getContext('2d');
+  var img = fx.createImageData(FW, FH), px = img.data;
+  function smooth(a,b,x){ var t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }
+
+  function paintWax(){
+    var w = WAYS[way], wc = w.wax, wh = w.waxHi;
+    var balls = [];
+    for (var i=0;i<blobs.length;i++){
+      var b=blobs[i], stretch = 1 + Math.min(0.55, Math.abs(b.vy)/90);
+      balls.push([b.x, b.y, b.r*b.r, stretch]);
+    }
+    // settled wax: shrinks a bit when blobs are aloft, swells when the lamp is cold
+    var aloft = 0; for (i=0;i<blobs.length;i++) if (blobs[i].y < TOP+(BOT-TOP)*0.62) aloft++;
+    var poolR = 21 - aloft*0.8 + (power?0:3);
+    for (i=0;i<pool.length;i++){
+      var p = pool[i];
+      var rr = poolR + Math.sin(simT*0.4 + p.ph)*3.5;
+      balls.push([p.x, BOT - 22 + Math.sin(simT*0.3+p.ph)*3, rr*rr, 1]);
+    }
+    var n = balls.length, k, x, y, o=0, f, dx, dy, a, shade, cy, mix, r, g, bl, wy;
+    for (y=0;y<FH;y++){
+      cy = y*S + S/2;
+      wy = (cy - TOP)/(BOT-TOP); // 0 top .. 1 bottom
+      for (x=0;x<FW;x++){
+        var cx = x*S + S/2;
+        f = 0;
+        for (k=0;k<n;k++){
+          var bb = balls[k];
+          dx = cx-bb[0]; dy = (cy-bb[1])/bb[3];
+          f += bb[2] / (dx*dx + dy*dy + 1);
+        }
+        a = smooth(0.97, 1.05, f);
+        if (a <= 0){ px[o+3]=0; o+=4; continue; }
+        // lit from below: brighter near the base, bright where the wax is thick, deeper at the edge
+        shade = (0.85 + 0.3*Math.max(0,wy)) * (0.5 + 0.5*level);
+        mix = Math.min(1, Math.max(0, (f-1.0)/3)) * 0.4 + Math.max(0,wy-0.6)*0.3;
+        mix *= (0.35 + 0.65*level);
+        r = (wc[0]*(1-mix) + wh[0]*mix) * shade;
+        g = (wc[1]*(1-mix) + wh[1]*mix) * shade;
+        bl = (wc[2]*(1-mix) + wh[2]*mix) * shade;
+        px[o]=Math.min(255,r); px[o+1]=Math.min(255,g); px[o+2]=Math.min(255,bl);
+        px[o+3]=a*255;
+        o+=4;
+      }
+    }
+    fx.putImageData(img,0,0);
+  }
+
+  /* ---------- drawing ---------- */
+  function rgba(c,a){ return 'rgba('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+','+a+')'; }
+
+  function drawBase(w){
+    var L = level;
+    // bulb glow spilling out of the base top
+    var g = ctx.createRadialGradient(CX,470,4,CX,470,150);
+    g.addColorStop(0,'rgba('+w.glow+','+(0.85*L)+')');
+    g.addColorStop(1,'rgba('+w.glow+',0)');
+    ctx.fillStyle = g; ctx.fillRect(0,330,W,250);
+
+    // base: a waisted metal bell
+    ctx.save();
+    var bp = new Path2D();
+    bp.moveTo(CX-70,462);
+    bp.bezierCurveTo(CX-62,500, CX-52,520, CX-80,560);
+    bp.bezierCurveTo(CX-90,578, CX-96,590, CX-100,606);
+    bp.lineTo(CX+100,606);
+    bp.bezierCurveTo(CX+96,590, CX+90,578, CX+80,560);
+    bp.bezierCurveTo(CX+52,520, CX+62,500, CX+70,462);
+    bp.closePath();
+    var bg = ctx.createLinearGradient(CX-100,0,CX+100,0);
+    bg.addColorStop(0,'#1a1618'); bg.addColorStop(0.18,'#6d6468'); bg.addColorStop(0.32,'#cfc6c2');
+    bg.addColorStop(0.45,'#554d51'); bg.addColorStop(0.75,'#2a2427'); bg.addColorStop(1,'#120f11');
+    ctx.fillStyle = bg; ctx.fill(bp);
+    // warm light washing up the metal from the bulb
+    var wg = ctx.createLinearGradient(0,462,0,606);
+    wg.addColorStop(0,'rgba('+w.glow+','+(0.55*L)+')'); wg.addColorStop(0.5,'rgba('+w.glow+','+(0.12*L)+')'); wg.addColorStop(1,'rgba(0,0,0,.35)');
+    ctx.fillStyle = wg; ctx.fill(bp);
+    // vents / ring
+    ctx.strokeStyle='rgba(0,0,0,.45)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(CX,606,100,7,0,0,Math.PI); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.16)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(CX-66,468); ctx.bezierCurveTo(CX-58,500,CX-48,522,CX-74,558); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCap(){
+    ctx.save();
+    var cp = new Path2D();
+    cp.moveTo(CX-44,72);
+    cp.bezierCurveTo(CX-46,50,CX-30,34,CX,30);
+    cp.bezierCurveTo(CX+30,34,CX+46,50,CX+44,72);
+    cp.closePath();
+    var g = ctx.createLinearGradient(CX-46,0,CX+46,0);
+    g.addColorStop(0,'#1a1618'); g.addColorStop(0.25,'#9c9296'); g.addColorStop(0.4,'#e7dfdb');
+    g.addColorStop(0.6,'#6a6165'); g.addColorStop(1,'#151113');
+    ctx.fillStyle = g; ctx.fill(cp);
+    // collar
+    ctx.fillStyle = '#2b2528';
+    ctx.fillRect(CX-47,68,94,8);
+    ctx.fillStyle='rgba(255,255,255,.25)';
+    ctx.fillRect(CX-47,68,94,1.5);
+    ctx.restore();
+  }
+
+  function draw(){
+    var w = WAYS[way], L = level;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    drawBase(w);
+
+    // ---- liquid
+    ctx.save();
+    ctx.clip(VESSEL);
+    var lg = ctx.createLinearGradient(0,TOP,0,BOT);
+    var lc = w.liq;
+    lg.addColorStop(0, rgba(lc, 0.25+0.35*L));
+    lg.addColorStop(0.5, rgba(lc, 0.35+0.4*L));
+    lg.addColorStop(1, rgba([lc[0]*1.6+30,lc[1]*1.5+25,lc[2]*1.4+15], 0.5+0.45*L));
+    ctx.fillStyle = '#05040a'; ctx.fillRect(0,TOP,W,BOT-TOP);
+    ctx.fillStyle = lg; ctx.fillRect(0,TOP,W,BOT-TOP);
+    // bulb light inside the liquid, brightest low
+    var ig = ctx.createRadialGradient(CX,BOT+10,10,CX,BOT+10,260);
+    ig.addColorStop(0,'rgba('+w.glow+','+(0.7*L)+')'); ig.addColorStop(1,'rgba('+w.glow+',0)');
+    ctx.fillStyle = ig; ctx.fillRect(0,TOP,W,BOT-TOP+20);
+
+    // ---- wax
+    paintWax();
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(fc, 0,0,FW,FH, 0,0,FW*S,FH*S);
+
+    // glass shading inside the clip: darker edges, curved sheen
+    var eg = ctx.createLinearGradient(CX-160,0,CX+160,0);
+    eg.addColorStop(0,'rgba(0,0,0,.55)'); eg.addColorStop(0.16,'rgba(0,0,0,0)');
+    eg.addColorStop(0.84,'rgba(0,0,0,0)'); eg.addColorStop(1,'rgba(0,0,0,.55)');
+    ctx.fillStyle = eg; ctx.fillRect(0,TOP,W,BOT-TOP);
+    ctx.restore();
+
+    // glass outline and highlights
+    ctx.save();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.stroke(VESSEL);
+    ctx.clip(VESSEL);
+    var sh = ctx.createLinearGradient(CX-150,0,CX-90,0);
+    sh.addColorStop(0,'rgba(255,255,255,0)'); sh.addColorStop(0.5,'rgba(255,255,255,.28)'); sh.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = sh;
+    ctx.beginPath();
+    ctx.moveTo(CX-90,150); ctx.quadraticCurveTo(CX-146,230,CX-128,340); ctx.lineTo(CX-112,340);
+    ctx.quadraticCurveTo(CX-128,240,CX-80,160); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.2)';
+    ctx.beginPath(); ctx.ellipse(CX+110,230,5,26,0.18,0,6.3); ctx.fill();
+    ctx.restore();
+
+    drawCap();
+  }
+
+  /* ---------- controls ---------- */
+  var elPower = document.getElementById('power'), elPT = document.getElementById('powerTxt');
+  var elHeat = document.getElementById('heat'), elHV = document.getElementById('heatVal');
+  var elSw = document.getElementById('swatches'), elSt = document.getElementById('status');
+  var elStir = document.getElementById('stir');
+
+  WAYS.forEach(function(w,i){
+    var b = document.createElement('button');
+    b.type='button'; b.setAttribute('role','radio'); b.setAttribute('aria-checked', i===way?'true':'false');
+    b.innerHTML = '<i style="background:rgb('+w.wax.join(',')+')"></i>'+w.name;
+    b.addEventListener('click', function(){ setWay(i); });
+    elSw.appendChild(b);
+  });
+  function setWay(i){
+    way = i;
+    var bs = elSw.children;
+    for (var j=0;j<bs.length;j++) bs[j].setAttribute('aria-checked', j===i?'true':'false');
+    var w = WAYS[i];
+    document.documentElement.style.setProperty('--glow', w.glow);
+    document.documentElement.style.setProperty('--room', w.room);
+    document.body.style.background = w.room;
+    announce(true);
+  }
+  setWay(0);
+
+  elPower.addEventListener('click', function(){
+    power = !power;
+    elPower.setAttribute('aria-pressed', power);
+    elPT.textContent = power ? 'On' : 'Off';
+    announce(true);
+  });
+  elHeat.addEventListener('input', function(){
+    heat = elHeat.value/100;
+    elHV.textContent = elHeat.value + '%';
+    announce(true);
+  });
+
+  function stir(px, py){
+    for (var i=0;i<blobs.length;i++){
+      var b = blobs[i];
+      if (px == null){
+        b.vx += rnd(-45,45); b.vy += rnd(-40,40); b.T += rnd(-0.05,0.2)*(power?1:0.3);
+      } else {
+        var dx=b.x-px, dy=b.y-py, d=Math.sqrt(dx*dx+dy*dy)+1;
+        var f = Math.max(0, 1 - d/170);
+        b.vx += dx/d*f*140; b.vy += dy/d*f*110;
+        b.T += f*0.1*(power?1:0.2);
+      }
+    }
+  }
+  elStir.addEventListener('click', function(){ stir(); announce(true); });
+  cv.addEventListener('pointerdown', function(e){
+    var r = cv.getBoundingClientRect();
+    stir((e.clientX-r.left)/r.width*W, (e.clientY-r.top)/r.height*H);
+    announce(true);
+  });
+
+  var lastMsg = '';
+  function announce(force){
+    var aloft = 0, sinking = 0, rising = 0;
+    for (var i=0;i<blobs.length;i++){
+      var b = blobs[i];
+      if (b.y < TOP+(BOT-TOP)*0.62) aloft++;
+      if (b.vy < -4) rising++; else if (b.vy > 4) sinking++;
+    }
+    var head, sub = aloft + ' of ' + blobs.length + ' blobs aloft, ' + rising + ' rising, ' + sinking + ' sinking';
+    if (!power) head = level > 0.08 ? 'Off: the wax is cooling' : 'Off: the wax has settled';
+    else if (level < 0.5*(0.35+0.65*heat)) head = 'Warming up';
+    else head = 'Heat ' + Math.round(heat*100) + '%: ' + WAYS[way].name.toLowerCase() + ' wax in motion';
+    var m = head + sub;
+    if (m !== lastMsg || force){
+      elSt.innerHTML = head + '<small>' + sub + '</small>';
+      lastMsg = m;
+    }
+  }
+
+  /* ---------- loop ---------- */
+  var last = performance.now(), acc = 0, statAcc = 0;
+  function frame(t){
+    var dt = Math.min(0.05, (t-last)/1000); last = t;
+    var scale = reduce ? 0.4 : 1;
+    step(dt*scale);
+    draw();
+    var root = document.documentElement.style;
+    root.setProperty('--level', level.toFixed(3));
+    statAcc += dt;
+    if (statAcc > 0.8){ statAcc = 0; announce(false); }
+    requestAnimationFrame(frame);
+  }
+  function placeGlow(){
+    var r = cv.getBoundingClientRect();
+    document.documentElement.style.setProperty('--lx', ((r.left + r.width/2)/window.innerWidth*100).toFixed(1)+'%');
+  }
+  window.addEventListener('resize', placeGlow);
+  placeGlow(); announce(true);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

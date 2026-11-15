@@ -1,0 +1,51 @@
+{
+  "request": "a simple block-building sandbox game with a 32x32 block world",
+  "thesis": "A tiny Minecraft-like toy where every click visibly changes a small, fully legible 32x32 world, so building feels immediate and the whole world fits on one screen.",
+  "job": [
+    "open the page and see a 32x32 world with some starting terrain",
+    "pick a block type from a palette (keys 1-9 or click)",
+    "place a block on a cell (left click / drag to paint)",
+    "remove a block (right click, shift-click or an erase tool)",
+    "see what is selected and what is under the cursor (hover highlight, coordinates)",
+    "build in more than one layer or height so it is 'block' building, not just a pixel paint",
+    "undo a mistake",
+    "clear or reset the world",
+    "save and reload the world (localStorage, and survives refresh)"
+  ],
+  "disciplines": {
+    "game design": {"principles": ["instant feedback per click", "a small verb set done well", "creative freedom, no fail state"], "steps": ["palette -> place -> remove -> repeat"], "tricks": ["drag to paint", "hotkeys 1-9", "hover ghost preview"], "tests": ["can a stranger build a house in 30 seconds without instructions"]},
+    "interaction design": {"principles": ["selected state always visible", "mouse and touch both work", "no modal dialogs"], "tricks": ["contextmenu suppressed so right click erases", "pointer events for mouse/touch/pen"], "tests": ["every control changes visible state"]},
+    "visual design": {"principles": ["block faces read as cubes through shading", "palette of 8 to 10 distinct, earthy materials"], "tricks": ["lighten top face, darken side faces", "per-cell tiny noise so blocks feel textured"], "tests": ["blocks distinguishable at a glance, grid readable"]},
+    "front-end code": {"principles": ["state in one array, render from state", "pure canvas draw function"], "tricks": ["Uint8Array 32*32*H heights", "devicePixelRatio scaling"], "tests": ["place then read state equals what drew"]}
+  },
+  "the_thing": {
+    "parts": ["32x32 grid world", "block palette/hotbar", "place and remove", "cursor highlight", "toolbar (undo, clear, save)", "status readout"],
+    "expectations": ["blocks have distinct looks (grass, dirt, stone, wood, leaves, sand, water, brick)", "stacking up", "persistence", "feels like Minecraft-lite"],
+    "kinds": [
+      {"name": "isometric 3D-look voxel stack", "what": "each of 32x32 columns has a height; drawn isometric with shaded cube faces"},
+      {"name": "top-down tile grid", "what": "flat 2D grid, one block per cell, paint style"},
+      {"name": "side-view layered slices", "what": "edit one layer at a time"}
+    ]
+  },
+  "specifics": {
+    "world": {"keywords": {"1": ["32x32", "blocks", "sandbox", "place", "remove"], "2": ["heights", "layers", "terrain", "hotbar", "reset", "save"], "3": ["voxel", "isometric", "column stack", "ghost block"]}, "descriptions": ["world = 32x32 columns each a stack of up to 8 blocks", "start with gentle grass/dirt hills, a pond"], "behaviors": ["click top of column adds block on top", "right click removes top block", "drag paints continuously"], "tokens": {"max height": "6 to 10 blocks", "cell size": "20 to 28 px iso half-width"}},
+    "blocks": {"keywords": {"1": ["grass", "dirt", "stone", "wood", "sand", "brick"], "2": ["leaves", "water", "glass", "snow"], "3": ["tint variation", "emissive lamp"]}, "descriptions": ["each block type has a base colour; top face lighter, left side mid, right side dark"], "behaviors": ["selecting a type highlights hotbar slot"], "tokens": {"top lighten": "+10 to 20%", "right darken": "-25 to -35%"}},
+    "controls": {"keywords": {"1": ["left click place", "right click remove"], "2": ["keys 1-8", "undo ctrl+z", "clear", "touch"], "3": ["pointer capture", "wheel to cycle block"]}, "descriptions": ["hover highlights target column and shows x,y,height"], "behaviors": ["undo restores prior state stack up to 100 steps"], "tokens": {}}
+  },
+  "anti_keywords": [
+    {"not": "crafting, inventory, health, enemies, day/night, multiplayer", "instead": "a 'simple' sandbox is only place, remove, pick block, undo, clear, save"},
+    {"not": "external libraries or textures", "instead": "canvas drawing with computed shading, no requests"},
+    {"not": "a flat paint-by-numbers grid with no sense of blocks", "instead": "iso cube faces and stacking height"},
+    {"not": "context menu popping on right click", "instead": "preventDefault so right click removes"},
+    {"not": "state only in the DOM", "instead": "one array of heights/types, redraw from it"}
+  ],
+  "checks": [
+    "world is exactly 32x32 and the page says so",
+    "click adds a block and the block count changes",
+    "right click removes",
+    "selecting another palette block changes what gets placed",
+    "undo reverts the last action, clear empties, reload keeps world",
+    "works on phone width (touch placing, toolbar toggle for remove)"
+  ],
+  "built": ["isometric 3D-look voxel stack"]
+}

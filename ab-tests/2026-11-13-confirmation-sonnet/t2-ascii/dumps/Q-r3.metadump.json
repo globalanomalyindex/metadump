@@ -1,0 +1,71 @@
+{
+  "request": "a simple interactive ascii color mixing engine",
+  "thesis": "Colour mixing made tangible in text: every cell is a character whose glyph encodes brightness and whose ink encodes the mixed hue, so you watch colours blend out of nothing but punctuation.",
+  "job": [
+    "open the page and immediately see an ascii field with colour in it",
+    "pick or dial in source colours (primaries)",
+    "add them to the field by clicking or dragging, in controllable amounts",
+    "watch overlapping colours mix into new ones, glyph density following brightness",
+    "switch the mixing model (light adds, paint subtracts) and see the same drops mix differently",
+    "read the mixed colour of a cell (hex / rgb) by hovering or clicking",
+    "undo the mess: clear or reset the field"
+  ],
+  "disciplines": {
+    "color_science": {
+      "principles": ["additive mixing (light): R+G=yellow, R+B=magenta, G+B=cyan, all=white", "subtractive mixing (pigment): C+M=blue, M+Y=red, C+Y=green, all=dark", "mix in linear light, display in sRGB, or midtones turn muddy", "mixing is a weighted average of components by amount"],
+      "steps": ["store each cell as a vector of amounts, not a finished colour", "convert vector to rgb at draw time", "derive luminance from the mixed rgb for the glyph"],
+      "tricks": ["amounts that accumulate and saturate give satisfying build-up", "decay or diffusion makes colours bleed into neighbours", "luma weights 0.2126 / 0.7152 / 0.0722"],
+      "tests": ["red + green light gives yellow", "cyan + magenta + yellow paint gives near black", "equal R,G,B gives grey, not tinted"]
+    },
+    "ascii_art": {
+      "principles": ["glyph density is a brightness ramp", "monospace cells have roughly 1:2 aspect so grid cells are tall", "colour carries hue, glyph carries value"],
+      "steps": ["pick a ramp dark to light", "index ramp by luminance", "colour the character with the mixed rgb"],
+      "tricks": ["render rows as spans or one pre with per-cell spans only where colour changes", "line-height near 1 and fixed letter-spacing keep the grid square-ish", "use a dark background so bright inks glow"],
+      "tests": ["empty cell reads as blank, not noise", "full-bright cell reads as densest glyph"]
+    },
+    "interaction_design": {
+      "principles": ["direct manipulation: drag on the artwork itself", "state always visible", "instant feedback under 100 ms"],
+      "steps": ["pointer down paints", "pointer move while down paints along the stroke", "controls change what the next stroke does"],
+      "tricks": ["pointer events with capture cover mouse and touch", "interpolate between pointer samples so fast drags leave no gaps", "touch-action none on the canvas"],
+      "tests": ["a click changes a cell", "a drag changes a line of cells", "reset really empties state"]
+    }
+  },
+  "the_thing": {
+    "parts": ["character grid", "source colour swatches", "amount / brush size controls", "mix model toggle", "readout of mixed colour", "clear button"],
+    "expectations": ["it responds to the mouse at once", "mixing looks plausible to anyone who has mixed paint", "it works on a phone"],
+    "kinds": [
+      {"name": "paint-on-grid mixer", "what": "choose a primary, drag to drop it into cells, overlaps mix; light/paint toggle"},
+      {"name": "three-slider mixer", "what": "R, G, B sliders flood the whole grid with the mix"},
+      {"name": "diffusing inks", "what": "drops spread and blend into neighbours over time"}
+    ]
+  },
+  "specifics": {
+    "palette": {
+      "keywords": {"1": ["color", "mix", "ascii", "interactive"], "2": ["primaries", "swatch", "additive", "subtractive", "blend"], "3": ["luminance ramp", "linear light", "gamut", "saturation"]},
+      "descriptions": ["light primaries red, green, blue; paint primaries cyan, magenta, yellow", "swatches show the colour as a glyph too"],
+      "behaviors": ["adding more of a colour raises its amount in the cell", "toggle reinterprets the same amounts"],
+      "tokens": {"background": "#0b0d12 to #14161d", "ink amount per drop": "0.15 to 0.5", "brush radius": "0 to 3 cells", "ramp": " .:-=+*#%@ or  .,:;ox%#@"}
+    },
+    "layout": {
+      "keywords": {"1": ["grid", "controls"], "2": ["monospace", "dark", "responsive"], "3": ["cell aspect", "pointer capture"]},
+      "descriptions": ["grid about 56 x 24 on desktop, fewer columns on phones", "controls beside or below the grid"],
+      "behaviors": ["grid cols shrink to fit the viewport width"],
+      "tokens": {"font-size": "12 to 16 px", "line-height": "1.0 to 1.15", "cols": "32 to 64", "rows": "16 to 28"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "a full paint program: layers, undo history, save and load, export", "instead": "one field, a clear button"},
+    {"not": "blend-mode menus and colour pickers with HSL dials", "instead": "three primaries and a model toggle"},
+    {"not": "averaging rgb straight (muddy grey)", "instead": "accumulate amounts per channel and clamp"},
+    {"not": "static demo with decorative buttons", "instead": "every control changes state that the grid shows"},
+    {"not": "light-mode white page", "instead": "dark field where inks glow"}
+  ],
+  "checks": [
+    "dropping red then green on one cell in light mode gives a yellow cell",
+    "cyan+magenta+yellow in paint mode gives a dark cell",
+    "clear empties every cell",
+    "dragging fast leaves no gaps",
+    "works at phone width without horizontal scroll"
+  ],
+  "built": ["paint-on-grid mixer"]
+}

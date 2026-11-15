@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j2","scores":{
+"U":{"fidelity":10,"correctness":9,"craft":10,"usability":8,"overall":10,"note":"True isometric 3D 32x32 world with terrain, nine materials, place/erase/undo and a responsive layout; clearly the richest and most block-like."},
+"V":{"fidelity":6,"correctness":8,"craft":5,"usability":7,"overall":5,"note":"Top-down flat grid with eight colours and undo/save, but it starts blank and reads as a paint grid rather than blocks."},
+"W":{"fidelity":5,"correctness":8,"craft":6,"usability":7,"overall":4,"note":"Only four materials on a dark empty grid with counts and a two-step clear; tidy but sparse and visually flat, and the footer is cut off on desktop."},
+"X":{"fidelity":6,"correctness":8,"craft":6,"usability":7,"overall":5,"note":"Eight materials, a side palette, autosave and a block cap, but a dark empty 2D grid with little sense of building; the mobile palette pushes controls below the fold."},
+"Y":{"fidelity":9,"correctness":9,"craft":9,"usability":8,"overall":9,"note":"Side-view 32x32 world with textured blocks, preloaded terrain and tree, ten tools, and a phone layout that works."},
+"Z":{"fidelity":6,"correctness":8,"craft":6,"usability":7,"overall":6,"note":"Top-down grid with stacking to height 6 and keyboard shortcuts, but only three materials and a blank start with no depth cue."}},
+"ranking":["U","Y","Z","X","V","W"]}

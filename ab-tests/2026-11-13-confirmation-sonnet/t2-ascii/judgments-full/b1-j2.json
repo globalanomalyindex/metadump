@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 8, "note": "Simple pigment-drop bowl with animated glyph blend, hex readout, keys and kept mixes, but it opens as a dim empty bowl."},
+"V": {"fidelity": 7, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Capable ASCII paint canvas with additive, ink and paint modes plus a two-colour mixer, but heavy for 'simple' and the mixer strip is minor."},
+"W": {"fidelity": 8, "correctness": 8, "craft": 6, "usability": 7, "overall": 7, "note": "Simple two-colour ratio mixer with a command prompt and linear-light option; the single-colour glyph field is plain and less visual."},
+"X": {"fidelity": 7, "correctness": 6, "craft": 5, "usability": 5, "overall": 5, "note": "Bowl-and-canvas idea works but the canvas opens blank, the ASCII bowl preview is a flat line, and the mobile layout overflows past the viewport."},
+"Y": {"fidelity": 9, "correctness": 9, "craft": 9, "usability": 8, "overall": 9, "note": "Polished pigment pots plus coloured ASCII painting grid seeded with a visible blend demo, three mix models, smudge, keyboard painting and clean mobile layout."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Attractive terminal-styled two-colour mixer with draggable gradient bar, shaded glyph swatch and thorough keys, though the mobile gradient bar overflows."}
+}, "ranking": ["Y", "V", "Z", "U", "W", "X"]}

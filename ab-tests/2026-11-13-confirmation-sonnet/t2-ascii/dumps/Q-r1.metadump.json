@@ -1,0 +1,79 @@
+{
+  "request": "a simple interactive ascii color mixing engine",
+  "thesis": "Color mixing made tangible in a character grid: pigments go in, a blended color comes out, and density characters show how much ink is there.",
+  "job": [
+    "open the page and see at once what it is (pots of color plus an ascii field)",
+    "pick pigments and add or remove drops",
+    "see the mixed color update live as hex/rgb and as ascii",
+    "switch the mixing model (paint vs light vs naive) and see the same drops give different colors",
+    "paint the mix onto the ascii grid with mouse, touch or keyboard",
+    "paint over existing color and watch the colors blend",
+    "save a mix as a chip and reuse it",
+    "clear / reset and start again"
+  ],
+  "disciplines": {
+    "color science": {
+      "principles": ["subtractive mixing multiplies reflectances", "additive mixing sums light", "averaging in gamma-encoded sRGB gives muddy darks", "weights are proportions of drops"],
+      "steps": ["decode sRGB to linear", "combine by weights", "encode back to sRGB"],
+      "tricks": ["weighted geometric mean approximates paint (yellow+blue = green, red+yellow = orange)", "white lifts, black sinks, in paint mode both desaturate"],
+      "tests": ["red + yellow -> orange", "yellow + blue -> green", "equal red/blue light -> magenta-ish", "white + black 1:1 -> mid grey"]
+    },
+    "ascii art": {
+      "principles": ["character density stands in for tone", "monospace grid, fixed cell"],
+      "steps": ["map ink 0..1 to a ramp index", "draw glyph in cell colour"],
+      "tricks": ["ramp ' .:-=+*#%@' reads well on dark", "colour the glyph, not the cell, so the dark shows through"],
+      "tests": ["empty cell is blank", "more ink gives a heavier glyph"]
+    },
+    "interaction design": {
+      "principles": ["every control changes visible state immediately", "direct manipulation on the grid"],
+      "steps": ["pointer down paints", "drag continues stroke", "keyboard fallback"],
+      "tricks": ["pointer capture and touch-action none", "readout beside the thing it describes"],
+      "tests": ["click + changes count and colour", "drag leaves a trail", "tab reaches every control"]
+    }
+  },
+  "the_thing": {
+    "parts": ["pigment pots with minus/plus and drop count", "mix model switch", "mix readout (swatch, hex, rgb)", "ascii canvas", "saved chips", "clear"],
+    "expectations": ["mixing red and blue gives purple", "white makes it lighter", "undoing is easy"],
+    "kinds": [
+      {"name": "pots and painting grid", "what": "drops of pigment make a mix, brush paints it on an ascii field"},
+      {"name": "two-slider blender", "what": "color A, color B and a ratio, shown as an ascii gradient"},
+      {"name": "diffusion field", "what": "colored seeds spread and mix on their own"}
+    ]
+  },
+  "specifics": {
+    "pigments": {
+      "keywords": {"1": ["red", "yellow", "blue", "white", "black", "drops", "mix"], "2": ["pigment", "primary", "tint", "shade"], "3": ["subtractive", "reflectance", "linear light"]},
+      "descriptions": ["each pot is a button pair with a count", "total drops capped around 12 so ratios stay readable"],
+      "behaviors": ["plus adds a drop, mix recomputes", "minus never goes below 0"],
+      "tokens": {"red": "#d62d2d to #e03a2c", "yellow": "#f2c230 to #f5cc3a", "blue": "#2447c8 to #2b4fd0", "max drops": "10 to 14"}
+    },
+    "ascii field": {
+      "keywords": {"1": ["ascii", "grid", "characters"], "2": ["ramp", "density", "ink", "brush"], "3": ["dither", "glyph", "cell"]},
+      "descriptions": ["each cell holds colour and ink; glyph from ink", "painting over blends by ink weight"],
+      "behaviors": ["drag paints a soft round brush", "ink saturates at 1"],
+      "tokens": {"grid": "56x24 to 72x28 cells", "brush radius": "1.5 to 3 cells", "ramp": " .:-=+*#%@"}
+    },
+    "look": {
+      "keywords": {"1": ["dark", "monospace"], "2": ["terminal", "phosphor"], "3": ["CRT glow"]},
+      "descriptions": ["near-black background lets colour glow", "UI chrome in muted grey, colour only where it means colour"],
+      "behaviors": [],
+      "tokens": {"background": "#0d0e11 to #14161b", "font": "ui-monospace, Menlo, Consolas, monospace", "cell": "11 to 14 px wide"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "no layers, undo stacks, file export, curves or palette libraries (simple)", "instead": "one screen: pots, model, canvas, chips"},
+    {"not": "naive RGB average as the only model", "instead": "paint, light and naive models side by side"},
+    {"not": "decorative gradient hero", "instead": "the ascii field is the hero"},
+    {"not": "tiny low-contrast text", "instead": "readouts at 14px+ in bright grey"}
+  ],
+  "checks": [
+    "red+yellow in paint mode is orange",
+    "yellow+blue in paint mode is green",
+    "plus button changes the drop count and the swatch",
+    "dragging on the canvas paints characters",
+    "painting a second colour over the first yields a blend",
+    "switching model changes the same drops' colour",
+    "works at phone width, no horizontal scroll"
+  ],
+  "built": ["pots and painting grid"]
+}

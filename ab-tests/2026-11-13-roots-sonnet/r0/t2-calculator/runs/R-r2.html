@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{
+  --bg:#0f1012; --body:#1b1d21; --screen:#121316; --digit:#2c2f36; --digit-h:#363a42;
+  --fn:#464a54; --fn-h:#525762; --accent:#ff9f1c; --accent-h:#ffb23f; --text:#f3f2ee; --dim:#8b909b;
+  --ring:#ffd08a; --shadow:0 24px 60px rgba(0,0,0,.55);
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#e6e4df; --body:#d6d3cc; --screen:#f4f2ec; --digit:#fbfaf7; --digit-h:#fff; --fn:#c3c0b8; --fn-h:#b6b3ab;
+    --accent:#e57f00; --accent-h:#f08f14; --text:#1b1c1f; --dim:#6b6e75; --ring:#1b1c1f; --shadow:0 24px 50px rgba(60,50,30,.25);}
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px}
+.calc{width:100%;max-width:340px;background:var(--body);border-radius:28px;padding:18px;box-shadow:var(--shadow)}
+.screen{background:var(--screen);border-radius:16px;padding:12px 16px 10px;text-align:right;min-height:112px;
+  display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
+.expr{font-size:15px;color:var(--dim);min-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.value{font-size:56px;line-height:1.1;font-weight:300;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.5px}
+.value.flash{animation:flash .18s ease-out}
+@keyframes flash{from{opacity:.4}to{opacity:1}}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+button{font:inherit;font-size:24px;height:62px;border:0;border-radius:16px;color:var(--text);background:var(--digit);cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 3px 0 rgba(0,0,0,.28);transition:transform .08s,background .12s,filter .12s;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:hover{background:var(--digit-h)}
+button:active,button.hit{transform:translateY(2px) scale(.96);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+button:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+button.fn{background:var(--fn);font-size:21px}
+button.fn:hover{background:var(--fn-h)}
+button.op{background:var(--accent);color:#1a1100;font-size:28px}
+button.op:hover{background:var(--accent-h)}
+button.op.pending{background:var(--text);color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+button.eq{background:var(--accent)}
+button.zero{grid-column:span 2}
+.hist-head{display:flex;justify-content:space-between;align-items:center;margin:16px 4px 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.hist-head button{height:auto;font-size:12px;background:none;box-shadow:none;color:var(--dim);padding:4px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.08em}
+.hist-head button:hover{color:var(--text);background:var(--fn)}
+ul.hist{list-style:none;margin:0;padding:0;max-height:120px;overflow:auto}
+ul.hist li button{width:100%;height:auto;display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:7px 10px;background:none;box-shadow:none;border-radius:10px;color:var(--text);font-variant-numeric:tabular-nums}
+ul.hist li button:hover{background:var(--fn)}
+ul.hist li span:first-child{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{color:var(--dim);font-size:13px;padding:6px 10px}
+@media (prefers-reduced-motion:reduce){button,.value.flash{transition:none;animation:none}}
+@media (max-width:380px){.value{font-size:46px}button{height:56px}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="screen">
+    <div class="expr" id="expr" aria-hidden="true"></div>
+    <div class="value" id="value" role="status" aria-live="polite" aria-atomic="true">0</div>
+  </div>
+  <div class="pad" id="pad">
+    <button class="fn" data-k="clear" id="clr" aria-label="All clear">AC</button>
+    <button class="fn" data-k="sign" aria-label="Plus minus">&plusmn;</button>
+    <button class="fn" data-k="pct" aria-label="Percent">%</button>
+    <button class="op" data-k="/" aria-label="Divide">&divide;</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">&times;</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">&minus;</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="op eq" data-k="=" aria-label="Equals">=</button>
+    <button class="fn" data-k="back" aria-label="Backspace" style="grid-column:span 4;height:44px;font-size:18px">&#9003; Backspace</button>
+  </div>
+  <div class="hist-head"><span>History</span><button id="hclear" aria-label="Clear history">Clear</button></div>
+  <ul class="hist" id="hist"></ul>
+</main>
+<script>
+(function(){
+  var SYM={'+':'+','-':'−','*':'×','/':'÷'};
+  var s={cur:'0',prev:null,op:null,fresh:false,err:false,expr:'',lastOp:null,lastB:null,hist:[]};
+  var elV=document.getElementById('value'),elE=document.getElementById('expr'),
+      elH=document.getElementById('hist'),clr=document.getElementById('clr');
+
+  function round(n){return parseFloat(n.toPrecision(12));}
+  function str(n){var r=round(n);return String(r);}
+  function group(t){
+    if(t==='Error'||/e/i.test(t))return t;
+    var neg=t[0]==='-';if(neg)t=t.slice(1);
+    var p=t.split('.');
+    p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    return (neg?'-':'')+p.join('.');
+  }
+  function compute(a,op,b){
+    if(op==='+')return a+b; if(op==='-')return a-b; if(op==='*')return a*b;
+    if(op==='/'){if(b===0)return NaN;return a/b;}
+    return b;
+  }
+  function render(){
+    var t=group(s.cur);
+    elV.textContent=t;
+    var n=t.length,size=56;
+    if(n>8)size=46; if(n>10)size=38; if(n>12)size=31; if(n>15)size=26;
+    elV.style.fontSize=size+'px';
+    elE.textContent=s.expr;
+    clr.textContent=(!s.err&&s.cur!=='0'&&!s.fresh)?'C':'AC';
+    clr.setAttribute('aria-label',clr.textContent==='C'?'Clear entry':'All clear');
+    document.querySelectorAll('button.op[data-k]').forEach(function(b){
+      b.classList.toggle('pending',!!s.op&&s.fresh&&b.dataset.k===s.op);
+    });
+    elV.classList.remove('flash');void elV.offsetWidth;elV.classList.add('flash');
+  }
+  function renderHist(){
+    elH.innerHTML='';
+    if(!s.hist.length){var li=document.createElement('li');li.className='empty';li.textContent='No calculations yet';elH.appendChild(li);return;}
+    s.hist.forEach(function(h){
+      var li=document.createElement('li'),b=document.createElement('button');
+      b.type='button';b.setAttribute('aria-label','Use result '+h.res);
+      var a=document.createElement('span');a.textContent=h.expr;
+      var r=document.createElement('span');r.textContent=group(h.res);
+      b.appendChild(a);b.appendChild(r);
+      b.addEventListener('click',function(){s.cur=h.res;s.fresh=true;s.err=false;s.op=null;s.prev=null;s.expr='';render();});
+      li.appendChild(b);elH.appendChild(li);
+    });
+  }
+  function fail(){s.cur='Error';s.err=true;s.op=null;s.prev=null;s.fresh=true;s.lastOp=null;}
+  function digit(d){
+    if(s.err)allClear();
+    if(s.justEq){s.expr='';s.justEq=false;}
+    if(s.fresh){s.cur=d;s.fresh=false;}
+    else{
+      if(s.cur.replace(/[-.]/g,'').length>=15)return;
+      s.cur=(s.cur==='0')?d:(s.cur==='-0'?'-'+d:s.cur+d);
+    }
+  }
+  function dot(){
+    if(s.err)allClear();
+    if(s.justEq){s.expr='';s.justEq=false;}
+    if(s.fresh){s.cur='0.';s.fresh=false;return;}
+    if(s.cur.indexOf('.')<0)s.cur+='.';
+  }
+  function operator(o){
+    if(s.err)return;
+    var v=parseFloat(s.cur);
+    if(s.op&&!s.fresh){
+      var r=compute(s.prev,s.op,v);
+      if(!isFinite(r)){s.expr='';fail();return;}
+      s.prev=round(r);s.cur=str(r);
+    }else if(!s.op){s.prev=v;}
+    s.op=o;s.fresh=true;s.justEq=false;
+    s.expr=str(s.prev)+' '+SYM[o];
+  }
+  function equals(){
+    if(s.err)return;
+    var v=parseFloat(s.cur),a,op,b;
+    if(s.op){a=s.prev;op=s.op;b=v;s.lastOp=op;s.lastB=b;}
+    else if(s.lastOp){a=v;op=s.lastOp;b=s.lastB;}
+    else return;
+    var r=compute(a,op,b);
+    var ex=str(a)+' '+SYM[op]+' '+str(b)+' =';
+    if(!isFinite(r)){s.expr=ex;fail();return;}
+    s.cur=str(r);s.expr=ex;s.op=null;s.prev=null;s.fresh=true;s.justEq=true;
+    s.hist.unshift({expr:ex.replace(/ =$/,''),res:s.cur});
+    if(s.hist.length>8)s.hist.pop();
+    renderHist();
+  }
+  function allClear(){s.cur='0';s.prev=null;s.op=null;s.fresh=false;s.err=false;s.expr='';s.lastOp=null;s.lastB=null;s.justEq=false;}
+  function clear(){
+    if(clr.textContent==='C'){s.cur='0';s.fresh=false;}
+    else allClear();
+  }
+  function sign(){
+    if(s.err)return;
+    if(s.cur==='0')return;
+    s.cur=s.cur[0]==='-'?s.cur.slice(1):'-'+s.cur;
+  }
+  function pct(){
+    if(s.err)return;
+    s.cur=str(parseFloat(s.cur)/100);
+    s.fresh=false;
+  }
+  function back(){
+    if(s.err){allClear();return;}
+    if(s.fresh)return;
+    s.cur=s.cur.slice(0,-1);
+    if(s.cur===''||s.cur==='-')s.cur='0';
+  }
+  function press(k){
+    if(k>='0'&&k<='9'&&k.length===1)digit(k);
+    else if(k==='.')dot();
+    else if(k==='+'||k==='-'||k==='*'||k==='/')operator(k);
+    else if(k==='=')equals();
+    else if(k==='clear')clear();
+    else if(k==='sign')sign();
+    else if(k==='pct')pct();
+    else if(k==='back')back();
+    render();
+  }
+  document.getElementById('pad').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-k]');if(b)press(b.dataset.k);
+  });
+  document.getElementById('hclear').addEventListener('click',function(){s.hist=[];renderHist();});
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,m=null;
+    if(/^[0-9]$/.test(k))m=k;
+    else if(k==='.'||k===',')m='.';
+    else if(k==='+'||k==='-'||k==='*'||k==='/')m=k;
+    else if(k==='x'||k==='X')m='*';
+    else if(k==='Enter'||k==='='){m='=';}
+    else if(k==='Backspace')m='back';
+    else if(k==='Escape'||k==='c'||k==='C')m='clear';
+    else if(k==='%')m='pct';
+    if(m===null)return;
+    if(k==='Enter'&&document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();
+    e.preventDefault();
+    var btn=document.querySelector('button[data-k="'+m+'"]');
+    if(btn){btn.classList.add('hit');setTimeout(function(){btn.classList.remove('hit');},110);}
+    press(m);
+  });
+  render();renderHist();
+})();
+</script>
+</body>
+</html>

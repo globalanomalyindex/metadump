@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus 25:00 · Pomodoro</title>
+<style>
+  :root {
+    --bg: #b83a25; --fg: #fff6ee; --soft: rgba(255,246,238,.92); --btn: #fff6ee; --btn-fg: #8a2413;
+    --line: rgba(255,246,238,.35);
+  }
+  body[data-phase="short"] { --bg: #0f6b66; --fg: #eafff9; --soft: rgba(234,255,249,.92); --btn: #eafff9; --btn-fg: #07403d; --line: rgba(234,255,249,.35); }
+  body[data-phase="long"]  { --bg: #2b2f7a; --fg: #eef0ff; --soft: rgba(238,240,255,.92); --btn: #eef0ff; --btn-fg: #1b1e57; --line: rgba(238,240,255,.35); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    transition: background-color .6s ease, color .6s ease;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100dvh; padding: 16px; gap: clamp(14px, 3vh, 28px);
+  }
+  body.done .time { animation: pulse 1.1s ease-in-out 3; }
+  @keyframes pulse { 50% { transform: scale(1.04); } }
+  .tabs { display: flex; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .tabs button {
+    background: transparent; color: var(--soft); border: 0; border-radius: 999px;
+    padding: 8px 14px; font: inherit; font-size: 14px; cursor: pointer; min-height: 36px;
+  }
+  .tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); font-weight: 600; }
+  .tabs button:hover:not([aria-pressed="true"]) { color: var(--fg); background: rgba(255,255,255,.12); }
+  .phase { font-size: clamp(18px, 3.2vw, 26px); letter-spacing: .24em; text-transform: uppercase; font-weight: 600; margin: 0; }
+  .time {
+    font-size: clamp(88px, 27vw, 260px); line-height: 1; font-weight: 800; margin: 0;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em; font-family: ui-rounded, system-ui, sans-serif;
+  }
+  .status { margin: 0; color: var(--soft); font-size: 16px; min-height: 1.4em; text-align: center; }
+  .bar { width: min(560px, 80vw); height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--fg); }
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .primary {
+    background: var(--btn); color: var(--btn-fg); border: 0; border-radius: 999px;
+    font: inherit; font-size: 22px; font-weight: 700; min-width: 168px; min-height: 60px; padding: 0 32px; cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+  .primary:active { transform: scale(.97); }
+  .ghost {
+    background: transparent; color: var(--fg); border: 1.5px solid var(--line); border-radius: 999px;
+    font: inherit; font-size: 15px; min-height: 48px; padding: 0 20px; cursor: pointer;
+  }
+  .ghost:hover { border-color: var(--fg); background: rgba(255,255,255,.1); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+  .count { display: flex; align-items: center; gap: 10px; color: var(--soft); font-size: 15px; }
+  .dots { display: flex; gap: 8px; }
+  .dots span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--fg); }
+  .dots span.on { background: var(--fg); }
+  .opts { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; color: var(--soft); font-size: 14px; }
+  .opts label { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; min-height: 32px; }
+  .opts input { width: 18px; height: 18px; accent-color: var(--fg); }
+  .keys { font-size: 12px; color: var(--soft); margin: 0; }
+  kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font-family: inherit; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  @media (prefers-reduced-motion: reduce) {
+    body, .primary { transition: none; }
+    body.done .time { animation: none; }
+  }
+  @media (max-width: 420px) { .keys { display: none; } }
+</style>
+</head>
+<body data-phase="work">
+  <div class="tabs" role="group" aria-label="Phase">
+    <button type="button" data-p="work" aria-pressed="true">Focus</button>
+    <button type="button" data-p="short" aria-pressed="false">Short break</button>
+    <button type="button" data-p="long" aria-pressed="false">Long break</button>
+  </div>
+
+  <p class="phase" id="phase">Focus</p>
+  <h1 class="time" id="time" aria-hidden="true">25:00</h1>
+  <p class="sr" id="srtime" role="timer">25 minutes 0 seconds remaining</p>
+  <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+  <p class="status" id="status" aria-live="polite">Ready. Press Start to focus for 25 minutes.</p>
+
+  <div class="controls">
+    <button class="primary" id="go" type="button">Start</button>
+    <button class="ghost" id="reset" type="button">Reset</button>
+    <button class="ghost" id="skip" type="button">Skip</button>
+  </div>
+
+  <div class="count">
+    <span>Pomodoros</span>
+    <span class="dots" id="dots" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+    <span id="total" aria-live="polite">0 done</span>
+  </div>
+
+  <div class="opts">
+    <label><input type="checkbox" id="auto"> Start next phase automatically</label>
+    <label><input type="checkbox" id="sound" checked> Chime</label>
+  </div>
+  <p class="keys"><kbd>Space</kbd> start / pause &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>S</kbd> skip</p>
+
+<script>
+(function () {
+  var LEN = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+  var NAME = { work: "Focus", short: "Short break", long: "Long break" };
+  var $ = function (id) { return document.getElementById(id); };
+  var s = { phase: "work", running: false, remaining: LEN.work, endAt: 0, finished: 0, cycle: 0, tid: null };
+
+  try { var saved = JSON.parse(localStorage.getItem("pomo")); if (saved && saved.day === new Date().toDateString()) { s.finished = saved.finished | 0; s.cycle = saved.cycle | 0; } } catch (e) {}
+  function save() { try { localStorage.setItem("pomo", JSON.stringify({ day: new Date().toDateString(), finished: s.finished, cycle: s.cycle })); } catch (e) {} }
+
+  var audio = null;
+  function unlock() {
+    try { if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)(); if (audio.state === "suspended") audio.resume(); } catch (e) {}
+  }
+  function chime() {
+    if (!$("sound").checked || !audio) return;
+    try {
+      [660, 880, 1100].forEach(function (f, i) {
+        var o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime + i * 0.22;
+        o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+        o.start(t); o.stop(t + 0.42);
+      });
+    } catch (e) {}
+  }
+
+  function fmt(sec) { var m = Math.floor(sec / 60), r = sec % 60; return (m < 10 ? "0" : "") + m + ":" + (r < 10 ? "0" : "") + r; }
+  function left() { return s.running ? Math.max(0, Math.ceil((s.endAt - Date.now()) / 1000)) : Math.ceil(s.remaining); }
+
+  function render() {
+    var l = left(), total = LEN[s.phase];
+    document.body.dataset.phase = s.phase;
+    $("phase").textContent = NAME[s.phase];
+    $("time").textContent = fmt(l);
+    var icon = s.running ? "▶ " : (l < total && l > 0 ? "⏸ " : "");
+    document.title = icon + fmt(l) + " · " + NAME[s.phase];
+    $("fill").style.width = ((total - l) / total * 100) + "%";
+    var m = Math.floor(l / 60), r = l % 60;
+    $("srtime").textContent = m + " minutes " + r + " seconds remaining";
+    $("go").textContent = s.running ? "Pause" : (l < total ? "Resume" : "Start");
+    document.querySelectorAll(".tabs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.p === s.phase)); });
+    var d = $("dots").children;
+    for (var i = 0; i < 4; i++) d[i].className = i < s.cycle ? "on" : "";
+    $("total").textContent = s.finished + " done" + (s.phase === "work" ? " · " + (4 - s.cycle) + " until long break" : "");
+  }
+
+  function setStatus(t) { $("status").textContent = t; }
+
+  function tick() {
+    if (!s.running) return;
+    if (Date.now() >= s.endAt) { complete(); return; }
+    render();
+  }
+  function startTimer() { clearInterval(s.tid); s.tid = setInterval(tick, 250); }
+
+  function start() {
+    unlock();
+    if ("Notification" in window && Notification.permission === "default") { try { Notification.requestPermission(); } catch (e) {} }
+    document.body.classList.remove("done");
+    s.running = true; s.endAt = Date.now() + s.remaining * 1000;
+    startTimer(); render();
+    setStatus(s.phase === "work" ? "Focusing. One thing only." : "Break time. Step away from the screen.");
+  }
+  function pause() {
+    s.remaining = Math.max(0, (s.endAt - Date.now()) / 1000);
+    s.running = false; clearInterval(s.tid); render();
+    setStatus("Paused at " + fmt(Math.ceil(s.remaining)) + ". Press Resume to continue.");
+  }
+  function toPhase(p) {
+    s.phase = p; s.remaining = LEN[p]; s.running = false; clearInterval(s.tid);
+    document.body.classList.remove("done"); render();
+  }
+  function nextPhase() {
+    if (s.phase === "work") return s.cycle >= 4 ? "long" : "short";
+    return "work";
+  }
+  function complete() {
+    var was = s.phase;
+    clearInterval(s.tid); s.running = false;
+    if (was === "work") { s.finished++; s.cycle++; }
+    var next = nextPhase();
+    if (was === "long") s.cycle = 0;
+    save();
+    chime();
+    document.body.classList.add("done"); setTimeout(function () { document.body.classList.remove("done"); }, 3500);
+    var msg = was === "work" ? "Focus session complete. Time for a " + (next === "long" ? "long" : "short") + " break." : "Break over. Ready for the next focus session.";
+    if ("Notification" in window && Notification.permission === "granted" && document.hidden) { try { new Notification(msg); } catch (e) {} }
+    toPhase(next);
+    document.title = "✔ " + NAME[next] + " ready";
+    if ($("auto").checked) { start(); setStatus(msg + " Started " + NAME[next].toLowerCase() + "."); }
+    else setStatus(msg + " Press Start when ready.");
+  }
+
+  $("go").addEventListener("click", function () { s.running ? pause() : start(); });
+  $("reset").addEventListener("click", function () {
+    toPhase(s.phase); setStatus("Reset to " + fmt(LEN[s.phase]) + ".");
+  });
+  $("skip").addEventListener("click", function () {
+    var was = s.phase;
+    if (was === "long") s.cycle = 0;   // skipping never counts as a finished pomodoro
+    var next = was === "work" ? (s.cycle >= 4 ? "long" : "short") : "work";
+    save(); toPhase(next);
+    setStatus("Skipped to " + NAME[next].toLowerCase() + ". Skipped sessions are not counted.");
+    if ($("auto").checked) start();
+  });
+  document.querySelectorAll(".tabs button").forEach(function (b) {
+    b.addEventListener("click", function () { toPhase(b.dataset.p); setStatus("Switched to " + NAME[b.dataset.p].toLowerCase() + ". Press Start."); });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.target.matches("input") || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.code === "Space" && e.target.tagName !== "BUTTON") { e.preventDefault(); $("go").click(); }
+    else if (e.key === "r" || e.key === "R") $("reset").click();
+    else if (e.key === "s" || e.key === "S") $("skip").click();
+  });
+  document.addEventListener("visibilitychange", function () { if (s.running) tick(); });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+:root{
+  --bg:#0a0714; --ink:#e9e2f5; --mute:#9d92b8; --panel:#14102a; --line:#2c2548; --accent:#ff6a3d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font:15px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px;
+  overflow-x:hidden;
+}
+#room{
+  position:fixed; inset:0; pointer-events:none; transition:background 1.2s;
+  background:radial-gradient(60% 55% at 36% 62%, var(--wall,rgba(120,60,200,.0)), transparent 70%);
+}
+main{position:relative; display:flex; gap:32px; align-items:center; justify-content:center; flex-wrap:wrap; width:100%; max-width:860px}
+.stage{width:min(88vw,360px,calc((100vh - 32px)/2)); aspect-ratio:1/2; flex:0 0 auto; position:relative}
+canvas{display:block; width:100%; height:100%; touch-action:none; cursor:grab; border-radius:12px}
+canvas:active{cursor:grabbing}
+canvas:focus-visible{outline:2px solid #fff; outline-offset:4px}
+.panel{
+  width:min(100%,300px); background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px;
+  display:flex; flex-direction:column; gap:16px;
+}
+h1{font-size:13px; letter-spacing:.18em; text-transform:uppercase; margin:0; color:var(--mute); font-weight:600}
+.row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+button{
+  font:inherit; color:var(--ink); background:#1d1740; border:1px solid var(--line); border-radius:10px;
+  padding:10px 14px; min-height:44px; cursor:pointer; transition:background .2s,border-color .2s,transform .1s;
+}
+button:hover{background:#2a2160; border-color:#5a4aa0}
+button:active{transform:scale(.97)}
+button:focus-visible,input:focus-visible{outline:2px solid #fff; outline-offset:2px}
+#power{min-width:112px; font-weight:600}
+#power[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#1a0a05}
+#power[aria-pressed="true"]:hover{background:#ff8860}
+label{display:block; color:var(--mute); font-size:13px; margin-bottom:6px}
+input[type=range]{width:100%; accent-color:var(--accent); min-height:28px}
+.sw{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+.sw button{display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 4px; font-size:12px}
+.sw i{width:26px; height:26px; border-radius:50%; display:block; border:2px solid transparent}
+.sw button[aria-pressed="true"]{border-color:#fff; background:#2a2160}
+.status{font-size:13px; color:var(--mute); min-height:3.2em; border-top:1px solid var(--line); padding-top:12px}
+.status b{color:var(--ink); font-weight:600}
+.meter{height:6px; background:#241d48; border-radius:4px; overflow:hidden; margin-top:6px}
+.meter div{height:100%; width:0; background:linear-gradient(90deg,#ffb02e,#ff4d6d); transition:width .3s}
+.hint{font-size:12px; color:var(--mute); margin:0}
+@media (max-width:640px){ main{gap:18px} }
+</style>
+</head>
+<body>
+<div id="room"></div>
+<main>
+  <div class="stage">
+    <canvas id="lamp" width="360" height="720" tabindex="0" role="img"
+      aria-label="Lava lamp. Click or drag the glass to stir the wax; press Space to stir."></canvas>
+  </div>
+  <section class="panel" aria-label="Lamp controls">
+    <h1>Lava lamp</h1>
+    <div class="row">
+      <button id="power" type="button" aria-pressed="true">Lamp on</button>
+      <span id="pct" aria-hidden="true" style="color:var(--mute);font-size:13px">warm 60%</span>
+    </div>
+    <div>
+      <label for="heat">Bulb heat <span id="heatv">1.0</span></label>
+      <input id="heat" type="range" min="0.4" max="1.6" step="0.05" value="1">
+      <div class="meter" aria-hidden="true"><div id="bar"></div></div>
+    </div>
+    <div>
+      <label id="cl">Colourway</label>
+      <div class="sw" role="group" aria-labelledby="cl" id="sw"></div>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <p class="hint">Click or drag on the glass to heat and stir the wax. Space stirs from the keyboard.</p>
+  </section>
+</main>
+<script>
+(function(){
+"use strict";
+var cv=document.getElementById('lamp'), ctx=cv.getContext('2d');
+var DPR=Math.min(window.devicePixelRatio||1,2);
+cv.width=360*DPR; cv.height=720*DPR;
+var LW=360, LH=720;
+
+/* vessel box in logical coordinates */
+var OX=80, OY=100, VW=200, VH=430, CX=100;
+function hw(y){ var f=Math.max(0,Math.min(1,y/VH)); return 33+54*Math.pow(f,1.2); }
+
+var vesselPath=new Path2D();
+(function(){
+  var i,y,pts=[];
+  vesselPath.moveTo(OX+CX-hw(0),OY);
+  for(i=0;i<=40;i++){ y=VH*i/40-(i===40?14:0); vesselPath.lineTo(OX+CX-hw(y),OY+y); }
+  vesselPath.quadraticCurveTo(OX+CX-hw(VH)-2,OY+VH+4,OX+CX-hw(VH)+16,OY+VH+4);
+  vesselPath.lineTo(OX+CX+hw(VH)-16,OY+VH+4);
+  vesselPath.quadraticCurveTo(OX+CX+hw(VH)+2,OY+VH+4,OX+CX+hw(VH),OY+VH-14);
+  for(i=40;i>=0;i--){ y=VH*i/40-(i===40?14:0); vesselPath.lineTo(OX+CX+hw(y),OY+y); }
+  vesselPath.closePath();
+})();
+
+var SETS=[
+  {n:"Violet",sw:"#ff5a3a",liqT:[58,26,120],liqB:[120,52,200],waxLo:[214,40,40],waxHi:[255,150,70],glow:[255,170,60],wall:"rgba(140,70,230,.20)"},
+  {n:"Amber",sw:"#ffb02e",liqT:[90,40,10],liqB:[190,100,20],waxLo:[255,90,20],waxHi:[255,214,90],glow:[255,190,70],wall:"rgba(255,140,40,.18)"},
+  {n:"Teal",sw:"#25d6b5",liqT:[6,50,70],liqB:[10,120,140],waxLo:[40,200,160],waxHi:[200,255,220],glow:[80,240,200],wall:"rgba(30,200,190,.17)"},
+  {n:"Rose",sw:"#ff6fa6",liqT:[60,12,52],liqB:[150,30,110],waxLo:[255,60,130],waxHi:[255,200,150],glow:[255,120,160],wall:"rgba(255,70,140,.18)"}
+];
+var cur=0;
+
+/* state */
+var on=true, lamp=0.6, heat=1.0, stirCount=0, time=0;
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var blobs=[], pool=[];
+function rnd(a,b){return a+Math.random()*(b-a);}
+function mk(i){
+  var r=rnd(14,30), y=rnd(60,VH-40);
+  return {x:CX+rnd(-30,30),y:y,r:r,t:rnd(0.1,1.0),vy:0,vx:0,ph:rnd(0,6.28),k:rnd(0.8,1.25),cf:rnd(0.6,1.5)};
+}
+for(var i=0;i<8;i++) blobs.push(mk(i));
+blobs.push({x:CX,y:VH-30,r:30,t:0.4,vy:0,vx:0,ph:1,k:1,cf:1});
+[[-50,0],[0,2],[48,0],[-24,-10],[26,-9]].forEach(function(p){
+  pool.push({x:CX+p[0],y:VH-18+p[1],r:p[0]===0?26:20});
+});
+var topBalls=[{x:CX-12,y:-14,r:22},{x:CX+14,y:-16,r:18}];
+
+function step(dt){
+  var target=on?Math.min(1,0.55+0.45*heat*0.8):0;
+  var rate=on?1/45:1/30;
+  lamp+= (target-lamp)*Math.min(1,dt*rate*3);
+  if(Math.abs(target-lamp)<0.0008) lamp=target;
+  var tsc=reduce?0.5:1, H=VH, j,b,o;
+  dt*=tsc;
+  for(j=0;j<blobs.length;j++){
+    b=blobs[j]; var yf=b.y/H;
+    if(yf>0.8){ b.t+= (0.05*heat*lamp*(yf-0.7)*3.3 - 0.01)*dt; }
+    else { b.t-= (0.004+0.016*(1-yf)*(1-yf)+0.006*yf)*b.cf*dt; }
+    b.t+= (0.5-b.t)*0.0015*dt*(on?0:6);
+    b.t=Math.max(0,Math.min(1.2,b.t));
+    var want=(b.t-0.5)*-70*b.k/(0.55+b.r/40);     /* negative = up */
+    if(!on||lamp<0.3) want=Math.max(want,8);
+    b.vy+=(want-b.vy)*Math.min(1,dt*0.9);
+    b.y+=b.vy*dt;
+    b.vx+= (Math.sin(time*0.23+b.ph)*3 + (CX-b.x)*0.03 - b.vx)*Math.min(1,dt*0.5);
+    b.x+=b.vx*dt;
+    var floor=H-b.r*0.55, ceil=b.r*0.5+6;
+    if(b.y>floor){b.y=floor; b.vy*=0.2;}
+    if(b.y<ceil){b.y=ceil; b.vy*=0.2; b.t-=0.12*dt;}
+    var m=hw(b.y)-b.r*0.55; if(b.x<CX-m){b.x=CX-m;b.vx=Math.abs(b.vx)*0.3;} if(b.x>CX+m){b.x=CX+m;b.vx=-Math.abs(b.vx)*0.3;}
+    for(o=j+1;o<blobs.length;o++){
+      var c=blobs[o], dx=c.x-b.x, dy=c.y-b.y, d=Math.sqrt(dx*dx+dy*dy)+0.01, md=(b.r+c.r)*0.55;
+      if(d<md && b.y>H-70 && c.y>H-70){ var p=(md-d)*0.4; b.x-=dx/d*p*dt; c.x+=dx/d*p*dt; }
+      if(d<md*0.8){ /* blobs that touch share heat */ var a=(b.t+c.t)/2; b.t+=(a-b.t)*0.03*dt; c.t+=(a-c.t)*0.03*dt; }
+    }
+  }
+}
+
+function stir(lx,ly,power){
+  var n=0;
+  blobs.forEach(function(b){
+    var dx=b.x-lx, dy=b.y-ly, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<90+b.r){ var f=(1-d/(90+b.r))*power; b.t=Math.min(1.2,b.t+0.35*f); b.vx+=dx/(d+1)*40*f; b.vy+=-22*f+dy/(d+1)*10*f; n++; }
+  });
+  stirCount++; lastStir=time; lastN=n;
+  if(!on){ say("Lamp is off. Switch it on and the wax warms from the bottom."); }
+}
+var lastStir=-99,lastN=0;
+
+/* field rendering */
+var FW=150, FH=322, fc=document.createElement('canvas'); fc.width=FW; fc.height=FH;
+var fx=fc.getContext('2d'), img=fx.createImageData(FW,FH), data=img.data;
+var bx=new Float32Array(40),by=new Float32Array(40),br=new Float32Array(40),bt=new Float32Array(40);
+function field(){
+  var n=0,j,b,S=set();
+  function add(x,y,r,t){bx[n]=x;by[n]=y;br[n]=r*r;bt[n]=t;n++;}
+  for(j=0;j<blobs.length;j++){
+    b=blobs[j]; add(b.x,b.y,b.r,b.t);
+    var sp=Math.max(-1,Math.min(1,b.vy/-20)); /* up positive */
+    if(Math.abs(sp)>0.15){ add(b.x+Math.sin(time*0.5+b.ph)*3,b.y+sp*b.r*0.95,b.r*0.55,b.t); add(b.x,b.y+sp*b.r*1.7,b.r*0.3,b.t); }
+  }
+  var base=lamp*(on?1:0.6);
+  for(j=0;j<pool.length;j++) add(pool[j].x+Math.sin(time*0.2+j)*3,pool[j].y+Math.sin(time*0.31+j*2)*1.5,pool[j].r,0.5+base*0.2);
+  for(j=0;j<topBalls.length;j++) add(topBalls[j].x,topBalls[j].y,topBalls[j].r,0.3);
+  var sx=VW/FW, sy=VH/FH, px,py,k,idx=0,f,ddx,ddy,heatMix,t,al,hi,lo=S.waxLo,hh=S.waxHi;
+  for(py=0;py<FH;py++){
+    var y=(py+0.5)*sy;
+    for(px=0;px<FW;px++){
+      var x=(px+0.5)*sx; f=0; t=0;
+      for(k=0;k<n;k++){ ddx=x-bx[k]; ddy=y-by[k]; var d2=ddx*ddx+ddy*ddy+1; var v=br[k]/d2; v=v*v; f+=v; t+=v*bt[k]; }
+      if(f<0.3){ data[idx+3]=0; idx+=4; continue; }
+      al=(f-0.85)/0.3; al=al<0?0:al>1?1:al; al=al*al*(3-2*al);
+      var core=Math.min(1,(f-1)/2.5); t=t/f;
+      heatMix=Math.min(1,Math.max(0,core*0.5+ (t-0.3)*0.7 + (y/VH)*0.25));
+      data[idx]=lo[0]+(hh[0]-lo[0])*heatMix; data[idx+1]=lo[1]+(hh[1]-lo[1])*heatMix; data[idx+2]=lo[2]+(hh[2]-lo[2])*heatMix;
+      data[idx+3]=255*al; idx+=4;
+    }
+  }
+  fx.putImageData(img,0,0);
+}
+function set(){return SETS[cur];}
+function rgb(c,a){return "rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+(a==null?1:a)+")";}
+
+/* silver base */
+function basePath(p){
+  p.moveTo(CX+OX-96,524);
+  p.bezierCurveTo(CX+OX-96,560,CX+OX-38,585,CX+OX-38,606);
+  p.bezierCurveTo(CX+OX-38,632,CX+OX-104,650,CX+OX-104,688);
+  p.lineTo(CX+OX+104,688);
+  p.bezierCurveTo(CX+OX+104,650,CX+OX+38,632,CX+OX+38,606);
+  p.bezierCurveTo(CX+OX+38,585,CX+OX+96,560,CX+OX+96,524);
+  p.closePath();
+}
+var bp=new Path2D(); basePath(bp);
+
+function draw(){
+  var S=set(), warm=lamp, g;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,LW,LH);
+  /* floor glow */
+  g=ctx.createRadialGradient(180,690,10,180,690,170);
+  g.addColorStop(0,rgb(S.glow,0.28*warm)); g.addColorStop(1,rgb(S.glow,0));
+  ctx.fillStyle=g; ctx.fillRect(0,420,LW,300);
+
+  /* liquid */
+  ctx.save(); ctx.clip(vesselPath);
+  g=ctx.createLinearGradient(0,OY,0,OY+VH);
+  var dim=0.35+0.65*warm;
+  g.addColorStop(0,rgb(S.liqT.map(function(v){return v*(0.5+0.5*dim);}),0.96));
+  g.addColorStop(1,rgb(S.liqB.map(function(v){return v*dim;}),0.98));
+  ctx.fillStyle=g; ctx.fillRect(OX-10,OY,VW+20,VH+10);
+  /* wax */
+  field(); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  ctx.globalAlpha=0.55+0.45*Math.min(1,warm*1.2);
+  ctx.drawImage(fc,OX,OY,VW,VH); ctx.globalAlpha=1;
+  /* bulb light from below */
+  g=ctx.createRadialGradient(OX+CX,OY+VH+10,6,OX+CX,OY+VH+10,230);
+  g.addColorStop(0,rgb(S.glow,0.5*warm)); g.addColorStop(0.35,rgb(S.glow,0.14*warm)); g.addColorStop(1,rgb(S.glow,0));
+  ctx.globalCompositeOperation='lighter'; ctx.fillStyle=g; ctx.fillRect(OX-10,OY,VW+20,VH+10);
+  ctx.globalCompositeOperation='source-over';
+  /* side shading */
+  g=ctx.createLinearGradient(OX,0,OX+VW,0);
+  g.addColorStop(0,'rgba(0,0,0,.45)'); g.addColorStop(0.18,'rgba(0,0,0,0)'); g.addColorStop(0.8,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.5)');
+  ctx.fillStyle=g; ctx.fillRect(OX-10,OY,VW+20,VH+10);
+  ctx.restore();
+
+  /* glass highlights */
+  ctx.save(); ctx.clip(vesselPath);
+  g=ctx.createLinearGradient(0,OY,0,OY+VH);
+  g.addColorStop(0,'rgba(255,255,255,.0)'); g.addColorStop(.15,'rgba(255,255,255,.35)'); g.addColorStop(.85,'rgba(255,255,255,.12)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.strokeStyle=g; ctx.lineWidth=6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(OX+CX-hw(40)+14,OY+40); ctx.lineTo(OX+CX-hw(360)+16,OY+360); ctx.stroke();
+  ctx.lineWidth=2; ctx.globalAlpha=.5;
+  ctx.beginPath(); ctx.moveTo(OX+CX+hw(60)-10,OY+60); ctx.lineTo(OX+CX+hw(330)-12,OY+330); ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle='rgba(220,210,255,.35)'; ctx.lineWidth=1.5; ctx.stroke(vesselPath);
+
+  /* base */
+  ctx.save();
+  g=ctx.createLinearGradient(OX+CX-104,0,OX+CX+104,0);
+  g.addColorStop(0,'#5d6070'); g.addColorStop(.18,'#e8ebf2'); g.addColorStop(.32,'#9aa0b0'); g.addColorStop(.55,'#f6f8ff'); g.addColorStop(.8,'#7b8092'); g.addColorStop(1,'#3d4050');
+  ctx.fillStyle=g; ctx.fill(bp);
+  ctx.clip(bp);
+  /* lit by the bulb: glow on the upper rim and warm reflection */
+  g=ctx.createRadialGradient(OX+CX,524,4,OX+CX,524,120);
+  g.addColorStop(0,rgb(S.glow,0.8*warm)); g.addColorStop(1,rgb(S.glow,0));
+  ctx.fillStyle=g; ctx.fillRect(OX,500,VW,200);
+  /* waist reflection band */
+  g=ctx.createLinearGradient(0,590,0,630);
+  g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(.5,'rgba(255,255,255,.35)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=g; ctx.fillRect(OX,590,VW,40);
+  g=ctx.createLinearGradient(0,640,0,690); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.4)');
+  ctx.fillStyle=g; ctx.fillRect(OX,640,VW,50);
+  ctx.restore();
+  ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=1; ctx.stroke(bp);
+  /* base collar under vessel */
+  ctx.fillStyle='#b9bfce'; ctx.beginPath(); ctx.ellipse(OX+CX,525,96,7,0,0,6.283); ctx.fill();
+  ctx.fillStyle=rgb(S.glow,0.35+0.4*warm); ctx.beginPath(); ctx.ellipse(OX+CX,524,84,4.5,0,0,6.283); ctx.fill();
+
+  /* cap */
+  ctx.save();
+  var cp=new Path2D();
+  cp.moveTo(OX+CX-38,106); cp.lineTo(OX+CX-30,86); cp.bezierCurveTo(OX+CX-26,64,OX+CX-10,52,OX+CX,50);
+  cp.bezierCurveTo(OX+CX+10,52,OX+CX+26,64,OX+CX+30,86); cp.lineTo(OX+CX+38,106); cp.closePath();
+  g=ctx.createLinearGradient(OX+CX-38,0,OX+CX+38,0);
+  g.addColorStop(0,'#555968'); g.addColorStop(.25,'#f2f4fb'); g.addColorStop(.5,'#9aa0b0'); g.addColorStop(.75,'#e1e4ee'); g.addColorStop(1,'#464a58');
+  ctx.fillStyle=g; ctx.fill(cp);
+  ctx.strokeStyle='rgba(255,255,255,.3)'; ctx.stroke(cp);
+  ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(OX+CX,106,40,5,0,0,6.283); ctx.fill();
+  /* liquid tint reflected on the cap */
+  ctx.globalAlpha=0.18; ctx.fillStyle=rgb(S.liqB,1); ctx.fillRect(OX+CX-40,90,80,18);
+  ctx.restore();
+
+  /* stir ripple */
+  var age=time-lastStir;
+  if(age<1.2 && lastRip){
+    ctx.strokeStyle=rgb(S.glow,0.6*(1-age/1.2)); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(lastRip.x,lastRip.y,10+age*70,0,6.283); ctx.stroke();
+  }
+}
+var lastRip=null;
+
+/* ui */
+var $=function(i){return document.getElementById(i);};
+var sw=$('sw');
+SETS.forEach(function(s,i){
+  var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-pressed',i===0?'true':'false');
+  b.innerHTML='<i style="background:'+s.sw+'"></i>'+s.n;
+  b.addEventListener('click',function(){ cur=i; [].forEach.call(sw.children,function(c,k){c.setAttribute('aria-pressed',k===i?'true':'false');});
+    document.documentElement.style.setProperty('--wall',s.wall); say("Colourway: <b>"+s.n+"</b>."); });
+  sw.appendChild(b);
+});
+document.documentElement.style.setProperty('--wall',SETS[0].wall);
+$('power').addEventListener('click',function(){
+  on=!on; this.setAttribute('aria-pressed',on?'true':'false'); this.textContent=on?'Lamp on':'Lamp off';
+  say(on?"Bulb on. The wax <b>warms up</b> and starts to climb.":"Bulb off. The wax <b>cools</b> and settles at the bottom.");
+});
+$('heat').addEventListener('input',function(){ heat=parseFloat(this.value); $('heatv').textContent=heat.toFixed(2).replace(/0$/,''); say("Bulb heat <b>"+heat.toFixed(2)+"</b>: "+(heat>1.2?"faster, livelier wax.":heat<0.8?"slower, lazier wax.":"classic pace.")); });
+var msg="";
+function say(h){ msg=h; $('status').innerHTML=h; msgAt=time; }
+var msgAt=0;
+function summary(){
+  var up=0,down=0; blobs.forEach(function(b){ if(b.vy<-2)up++; else if(b.vy>2)down++; });
+  var state=!on&&lamp<0.1?"cold":lamp<0.5?(on?"warming":"cooling"):"hot";
+  $('pct').textContent=(on?"warm ":"cooling ")+Math.round(lamp*100)+"%";
+  $('bar').style.width=Math.round(lamp*100)+"%";
+  if(time-msgAt>6){ $('status').innerHTML="Lamp is <b>"+state+"</b>: "+up+" blob"+(up===1?"":"s")+" rising, "+down+" sinking."+(stirCount?" Stirred "+stirCount+"x.":""); }
+}
+
+function toLocal(e){
+  var r=cv.getBoundingClientRect();
+  return {x:(e.clientX-r.left)/r.width*LW-OX, y:(e.clientY-r.top)/r.height*LH-OY, gx:(e.clientX-r.left)/r.width*LW, gy:(e.clientY-r.top)/r.height*LH};
+}
+var down=false, lastP=null;
+cv.addEventListener('pointerdown',function(e){
+  var p=toLocal(e); down=true; lastP=p; try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  lastRip={x:p.gx,y:p.gy}; stir(p.x,p.y,1);
+  say("Stirred the wax: <b>"+lastN+"</b> blob"+(lastN===1?"":"s")+" heated and pushed.");
+});
+cv.addEventListener('pointermove',function(e){
+  if(!down) return; var p=toLocal(e);
+  if(Math.hypot(p.x-lastP.x,p.y-lastP.y)>14){ stir(p.x,p.y,0.5); lastRip={x:p.gx,y:p.gy}; lastP=p; }
+});
+function up(){down=false;}
+cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+cv.addEventListener('keydown',function(e){
+  if(e.key===' '||e.key==='Enter'){ e.preventDefault(); var y=VH*0.55; lastRip={x:OX+CX,y:OY+y}; stir(CX,y+60,1.4); say("Stirred the wax: <b>"+lastN+"</b> blob"+(lastN===1?"":"s")+" heated and pushed."); }
+});
+
+var last=performance.now();
+function frame(now){
+  var dt=Math.min(0.05,(now-last)/1000); last=now; time+=dt;
+  step(dt); draw(); summary();
+  requestAnimationFrame(frame);
+}
+/* pre-roll so the lamp is mid-cycle on load */
+for(var i=0;i<1500;i++){ time+=0.1; step(0.1); }
+say("Lamp is <b>on</b>. Click the glass to stir.");
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

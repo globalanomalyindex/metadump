@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 8, "note": "Classic tapered glass with chrome cap and hourglass base, wax stretches and merges convincingly and the heat/cooling interaction works."},
+"V": {"likeness": 8, "visuals": 8, "motion": 5, "presentation": 8, "overall": 7, "note": "Gorgeous warm glow and glass, but the wax quickly collapses into a pool and a cap-clump with very few blobs travelling."},
+"W": {"likeness": 5, "visuals": 3, "motion": 3, "presentation": 5, "overall": 4, "note": "Pixelated blocky wax edges, murky dark glass and one big lump that barely moves make it the weakest."},
+"X": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 8, "overall": 8, "note": "Amber liquid with red wax blobs, brass base with a switch and good glow, blobs drift and merge organically."},
+"Y": {"likeness": 6, "visuals": 5, "motion": 6, "presentation": 6, "overall": 6, "note": "Readable lava lamp with glowing magma blobs, but the vessel is plain and the base flat."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 7, "note": "Elegant purple lamp with fluted base and strong lighting, though the pink blobs are uniformly soft circles and the controls are tiny."}
+}, "ranking": ["U", "X", "Z", "V", "Y", "W"]}

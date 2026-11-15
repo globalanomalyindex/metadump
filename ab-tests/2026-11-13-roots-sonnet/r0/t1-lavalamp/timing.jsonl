@@ -1,0 +1,4 @@
+{"run": "R-r1", "tokens": 85433, "ms": 99568, "tool_uses": 5}
+{"run": "R-r4", "tokens": 87241, "ms": 122105, "tool_uses": 10}
+{"run": "R-r2", "tokens": 90063, "ms": 143560, "tool_uses": 8}
+{"run": "R-r3", "tokens": 99751, "ms": 218959, "tool_uses": 7}

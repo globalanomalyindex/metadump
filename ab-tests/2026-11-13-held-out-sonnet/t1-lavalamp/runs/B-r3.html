@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+:root{
+  --h:32;            /* wax hue, set from JS */
+  --glow:1;          /* bulb brightness 0..1, set from JS */
+  --ink:#f3dcc0;
+  --muted:#b79672;
+  --panel:rgba(20,10,6,.62);
+  --line:rgba(255,200,140,.18);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(ellipse 55% 48% at 50% 62%,
+      hsla(var(--h),95%,46%,calc(.50*var(--glow))) 0%,
+      hsla(calc(var(--h) - 6),90%,30%,calc(.28*var(--glow))) 38%,
+      transparent 72%),
+    linear-gradient(180deg,hsl(var(--h),38%,6%) 0%,hsl(calc(var(--h) - 8),42%,4%) 100%);
+  color:var(--ink);
+  font:15px/1.4 ui-rounded,"Avenir Next","Segoe UI",system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;overflow-x:hidden;
+  transition:background .6s;
+}
+header{padding:18px 16px 0;text-align:center}
+h1{margin:0;font-weight:600;font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+.stage{width:min(92vw,520px);flex:1 1 auto;display:flex;align-items:center;justify-content:center;min-height:0;padding:6px 0}
+canvas{width:100%;height:auto;max-height:calc(100vh - 190px);aspect-ratio:600/760;cursor:pointer;touch-action:manipulation;display:block;object-fit:contain}
+.panel{
+  width:min(94vw,560px);margin:0 auto 14px;padding:10px 12px;
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  backdrop-filter:blur(6px);
+  display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;
+}
+button{
+  font:inherit;color:var(--ink);background:rgba(255,190,120,.10);border:1px solid var(--line);
+  border-radius:999px;padding:9px 16px;min-height:44px;cursor:pointer;
+  transition:background .2s,transform .15s,border-color .2s;
+}
+button:hover{background:rgba(255,190,120,.2)}
+button:active{transform:scale(.96)}
+button:focus-visible,input:focus-visible{outline:2px solid hsl(var(--h),100%,65%);outline-offset:2px}
+button[aria-pressed="true"]{background:hsla(var(--h),90%,50%,.35);border-color:hsla(var(--h),100%,65%,.7)}
+.sw{display:flex;gap:8px;align-items:center}
+.chip{width:44px;height:44px;padding:0;border-radius:50%;position:relative;border:2px solid transparent}
+.chip::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+.chip[aria-checked="true"]{border-color:var(--ink)}
+label.heat{display:flex;align-items:center;gap:8px;color:var(--muted)}
+input[type=range]{width:120px;accent-color:hsl(var(--h),90%,55%);height:44px}
+.status{width:100%;text-align:center;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+@media (max-width:420px){ input[type=range]{width:96px} button{padding:9px 12px} }
+</style>
+</head>
+<body>
+<header><h1>Lava Lamp</h1></header>
+<div class="stage"><canvas id="c" width="600" height="760" role="img" aria-label="A lava lamp: warm wax blobs rising and sinking in glass. Click or tap the glass to stir the wax."></canvas></div>
+
+<div class="panel" role="group" aria-label="Lamp controls">
+  <button id="power" aria-pressed="true">Bulb: on</button>
+  <button id="stir">Stir the wax</button>
+  <label class="heat">Heat <input id="heat" type="range" min="0" max="100" value="60" aria-label="Heat"></label>
+  <div class="sw" role="radiogroup" aria-label="Wax colour">
+    <button class="chip" role="radio" aria-checked="true"  data-h="32"  data-name="amber"  style="--c:hsl(32,95%,52%)"  aria-label="Amber"></button>
+    <button class="chip" role="radio" aria-checked="false" data-h="352" data-name="ruby"   style="--c:hsl(352,85%,52%)" aria-label="Ruby"></button>
+    <button class="chip" role="radio" aria-checked="false" data-h="278" data-name="violet" style="--c:hsl(278,80%,62%)" aria-label="Violet"></button>
+    <button class="chip" role="radio" aria-checked="false" data-h="172" data-name="teal"   style="--c:hsl(172,80%,45%)" aria-label="Teal"></button>
+  </div>
+  <div class="status" id="status" aria-live="polite"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var cv=document.getElementById('c'), ctx=cv.getContext('2d');
+var W=600,H=760;
+var dpr=Math.min(window.devicePixelRatio||1,2);
+cv.width=W*dpr; cv.height=H*dpr;
+
+/* ---- geometry: a squat, round-shouldered vessel on a waisted base ---- */
+var CX=300, TOP=236, BOT=560, VH=BOT-TOP;
+function halfW(y){
+  var t=(y-TOP)/VH; if(t<0)t=0; if(t>1)t=1;
+  var s=Math.min(1,t*1.25+0.08);
+  return 84+70*Math.sin(s*Math.PI/2) - 6*t*t;   // round shoulder, nearly straight lower sides
+}
+var vesselPath=new Path2D();
+(function(){
+  var i,y;
+  vesselPath.moveTo(CX-halfW(TOP),TOP);
+  for(i=0;i<=40;i++){y=TOP+VH*i/40; vesselPath.lineTo(CX-halfW(y),y);}
+  for(i=40;i>=0;i--){y=TOP+VH*i/40; vesselPath.lineTo(CX+halfW(y),y);}
+  vesselPath.closePath();
+})();
+
+/* ---- state ---- */
+var state={on:true,heat:.6,hue:32,glow:0,bulbTemp:1,hueNow:32};
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var TS=reduce?0.4:1;
+
+function rnd(a,b){return a+Math.random()*(b-a);}
+var blobs=[];
+(function(){
+  var radii=[44,32,26,38,20,29,15];
+  for(var i=0;i<radii.length;i++){
+    var r=radii[i];
+    var warm=i<4? rnd(.55,.9) : rnd(.1,.35);
+    var y= i<4? rnd(250,430) : rnd(480,520);
+    blobs.push({x:CX+rnd(-40,40),y:y,vx:0,vy:0,r:r,T:warm,ph:rnd(0,6.28),k:rnd(.8,1.25)});
+  }
+})();
+/* the pool: wax lying on the floor of the vessel */
+var pool=[]; for(var px=-130;px<=130;px+=36){pool.push({x:CX+px,y:BOT-8-(Math.abs(px)>100?6:0),r:30+rnd(-3,5)});}
+
+/* ---- wax field on a coarse grid, then smoothed up ---- */
+var GX0=CX-170,GX1=CX+170,GW=170,GH=Math.round(GW*VH/(GX1-GX0));
+var off=document.createElement('canvas'); off.width=GW; off.height=GH;
+var octx=off.getContext('2d'), img=octx.createImageData(GW,GH), px32=img.data;
+var cellX=(GX1-GX0)/GW, cellY=VH/GH;
+
+function hsl(h,s,l,a){return 'hsla('+h+','+s+'%,'+l+'%,'+(a==null?1:a)+')';}
+function hsl2rgb(h,s,l){
+  s/=100;l/=100;var k=function(n){return (n+h/30)%12;},a=s*Math.min(l,1-l);
+  var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));};
+  return [f(0)*255,f(8)*255,f(4)*255];
+}
+
+function stepSim(dt){
+  var heatOn=state.on?state.heat:0;
+  state.bulbTemp+=((state.on?1:0)-state.bulbTemp)*Math.min(1,dt*(state.on?0.5:0.25));
+  var hp=heatOn*state.bulbTemp;
+  var i,j,b;
+  for(i=0;i<blobs.length;i++){
+    b=blobs[i];
+    var d=(b.y-TOP)/VH;                          // 0 top .. 1 floor
+    var low=Math.max(0,(d-0.62)/0.38);           // near the bulb
+    var size=26/Math.max(14,b.r);
+    b.T+= (hp*low*0.55*size*b.k - (0.05+0.22*(1-d))*(0.5+0.5*b.k)*0.6 - 0.02*(b.T-0.3)) *dt;
+    if(b.T>1)b.T=1; if(b.T<0)b.T=0;
+    var buoy=(b.T-0.5)*88*(0.8+hp*0.4);
+    b.vy+=(buoy-b.vy*1.5)*dt;
+    // sideways drift, slow wander, plus gentle push from neighbours
+    b.ph+=dt*0.25*b.k;
+    var ax=Math.sin(b.ph*1.7+i)*7 + Math.cos(b.ph*0.9+i*2)*4;
+    for(j=0;j<blobs.length;j++){ if(j===i)continue;
+      var o=blobs[j],dx=b.x-o.x,dy=b.y-o.y,dd=Math.sqrt(dx*dx+dy*dy)+.01,min=(b.r+o.r)*0.9;
+      if(dd<min){ax+=dx/dd*(min-dd)*0.35;}
+    }
+    b.vx+=(ax-b.vx*1.6)*dt;
+    b.x+=b.vx*dt*TS*2.2*0+b.vx*dt; b.y+=b.vy*dt;
+    // walls
+    var hw=halfW(b.y)-b.r*0.75-6, dxc=b.x-CX;
+    if(dxc>hw){b.x=CX+hw; b.vx*=-.2;} if(dxc<-hw){b.x=CX-hw; b.vx*=-.2;}
+    // top: a short hold, then the wax is cool and turns
+    var ymin=TOP+b.r*1.0+16, ymax=BOT-b.r*0.62-4;
+    if(b.y<ymin){b.y=ymin; b.vy*=0.2; b.T-=dt*0.35;}
+    if(b.y>ymax){b.y=ymax; b.vy*=0.1;}
+  }
+  return hp;
+}
+
+var simAccum=0;
+function stir(px,py){
+  // px,py in canvas coords or undefined for a general stir
+  for(var i=0;i<blobs.length;i++){
+    var b=blobs[i], dx=b.x-(px==null?b.x:px), dy=b.y-(py==null?b.y:py);
+    var dist=Math.sqrt(dx*dx+dy*dy), w=px==null?1:Math.max(0,1-dist/220);
+    b.vx+=rnd(-1,1)*60*w; b.vy+=rnd(-1,.2)*50*w;
+    b.T=Math.min(1,b.T+0.35*w);
+  }
+  stirPulse=1;
+}
+var stirPulse=0;
+
+/* ---- drawing ---- */
+function render(t){
+  var hue=state.hueNow, g=state.glow;
+  var wax=hsl2rgb(hue,98,56), waxHot=hsl2rgb(hue+10,100,72), waxEdge=hsl2rgb(hue-10,92,38);
+  var x,y,i,k;
+  // build wax field
+  for(y=0;y<GH;y++){
+    var wy=TOP+(y+.5)*cellY, dn=(wy-TOP)/VH;
+    for(x=0;x<GW;x++){
+      var wx=GX0+(x+.5)*cellX, f=0;
+      for(i=0;i<blobs.length;i++){var b=blobs[i],dx=wx-b.x,dy=wy-b.y;f+=b.r*b.r/(dx*dx+dy*dy+1);}
+      for(i=0;i<pool.length;i++){var p=pool[i],ex=wx-p.x,ey=wy-p.y;f+=p.r*p.r/(ex*ex+ey*ey+1);}
+      var a=(f-0.93)/0.16; a=a<0?0:a>1?1:a*a*(3-2*a);
+      var o=(y*GW+x)*4;
+      if(a<=0){px32[o+3]=0;continue;}
+      var thick=Math.min(1,(f-1)/1.8);
+      var light=0.38+0.42*dn*dn*g+ 0.12*thick;        // lit from the bulb below
+      var m=Math.min(1,light);
+      var cr,cg,cb;
+      if(m<.6){var q=m/.6;cr=waxEdge[0]+(wax[0]-waxEdge[0])*q;cg=waxEdge[1]+(wax[1]-waxEdge[1])*q;cb=waxEdge[2]+(wax[2]-waxEdge[2])*q;}
+      else{var q2=(m-.6)/.4;cr=wax[0]+(waxHot[0]-wax[0])*q2;cg=wax[1]+(waxHot[1]-wax[1])*q2;cb=wax[2]+(waxHot[2]-wax[2])*q2;}
+      var dim=0.35+0.65*g;
+      px32[o]=cr*dim;px32[o+1]=cg*dim;px32[o+2]=cb*dim;px32[o+3]=a*255;
+    }
+  }
+  octx.putImageData(img,0,0);
+
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  // light pooled on the surface under the lamp
+  var floorG=ctx.createRadialGradient(CX,704,10,CX,704,230);
+  floorG.addColorStop(0,hsl(hue,95,52,.55*g)); floorG.addColorStop(1,hsl(hue,90,30,0));
+  ctx.fillStyle=floorG; ctx.beginPath(); ctx.ellipse(CX,706,230,36,0,0,7); ctx.fill();
+  ctx.fillStyle='rgba(8,4,2,.55)'; ctx.beginPath(); ctx.ellipse(CX,704,120,13,0,0,7); ctx.fill();
+
+  // base (waisted, brushed brass-dark)
+  var bg=ctx.createLinearGradient(CX-135,0,CX+135,0);
+  bg.addColorStop(0,'#1a0f0a');bg.addColorStop(.18,'#5b3d27');bg.addColorStop(.32,'#a97b4e');bg.addColorStop(.42,'#4a2f1d');bg.addColorStop(.75,'#2a1810');bg.addColorStop(1,'#120a06');
+  ctx.fillStyle=bg;
+  ctx.beginPath();
+  ctx.moveTo(CX-150,BOT-2); ctx.lineTo(CX+150,BOT-2);
+  ctx.bezierCurveTo(CX+150,BOT+34,CX+66,BOT+50,CX+62,BOT+78);
+  ctx.bezierCurveTo(CX+60,BOT+104,CX+100,BOT+118,CX+134,BOT+142);
+  ctx.lineTo(CX+134,BOT+150); ctx.lineTo(CX-134,BOT+150); ctx.lineTo(CX-134,BOT+142);
+  ctx.bezierCurveTo(CX-100,BOT+118,CX-60,BOT+104,CX-62,BOT+78);
+  ctx.bezierCurveTo(CX-66,BOT+50,CX-150,BOT+34,CX-150,BOT-2);
+  ctx.closePath(); ctx.fill();
+  // base: bulb light leaking through a ring slot
+  var slot=ctx.createLinearGradient(0,BOT+4,0,BOT+22);
+  slot.addColorStop(0,hsl(hue,100,70,.9*g)); slot.addColorStop(1,hsl(hue,100,50,0));
+  ctx.fillStyle=slot; ctx.fillRect(CX-148,BOT-2,296,22);
+
+  // liquid + wax clipped to the vessel
+  ctx.save(); ctx.clip(vesselPath);
+  var liq=ctx.createLinearGradient(0,TOP,0,BOT);
+  liq.addColorStop(0,hsl(hue-4,70,4+6*g)); liq.addColorStop(.55,hsl(hue,78,6+10*g)); liq.addColorStop(1,hsl(hue+4,90,10+16*g));
+  ctx.fillStyle=liq; ctx.fillRect(0,TOP-4,W,VH+8);
+  // bulb glow rising from under the base through the liquid
+  var gl=ctx.createRadialGradient(CX,BOT+20,10,CX,BOT+20,330);
+  gl.addColorStop(0,hsl(hue+6,100,60,.6*g)); gl.addColorStop(.35,hsl(hue,100,45,.2*g)); gl.addColorStop(1,hsl(hue,100,40,0));
+  ctx.fillStyle=gl; ctx.fillRect(0,TOP-4,W,VH+8);
+  // wax
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  ctx.filter='blur(0.8px)';
+  ctx.drawImage(off,0,0,GW,GH,GX0,TOP,GX1-GX0,VH);
+  ctx.filter='none';
+  // wax glows a touch near the bottom (bulb hits it)
+  ctx.globalCompositeOperation='screen';
+  var wg=ctx.createLinearGradient(0,BOT-120,0,BOT);
+  wg.addColorStop(0,hsl(hue,100,50,0)); wg.addColorStop(1,hsl(hue,100,55,.22*g));
+  ctx.fillStyle=wg; ctx.fillRect(0,BOT-120,W,120);
+  ctx.globalCompositeOperation='source-over';
+  // glass: side shading
+  var sh=ctx.createLinearGradient(CX-165,0,CX+165,0);
+  sh.addColorStop(0,'rgba(0,0,0,.55)');sh.addColorStop(.12,'rgba(0,0,0,0)');sh.addColorStop(.88,'rgba(0,0,0,0)');sh.addColorStop(1,'rgba(0,0,0,.6)');
+  ctx.fillStyle=sh; ctx.fillRect(CX-170,TOP,340,VH);
+  ctx.restore();
+
+  // glass highlights and rim
+  ctx.save(); ctx.clip(vesselPath);
+  var hl=ctx.createLinearGradient(CX-125,0,CX-85,0);
+  hl.addColorStop(0,'rgba(255,240,220,0)');hl.addColorStop(.5,'rgba(255,240,220,.26)');hl.addColorStop(1,'rgba(255,240,220,0)');
+  ctx.fillStyle=hl; ctx.beginPath();
+  ctx.moveTo(CX-100,TOP+24);ctx.quadraticCurveTo(CX-128,TOP+150,CX-118,BOT-60);ctx.lineTo(CX-96,BOT-70);ctx.quadraticCurveTo(CX-100,TOP+150,CX-78,TOP+36);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(255,235,210,.12)'; ctx.fillRect(CX+98,TOP+60,5,VH-120);
+  ctx.restore();
+  ctx.lineWidth=2.2; ctx.strokeStyle='rgba(255,225,190,.28)'; ctx.stroke(vesselPath);
+
+  // cap: a rounded dome tapering into the glass
+  var cg2=ctx.createLinearGradient(CX-90,0,CX+90,0);
+  cg2.addColorStop(0,'#1a0f0a');cg2.addColorStop(.25,'#b88652');cg2.addColorStop(.4,'#6b4528');cg2.addColorStop(.8,'#2b1a10');cg2.addColorStop(1,'#120a06');
+  ctx.fillStyle=cg2;
+  ctx.beginPath();
+  ctx.moveTo(CX-halfW(TOP)-2,TOP+2);
+  ctx.bezierCurveTo(CX-halfW(TOP),TOP-30,CX-50,TOP-44,CX-30,TOP-48);
+  ctx.lineTo(CX+30,TOP-48);
+  ctx.bezierCurveTo(CX+50,TOP-44,CX+halfW(TOP),TOP-30,CX+halfW(TOP)+2,TOP+2);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(255,230,200,.18)';
+  ctx.beginPath(); ctx.ellipse(CX-40,TOP-24,8,16,-.7,0,7); ctx.fill();
+  // warm underside of the cap lit by the wax glow
+  var cu=ctx.createLinearGradient(0,TOP-4,0,TOP+10);
+  cu.addColorStop(0,'rgba(0,0,0,0)'); cu.addColorStop(1,hsl(hue,100,55,.28*g));
+  ctx.fillStyle=cu; ctx.fillRect(CX-halfW(TOP),TOP-4,2*halfW(TOP),14);
+
+  // stir ripple
+  if(stirPulse>0.01){
+    ctx.strokeStyle=hsl(hue,100,75,stirPulse*.5); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(CX,(TOP+BOT)/2,halfW((TOP+BOT)/2)*(1.05-stirPulse*.08),VH/2*(1.02-stirPulse*.03),0,0,7); ctx.stroke();
+  }
+}
+
+/* ---- UI wiring ---- */
+var elPower=document.getElementById('power'), elStir=document.getElementById('stir'),
+    elHeat=document.getElementById('heat'), elStatus=document.getElementById('status');
+var chips=[].slice.call(document.querySelectorAll('.chip'));
+var root=document.documentElement;
+
+elPower.addEventListener('click',function(){
+  state.on=!state.on;
+  elPower.setAttribute('aria-pressed',state.on);
+  elPower.textContent='Bulb: '+(state.on?'on':'off');
+  updateStatus();
+});
+elStir.addEventListener('click',function(){stir();updateStatus();});
+elHeat.addEventListener('input',function(){state.heat=elHeat.value/100;updateStatus();});
+chips.forEach(function(c){
+  c.addEventListener('click',function(){
+    state.hue=+c.dataset.h; state.name=c.dataset.name;
+    chips.forEach(function(o){o.setAttribute('aria-checked',o===c);});
+    updateStatus();
+  });
+});
+cv.addEventListener('pointerdown',function(e){
+  var r=cv.getBoundingClientRect();
+  var px=(e.clientX-r.left)/r.width*W, py=(e.clientY-r.top)/r.height*H;
+  stir(px,py); updateStatus();
+});
+cv.tabIndex=0;
+cv.addEventListener('keydown',function(e){ if(e.key===' '||e.key==='Enter'){e.preventDefault();stir();updateStatus();} });
+
+var colourName='amber';
+function updateStatus(){
+  var aloft=0,warm=0,i;
+  for(i=0;i<blobs.length;i++){ if(blobs[i].y<TOP+VH*0.7)aloft++; warm+=blobs[i].T; }
+  var nm=(state.name||'amber');
+  elStatus.textContent=(state.on?'Bulb on':'Bulb off, cooling')+' · heat '+Math.round(state.heat*100)+'% · '+nm+' wax · '+aloft+' of '+blobs.length+' blobs aloft · wax '+Math.round(warm/blobs.length*100)+'% warm';
+}
+
+/* ---- loop ---- */
+var last=performance.now(), statAcc=0;
+function frame(now){
+  var dt=Math.min(.05,(now-last)/1000); last=now;
+  dt*=TS;
+  // fine-step the sim for stability
+  stepSim(dt);
+  // glow follows bulb temperature (a filament-like fade)
+  var targetG=state.on?(0.35+0.65*state.bulbTemp)*(0.55+0.45*state.heat+0.05):state.bulbTemp*0.5;
+  state.glow+=(targetG-state.glow)*Math.min(1,dt*3);
+  state.glow=Math.max(0,Math.min(1,state.glow));
+  var dh=state.hue-state.hueNow; if(dh>180)dh-=360; if(dh<-180)dh+=360;
+  state.hueNow+=dh*Math.min(1,dt*3.5); if(state.hueNow<0)state.hueNow+=360; if(state.hueNow>=360)state.hueNow-=360;
+  stirPulse*=Math.pow(.02,dt);
+  root.style.setProperty('--h',state.hueNow.toFixed(1));
+  root.style.setProperty('--glow',(state.glow).toFixed(3));
+  render(now/1000);
+  statAcc+=dt; if(statAcc>.5){statAcc=0;updateStatus();}
+  requestAnimationFrame(frame);
+}
+// let the first seconds already show a warmed lamp
+for(var w=0;w<260;w++){state.glow=1;stepSim(1/30);}
+state.glow=0.9; updateStatus();
+requestAnimationFrame(function(n){last=n;frame(n);});
+})();
+</script>
+</body>
+</html>

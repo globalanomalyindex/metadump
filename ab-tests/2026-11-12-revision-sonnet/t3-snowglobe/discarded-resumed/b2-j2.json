@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 6, "overall": 7, "note": "Big glassy dome with a convincing cabin and fine falling snow, but the skewed black base looks odd and the controls crowd off the bottom."},
+"V": {"likeness": 7, "visuals": 5, "motion": 4, "presentation": 6, "overall": 5, "note": "Clean flat daytime globe on a brown base, but the glass is thin and the snow just clusters near the top."},
+"W": {"likeness": 8, "visuals": 7, "motion": 6, "presentation": 7, "overall": 7, "note": "Charming shelf-room staging and a tilting globe, though the glass is pale and the snow is sparse."},
+"X": {"likeness": 8, "visuals": 8, "motion": 5, "presentation": 8, "overall": 7, "note": "Moody night cabin with moon, smoke and window glow is nicely drawn, but little snow is visible and the base is plain."},
+"Y": {"likeness": 7, "visuals": 6, "motion": 5, "presentation": 6, "overall": 6, "note": "Blue glass and brass collar read well, but the chunky flakes bunch into clumps and the highlights are odd."},
+"Z": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 7, "overall": 9, "note": "Most convincing glass, brass collar and wooden base, with warm cabin and fine flakes that swirl and settle believably; control panel is a bit heavy."}
+}, "ranking": ["Z", "U", "X", "W", "Y", "V"]}

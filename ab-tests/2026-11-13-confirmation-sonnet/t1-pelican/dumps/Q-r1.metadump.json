@@ -1,0 +1,30 @@
+{
+  "request": "an SVG animation of a pelican riding a bike",
+  "thesis": "A pelican is all beak and pouch and a bike is all circles; the joke and the charm are the pelican's wrong-shaped body doing a bike's job, with legs that pedal and a pouch that bounces.",
+  "job": ["open the page and see a pelican on a bike already moving", "watch the wheels spin, legs pedal, pouch bounce, scenery scroll", "play or pause", "change speed", "see it keep going without running down", "view on phone or desktop"],
+  "disciplines": {
+    "SVG illustration": {"principles": ["silhouette reads first", "few bold shapes", "layered z-order", "consistent outline weight"], "steps": ["block big shapes", "add limbs and bike", "add detail and shading", "group by moving part"], "tricks": ["group with transform-origin set in fill-box so rotation pivots right", "use stroke-linecap round", "spokes as rotated lines in one group"], "tests": ["squint: is it a pelican on a bike", "each moving part has its own pivot"]},
+    "character animation": {"principles": ["squash and stretch", "follow-through", "overlap", "secondary motion", "cycles loop seamlessly"], "steps": ["define one pedal cycle", "drive everything from one phase", "offset body bob at twice pedal rate"], "tricks": ["compute leg IK in JS from crank angle so feet stay on pedals", "head and pouch lag the body by a few ms", "bob at 2x cadence"], "tests": ["loop has no pop", "feet stay on pedals"]},
+    "front-end code": {"principles": ["single rAF loop", "state in one object", "controls update state visibly"], "steps": [], "tricks": ["pause via flag not removing loop", "prefers-reduced-motion respect"], "tests": ["click pause: motion stops", "slider changes speed"]}
+  },
+  "the_thing": {
+    "parts": ["pelican body", "long bill", "throat pouch", "small eye", "wing arm on handlebar", "webbed feet on pedals", "legs", "frame", "two wheels with spokes", "crank and chain ring", "saddle", "handlebar", "ground", "scenery"],
+    "expectations": ["clearly a pelican not a duck", "bike is rideable", "wheels spin", "pedals turn", "loops forever"],
+    "kinds": [{"name": "side-view cartoon pelican on a road bike, scrolling countryside", "what": "classic"}, {"name": "penny-farthing pelican", "what": "huge front wheel"}, {"name": "pelican on beach cruiser at sunset", "what": "mood variant"}, {"name": "line-art single-stroke pelican", "what": "minimal"}]
+  },
+  "specifics": {
+    "pelican": {"keywords": {"1": ["pelican", "bike", "riding", "animation", "SVG"], "2": ["huge bill", "throat pouch", "white body", "webbed feet", "pedalling"], "3": ["gular pouch", "hooked bill nail", "cream crest", "wing as handlebar arm"]}, "descriptions": ["bill is about as long as the head plus neck", "pouch sags and swings under the bill", "body leans forward on the saddle"], "behaviors": ["pedalling bobs the body", "bumps jiggle pouch"], "tokens": {"bill length": "90 to 130 px at 600px scene", "body white": "#f7f4ec to #fff", "bill orange": "#f4a52a to #f08a24", "pouch": "#f6c26b to #f2b45a", "feet": "#f08a24 to #e8751a"}},
+    "bike": {"keywords": {"1": ["bike", "wheels", "pedals"], "2": ["frame", "spokes", "chain", "handlebars"], "3": ["crank arm", "chainring", "seat post"]}, "descriptions": ["rear wheel drives, both wheels equal", "crank rotates once per pedal cycle, pedals counter-rotate to stay level"], "behaviors": ["wheel rotation speed matches ground scroll speed: angle = distance / radius"], "tokens": {"wheel radius": "50 to 70 px", "tire stroke": "6 to 9 px", "spokes": "8 to 16", "cadence": "0.8 to 2 turns/s"}},
+    "scene": {"keywords": {"1": ["road", "sky"], "2": ["clouds", "hills", "parallax"], "3": ["dashed lane marks", "far hills slower than near"]}, "descriptions": ["scenery scrolls left so bike appears to move right", "three parallax layers at 0.1, 0.3, 1.0 of speed"], "behaviors": ["layers wrap seamlessly via modulo"], "tokens": {"sky": "#bfe6f5 to #8ccbea", "hill far": "#9fd0a8", "hill near": "#6fb27e", "road": "#5b6270"}},
+    "controls": {"keywords": {"1": ["play", "pause", "speed"], "2": ["slider", "button"], "3": ["reduced motion"]}, "descriptions": ["pause button label toggles and motion halts", "speed slider shows its value"], "behaviors": ["slider changes cadence immediately"], "tokens": {"speed": "0 to 3x"}}
+  },
+  "anti_keywords": [
+    {"not": "a duck-like round body with a short bill", "instead": "an exaggerated bill and drooping pouch"},
+    {"not": "wheels that spin but legs that stay still", "instead": "feet pinned to pedals via leg IK"},
+    {"not": "a static bike sliding along", "instead": "scrolling parallax scenery tied to wheel rotation"},
+    {"not": "CSS transform-origin default at 0 0 on SVG", "instead": "explicit pivots in JS or transform-box fill-box"},
+    {"not": "controls that do nothing", "instead": "pause and speed that visibly change state"}
+  ],
+  "checks": ["Is it recognisably a pelican on a bike at a glance", "Do feet stay on pedals through the full cycle", "Does pause stop everything and play resume", "Does speed slider change speed", "Still smooth after 20 seconds", "Works at phone width"],
+  "built": ["side-view cartoon pelican on a road bike, scrolling countryside"]
+}

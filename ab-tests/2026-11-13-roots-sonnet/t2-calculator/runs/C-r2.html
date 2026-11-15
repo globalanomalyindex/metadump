@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Calculator</title>
+<style>
+:root{
+  --desk:#cfc8b8; --desk2:#bdb6a5;
+  --body:#2f3438; --body-edge:#1d2124;
+  --lcd:#b7c79a; --lcd-dark:#8fa075; --ink:#1b2415; --ghost:rgba(27,36,21,.07);
+  --key:#e7e3d8; --key-shadow:#a49e8f; --key-ink:#25282b;
+  --op:#e08a2c; --op-shadow:#9a5a14; --op-ink:#1f1608;
+  --clr:#c4452f; --clr-shadow:#7d2618; --clr-ink:#fff6f0;
+  --eq:#3f7d6a; --eq-shadow:#265044; --eq-ink:#f2fff9;
+  --focus:#fff;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;display:grid;place-items:center;padding:16px;
+  background:radial-gradient(circle at 30% 20%,var(--desk),var(--desk2));
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--key-ink)}
+.calc{width:min(320px,100%);padding:18px 18px 22px;border-radius:22px;
+  background:linear-gradient(160deg,#3a4045,var(--body));
+  box-shadow:0 1px 0 #566 inset,0 0 0 2px var(--body-edge),0 18px 30px rgba(0,0,0,.35)}
+.brand{display:flex;justify-content:space-between;align-items:center;margin:0 4px 10px;
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#aab0b4}
+.solar{width:46px;height:14px;border-radius:3px;background:repeating-linear-gradient(90deg,#2a2018 0 10px,#171008 10px 11px);border:1px solid #111}
+.window{background:var(--lcd);border-radius:8px;padding:8px 10px 10px;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.45),0 0 0 3px #1a1d20,0 1px 0 3px #50565b;color:var(--ink)}
+.flags{display:flex;gap:10px;height:16px;font:700 11px/16px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.05em}
+.flags span{opacity:.12;transition:opacity .08s}
+.flags span.on{opacity:.9}
+.flags .grow{flex:1}
+.digits{display:flex;justify-content:flex-end;gap:3px;height:66px;margin-top:2px}
+.cell{width:calc((100% - 24px)/9);min-width:0;height:100%}
+.cell svg{width:100%;height:100%;display:block;overflow:visible}
+.seg{fill:var(--ghost)}
+.seg.on{fill:var(--ink)}
+.dp{fill:var(--ghost)}
+.dp.on{fill:var(--ink)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:20px}
+button{font:600 22px/1 ui-sans-serif,system-ui,sans-serif;height:54px;min-width:44px;border:0;border-radius:10px;
+  background:var(--key);color:var(--key-ink);cursor:pointer;
+  box-shadow:0 4px 0 var(--key-shadow),0 5px 6px rgba(0,0,0,.35);
+  transition:transform .06s,box-shadow .06s,filter .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+button:hover{filter:brightness(1.07)}
+button:active,button.press{transform:translateY(3px);box-shadow:0 1px 0 var(--key-shadow),0 2px 3px rgba(0,0,0,.35)}
+button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button.op{background:var(--op);color:var(--op-ink);box-shadow:0 4px 0 var(--op-shadow),0 5px 6px rgba(0,0,0,.35)}
+button.op:active,button.op.press{box-shadow:0 1px 0 var(--op-shadow),0 2px 3px rgba(0,0,0,.35)}
+button.op.pending{outline:3px solid #ffe3b8;outline-offset:-3px}
+button.clr{background:var(--clr);color:var(--clr-ink);box-shadow:0 4px 0 var(--clr-shadow),0 5px 6px rgba(0,0,0,.35)}
+button.clr:active,button.clr.press{box-shadow:0 1px 0 var(--clr-shadow),0 2px 3px rgba(0,0,0,.35)}
+button.eq{background:var(--eq);color:var(--eq-ink);box-shadow:0 4px 0 var(--eq-shadow),0 5px 6px rgba(0,0,0,.35)}
+button.eq:active,button.eq.press{box-shadow:0 1px 0 var(--eq-shadow),0 2px 3px rgba(0,0,0,.35)}
+button.fn{font-size:18px;background:#d3cfc3}
+@media (prefers-reduced-motion:reduce){button,.flags span{transition:none}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="brand"><span>Pocket 9</span><span class="solar" aria-hidden="true"></span></div>
+  <div class="window">
+    <div class="flags" aria-hidden="true">
+      <span id="fOp"></span><span class="grow"></span><span id="fErr">ERR</span>
+    </div>
+    <div class="digits" id="digits" aria-hidden="true"></div>
+    <div class="sr" id="live" role="status" aria-live="polite" aria-atomic="true">0</div>
+  </div>
+  <div class="pad" id="pad">
+    <button class="clr" data-k="C" aria-label="Clear all">C</button>
+    <button class="fn" data-k="back" aria-label="Backspace">&#9003;</button>
+    <button class="fn" data-k="sign" aria-label="Plus or minus">&plusmn;</button>
+    <button class="op" data-k="/" aria-label="Divide">&divide;</button>
+
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">&times;</button>
+
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">&minus;</button>
+
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+
+    <button data-k="0">0</button><button data-k="." aria-label="Decimal point">.</button>
+    <button class="eq" data-k="=" aria-label="Equals" style="grid-column:span 2">=</button>
+  </div>
+</main>
+<script>
+(function(){
+  var MAXD = 9;
+  var S = {entry:'0', acc:null, op:null, fresh:true, err:false, eq:false};
+  var SYM = {'+':'+','-':'−','*':'×','/':'÷'};
+
+  // seven-segment map: a b c d e f g
+  var MAP = {'0':'abcdef','1':'bc','2':'abdeg','3':'abcdg','4':'bcfg','5':'acdfg','6':'acdefg','7':'abc','8':'abcdefg','9':'abcdfg','-':'g',' ':'','E':'adefg','r':'eg','o':'cdeg'};
+  var P = {
+    a:'6,4 38,4 34,9 10,9', b:'40,6 40,36 35,31 35,11', c:'40,40 40,70 35,65 35,45',
+    d:'6,72 38,72 34,67 10,67', e:'4,40 4,70 9,65 9,45', f:'4,6 4,36 9,31 9,11',
+    g:'6,38 10,34 34,34 38,38 34,42 10,42'
+  };
+  var digitsEl = document.getElementById('digits');
+  var cells = [];
+  for (var i=0;i<MAXD;i++){
+    var d = document.createElement('div'); d.className='cell';
+    var h = '<svg viewBox="0 0 46 76" focusable="false">';
+    'abcdefg'.split('').forEach(function(s){ h += '<polygon class="seg" data-s="'+s+'" points="'+P[s]+'"/>'; });
+    h += '<circle class="dp" cx="43" cy="70" r="3.4"/></svg>';
+    d.innerHTML = h; digitsEl.appendChild(d); cells.push(d);
+  }
+
+  function render(text){
+    // text like "-12.5" or "Error"
+    var chars = [], dps = [];
+    for (var i=0;i<text.length;i++){
+      var c = text[i];
+      if (c === '.'){ if (chars.length) dps[chars.length-1] = true; else { chars.push('0'); dps[0]=true; } }
+      else { chars.push(c); dps[chars.length-1] = dps[chars.length-1] || false; }
+    }
+    var start = MAXD - chars.length;
+    cells.forEach(function(cell, idx){
+      var ch = idx >= start ? chars[idx-start] : ' ';
+      var on = MAP[ch] || '';
+      cell.querySelectorAll('.seg').forEach(function(sg){ sg.classList.toggle('on', on.indexOf(sg.getAttribute('data-s'))>-1); });
+      cell.querySelector('.dp').classList.toggle('on', idx>=start && !!dps[idx-start]);
+    });
+  }
+
+  function fmt(n){
+    if (!isFinite(n) || Math.abs(n) >= 1e9) return null;
+    var s = String(Number(n.toPrecision(MAXD)));
+    if (/e/i.test(s)) s = n.toFixed(8).replace(/0+$/,'').replace(/\.$/,'');
+    var neg = s[0]==='-'; if (neg) s = s.slice(1);
+    var digits = s.replace('.','').length;
+    if (digits > MAXD && s.indexOf('.')>-1){
+      var keep = s.length - (digits - MAXD);
+      s = Number(s).toFixed(Math.max(0, s.indexOf('.')+ (keep - s.indexOf('.')) - 1 ));
+      if (s.indexOf('.')>-1) s = s.replace(/0+$/,'').replace(/\.$/,'');
+    }
+    if (s === '0' ) neg = false;
+    return (neg?'-':'')+s;
+  }
+
+  function show(){
+    var t = S.err ? 'Error' : S.entry;
+    render(t);
+    document.getElementById('fErr').classList.toggle('on', S.err);
+    var f = document.getElementById('fOp');
+    f.textContent = S.op ? SYM[S.op] : '';
+    f.classList.toggle('on', !!S.op);
+    document.querySelectorAll('button.op').forEach(function(b){
+      b.classList.toggle('pending', S.op === b.getAttribute('data-k') && S.fresh && !S.eq);
+    });
+    document.getElementById('live').textContent = S.err ? 'Error' : t + (S.op ? ', ' + SYM[S.op] + ' pending' : '');
+  }
+
+  function num(){ return parseFloat(S.entry); }
+  function setResult(v){
+    var s = v === null ? null : fmt(v);
+    if (s === null){ S.err = true; S.acc = null; S.op = null; S.entry='0'; S.fresh = true; return false; }
+    S.entry = s; return true;
+  }
+  function compute(a,b,op){
+    if (op==='+') return a+b;
+    if (op==='-') return a-b;
+    if (op==='*') return a*b;
+    if (op==='/') return b===0 ? null : a/b;
+  }
+  function clearAll(){ S = {entry:'0', acc:null, op:null, fresh:true, err:false, eq:false}; }
+
+  function press(k){
+    if (S.err && k !== 'C'){ clearAll(); }
+    if (/^[0-9]$/.test(k)){
+      if (S.fresh){ S.entry = k; S.fresh = false; if (S.eq){ S.acc=null; S.op=null; S.eq=false; } }
+      else if (S.entry.replace(/[-.]/g,'').length < MAXD) S.entry = (S.entry==='0') ? k : (S.entry==='-0' ? '-'+k : S.entry+k);
+    } else if (k === '.'){
+      if (S.fresh){ S.entry='0.'; S.fresh=false; if (S.eq){ S.acc=null; S.op=null; S.eq=false; } }
+      else if (S.entry.indexOf('.')<0 && S.entry.replace(/[-.]/g,'').length < MAXD) S.entry += '.';
+    } else if (k === 'sign'){
+      if (S.entry !== '0' || !S.fresh){
+        S.entry = S.entry[0]==='-' ? S.entry.slice(1) : '-'+S.entry;
+        if (S.eq) S.acc = num();
+      }
+    } else if (k === 'back'){
+      if (!S.fresh){
+        S.entry = S.entry.slice(0,-1);
+        if (S.entry==='' || S.entry==='-') { S.entry='0'; S.fresh=true; }
+      }
+    } else if (k === 'C'){
+      clearAll();
+    } else if (k === '+' || k==='-' || k==='*' || k==='/'){
+      if (S.op && !S.fresh){
+        var r = compute(S.acc, num(), S.op);
+        if (!setResult(r)){ show(); return; }
+      }
+      S.acc = num(); S.op = k; S.fresh = true; S.eq = false;
+    } else if (k === '='){
+      if (S.op && (!S.fresh || true)){
+        var b = num();
+        var r2 = compute(S.acc, b, S.op);
+        if (!setResult(r2)){ show(); return; }
+        S.acc = null; S.op = null; S.fresh = true; S.eq = true;
+      }
+    }
+    show();
+  }
+
+  document.getElementById('pad').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    press(b.getAttribute('data-k'));
+  });
+
+  var KEYMAP = {'Enter':'=','=':'=','Escape':'C','Backspace':'back','Delete':'C','c':'C','C':'C','x':'*','X':'*','n':'sign',',':'.','.':'.','+':'+','-':'-','*':'*','/':'/'};
+  document.addEventListener('keydown', function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = /^[0-9]$/.test(e.key) ? e.key : KEYMAP[e.key];
+    if (!k) return;
+    // let Enter/Space on a focused button activate it natively
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.tagName==='BUTTON' && document.activeElement.getAttribute('data-k')!=='=') {
+      e.preventDefault();
+    }
+    e.preventDefault();
+    press(k);
+    var btn = document.querySelector('button[data-k="'+(k)+'"]');
+    if (btn){ btn.classList.add('press'); setTimeout(function(){btn.classList.remove('press');},110); }
+  });
+
+  show();
+})();
+</script>
+</body>
+</html>

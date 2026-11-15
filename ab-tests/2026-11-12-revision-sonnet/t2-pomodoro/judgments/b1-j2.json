@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"simple": 7, "correctness": 8, "usability": 4, "craft": 3, "code": 6, "overall": 4, "note": "Logic and phase handling are sound, but an inline font-size:inherit on the h1 shrinks the clock to body size, so the one thing that matters is tiny, and the clock is aria-hidden."},
+"V": {"simple": 6, "correctness": 8, "usability": 6, "craft": 8, "code": 7, "overall": 7, "note": "Attractive card with ring and tabs, drift-free countdown and correct auto-advance, but includes settings, has no live region, no aria-pressed on tabs and no skip or shortcuts."},
+"W": {"simple": 4, "correctness": 9, "usability": 8, "craft": 8, "code": 5, "overall": 7, "note": "Bold full-bleed colour per phase and huge clock with excellent a11y and shortcuts, but padded with auto-start, chime toggle, notifications, progress bar and skip."},
+"X": {"simple": 6, "correctness": 6, "usability": 6, "craft": 7, "code": 7, "overall": 6, "note": "Polished dark card with ring, but Skip counts a pomodoro as done, Space on a focused button toggles the timer, no live region, and settings add bulk."},
+"Y": {"simple": 9, "correctness": 9, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Lean and complete: huge clock, phase colour and dots, timestamp-based countdown, a polite live region, a timer role, Space shortcut, and a clear pause, reset and phase change."},
+"Z": {"simple": 7, "correctness": 8, "usability": 8, "craft": 8, "code": 7, "overall": 8, "note": "Large clear clock with phase colours, dots, shortcuts and notification, solid logic; slightly extra with a clear-count confirm and notifications, and a done phase colour that never appears."}
+}, "ranking": ["Y", "Z", "W", "V", "X", "U"]}

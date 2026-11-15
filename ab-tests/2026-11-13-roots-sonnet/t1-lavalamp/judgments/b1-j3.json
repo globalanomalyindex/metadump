@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"likeness": 6, "visuals": 5, "motion": 4, "presentation": 6, "overall": 5, "note": "Tapered lamp with a base and cap, but the wax is one big flat orange mass with a hard edge that rises and falls like a tide rather than separate blobs."},
+"V": {"likeness": 6, "visuals": 7, "motion": 7, "presentation": 7, "overall": 7, "note": "Pretty glass bulb with warm glow and a believable stretching, merging wax column, but the bulb silhouette reads more as a genie bottle than a classic lava lamp."},
+"W": {"likeness": 7, "visuals": 6, "motion": 4, "presentation": 6, "overall": 5, "note": "Recognizable tapered lamp with a copper base, but the wax mostly sits as a lump at the bottom with one lone small ball and barely evolves."},
+"X": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 7, "note": "Elegant glass, bullet cap and glowing base with a restrained layout, but the wax is hazy and muddy inside the glass and the controls are small."},
+"Y": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Crisp, vivid blobs that stretch and merge nicely, but the glass interior is flat dark, the brass base is plain and wax mostly pools at the bottom."},
+"Z": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 9, "note": "Classic lava lamp with chrome cap and base, purple liquid, hot glowing wax column that stretches, pinches and merges organically, with a clean control bar."}
+},
+"ranking": ["Z", "X", "V", "Y", "W", "U"]}

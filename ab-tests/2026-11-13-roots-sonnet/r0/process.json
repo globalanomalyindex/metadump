@@ -1,0 +1,128 @@
+{
+ "t1-lavalamp": {
+  "R-r1": {
+   "agent": "a5d6957287e51623b",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "R-r2": {
+   "agent": "ae5bf46eaab3bab4c",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "hover-static"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 2
+  },
+  "R-r3": {
+   "agent": "a63fcba221aaa1af9",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "look_findings": [
+    [],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 1
+  },
+  "R-r4": {
+   "agent": "a1daafcd74d3e5596",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 6,
+   "edits_after_first_look": 5,
+   "images_read": 1,
+   "look_findings": [
+    [],
+    [
+     "hover-static",
+     "small-target"
+    ]
+   ],
+   "looks": 3,
+   "plays": 0,
+   "sheet_read": 0
+  }
+ },
+ "t2-calculator": {
+  "R-r1": {
+   "agent": "aefe33c168fbe3166",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "R-r2": {
+   "agent": "ad3017b0becc28c26",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "R-r3": {
+   "agent": "ae2b813e54918e743",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "R-r4": {
+   "agent": "aa71c363b054894b9",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  }
+ }
+}

@@ -1,0 +1,33 @@
+{
+  "request": "a lava lamp",
+  "thesis": "A slow warm glowing object whose whole charm is blobs that merge, stretch, pinch off and drift by heat, not by animation loops.",
+  "job": ["see the lamp off and dim", "switch it on", "watch wax warm up and first blob detach from the pool", "watch blobs rise, merge, split, sink", "change heat or colour", "poke or drag a blob", "shake / stir", "switch off and watch it cool and settle"],
+  "disciplines": {
+    "physical simulation": {"principles": ["buoyancy follows temperature", "wax cools at top, heats at bottom", "viscous: heavy damping, small forces"], "steps": ["give each blob temperature", "heat near base, cool near top", "buoyancy = (temp-0.5)*k", "damp velocity", "wall constraint on tapered glass"], "tricks": ["slow time step feels viscous", "add tiny lateral wander", "bottom pool is a wide static blob that feeds new ones"], "tests": ["does a blob ever stall forever", "do they all clump at top"]},
+    "metaball rendering": {"principles": ["sum of r^2/d^2 fields then threshold", "smooth edge via smoothstep for antialias"], "steps": ["low-res field canvas", "per-pixel sum", "threshold ~1", "colour from field strength and height", "upscale smoothed"], "tricks": ["field/threshold gives necks between blobs", "brighter core by field value", "render at 1/3 resolution for speed"], "tests": ["do blobs bridge and pinch", "is the edge smooth"]},
+    "visual design": {"principles": ["glow is the light source", "silhouette of the lamp is instantly readable"], "steps": ["dark room", "tapered glass", "metal cap and base", "liquid tint", "bulb glow at bottom", "glass highlights"], "tricks": ["radial room glow behind lamp in liquid colour", "vertical glass specular streak", "base inner hot spot"], "tests": ["name it at a glance"]},
+    "interaction design": {"principles": ["direct manipulation of blobs", "state visible"], "steps": ["power switch", "heat slider", "colour swatches", "drag blobs", "shake button"], "tricks": ["pointer capture", "keyboard operable controls"], "tests": ["does each control change visible state"]},
+    "front-end code": {"principles": ["single file", "no external requests"], "steps": ["canvas + rAF", "devicePixelRatio aware", "respect reduced motion by slowing"], "tricks": ["delta-time clamp"], "tests": ["works from file://"]}
+  },
+  "the_thing": {
+    "parts": ["glass tapered vessel", "wax blobs", "coloured liquid", "bottom pool", "bulb glow", "metal cap", "metal base", "switch"],
+    "expectations": ["slow", "warm", "blobs merge and split", "starts cold", "hypnotic"],
+    "kinds": [{"name": "classic rocket lamp", "what": "tapered glass, two-tone wax in tinted liquid, metal cap and base"}, {"name": "glitter lamp", "what": "sparkle particles instead of wax"}, {"name": "neon flat lamp", "what": "abstract rectangle panel of blobs"}]
+  },
+  "specifics": {
+    "shape": {"keywords": {"1": ["lava lamp", "blobs", "glass", "wax"], "2": ["tapered", "rocket", "cap", "base", "pool"], "3": ["Astro lamp", "Mathmos", "metaball", "neck"]}, "descriptions": ["glass wide at bottom narrowing toward top, rounded shoulders", "cap and base trapezoids with rim highlights"], "behaviors": ["blobs bridge when close"], "tokens": {"glass width 200-260px of 360", "blob radius": "18-46 px", "blob count": "6-9"}},
+    "colour": {"keywords": {"1": ["glowing", "warm"], "2": ["orange wax in purple liquid", "magenta in teal"], "3": ["complementary pairing", "emissive"]}, "descriptions": ["wax lighter at core, darker at rim", "liquid darker at top, lit from below"], "behaviors": ["wax tint shifts with temperature"], "tokens": {"palettes": "classic orange/violet, lime/teal, pink/blue, amber/crimson", "background": "#0b0710 to #1a0f1f"}},
+    "motion": {"keywords": {"1": ["slow", "rise", "sink"], "2": ["merge", "split", "wobble"], "3": ["thermal convection"]}, "descriptions": ["blobs take 10-25 s to cross"], "behaviors": ["heat up -> faster", "off -> cools and slowly sinks"], "tokens": {"speed px/s": "10-40", "damping": "0.97-0.99", "warm-up": "5-12 s"}},
+    "states": {"keywords": {"1": ["on", "off"], "2": ["warming", "cooling"], "3": []}, "descriptions": ["off: dark glass, wax settled at bottom", "on: bulb glow ramps up"], "behaviors": ["glow tracks temperature"], "tokens": {}},
+    "copy": {"keywords": {"1": ["Power", "Heat", "Shake"], "2": ["Warming up", "Drag a blob"], "3": []}, "descriptions": ["short labels, a status line"], "behaviors": [], "tokens": {}}
+  },
+  "anti_keywords": [
+    {"not": "blobs that bounce like balls", "instead": "slow viscous drift with heavy damping"},
+    {"not": "separate circles that overlap", "instead": "metaball field with necks"},
+    {"not": "flat gradient rectangle", "instead": "tapered glass with cap, base, glow"},
+    {"not": "always-on with no controls", "instead": "power, heat, colour, drag, shake all change state"},
+    {"not": "fast fidgety motion", "instead": "meditative speed"}
+  ],
+  "checks": ["do blobs visibly merge and pinch", "does power off cool and settle", "does the heat slider change speed", "does each swatch recolour", "can a blob be dragged", "name it at a glance", "usable at phone width"],
+  "built": ["classic rocket lamp"]
+}

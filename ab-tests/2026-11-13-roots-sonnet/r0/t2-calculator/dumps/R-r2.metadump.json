@@ -1,0 +1,114 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A calculator is trusted instantly or not at all: the interesting part is that every press gives immediate, legible, correct feedback, and the arithmetic never lies.",
+  "job": [
+    "see the display and know it is ready (0)",
+    "enter a number with digits, decimal point, backspace to fix a typo",
+    "pick an operator (+ - x /) and see which one is pending",
+    "enter second number, press equals, read result",
+    "chain operations without pressing equals each time",
+    "repeat equals to reapply last operation",
+    "change sign, percent, clear entry vs clear all",
+    "recover from error (divide by zero) and long results",
+    "use keyboard instead of mouse",
+    "see recent history of what was computed"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["immediate feedback on every press", "pending operator visibly highlighted", "forgiving: backspace and clear", "predictable, matches pocket-calculator muscle memory"],
+      "steps": ["map key layout to the familiar 4x5 grid", "define state machine: entering, operator-pending, result", "define what each key does in each state"],
+      "tricks": ["pressing operator twice replaces it", "equals repeats last operation", "typing a digit after result starts fresh", "active key gets pressed-state scale"],
+      "tests": ["2 + 3 * 4 behaves as chosen (immediate-execution gives 20, state it)", "0.1 + 0.2 shows 0.3", "5 / 0 shows error and recovers"]
+    },
+    "visual design": {
+      "principles": ["display is the hero, big tabular numerals", "operators distinguished by colour, equals most prominent", "consistent grid gaps and radius", "contrast at least 4.5:1"],
+      "steps": ["pick palette and one accent", "size display type to shrink for long numbers", "differentiate three key tiers: digits, functions, operators"],
+      "tricks": ["font-variant-numeric tabular-nums", "subtle inner highlight and shadow for tactile keys", "dim the secondary expression line"],
+      "tests": ["squint test: can you find equals and the display", "longest number still fits"]
+    },
+    "motion": {
+      "principles": ["press feedback under 100 ms", "result changes should feel crisp not flashy"],
+      "steps": ["active scale on press", "brief flash on result"],
+      "tricks": ["transform only, no layout animation", "respect prefers-reduced-motion"],
+      "tests": ["rapid tapping never lags"]
+    },
+    "accessibility": {
+      "principles": ["real buttons with labels", "live region announces result", "keyboard parity", "visible focus ring"],
+      "steps": ["aria-label for symbols like divide and backspace", "aria-live polite on display"],
+      "tricks": ["use proper minus and times glyphs visually, labels in words"],
+      "tests": ["tab through all keys", "screen reader reads 'plus' not '+'"]
+    },
+    "front-end code": {
+      "principles": ["state in one object, render from state", "no eval", "avoid float error"],
+      "steps": ["keep current string, previous number, operator, flags", "compute with rounding to 12 significant digits", "format with locale grouping"],
+      "tricks": ["toPrecision(12) then parseFloat to kill float noise", "event delegation on keypad using data attributes", "keydown map for keyboard"],
+      "tests": ["many-digit entry capped at about 15", "no double decimal point", "leading zero not stacked"]
+    }
+  },
+  "the_thing": {
+    "parts": ["display (current entry)", "expression/secondary line", "digit keys 0-9", "decimal point", "operators + - x /", "equals", "AC/C", "plus-minus", "percent", "backspace", "history"],
+    "expectations": ["standard 4-column layout with wide zero or equals", "operator stays highlighted until next number", "result replaces display", "works by keyboard", "divide by zero handled gracefully"],
+    "kinds": [
+      {"name": "pocket four-function calculator", "what": "classic grid, immediate-execution, big display"},
+      {"name": "expression-tape calculator", "what": "shows running expression and scrolling history"},
+      {"name": "phone-style round-key calculator", "what": "circular keys, dark, orange operators"},
+      {"name": "retro LCD calculator", "what": "segment-style display, solar panel, chunky keys"}
+    ]
+  },
+  "specifics": {
+    "display": {
+      "keywords": {"1": ["display", "result", "number", "0"], "2": ["tabular numerals", "thousands separators", "shrink to fit", "expression line"], "3": ["right-aligned", "overflow ellipsis avoided", "aria-live"]},
+      "descriptions": ["right aligned, baseline stable", "font shrinks stepwise after about 9 characters", "secondary line shows e.g. 12 + 7"],
+      "behaviors": ["typing updates display", "operator press shows expression", "equals shows result and expression with ="],
+      "tokens": {"font size": "40 to 64 px", "secondary size": "14 to 18 px", "max digits": "12 to 16"}
+    },
+    "keys": {
+      "keywords": {"1": ["buttons", "digits", "operators", "equals", "clear"], "2": ["pressed state", "active operator highlight", "tiers"], "3": ["wide zero", "key travel illusion"]},
+      "descriptions": ["three tiers by colour", "equals uses accent fill"],
+      "behaviors": ["press scale 0.95 to 0.97", "pending operator inverts colours"],
+      "tokens": {"radius": "12 to 20 px", "gap": "8 to 12 px", "key height": "56 to 68 px", "press duration": "60 to 120 ms"}
+    },
+    "palette": {
+      "keywords": {"1": ["calculator colours"], "2": ["dark graphite", "warm accent"], "3": ["amber or lime accent on near-black"]},
+      "descriptions": ["graphite body, slightly lighter digit keys, muted function keys, amber operators"],
+      "behaviors": ["dark scheme default, light adapts via prefers-color-scheme"],
+      "tokens": {"body": "#17181b to #1f2125", "digit key": "#2a2d33 to #34373e", "accent": "#ff9f1c to #f5a623", "text": "#f2f2f0"}
+    },
+    "logic": {
+      "keywords": {"1": ["add", "subtract", "multiply", "divide", "equals"], "2": ["chaining", "repeat equals", "percent", "sign toggle"], "3": ["float correction", "error state"]},
+      "descriptions": ["immediate execution left to right", "percent turns entry into entry/100", "repeat equals reapplies last op and operand"],
+      "behaviors": ["operator after operator replaces", "digit after equals starts new", "operator after equals continues from result", "divide by zero shows Error, next key clears"],
+      "tokens": {"precision": "12 significant digits"}
+    },
+    "keyboard": {
+      "keywords": {"1": ["keyboard"], "2": ["Enter equals", "Escape clear", "Backspace"], "3": ["* and / mapped"]},
+      "descriptions": ["digits, . , + - * /, Enter or =, Backspace, Escape or c"],
+      "behaviors": ["key press flashes matching on-screen key", "preventDefault on / to avoid quick find"],
+      "tokens": {}
+    },
+    "history": {
+      "keywords": {"1": ["history"], "2": ["recent calculations"], "3": ["tap to reuse"]},
+      "descriptions": ["last 5 to 10 results in a small list"],
+      "behaviors": ["click an entry to load its result", "clear history"],
+      "tokens": {"entries": "5 to 10"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "eval() of a typed string", "instead": "explicit state machine with number math"},
+    {"not": "0.1+0.2 = 0.30000000000000004", "instead": "round to 12 significant digits"},
+    {"not": "tiny low-contrast display", "instead": "oversized right-aligned tabular numerals"},
+    {"not": "all keys the same colour", "instead": "three tiers with a loud equals"},
+    {"not": "buttons that only look pressed", "instead": "real state change plus visible pending operator"},
+    {"not": "NaN or Infinity on screen", "instead": "Error message that clears on next key"}
+  ],
+  "checks": [
+    "Does every key change displayed state?",
+    "Does 0.1 + 0.2 show 0.3?",
+    "Does 5 / 0 show Error and recover?",
+    "Does the keyboard work?",
+    "Is the pending operator highlighted?",
+    "Does a very long number still fit?",
+    "Does it fit at phone width?"
+  ],
+  "built": ["pocket four-function calculator"]
+}

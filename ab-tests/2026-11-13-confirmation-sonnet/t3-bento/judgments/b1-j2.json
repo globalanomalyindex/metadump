@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"fidelity": 6, "correctness": 7, "craft": 5, "usability": 7, "overall": 5, "note": "Working collapsible pill with a small bento of controls, but the open panel is cramped and the page is nearly empty."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Polished nav with a real bento panel of interactive cards (roast, subscription, accordion guides), though the open panel pushes content down."},
+"W": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Folded state is a tidy row of tiles that expands into a bento with page-change feedback, but the folded state is plain and the status chips are clutter."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Richest and most bento-like: varied tile sizes with illustrations, clear fold and unfold, tiles that change the page, and good keyboard cues."},
+"Y": {"fidelity": 7, "correctness": 6, "craft": 6, "usability": 6, "overall": 6, "note": "Good bento content and working cart stepper, but the open panel is narrow and awkwardly overlaps the hero text."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Distinctive dark tin theme with a floating bento popover; the popover covers the hero and the tiles are fairly small."}
+}, "ranking": ["X", "V", "Z", "W", "Y", "U"]}

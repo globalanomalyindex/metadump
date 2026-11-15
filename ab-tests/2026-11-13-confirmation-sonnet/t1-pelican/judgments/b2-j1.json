@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j1","scores":{
+"U":{"fidelity":9,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Large, readable pelican with arm on the handlebar, pedalling legs, chain and scrolling scenery, with clear controls and a good mobile layout."},
+"V":{"fidelity":7,"correctness":7,"craft":7,"usability":7,"overall":7,"note":"Pleasant scenery but the pelican is small, the wing is a stiff slab not gripping the bars, and the status label floats oddly."},
+"W":{"fidelity":9,"correctness":8,"craft":8,"usability":7,"overall":8,"note":"Charming helmeted pelican with a clear pouch and pedalling legs, plus honk and reverse, though the stats line is tiny."},
+"X":{"fidelity":9,"correctness":8,"craft":8,"usability":7,"overall":8,"note":"Polished helmeted pelican on a bike with a clean scene and controls, but the bird and bike are somewhat small in the frame."},
+"Y":{"fidelity":8,"correctness":7,"craft":7,"usability":7,"overall":7,"note":"Solid pelican and bike with night mode, but the body hovers above the frame and the mid-ground band looks muddy."},
+"Z":{"fidelity":8,"correctness":8,"craft":7,"usability":8,"overall":7,"note":"Clean, correct and usable with clear controls, but the scene is sparse and the pelican wing looks clumsy."}},
+"ranking":["U","W","X","Z","Y","V"]}

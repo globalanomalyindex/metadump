@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"basic": 6, "correctness": 8, "usability": 7, "craft": 8, "code": 5, "overall": 7, "note": "Striking retro LCD calculator with solid logic and keyboard/aria support, but at 18KB it is heavier than basic and the faint ghost segments plus tiny hint text cost some clarity."},
+"V": {"basic": 8, "correctness": 9, "usability": 9, "craft": 9, "code": 7, "overall": 9, "note": "Warm, clean and legible with an expression line, a clear divide-by-zero message, comma grouping and good aria and keyboard support, all in a moderate amount of code."},
+"W": {"basic": 9, "correctness": 8, "usability": 6, "craft": 7, "code": 9, "overall": 7, "note": "Compact iOS-style dark calculator that gets the arithmetic right, but it has minimal accessibility, a low-contrast operator column and a plain, cramped look."},
+"X": {"basic": 9, "correctness": 9, "usability": 8, "craft": 8, "code": 8, "overall": 8, "note": "Clean light design with a clear error state, an expression line and good aria support, though the pale operator keys are subtle."},
+"Y": {"basic": 9, "correctness": 7, "usability": 6, "craft": 7, "code": 8, "overall": 6, "note": "Generic iOS clone that works, but it has almost no aria, a bare Error with no explanation, a dead-code branch and every operator key in the same orange."},
+"Z": {"basic": 7, "correctness": 8, "usability": 8, "craft": 8, "code": 6, "overall": 8, "note": "Polished dark glass look with a full-width equals key and good aria and keyboard support, though the decorative glow and the hint line pad it slightly past basic."}
+}, "ranking": ["V", "X", "Z", "U", "W", "Y"]}

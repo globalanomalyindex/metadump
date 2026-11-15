@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root{--bg:#14161a;--body:#1d2026;--key:#2a2e36;--keyh:#363b45;--op:#3b4252;--acc:#f0a23b;--acch:#ffb95c;--fn:#4a5262;--text:#eef0f4;--dim:#a9b1c0}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  .calc{width:min(340px,92vw);background:var(--body);border-radius:22px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .screen{background:#0e1013;border-radius:14px;padding:14px 16px;margin-bottom:16px;text-align:right;min-height:96px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+  .expr{color:var(--dim);font-size:15px;min-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .out{font-size:44px;font-weight:300;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.15}
+  .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  button{font:inherit;font-size:22px;color:var(--text);background:var(--key);border:0;border-radius:12px;height:58px;cursor:pointer;transition:background .12s,transform .06s}
+  button:hover{background:var(--keyh)}
+  button:active{transform:scale(.94)}
+  button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  button.fn{background:var(--fn)}button.fn:hover{background:#5a6477}
+  button.op{background:var(--op);color:var(--acc)}button.op:hover{background:#4a5266}
+  button.op.active{background:var(--acc);color:#14161a}
+  button.eq{background:var(--acc);color:#14161a}button.eq:hover{background:var(--acch)}
+  button.zero{grid-column:span 2}
+</style>
+</head>
+<body>
+<div class="calc" role="application" aria-label="Calculator">
+  <div class="screen"><div class="expr" id="expr"></div><div class="out" id="out" aria-live="polite">0</div></div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="C">AC</button>
+    <button class="fn" data-k="neg">±</button>
+    <button class="fn" data-k="pct">%</button>
+    <button class="op" data-k="/">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+">+</button>
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="eq" data-k="=">=</button>
+  </div>
+</div>
+<script>
+(function(){
+  var s={cur:"0",prev:null,op:null,fresh:false,err:false,expr:""};
+  var out=document.getElementById("out"),exprEl=document.getElementById("expr");
+  var sym={"+":"+","-":"−","*":"×","/":"÷"};
+  function fmt(str){
+    if(s.err)return str;
+    var neg=str[0]==="-",t=neg?str.slice(1):str,p=t.split("."),i=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,",");
+    return(neg?"-":"")+i+(p.length>1?"."+p[1]:"");
+  }
+  function num(n){
+    if(!isFinite(n))return null;
+    var r=parseFloat(n.toPrecision(12));
+    var t=String(r);
+    if(/e/.test(t)||t.length>14){t=r.toExponential(6).replace(/\.?0+e/,"e")}
+    return t;
+  }
+  function calc(a,b,o){
+    a=parseFloat(a);b=parseFloat(b);
+    if(o==="+")return a+b;if(o==="-")return a-b;if(o==="*")return a*b;
+    if(o==="/")return b===0?NaN:a/b;return b;
+  }
+  function fail(){s={cur:"Cannot divide by 0",prev:null,op:null,fresh:true,err:true,expr:""};}
+  function render(){
+    var t=fmt(s.cur);
+    out.textContent=t;
+    out.style.fontSize=t.length>16?"22px":t.length>11?"30px":t.length>8?"38px":"44px";
+    exprEl.textContent=s.expr;
+    document.querySelectorAll("button.op").forEach(function(b){
+      b.classList.toggle("active",!!s.op&&s.fresh&&!s.err&&b.dataset.k===s.op);
+    });
+    document.querySelector('[data-k="C"]').textContent=(s.cur!=="0"||s.prev!==null)?"AC":"AC";
+  }
+  function digit(d){
+    if(s.err||s.fresh){s.cur=d;s.fresh=false;s.err=false;if(!s.op)s.expr="";}
+    else if(s.cur==="0")s.cur=d;
+    else if(s.cur.replace(/[-.]/g,"").length<12)s.cur+=d;
+  }
+  function dot(){
+    if(s.err||s.fresh){s.cur="0.";s.fresh=false;s.err=false;if(!s.op)s.expr="";return;}
+    if(s.cur.indexOf(".")<0)s.cur+=".";
+  }
+  function operator(o){
+    if(s.err)return;
+    if(s.op&&!s.fresh){
+      var r=calc(s.prev,s.cur,s.op);
+      if(isNaN(r)){fail();return;}
+      s.cur=num(r);
+    }
+    s.prev=s.cur;s.op=o;s.fresh=true;
+    s.expr=fmt(s.prev)+" "+sym[o];
+  }
+  function equals(){
+    if(s.err||!s.op)return;
+    var b=s.fresh?s.prev:s.cur;
+    var r=calc(s.prev,s.cur,s.op);
+    if(isNaN(r)){fail();return;}
+    s.expr=fmt(s.prev)+" "+sym[s.op]+" "+fmt(s.cur)+" =";
+    s.cur=num(r);s.prev=null;s.op=null;s.fresh=true;
+  }
+  function neg(){
+    if(s.err)return;
+    if(s.cur==="0")return;
+    s.cur=s.cur[0]==="-"?s.cur.slice(1):"-"+s.cur;
+  }
+  function pct(){
+    if(s.err)return;
+    s.cur=num(parseFloat(s.cur)/100);
+  }
+  function back(){
+    if(s.err||s.fresh)return;
+    s.cur=s.cur.length>1&&!(s.cur.length===2&&s.cur[0]==="-")?s.cur.slice(0,-1):"0";
+  }
+  function press(k){
+    if(/^\d$/.test(k))digit(k);
+    else if(k===".")dot();
+    else if("+-*/".indexOf(k)>=0)operator(k);
+    else if(k==="=")equals();
+    else if(k==="C")s={cur:"0",prev:null,op:null,fresh:false,err:false,expr:""};
+    else if(k==="neg")neg();
+    else if(k==="pct")pct();
+    else if(k==="back")back();
+    render();
+  }
+  document.getElementById("keys").addEventListener("click",function(e){
+    var b=e.target.closest("button");if(b)press(b.dataset.k);
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,m=null;
+    if(/^\d$/.test(k)||k==="."||"+-*/".indexOf(k)>=0)m=k;
+    else if(k==="Enter"||k==="="){m="=";e.preventDefault();}
+    else if(k==="Escape"||k==="c"||k==="C")m="C";
+    else if(k==="Backspace")m="back";
+    else if(k==="%")m="pct";
+    if(m!==null){if(k==="/")e.preventDefault();press(m);}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

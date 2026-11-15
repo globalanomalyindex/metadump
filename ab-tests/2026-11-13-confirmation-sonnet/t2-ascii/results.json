@@ -1,0 +1,602 @@
+{
+ "scores": {
+  "A": {
+   "fidelity": 7.0,
+   "correctness": 6.42,
+   "craft": 5.67,
+   "usability": 5.83,
+   "overall": 5.67,
+   "mean_rank": 5.17,
+   "per_run_overall": {
+    "A-r1": 4.67,
+    "A-r2": 6.67,
+    "A-r3": 5.67,
+    "A-r4": 5.67
+   }
+  },
+  "F": {
+   "fidelity": 7.25,
+   "correctness": 7.83,
+   "craft": 7.0,
+   "usability": 7.25,
+   "overall": 7.08,
+   "mean_rank": 3.25,
+   "per_run_overall": {
+    "F-r1": 7.67,
+    "F-r2": 6.67,
+    "F-r3": 6.67,
+    "F-r4": 7.33
+   }
+  },
+  "Q": {
+   "fidelity": 8.33,
+   "correctness": 7.75,
+   "craft": 8.0,
+   "usability": 7.5,
+   "overall": 7.92,
+   "mean_rank": 2.08,
+   "per_run_overall": {
+    "Q-r1": 8.67,
+    "Q-r2": 6.33,
+    "Q-r3": 8.67,
+    "Q-r4": 8.0
+   }
+  }
+ },
+ "pairwise": {
+  "F_vs_A": {
+   "wins": 19,
+   "losses": 1,
+   "ties": 4,
+   "win_rate": 0.88,
+   "p": 0.086
+  },
+  "Q_vs_A": {
+   "wins": 22,
+   "losses": 2,
+   "ties": 0,
+   "win_rate": 0.92,
+   "p": 0.057
+  },
+  "F_vs_Q": {
+   "wins": 4,
+   "losses": 17,
+   "ties": 3,
+   "win_rate": 0.23,
+   "p": 0.286
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 12311,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Red",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.97
+    },
+    {
+     "control": "Yellow",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 2.08
+    },
+    {
+     "control": "Blue",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 2.11
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 2276,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r2": {
+   "bytes": 14808,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "ASCII painting grid",
+     "kind": "canvas",
+     "verb": "dragged",
+     "change_pct": 0.59
+    },
+    {
+     "control": "255",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 1.15
+    },
+    {
+     "control": "120",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 1.04
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 309,
+    "canvas_share": 0.393939208984375
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r3": {
+   "bytes": 10965,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "#ff0000",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "#00ff00",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.73
+    },
+    {
+     "control": "#0000ff",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.73
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 242,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r4": {
+   "bytes": 11887,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "255",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 2.17
+    },
+    {
+     "control": "120",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 2.36
+    },
+    {
+     "control": "40",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 2.36
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 316,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r1": {
+   "bytes": 13178,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Remove Red",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.31
+    },
+    {
+     "control": "Add Red",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.4
+    },
+    {
+     "control": "Remove Yellow",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.19
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 506,
+    "canvas_share": 0.3194322509765625
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r2": {
+   "bytes": 10340,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Add Red",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 3.65
+    },
+    {
+     "control": "Add Yellow",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 3.77
+    },
+    {
+     "control": "Add Blue",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 4.25
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 974,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r3": {
+   "bytes": 10899,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Light +",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "Paint -",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 99.82
+    },
+    {
+     "control": "R Red",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 1586,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r4": {
+   "bytes": 10757,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Source A amount",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 14.26
+    },
+    {
+     "control": "Source A color #ff2a2a",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "Source A color #ffa31a",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.18
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 1809,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r1": {
+   "bytes": 13410,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Color mixer. Left and right arrows chang",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "Color A hex",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.21
+    },
+    {
+     "control": "Color B hex",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.04
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 957,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": false,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 2,
+   "failed": 1,
+   "not_run": 0
+  },
+  "F-r2": {
+   "bytes": 12978,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Color A hex",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.69
+    },
+    {
+     "control": "Color B hex",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.62
+    },
+    {
+     "control": "Ratio, percent of B",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 4.22
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 745,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r3": {
+   "bytes": 9283,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Hex A",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.36
+    },
+    {
+     "control": "Hex B",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.34
+    },
+    {
+     "control": "swap A/B",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 2.1
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 728,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r4": {
+   "bytes": 9850,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "#794B8D",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 3.53
+    },
+    {
+     "control": "Color A hex",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.61
+    },
+    {
+     "control": "Color B hex",
+     "kind": "text",
+     "verb": "typed in",
+     "change_pct": 0.58
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "ascii": {
+    "mono_chars": 1104,
+    "canvas_share": 0
+   },
+   "checks": {
+    "responds": true,
+    "ascii_text": true,
+    "no_script_errors": true
+   },
+   "passed": 3,
+   "failed": 0,
+   "not_run": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 81383,
+   "mean_seconds": 46.9
+  },
+  "F": {
+   "runs": 4,
+   "mean_tokens": 112259,
+   "mean_seconds": 114.5
+  },
+  "Q": {
+   "runs": 4,
+   "mean_tokens": 94170,
+   "mean_seconds": 247.1
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 195020,
+   "ms": 1157036,
+   "tool_uses": 33,
+   "agents_spawned": 20
+  }
+ },
+ "agreement_r": 0.89,
+ "notes": {
+  "b1/j1/F-r1": "Simple, faithful two-color mixer with a ratio slider, glyph-shaded preview and hex/rgb readout, but the ASCII picture is a small muted box and the mix is visually flat.",
+  "b1/j1/Q-r1": "Pigment pots, selectable mixing models and a colorful painted ASCII grid make a rich, visibly working engine, though it is somewhat more than 'simple'.",
+  "b1/j1/A-r1": "Bowl-and-canvas concept works but the canvas looks empty and dotted at rest, the glyph grid does not fill its panel, and the first controls change little visibly.",
+  "b1/j1/Q-r2": "Pigment-parts mixer with ASCII bowl and light/paint modes works and shows blending, but starts empty and dark so the first view conveys little, and the glyph blob is dim.",
+  "b1/j1/A-r2": "Paint-on-grid with RGB sliders, mix modes and a two-color mixer is full-featured and interactive, but the sparse dotted glyphs are small and the panel is crowded for 'simple'.",
+  "b1/j1/F-r2": "Two-color ratio mixer with a command prompt is compact and works, but the glyph field looks like noisy purple punctuation and the prompt input is more obscure than a simple interaction needs.",
+  "b1/j2/Q-r2": "Pigment-bowl mixer with a glyph blob and paint/light modes is on-brief, but the dark, dim glyphs are barely visible at rest and the mix reads weakly.",
+  "b1/j2/A-r2": "Full painting canvas with RGB sliders, three mix modes and a two-colour mixer is rich, though it opens mostly empty and has many controls.",
+  "b1/j2/F-r2": "Clean two-colour ratio mixer with a glyph ramp, command prompt and mean versus linear modes; it is focused but narrow and less playful.",
+  "b1/j2/A-r1": "Bowl-and-brush design is sound, but the blank black canvas has a faint dot grid that only fills part of its width, and clicking a pigment shows no visible result.",
+  "b1/j2/Q-r1": "Polished dark UI with pigment pots, paint/light/naive models and a pre-painted colourful ASCII grid, so the mixing shows at once; the grid is drawable.",
+  "b1/j2/F-r1": "Compact, well-made A/B mixer with a shaded glyph preview, a hex readout and full keyboard shortcuts, but it only mixes two colours.",
+  "b1/j3/A-r2": "Paint-on-grid mixer with three mix modes and a two-color mixer, but it starts nearly empty, the glyphs are tiny and the panel is crowded.",
+  "b1/j3/F-r2": "Clean two-color ratio mixer with a command prompt and arrow keys, but the ASCII picture is a static pattern and the interaction is fairly modest.",
+  "b1/j3/Q-r2": "Pigment bowl with paint and light models and kept mixes, but it opens with an empty bowl and a dim, near-invisible glyph field.",
+  "b1/j3/F-r1": "Simple, polished A/B mixer with a live shaded ASCII swatch, a gradient ramp, model toggle and shortcuts, and it holds up on mobile.",
+  "b1/j3/A-r1": "Bowl and paint canvas with several models, but the canvas looks half-filled with dots, the page is empty at rest and it overflows on mobile.",
+  "b1/j3/Q-r1": "Pigment pots with paint, light and naive models paint a vivid pre-seeded ASCII grid with smudge and chips, and it is rich, legible and responsive.",
+  "b2/j1/F-r3": "Clear two-color ratio mixer comparing sRGB mean with linear light, keyboard shortcuts and copy, but the ASCII is a tiny dull block and the page is sparse.",
+  "b2/j1/Q-r3": "Drop-ink field with light/paint models and per-cell readout is seeded with a striking mix, themed, and works well on mobile.",
+  "b2/j1/A-r3": "Paint-the-canvas mixer with ramps and modes is feature-rich, but it opens as a black void with a mismatched white panel area and nothing to see until you drag.",
+  "b2/j1/Q-r4": "Three draggable color sources with amounts and Light/Paint/Naive models fill the ASCII field with a live blended gradient and a probe readout, with a good mobile layout.",
+  "b2/j1/A-r4": "Ink mixer with a live ASCII swatch and paint canvas, but the canvas starts blank black, the layout leaves dead space, and controls are busy.",
+  "b2/j1/F-r4": "Elegant two-color sphere rendered in ASCII with a ratio strip, models and keyboard control; the controls fall below the fold on desktop but it stays focused and polished.",
+  "b2/j2/Q-r4": "Alive at rest with three draggable colored sources, Light/Paint/Naive models, readable mix swatch and probe, and a clean mobile stack.",
+  "b2/j2/A-r4": "Ink mixer with RGB sliders, modes and ramps works, but the canvas opens as an empty black rectangle and the layout is plain with the canvas not filling its card.",
+  "b2/j2/F-r4": "Elegant two-color ratio mix as an ascii disc with a gradient strip and a channel-mean versus linear-light model, but narrow in scope and the model controls fall below the fold.",
+  "b2/j2/A-r3": "Paint-on-canvas mixer with modes, ramps and pick-from-canvas, but it opens as an empty black box in a half-empty white card and does nothing until the user draws.",
+  "b2/j2/Q-r3": "Pre-seeded drops of red, green and blue show additive mixing in colored ascii, with a Light/Paint toggle that swaps the inks to CMY, plus a cell inspector and a good phone layout.",
+  "b2/j2/F-r3": "Compact two-color comparison of sRGB and linear-light mixing with keyboard shortcuts and hex validation, but the result is small and the ascii is mostly a single repeated tile.",
+  "b2/j3/A-r4": "Many controls and a live ink preview, but the canvas starts blank black and the small canvas sits beside a lot of empty space.",
+  "b2/j3/F-r4": "Elegant two-color ratio mixer with a glyph orb and hex validation, but it is a single static mix, a bit passive and cut off below the fold on desktop.",
+  "b2/j3/Q-r4": "Rich three-source field with draggable sources, light/paint/naive models and a probe, immediately colorful and responsive on mobile.",
+  "b2/j3/F-r3": "Useful side-by-side comparison of sRGB vs linear light with keyboard shortcuts, but the ASCII output is a tiny static block and the design is plain.",
+  "b2/j3/A-r3": "Paint-on-canvas mixer with picker, but it opens empty and black, and the canvas card has a dead white area below the canvas.",
+  "b2/j3/Q-r3": "Pre-seeded paintable field showing additive vs subtractive mixing with a theme flip, clear ink buttons and cell inspector; polished and works well on mobile."
+ }
+}

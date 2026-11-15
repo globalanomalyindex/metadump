@@ -1,0 +1,42 @@
+[
+  {
+    "angle": "keypad on a card",
+    "text": "A one-line display above a four-column grid: digits in a block, the four operators in one column, and equals, decimal point, sign and clear on the remaining keys. The result shows on the display after equals, and the digits step down as the entry grows.",
+    "draws_on": [
+      "kp-grid",
+      "kp-keys",
+      "kp-display"
+    ]
+  },
+  {
+    "angle": "pocket handheld",
+    "text": "A small body with a tinted window of segmented digits over raised keys with printed labels: digits, the four operators, equals, a decimal point, a sign toggle and clear. The result lights the window after equals.",
+    "draws_on": [
+      "kp-reg-handheld",
+      "desc-found-handheld"
+    ]
+  },
+  {
+    "angle": "dark glass panel",
+    "text": "A near-black panel with translucent keys, a light edge on each key and bright cool numerals. Digits and decimal point in a block, operators in one column, equals as a wider key, sign and clear on the top row; the result sits in the bright display after equals.",
+    "draws_on": [
+      "kp-reg-dark-glass"
+    ]
+  },
+  {
+    "angle": "flat phone keypad",
+    "text": "Flat rounded keys on a plain page, one accent colour on the operator column and on equals, and a display band above the keys. Digits, decimal point and sign in the block, clear on the top row, and the result in the band after equals.",
+    "draws_on": [
+      "kp-reg-flat",
+      "ex-iphone"
+    ]
+  },
+  {
+    "angle": "light web card",
+    "text": "A white card on a pale page with hairline dividers, light grey square keys with dark numerals and one accent on equals and clear. Digits, decimal point, sign and the four operators sit in the grid; the result shows on the top line after equals.",
+    "draws_on": [
+      "kp-reg-light-card",
+      "desc-found-web-fem"
+    ]
+  }
+]

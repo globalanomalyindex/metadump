@@ -1,0 +1,106 @@
+{
+  "request": "a bento box-inspired collapsible UI menu component for a fictional coffee company site",
+  "thesis": "A navigation menu that folds shut to one pill and opens into a Japanese bento lunchbox: compartments of different sizes, each holding one small useful thing, packed edge to edge with even gutters.",
+  "job": [
+    "see the closed menu trigger in the site header and know it opens",
+    "open it (click, Enter, Space) and watch compartments unfold",
+    "scan the compartments and find where to go: beans, subscribe, brew guides, cafes, wholesale, story",
+    "act inside a compartment without leaving: pick a roast, grind, add to bag, change subscription cadence",
+    "expand one compartment further (nested collapse) to see more, collapse it again",
+    "see state change: bag count, selected roast, chosen cadence, favourites",
+    "close it (button, Escape, click outside) and get focus back to the trigger",
+    "use it on a phone: stacked 2-column grid, thumb reachable",
+    "use it with keyboard and screen reader; reduced motion respected"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["disclosure pattern: trigger + panel + aria-expanded", "state must be visible where the action happened", "every control has a distinct hover, focus, pressed, selected state", "closing returns focus to trigger"],
+      "steps": ["define states: closed, open, tile-expanded, selected", "wire a single state object and render from it", "Escape and outside-click close"],
+      "tricks": ["grid-template-rows 0fr to 1fr animates height without measuring", "stagger tile entrance by index with a CSS variable", "use inert on hidden panel so tab order skips it", "aria-live polite region for bag count"],
+      "tests": ["tab through whole thing with no mouse", "open, change three things, close, reopen: does state persist", "click every tile: does anything happen"]
+    },
+    "layout (bento)": {
+      "principles": ["varied tile spans on a shared grid", "uniform gap, uniform radius", "one hero tile, a few mediums, several smalls", "no empty holes: spans must sum to full rows"],
+      "steps": ["pick 4 columns desktop, 2 phone", "assign spans so rows fill", "use grid-auto-flow: dense only if needed"],
+      "tricks": ["container-ish breakpoint via media query on panel width", "aspect-ratio for compartments", "inner padding bigger than gap"],
+      "tests": ["squint: do tiles tile with no gaps", "resize to 360px: still no overflow"]
+    },
+    "visual design": {
+      "principles": ["warm food palette", "one accent", "type scale with a serif display voice and a sans UI voice", "soft depth, not heavy shadow"],
+      "steps": ["tokens on :root", "tile surfaces in 3 tints", "accent only on selected and primary"],
+      "tricks": ["inset 1px highlight plus soft outer shadow reads as lacquer", "tiny uppercase label over big word", "emoji-free inline SVG or CSS shapes for icons"],
+      "tests": ["greyscale check for hierarchy", "contrast 4.5:1 on all text"]
+    },
+    "motion": {
+      "principles": ["unfold like lid lifting", "ease-out for entering, short for exits", "motion explains spatial relation"],
+      "steps": ["panel opens 300-450ms", "tiles stagger 30-60ms", "tile expand 250-350ms"],
+      "tricks": ["transform+opacity only", "prefers-reduced-motion: kill stagger"],
+      "tests": ["spam toggle: no stuck half-state"]
+    },
+    "front-end code": {
+      "principles": ["semantic button, nav, ul", "no external requests", "state object + render()", "works from file://"],
+      "steps": ["markup", "css tokens", "js state", "aria sync"],
+      "tricks": ["data-attributes for hooks", "event delegation on the panel"],
+      "tests": ["no console errors", "no network requests"]
+    }
+  },
+  "the_thing": {
+    "parts": ["trigger pill", "panel", "tiles of varied span", "tile labels", "tile actions", "nested disclosure in a tile", "close control", "state readouts (bag count)"],
+    "expectations": ["opens and closes", "tiles are links or actions", "feels like a lunchbox", "looks like a coffee brand not a SaaS"],
+    "kinds": [
+      {"name": "dropdown bento panel from header pill", "what": "classic: pill trigger, panel of mixed-size tiles beneath"},
+      {"name": "accordion bento", "what": "each compartment itself collapses"},
+      {"name": "full-screen takeover bento", "what": "menu fills viewport"}
+    ]
+  },
+  "specifics": {
+    "brand": {
+      "keywords": {"1": ["bento", "collapsible", "menu", "coffee company"], "2": ["roast", "beans", "brew", "cafe", "subscription", "single origin", "bag"], "3": ["washed process", "cupping score", "crema", "pour-over bloom", "lot number", "altitude masl"]},
+      "descriptions": ["fictional: Ember & Oak Coffee Roasters, small-batch, est. 2014", "voice: warm, plain, a little dry humour"],
+      "behaviors": [],
+      "tokens": {"names": "Ember & Oak, Ashgrove Roasters, Little Kettle Co.", "tagline": "Roasted Tuesdays. Gone by Friday."}
+    },
+    "palette": {
+      "keywords": {"1": ["warm", "coffee"], "2": ["cream", "espresso brown", "terracotta", "oat", "sage"], "3": ["crema gold", "roast-dark ink"]},
+      "descriptions": ["cream page, espresso ink, one terracotta accent, sage as secondary"],
+      "behaviors": [],
+      "tokens": {"bg": "#f4ece0 to #efe3d2", "ink": "#2a1d15 to #3b2a1f", "accent": "#c4572b to #b5532a", "tile tints": "oat #e8d9c0, sage #cdd5b8, dark #3a281c, cream #fbf6ee", "radius": "16 to 24 px", "gap": "10 to 14 px"}
+    },
+    "type": {
+      "keywords": {"1": ["serif display"], "2": ["system sans UI", "small caps label"], "3": ["optical size", "tabular numerals for prices"]},
+      "descriptions": ["no web fonts: Georgia / Iowan Old Style / Palatino stack for display; system-ui for UI"],
+      "behaviors": [],
+      "tokens": {"display": "26 to 40 px, tight leading 1.05", "label": "11 to 12 px uppercase, tracking 0.08 to 0.14em", "body": "14 to 15 px"}
+    },
+    "states": {
+      "keywords": {"1": ["open", "closed", "expanded", "selected"], "2": ["hover", "focus-visible", "pressed", "disabled"], "3": ["inert", "aria-live"]},
+      "descriptions": [],
+      "behaviors": ["click trigger toggles panel", "click tile header toggles its extra content", "choose roast chip: selected state shows in tile and in bag line", "add to bag increments count and flashes", "cadence segmented control updates price line", "Escape closes and refocuses trigger", "outside click closes"],
+      "tokens": {"open": "300 to 450 ms", "stagger": "30 to 60 ms", "tile expand": "250 to 350 ms", "hover lift": "translateY -2 to -3 px"}
+    },
+    "copy": {
+      "keywords": {"1": ["Shop beans", "Subscribe", "Brew guides", "Find a cafe"], "2": ["Wholesale", "Our story", "Gift cards", "Today's roast"], "3": ["Roasted Tuesdays"]},
+      "descriptions": ["short labels, real prices ($16-$22 per 12 oz), real hours"],
+      "behaviors": [],
+      "tokens": {}
+    }
+  },
+  "anti_keywords": [
+    {"not": "generic hamburger dropdown list of links", "instead": "compartments of unequal size each holding something live"},
+    {"not": "purple gradient SaaS look", "instead": "warm paper cream, espresso ink, one terracotta accent"},
+    {"not": "tiles that are all identical squares", "instead": "one hero, mediums, smalls, spans summing to full rows"},
+    {"not": "decorative buttons that do nothing", "instead": "every control changes visible state"},
+    {"not": "emoji icons and stock photos", "instead": "inline SVG/CSS shapes, no remote images"},
+    {"not": "heavy drop shadows and glass blur", "instead": "flat lacquer tiles with inset highlight and soft shadow"},
+    {"not": "display:none toggles with no motion", "instead": "grid-rows 0fr/1fr unfold plus staggered tile entrance"}
+  ],
+  "checks": [
+    "tab through with keyboard only; focus ring visible everywhere",
+    "open, add to bag twice, count reads 2, close, reopen: still 2",
+    "Escape closes and focus returns to trigger",
+    "360px wide: no horizontal scroll, tiles fill rows without holes",
+    "no network requests, no console errors",
+    "toggle spam 10x: ends in consistent state"
+  ],
+  "built": ["dropdown bento panel from header pill"]
+}

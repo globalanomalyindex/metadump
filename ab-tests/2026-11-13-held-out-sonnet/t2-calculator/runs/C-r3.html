@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root {
+    --page: #efe9df;
+    --card: #fbf8f2;
+    --band: #23201c;
+    --band-ink: #f6efe3;
+    --band-dim: #a79d8c;
+    --key: #ffffff;
+    --key-ink: #2a2622;
+    --key-alt: #e4ddd0;
+    --accent: #e8590c;
+    --accent-ink: #fff;
+    --accent-soft: #ffd9c2;
+    --err: #ff8a6b;
+    --shadow: 0 1px 0 rgba(0,0,0,.06), 0 14px 40px rgba(60,40,10,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #151412; --card: #1e1c19; --band: #0f0e0d; --band-ink: #f6efe3; --band-dim: #8f8677;
+      --key: #2c2926; --key-ink: #f1ebe0; --key-alt: #3a3631; --accent: #ff7a2e; --accent-ink: #1a0e05;
+      --accent-soft: #5a2c10; --shadow: 0 14px 40px rgba(0,0,0,.5);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--page); color: var(--key-ink);
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .calc {
+    width: min(100%, 340px); background: var(--card); border-radius: 28px; padding: 14px; box-shadow: var(--shadow);
+  }
+  .band {
+    background: var(--band); color: var(--band-ink); border-radius: 18px; padding: 12px 18px 14px;
+    height: 112px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
+    overflow: hidden; margin-bottom: 14px;
+  }
+  .pending {
+    font-size: 15px; color: var(--band-dim); min-height: 20px; max-width: 100%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums;
+  }
+  .pending b { color: var(--accent); font-weight: 700; }
+  .entry {
+    font-size: 48px; line-height: 1.2; font-weight: 500; letter-spacing: -.5px; max-width: 100%;
+    white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .entry.s1 { font-size: 40px; } .entry.s2 { font-size: 32px; } .entry.s3 { font-size: 26px; }
+  .entry.err { color: var(--err); }
+  .pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  button {
+    font: inherit; font-size: 24px; font-weight: 500; height: 64px; border: 0; border-radius: 18px;
+    background: var(--key); color: var(--key-ink); cursor: pointer; touch-action: manipulation;
+    box-shadow: 0 1px 0 rgba(0,0,0,.08);
+    transition: transform .08s ease-out, background-color .12s, box-shadow .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:hover { background: var(--key-alt); }
+  button:active, button.hit { transform: scale(.94); box-shadow: none; }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button.alt { background: var(--key-alt); font-size: 20px; }
+  button.alt:hover { background: color-mix(in srgb, var(--key-alt) 80%, var(--key-ink) 20%); }
+  button.op { background: var(--accent-soft); color: var(--accent); font-size: 30px; font-weight: 600; }
+  button.op:hover { background: color-mix(in srgb, var(--accent-soft) 80%, var(--accent) 20%); }
+  button.op.on { background: var(--accent); color: var(--accent-ink); }
+  button.eq { background: var(--accent); color: var(--accent-ink); font-size: 30px; font-weight: 600; }
+  button.eq:hover { background: color-mix(in srgb, var(--accent) 88%, #000 12%); }
+  @media (max-width: 360px) { .pad { gap: 8px; } button { height: 58px; font-size: 22px; } .entry { font-size: 42px; } .entry.s1{font-size:36px} .entry.s2{font-size:29px} .entry.s3{font-size:23px} }
+  @media (prefers-reduced-motion: reduce) { button { transition: none; } button:active, button.hit { transform: none; } }
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="band">
+    <div class="pending" id="pending" aria-hidden="true">&nbsp;</div>
+    <div class="entry" id="entry" role="status" aria-live="polite" aria-atomic="true">0</div>
+  </div>
+  <div class="pad" id="pad">
+    <button class="alt" data-k="C" aria-label="Clear all">C</button>
+    <button class="alt" data-k="CE" aria-label="Clear entry">CE</button>
+    <button class="alt" data-k="Backspace" aria-label="Backspace">⌫</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+    <button class="alt" data-k="±" aria-label="Change sign">±</button>
+    <button data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+</main>
+<script>
+(function () {
+  var SYM = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+  var LIMIT = 12;
+  var s;
+  function reset() { s = { cur: '0', acc: null, op: null, fresh: true, err: false, done: false, expr: '' }; }
+  reset();
+
+  var entryEl = document.getElementById('entry');
+  var pendEl = document.getElementById('pending');
+  var opKeys = document.querySelectorAll('button.op');
+
+  function fmt(n) {
+    if (!isFinite(n)) return 'Error';
+    var r = parseFloat(n.toPrecision(LIMIT));
+    var t = String(r);
+    if (t.length > LIMIT + 1 || /e/.test(t)) {
+      t = r.toExponential(Math.max(0, LIMIT - 7)).replace(/\.?0+e/, 'e').replace('e+', 'e+');
+    }
+    return t;
+  }
+  function pretty(t) {
+    if (t === 'Error' || /e/.test(t)) return t.replace('-', '−');
+    var neg = t[0] === '-', b = neg ? t.slice(1) : t, p = b.split('.');
+    p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '−' : '') + p.join('.');
+  }
+  function render() {
+    var txt = s.err ? 'Error' : pretty(s.cur);
+    entryEl.textContent = txt;
+    var n = txt.length;
+    entryEl.className = 'entry' + (n > 14 ? ' s3' : n > 11 ? ' s2' : n > 8 ? ' s1' : '') + (s.err ? ' err' : '');
+    if (s.err) pendEl.innerHTML = s.expr ? s.expr : '&nbsp;';
+    else if (s.op && s.acc !== null) pendEl.innerHTML = pretty(fmt(s.acc)) + ' <b>' + SYM[s.op] + '</b>';
+    else pendEl.innerHTML = s.expr || '&nbsp;';
+    opKeys.forEach(function (b) { b.classList.toggle('on', !!s.op && s.fresh && b.dataset.k === s.op && !s.err); });
+  }
+  function calc(a, op, b) {
+    if (op === '+') return a + b;
+    if (op === '-') return a - b;
+    if (op === '*') return a * b;
+    if (b === 0) return NaN;
+    return a / b;
+  }
+  function fail(expr) { s.err = true; s.cur = '0'; s.acc = null; s.op = null; s.fresh = true; s.expr = expr || ''; }
+
+  function digit(d) {
+    if (s.err) reset();
+    if (s.done) { s.cur = '0'; s.done = false; s.expr = ''; s.fresh = true; }
+    if (s.fresh) { s.cur = d; s.fresh = false; return; }
+    var len = s.cur.replace(/[-.]/g, '').length;
+    if (len >= LIMIT) return;
+    s.cur = s.cur === '0' ? d : s.cur === '-0' ? '-' + d : s.cur + d;
+  }
+  function dot() {
+    if (s.err) reset();
+    if (s.done) { s.cur = '0'; s.done = false; s.expr = ''; s.fresh = true; }
+    if (s.fresh) { s.cur = '0.'; s.fresh = false; return; }
+    if (s.cur.indexOf('.') < 0) s.cur += '.';
+  }
+  function operator(o) {
+    if (s.err) return;
+    if (s.op && s.fresh && !s.done) { s.op = o; return; }       // swap pending operator
+    var v = parseFloat(s.cur);
+    if (s.op && s.acc !== null && !s.fresh) {
+      var r = calc(s.acc, s.op, v);
+      if (!isFinite(r)) { fail(pretty(fmt(s.acc)) + ' ' + SYM[s.op] + ' ' + pretty(s.cur) + ' ' + '≠ a number'); return; }
+      s.acc = parseFloat(fmt(r));
+      s.cur = fmt(r);
+    } else {
+      s.acc = v;
+    }
+    s.op = o; s.fresh = true; s.done = false; s.expr = '';
+  }
+  function equals() {
+    if (s.err || !s.op || s.acc === null) return;
+    var b = parseFloat(s.cur), a = s.acc, o = s.op;
+    var line = pretty(fmt(a)) + ' ' + SYM[o] + ' ' + pretty(s.cur) + ' =';
+    var r = calc(a, o, b);
+    if (!isFinite(r)) { fail(pretty(fmt(a)) + ' ' + SYM[o] + ' ' + pretty(s.cur) + ' — can’t divide by zero'); return; }
+    s.cur = fmt(r); s.acc = null; s.op = null; s.fresh = true; s.done = true; s.expr = line;
+  }
+  function sign() {
+    if (s.err) return;
+    if (s.fresh && s.done) { s.expr = ''; }
+    if (s.cur === '0' && s.fresh) { return; }
+    s.cur = s.cur[0] === '-' ? s.cur.slice(1) : '-' + s.cur;
+  }
+  function back() {
+    if (s.err) { reset(); return; }
+    if (s.fresh) return;
+    s.cur = s.cur.slice(0, -1);
+    if (s.cur === '' || s.cur === '-') { s.cur = '0'; s.fresh = true; }
+  }
+  function clearEntry() {
+    if (s.err) { reset(); return; }
+    s.cur = '0'; s.fresh = true; s.done = false;
+    if (!s.op) s.expr = '';
+  }
+
+  function press(k) {
+    if (/^[0-9]$/.test(k)) digit(k);
+    else if (k === '.') dot();
+    else if (k === '+' || k === '-' || k === '*' || k === '/') operator(k);
+    else if (k === '=') equals();
+    else if (k === '±') sign();
+    else if (k === 'Backspace') back();
+    else if (k === 'CE') clearEntry();
+    else if (k === 'C') reset();
+    render();
+  }
+
+  document.getElementById('pad').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b) press(b.dataset.k);
+  });
+
+  function keyEl(k) { return document.querySelector('button[data-k="' + (k === '±' ? '±' : k) + '"]'); }
+  function flash(k) {
+    var b = keyEl(k); if (!b) return;
+    b.classList.add('hit'); setTimeout(function () { b.classList.remove('hit'); }, 110);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key, m = null;
+    if (/^[0-9]$/.test(k) || k === '+' || k === '-' || k === '*' || k === '/') m = k;
+    else if (k === '.' || k === ',') m = '.';
+    else if (k === 'x' || k === 'X') m = '*';
+    else if (k === 'Enter' || k === '=') m = '=';
+    else if (k === 'Backspace') m = 'Backspace';
+    else if (k === 'Delete') m = 'CE';
+    else if (k === 'Escape') m = 'C';
+    else if (k === 'F9') m = '±';
+    if (m === null) return;
+    // Enter/Space on a focused button would also click it; take over so it fires once
+    e.preventDefault();
+    flash(m); press(m);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

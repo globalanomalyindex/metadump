@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Three draggable colored sources blend across a live ASCII field with light/paint/naive models, but the paint model is only a rough geometric-mean approximation."},
+"V": {"fidelity": 8, "correctness": 7, "craft": 6, "usability": 7, "overall": 7, "note": "RGB ink mixer with a paintable ASCII canvas and three modes works, but the canvas starts blank black and the mix preview is a bare strip of glyphs."},
+"W": {"fidelity": 8, "correctness": 9, "craft": 8, "usability": 8, "overall": 8, "note": "Clean two-color ratio mixer with a shaded ASCII sphere, a ramp strip and a model toggle; correct and keyboard friendly, but the single-colour sphere shows less mixing than the others."},
+"X": {"fidelity": 8, "correctness": 7, "craft": 6, "usability": 7, "overall": 7, "note": "Paint-on-canvas mixer with pick-from-canvas and glyph ramps works, but it starts blank with a white leftover area and has a loose paint model."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Seeded with overlapping R/G/B blobs that visibly mix, it switches between additive light and CMY paint with a themed UI and a per-cell readout."},
+"Z": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 8, "overall": 7, "note": "Two-color mixer comparing sRGB mean with linear light; correct and keyboard friendly, but the ASCII is small boxed swatches and the page is plain."}
+},
+"ranking": ["Y", "U", "W", "V", "X", "Z"]}

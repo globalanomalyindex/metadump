@@ -1,0 +1,463 @@
+{
+ "A-r1": {
+  "bytes": 8860,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 272,
+   "clientWidth": 272,
+   "font": 22
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r2": {
+  "bytes": 7209,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 272,
+   "clientWidth": 272,
+   "font": 24
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Cannot divide by 0",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r3": {
+  "bytes": 6269,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 272,
+   "clientWidth": 272,
+   "font": 30
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Cannot divide by 0",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "A-r4": {
+  "bytes": 6821,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 272,
+   "clientWidth": 272,
+   "font": 26
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "C-r1": {
+  "bytes": 9727,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 190,
+   "clientWidth": 190,
+   "font": 28
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "\u22123",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999999999999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "C-r2": {
+  "bytes": 11184,
+  "display_found": true,
+  "display_read_from": "what it announces (a segmented display with no text)",
+  "long_number": {
+   "within": true,
+   "scrollWidth": 284,
+   "clientWidth": 284,
+   "font": null
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999999999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "C-r3": {
+  "bytes": 10462,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 208,
+   "clientWidth": 208,
+   "font": 26
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "\u22123",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "C-r4": {
+  "bytes": 8683,
+  "display_found": true,
+  "long_number": {
+   "within": true,
+   "scrollWidth": 274,
+   "clientWidth": 274,
+   "font": 36
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999999999999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "R-r1": {
+  "bytes": 12636,
+  "display_found": true,
+  "display_read_from": "its text",
+  "long_number": {
+   "within": true,
+   "scrollWidth": 244,
+   "clientWidth": 244,
+   "font": 28
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Cannot divide by zero",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "R-r2": {
+  "bytes": 7436,
+  "display_found": true,
+  "display_read_from": "its text",
+  "long_number": {
+   "within": true,
+   "scrollWidth": 255,
+   "clientWidth": 255,
+   "font": 36
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Cannot divide by zero",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999,999,999,999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "R-r3": {
+  "bytes": 9490,
+  "display_found": true,
+  "display_read_from": "its text",
+  "long_number": {
+   "within": false,
+   "scrollWidth": 318,
+   "clientWidth": 308,
+   "font": 44
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": false,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "\u22123",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Error",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999999999999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 8,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ },
+ "R-r4": {
+  "bytes": 9073,
+  "display_found": true,
+  "display_read_from": "its text",
+  "long_number": {
+   "within": true,
+   "scrollWidth": 292,
+   "clientWidth": 292,
+   "font": 36
+  },
+  "checks": {
+   "1 add": true,
+   "2 multiply": true,
+   "3 negative": true,
+   "4 decimals": true,
+   "5 chained": true,
+   "6 divide by zero": true,
+   "7 long number": true,
+   "8 clear": true,
+   "9 keyboard": true
+  },
+  "shown": {
+   "1 add": "19",
+   "2 multiply": "72",
+   "3 negative": "-3",
+   "4 decimals": "0.3",
+   "5 chained": "20",
+   "6 divide by zero": "Cannot divide by zero",
+   "6 after clear, 1 + 1 =": "2",
+   "7 long number": "999999999999",
+   "8 clear": "0",
+   "9 keyboard": "20"
+  },
+  "passed": 9,
+  "not_run_count": 0,
+  "works": true,
+  "js_errors": 0,
+  "js_error_text": []
+ }
+}

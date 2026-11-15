@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block Sandbox 32x32</title>
+<style>
+:root{--bg:#1d2230;--panel:#262d40;--ink:#e8ecf5;--mut:#8b94ab;--acc:#ffcb47}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:12px;user-select:none}
+h1{font-size:18px;margin:0 0 8px}
+#wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+#board{display:grid;grid-template-columns:repeat(32,1fr);width:min(90vw,640px);aspect-ratio:1;background:#0f121b;border:3px solid #3a4360;border-radius:6px;overflow:hidden;touch-action:none;cursor:crosshair}
+.c{border:1px solid rgba(255,255,255,.04);min-width:0;min-height:0}
+.c.hov{outline:2px solid var(--acc);outline-offset:-2px}
+#side{background:var(--panel);padding:12px;border-radius:8px;width:200px}
+.sw{display:flex;align-items:center;gap:8px;padding:6px;margin-bottom:4px;border-radius:6px;cursor:pointer;border:2px solid transparent;width:100%;background:none;color:var(--ink);font:inherit;text-align:left}
+.sw:hover{background:#323a52}
+.sw.on{border-color:var(--acc);background:#323a52}
+.sw i{width:22px;height:22px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.4)}
+.sw kbd{margin-left:auto;color:var(--mut);font-size:12px}
+.btn{width:100%;padding:7px;margin-top:6px;border-radius:6px;border:0;background:#3a4360;color:var(--ink);cursor:pointer;font:inherit}
+.btn:hover{background:#4a5578}
+#stat{margin-top:10px;color:var(--mut);font-size:13px}
+#stat b{color:var(--ink)}
+p.h{color:var(--mut);font-size:12px;margin:8px 0 0}
+</style>
+</head>
+<body>
+<h1>Block Sandbox</h1>
+<div id="wrap">
+<div id="board"></div>
+<div id="side">
+<div id="pal"></div>
+<button class="btn" id="undo">Undo (Z)</button>
+<button class="btn" id="clear">Clear world</button>
+<div id="stat"></div>
+<p class="h">Click or drag to place. Right-click or Erase to remove. Keys 1-8 pick a block. State saves automatically.</p>
+</div>
+</div>
+<script>
+(function(){
+var N=32;
+var TYPES=[
+{n:'Erase',c:null},
+{n:'Grass',c:'#5fb24a'},
+{n:'Dirt',c:'#8a5a34'},
+{n:'Stone',c:'#8b8f99'},
+{n:'Wood',c:'#b8823f'},
+{n:'Water',c:'#3d82e0'},
+{n:'Sand',c:'#e6d08a'},
+{n:'Brick',c:'#c4503e'},
+{n:'Gold',c:'#ffcb47'}
+];
+var world=new Array(N*N).fill(0);
+var cur=1,hist=[],board=document.getElementById('board'),cells=[];
+try{var s=JSON.parse(localStorage.getItem('blocks32'));if(s&&s.length===N*N)world=s;}catch(e){}
+for(var i=0;i<N*N;i++){var d=document.createElement('div');d.className='c';d.dataset.i=i;board.appendChild(d);cells.push(d);}
+var pal=document.getElementById('pal'),btns=[];
+TYPES.forEach(function(t,k){
+var b=document.createElement('button');b.className='sw';
+b.innerHTML='<i style="background:'+(t.c||'repeating-linear-gradient(45deg,#222,#222 4px,#444 4px,#444 8px)')+'"></i>'+t.n+'<kbd>'+k+'</kbd>';
+b.onclick=function(){pick(k)};pal.appendChild(b);btns.push(b);
+});
+function pick(k){cur=k;btns.forEach(function(b,j){b.classList.toggle('on',j===k)});}
+function paint(i){var t=world[i];cells[i].style.background=t?TYPES[t].c:'transparent';}
+function stats(){
+var cnt=world.filter(function(x){return x}).length;
+document.getElementById('stat').innerHTML='Selected: <b>'+TYPES[cur].n+'</b><br>Blocks placed: <b>'+cnt+'</b> / '+(N*N)+'<br>Undo steps: <b>'+hist.length+'</b>';
+}
+function save(){try{localStorage.setItem('blocks32',JSON.stringify(world))}catch(e){}}
+function refresh(){for(var i=0;i<N*N;i++)paint(i);stats();save();}
+var drawing=false,val=0,pending=null;
+function setCell(i,v){
+if(world[i]===v)return;
+pending.push([i,world[i]]);world[i]=v;paint(i);
+}
+function cellAt(e){var el=document.elementFromPoint(e.clientX,e.clientY);return el&&el.classList.contains('c')?+el.dataset.i:-1;}
+board.addEventListener('contextmenu',function(e){e.preventDefault()});
+board.addEventListener('pointerdown',function(e){
+var i=cellAt(e);if(i<0)return;
+drawing=true;val=(e.button===2)?0:cur;pending=[];
+setCell(i,val);
+try{board.setPointerCapture(e.pointerId)}catch(x){}
+stats();
+});
+board.addEventListener('pointermove',function(e){
+var i=cellAt(e);
+cells.forEach(function(c){c.classList.remove('hov')});
+if(i>=0)cells[i].classList.add('hov');
+if(drawing&&i>=0){setCell(i,val);}
+});
+function end(){
+if(!drawing)return;drawing=false;
+if(pending&&pending.length){hist.push(pending);if(hist.length>200)hist.shift();}
+pending=null;stats();save();
+}
+board.addEventListener('pointerup',end);
+board.addEventListener('pointercancel',end);
+board.addEventListener('pointerleave',function(){cells.forEach(function(c){c.classList.remove('hov')})});
+function undo(){
+var h=hist.pop();if(!h)return;
+for(var k=h.length-1;k>=0;k--)world[h[k][0]]=h[k][1];
+refresh();
+}
+document.getElementById('undo').onclick=undo;
+document.getElementById('clear').onclick=function(){
+var ch=[];world.forEach(function(v,i){if(v)ch.push([i,v])});
+if(!ch.length)return;hist.push(ch);world.fill(0);refresh();
+};
+document.addEventListener('keydown',function(e){
+if(e.key>='0'&&e.key<='8'){pick(+e.key);stats();}
+else if(e.key==='z'||e.key==='Z'){undo();}
+});
+pick(1);refresh();
+})();
+</script>
+</body>
+</html>

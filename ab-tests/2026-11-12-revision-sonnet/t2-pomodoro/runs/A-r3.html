@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{--bg:#1d1a1a;--card:#2a2525;--fg:#f4ede8;--mute:#a89d96;--accent:#ef5b4c;--ring:#3a3333}
+body.short{--accent:#4cc3a0}
+body.long{--accent:#5b9bef}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;transition:background .3s}
+main{width:min(360px,92vw);background:var(--card);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:0 20px 50px #0006}
+.tabs{display:flex;gap:6px;background:#0003;padding:4px;border-radius:999px}
+.tabs button{flex:1;border:0;background:none;color:var(--mute);padding:8px 4px;border-radius:999px;font:inherit;font-size:13px;cursor:pointer}
+.tabs button.on{background:var(--accent);color:#111;font-weight:600}
+.dial{position:relative;width:240px;height:240px;margin:24px auto}
+svg{width:100%;height:100%;transform:rotate(-90deg)}
+circle{fill:none;stroke-width:10}
+.track{stroke:var(--ring)}
+.bar{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .4s linear}
+.time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#t{font-size:54px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+#l{color:var(--mute);font-size:13px}
+.ctl{display:flex;gap:10px;justify-content:center}
+.ctl button{border:0;border-radius:999px;font:inherit;cursor:pointer;padding:12px 22px;background:var(--ring);color:var(--fg)}
+.ctl #go{background:var(--accent);color:#111;font-weight:700;min-width:110px}
+button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.dots{margin-top:20px;font-size:13px;color:var(--mute)}
+.dots i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ring);margin:0 3px;vertical-align:middle}
+.dots i.f{background:var(--accent)}
+.set{margin-top:16px;display:flex;gap:8px;justify-content:center;font-size:12px;color:var(--mute)}
+.set label{display:flex;flex-direction:column;gap:4px}
+.set input{width:64px;background:#0003;border:1px solid var(--ring);color:var(--fg);border-radius:8px;padding:6px;text-align:center;font:inherit}
+</style>
+</head>
+<body>
+<main>
+  <div class="tabs" id="tabs">
+    <button data-m="focus" class="on">Focus</button>
+    <button data-m="short">Short break</button>
+    <button data-m="long">Long break</button>
+  </div>
+  <div class="dial">
+    <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="45" style="stroke-width:4"/><circle class="bar" id="bar" cx="50" cy="50" r="45" style="stroke-width:4"/></svg>
+    <div class="time"><div id="t">25:00</div><div id="l">Focus</div></div>
+  </div>
+  <div class="ctl">
+    <button id="reset">Reset</button>
+    <button id="go">Start</button>
+    <button id="skip">Skip</button>
+  </div>
+  <div class="dots" id="dots"></div>
+  <div class="set">
+    <label>Focus<input type="number" id="s-focus" min="1" max="120" value="25"></label>
+    <label>Short<input type="number" id="s-short" min="1" max="60" value="5"></label>
+    <label>Long<input type="number" id="s-long" min="1" max="90" value="15"></label>
+  </div>
+</main>
+<script>
+const C=2*Math.PI*45;
+const names={focus:'Focus',short:'Short break',long:'Long break'};
+const mins={focus:25,short:5,long:15};
+let mode='focus',left=mins.focus*60,end=0,timer=null,done=0;
+const $=id=>document.getElementById(id);
+const bar=$('bar');bar.style.strokeDasharray=C;
+function total(){return mins[mode]*60}
+function render(){
+  const m=Math.floor(left/60),s=left%60;
+  const txt=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  $('t').textContent=txt;
+  $('l').textContent=names[mode];
+  $('go').textContent=timer?'Pause':'Start';
+  bar.style.strokeDashoffset=C*(1-left/total());
+  document.title=(timer?txt+' - ':'')+'Pomodoro';
+  document.body.className=mode==='focus'?'':mode;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+  let d='';for(let i=0;i<4;i++)d+='<i class="'+(i<done%4||(done&&done%4===0&&i<4&&mode==='long')?'f':'')+'"></i>';
+  $('dots').innerHTML=d+' &nbsp;'+done+' done';
+}
+function stop(){clearInterval(timer);timer=null}
+function setMode(m){stop();mode=m;left=total();render()}
+function beep(){
+  try{const a=new (window.AudioContext||window.webkitAudioContext)();
+  [0,.25,.5].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);
+  g.gain.setValueAtTime(.2,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.2);o.start(a.currentTime+t);o.stop(a.currentTime+t+.2)})}catch(e){}
+}
+function next(auto){
+  if(mode==='focus'){done++;setMode(done%4===0?'long':'short')}
+  else setMode('focus');
+}
+function tick(){
+  left=Math.max(0,Math.round((end-Date.now())/1000));
+  if(left<=0){beep();next(true);return}
+  render();
+}
+$('go').onclick=()=>{
+  if(timer){stop();render();return}
+  end=Date.now()+left*1000;
+  timer=setInterval(tick,250);render();
+};
+$('reset').onclick=()=>setMode(mode);
+$('skip').onclick=()=>next(false);
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.m)};
+['focus','short','long'].forEach(k=>{
+  $('s-'+k).onchange=e=>{
+    let v=Math.max(1,Math.min(+e.target.max,parseInt(e.target.value)||mins[k]));
+    e.target.value=v;mins[k]=v;
+    if(!timer&&mode===k){left=total()}
+    render();
+  };
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();$('go').click()}
+});
+render();
+</script>
+</body>
+</html>

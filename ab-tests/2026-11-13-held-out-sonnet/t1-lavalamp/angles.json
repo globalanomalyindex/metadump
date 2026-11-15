@@ -1,0 +1,44 @@
+[
+  {
+    "angle": "classic tapered bottle",
+    "text": "A tall tapered glass bottle on a round bulb base, red or orange wax rising through clear liquid.",
+    "draws_on": [
+      "an-parts",
+      "mb-vessel-straight-gold",
+      "mb-red-at-rest"
+    ]
+  },
+  {
+    "angle": "rounded globe",
+    "text": "A round glass globe with a short neck and a small cap on a low base, the wax gathering in a deeper liquid.",
+    "draws_on": [
+      "opt-form-globe",
+      "mb-vessel-blue-close"
+    ]
+  },
+  {
+    "angle": "silver hourglass base",
+    "text": "A polished silver base with a waist or a capsule form, holding a bright wax in a violet or purple liquid.",
+    "draws_on": [
+      "ex-astro",
+      "mb-astro-silver-hourglass",
+      "mb-mathmos-rocket"
+    ]
+  },
+  {
+    "angle": "tall tapered violet lamp",
+    "text": "A tall tapered lamp with its glass vessel and cap, the liquid tinted violet and the wax a paler tone against it, lit from the bulb below.",
+    "draws_on": [
+      "opt-light-cool-violet",
+      "mb-astro-cyan-glow"
+    ]
+  },
+  {
+    "angle": "squat round lamp",
+    "text": "A squat round lamp or a short cylinder on a base, the wax in a few large blobs in clear liquid and the glow under the base.",
+    "draws_on": [
+      "anx-base-shapes",
+      "opt-cap"
+    ]
+  }
+]

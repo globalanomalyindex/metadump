@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j3","scores":{
+"U":{"imagination":4,"fieldguide":8,"specificity":6,"voice":5,"freshness":3,"overall":5,"note":"Clean, usable field guide layout but a stock fire-breathing hoarding dragon with generic stats."},
+"V":{"imagination":7,"fieldguide":9,"specificity":8,"voice":7,"freshness":7,"overall":8,"note":"Rigorous taxonomy, synonymy, lifecycle and lookalike table with Komodo and frilled-lizard anchors; slightly dry but very usable."},
+"W":{"imagination":6,"fieldguide":8,"specificity":8,"voice":7,"freshness":7,"overall":7,"note":"Compact plate-style entry with a nice goatherd-witness sources note; less expansive than the others."},
+"X":{"imagination":8,"fieldguide":8,"specificity":8,"voice":8,"freshness":8,"overall":8,"note":"Richly invented provenance (sheep-reeve's roll, disputed colour, lost specimen) and honest gaps, though dense and long."},
+"Y":{"imagination":5,"fieldguide":8,"specificity":6,"voice":6,"freshness":4,"overall":5,"note":"Charming touches like infrasound and the remembered missing cup, but still a conventional ember dragon."},
+"Z":{"imagination":9,"fieldguide":8,"specificity":8,"voice":9,"freshness":9,"overall":9,"note":"A wingless rain-wyrm recorded by a named surveyor with a ferryman's disputed measurement and scrupulous gaps; only the chatty preamble line detracts."}},
+"ranking":["Z","X","V","W","Y","U"]}

@@ -1,0 +1,52 @@
+[
+  {
+    "angle": "grid panel from a corner handle",
+    "text": "A grid of rounded compartments in a few sizes opens as one panel from a small handle in the corner, and folds back into that handle.",
+    "draws_on": [
+      "req-bento",
+      "bg-bento",
+      "bh-states",
+      "cl-closed",
+      "cl-open-panel"
+    ]
+  },
+  {
+    "angle": "row of tiles that spreads",
+    "text": "The collapsed form is a short row of small compartment tiles; opening it spreads them into the full grid.",
+    "draws_on": [
+      "bh-opt-collapsed-form",
+      "bg-count",
+      "bh-states"
+    ]
+  },
+  {
+    "angle": "tin stack that lifts into a grid",
+    "text": "The compartments are tins stacked into one pile in a corner; opening lifts them out into a grid of tight compartments on one gutter, and closing stacks them back.",
+    "draws_on": [
+      "q-bento",
+      "assoc-bento-lineage",
+      "bh-states",
+      "cl-open-panel"
+    ]
+  },
+  {
+    "angle": "photo header that folds the rest",
+    "text": "One large photo cell is the menu's header and its trigger; the smaller compartments sit under it on the same gutter and fold away beneath it, leaving the photo as the handle.",
+    "draws_on": [
+      "q-bento",
+      "hk-imagery",
+      "mb-bento-tiles",
+      "bh-states"
+    ]
+  },
+  {
+    "angle": "folding cards with one master control",
+    "text": "Each compartment is its own card with its own disclosure, and one control at the top opens or closes all the cards together, so the set folds as one and each card can also fold alone.",
+    "draws_on": [
+      "bh-triggers",
+      "apg-states",
+      "apg-trigger",
+      "bh-opt-scope"
+    ]
+  }
+]

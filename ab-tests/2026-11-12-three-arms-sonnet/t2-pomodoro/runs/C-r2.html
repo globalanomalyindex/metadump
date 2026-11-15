@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pomodoro</title>
+<style>
+:root{
+  --bg:#f3efe6; --ink:#1d1b17; --dim:#6e675b; --rule:#d8d1c1; --accent:#b8381f;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+:root[data-phase="short"]{--accent:#2f6b4a}
+:root[data-phase="long"]{--accent:#2a5a8f}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#171611; --ink:#ece6d6; --dim:#9a927f; --rule:#37342a; --accent:#ee7a5f}
+  :root[data-phase="short"]{--accent:#7fc79d}
+  :root[data-phase="long"]{--accent:#8fb8ea}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);
+  display:flex;align-items:center;justify-content:center;padding:16px}
+main{width:100%;max-width:640px}
+.phase{font-size:clamp(14px,3.4vw,18px);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 6px;font-weight:700}
+.clock{font-size:clamp(64px,22vw,172px);line-height:1;font-weight:500;margin:0;
+  font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap}
+.bar{font-size:clamp(11px,3vw,16px);color:var(--accent);margin:12px 0 0;letter-spacing:.02em;white-space:pre;overflow:hidden}
+.status{font-size:clamp(14px,3.6vw,17px);line-height:1.5;margin:14px 0 0;min-height:3em;color:var(--ink)}
+.status .dim{color:var(--dim)}
+.controls{display:flex;flex-wrap:wrap;gap:8px 22px;margin:26px 0 0}
+button{font:inherit;font-size:clamp(15px,4vw,18px);color:var(--ink);background:none;border:0;border-bottom:2px solid transparent;
+  padding:12px 2px;min-height:44px;min-width:44px;cursor:pointer}
+button:hover{border-bottom-color:var(--rule)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+button.primary{font-weight:700;color:var(--accent);border-bottom-color:var(--accent)}
+button[aria-pressed="true"]{border-bottom-color:var(--ink)}
+.keys{color:var(--dim);font-size:12px;margin:18px 0 0}
+details{margin:22px 0 0;border-top:1px solid var(--rule);padding-top:10px;font-size:14px;color:var(--dim)}
+summary{cursor:pointer;min-height:32px;padding:6px 0}
+.row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:8px 0}
+label{display:inline-flex;gap:8px;align-items:center}
+input[type=number]{font:inherit;width:4.5em;color:var(--ink);background:transparent;border:1px solid var(--rule);padding:8px;min-height:40px}
+.flash body{}
+body.flash{animation:flash 1.2s ease-out 2}
+@keyframes flash{0%{background:var(--accent)}100%{background:var(--bg)}}
+@media (prefers-reduced-motion:reduce){body.flash{animation:none;outline:6px solid var(--accent);outline-offset:-6px}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+  <p class="phase" id="phase">focus</p>
+  <h1 class="clock" id="clock" aria-label="time remaining"></h1>
+  <p class="bar" id="bar" aria-hidden="true"></p>
+  <p class="status" id="status"></p>
+  <div class="controls">
+    <button id="toggle" class="primary" type="button">start</button>
+    <button id="reset" type="button">reset</button>
+    <button id="skip" type="button">skip</button>
+    <button id="auto" type="button" aria-pressed="false">auto-advance: off</button>
+    <button id="sound" type="button" aria-pressed="false">sound: off</button>
+  </div>
+  <p class="keys">space start/pause &nbsp; r reset &nbsp; s skip</p>
+  <details>
+    <summary>durations (minutes)</summary>
+    <div class="row">
+      <label>focus <input id="d-work" type="number" min="1" max="180" value="25"></label>
+      <label>short break <input id="d-short" type="number" min="1" max="60" value="5"></label>
+      <label>long break <input id="d-long" type="number" min="1" max="90" value="15"></label>
+    </div>
+    <div class="row">Changes apply to the next interval, or at once if the clock is idle.</div>
+  </details>
+  <div class="sr" role="status" aria-live="polite" id="live"></div>
+</main>
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var NAMES = {work:'focus', short:'short break', long:'long break'};
+  var mins = {work:25, short:5, long:15};
+  var S = {
+    phase:'work', running:false, endAt:0, remaining:25*60000,
+    total:25*60000, done:0, auto:false, sound:false, note:'', resetArm:0
+  };
+  var audio = null, tickId = null, resetTimer = null;
+
+  try{
+    var saved = JSON.parse(localStorage.getItem('pomodoro-quiet')||'null');
+    if(saved){
+      ['work','short','long'].forEach(function(k){ if(saved.mins && saved.mins[k]>0) mins[k]=saved.mins[k]; });
+      if(typeof saved.done==='number') S.done = saved.done;
+      S.auto = !!saved.auto;
+    }
+  }catch(e){}
+  S.remaining = mins.work*60000;
+  function save(){ try{ localStorage.setItem('pomodoro-quiet', JSON.stringify({mins:mins,done:S.done,auto:S.auto})); }catch(e){} }
+
+  function len(p){ return mins[p]*60000; }
+  function left(){ return S.running ? Math.max(0, S.endAt - Date.now()) : S.remaining; }
+  function fmt(ms){
+    var s = Math.ceil(ms/1000), m = Math.floor(s/60), r = s%60;
+    return (m<10?'0':'')+m+':'+(r<10?'0':'')+r;
+  }
+  function nextAfter(p, done){
+    if(p==='work') return (done>0 && done%4===0) ? 'long' : 'short';
+    return 'work';
+  }
+  function announce(t){ $('live').textContent = ''; setTimeout(function(){ $('live').textContent = t; }, 30); }
+
+  function chime(){
+    if(!S.sound || !audio) return;
+    try{
+      [0,0.28,0.56].forEach(function(d,i){
+        var o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime + d;
+        o.type='sine'; o.frequency.value = i===2 ? 784 : 587;
+        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.15,t+0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+0.4);
+        o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t+0.45);
+      });
+    }catch(e){}
+  }
+  function flash(){
+    document.body.classList.remove('flash'); void document.body.offsetWidth; document.body.classList.add('flash');
+  }
+
+  function goTo(p, startNow){
+    S.phase = p;
+    S.remaining = len(p); S.total = S.remaining;
+    S.running = !!startNow;
+    S.endAt = startNow ? Date.now()+S.remaining : 0;
+    S.resetArm = 0;
+  }
+
+  function complete(){
+    var was = S.phase;
+    if(was==='work') S.done++;
+    var nxt = nextAfter(was, S.done);
+    goTo(nxt, S.auto);
+    S.note = (was==='work' ? 'pomodoro '+S.done+' finished. ' : NAMES[was]+' over. ');
+    chime(); flash(); save();
+    announce(S.note + NAMES[nxt] + (S.auto ? ' started.' : ' is ready.'));
+  }
+
+  function tick(){
+    if(S.running && Date.now() >= S.endAt) complete();
+    render();
+  }
+
+  function startLoop(){ if(!tickId) tickId = setInterval(tick, 250); }
+  function stopLoop(){ if(tickId){ clearInterval(tickId); tickId = null; } }
+
+  function toggle(){
+    if(S.sound && !audio){
+      try{ audio = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+    }
+    if(audio && audio.state==='suspended'){ try{ audio.resume(); }catch(e){} }
+    if(S.running){
+      S.remaining = Math.max(0, S.endAt-Date.now());
+      S.running = false; S.endAt = 0; S.note = 'paused. the same interval is held.';
+      stopLoop();
+    }else{
+      if(S.remaining<=0) S.remaining = S.total;
+      S.endAt = Date.now()+S.remaining; S.running = true; S.note = '';
+      startLoop();
+    }
+    S.resetArm = 0;
+    render();
+  }
+
+  function reset(){
+    var inWork = S.phase==='work';
+    var started = S.running || S.remaining < S.total;
+    if(S.running && inWork && !S.resetArm){
+      S.resetArm = 1; S.note = 'this abandons the running interval. press reset again to confirm.';
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(function(){ S.resetArm=0; S.note=''; render(); }, 3500);
+      render(); return;
+    }
+    clearTimeout(resetTimer);
+    var abandoned = started && inWork;
+    S.running = false; S.endAt = 0; S.total = S.remaining = len(S.phase); S.resetArm = 0;
+    S.note = abandoned ? 'interval abandoned, not counted. the count stays.' : 'back to the start of this interval.';
+    stopLoop(); render();
+  }
+
+  function skip(){
+    var was = S.phase;
+    var nxt = was==='work' ? 'short' : 'work';
+    if(was==='work' && S.done>0 && S.done%4===0) nxt = 'long';
+    goTo(nxt, false);
+    S.note = (was==='work' ? 'focus skipped, not counted. ' : NAMES[was]+' skipped. ');
+    stopLoop(); save();
+    announce(S.note + NAMES[nxt] + ' is ready.');
+    render();
+  }
+
+  function barText(){
+    var total = S.total, frac = 1 - left()/total;
+    var n = 30, f = Math.max(0, Math.min(n, Math.round(frac*n)));
+    return '[' + '#'.repeat(f) + '-'.repeat(n-f) + '] ' + Math.round(frac*100) + '%';
+  }
+
+  function statusHTML(){
+    var state = S.running ? 'running' : (S.remaining < S.total ? 'paused' : 'ready');
+    var inCycle = S.done % 4;
+    var seq;
+    if(S.phase==='work') seq = 'pomodoro ' + (inCycle+1) + ' of 4';
+    else seq = 'after pomodoro ' + (S.done%4===0 && S.done>0 ? 4 : inCycle) + ' of 4';
+    var nxt = nextAfter(S.phase, S.phase==='work' ? S.done+1 : S.done);
+    var line1 = NAMES[S.phase] + ', ' + state + '. ' + seq + '. ' + S.done + ' finished today.';
+    var line2 = 'next: ' + NAMES[nxt] + (S.auto ? ', starts on its own.' : ', waits for you.');
+    var html = line1 + '<br><span class="dim">' + line2 + '</span>';
+    if(S.note) html = esc(S.note) + '<br>' + html.replace(/^/, '');
+    return html;
+  }
+  function esc(s){ return s.replace(/[&<>]/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]}); }
+
+  function render(){
+    var l = left(), t = fmt(l);
+    $('clock').textContent = t;
+    $('phase').textContent = NAMES[S.phase];
+    $('bar').textContent = barText();
+    $('status').innerHTML = statusHTML();
+    document.documentElement.setAttribute('data-phase', S.phase);
+    document.title = (S.running ? t + ' ' + NAMES[S.phase] : 'pomodoro') + (S.running ? '' : ' (' + t + ')');
+    var tg = $('toggle');
+    tg.textContent = S.running ? 'pause' : (S.remaining < S.total ? 'resume' : 'start');
+    $('reset').textContent = S.resetArm ? 'reset?' : 'reset';
+    $('skip').textContent = S.phase==='work' ? 'skip focus' : 'skip break';
+    $('auto').textContent = 'auto-advance: ' + (S.auto ? 'on' : 'off');
+    $('auto').setAttribute('aria-pressed', S.auto);
+    $('sound').textContent = 'sound: ' + (S.sound ? 'on' : 'off');
+    $('sound').setAttribute('aria-pressed', S.sound);
+  }
+
+  $('toggle').addEventListener('click', toggle);
+  $('reset').addEventListener('click', reset);
+  $('skip').addEventListener('click', skip);
+  $('auto').addEventListener('click', function(){ S.auto = !S.auto; save(); render(); });
+  $('sound').addEventListener('click', function(){
+    S.sound = !S.sound;
+    if(S.sound && !audio){ try{ audio = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    if(S.sound) chime();
+    render();
+  });
+
+  function applyDur(k, el){
+    var v = Math.max(1, Math.min(+el.max, Math.round(+el.value) || mins[k]));
+    mins[k] = v; el.value = v;
+    if(!S.running && S.phase===k && S.remaining >= S.total){ S.total = S.remaining = len(k); }
+    save(); render();
+  }
+  [['work','d-work'],['short','d-short'],['long','d-long']].forEach(function(p){
+    var el = $(p[1]); el.value = mins[p[0]];
+    el.addEventListener('change', function(){ applyDur(p[0], el); });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.target.tagName==='INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if(e.key==='r'){ reset(); }
+    else if(e.key==='s'){ skip(); }
+    else if(e.key===' ' && e.target.tagName!=='BUTTON'){ e.preventDefault(); toggle(); }
+  });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) tick(); });
+
+  S.total = S.remaining = len('work');
+  render();
+})();
+</script>
+</body>
+</html>

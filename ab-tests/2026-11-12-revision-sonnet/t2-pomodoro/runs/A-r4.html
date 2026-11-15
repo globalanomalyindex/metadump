@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{--bg:#1f1b24;--card:#2a2531;--fg:#f4eef6;--mut:#a79bb0;--acc:#ff6b5a;--ring:#3a3342}
+body.short{--acc:#4cc9a0}
+body.long{--acc:#5aa9ff}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;transition:background .3s}
+main{width:min(380px,92vw);background:var(--card);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:0 20px 50px #0006}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:999px}
+.tabs button{flex:1;border:0;background:none;color:var(--mut);padding:8px 4px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--acc);color:#1a1118;font-weight:600}
+.dial{position:relative;width:240px;height:240px;margin:26px auto}
+.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+circle{fill:none;stroke-width:10}
+.bg{stroke:var(--ring)}
+.fg{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset .4s linear}
+.time{position:absolute;inset:0;display:grid;place-content:center;font-size:56px;font-weight:700;font-variant-numeric:tabular-nums}
+.time small{display:block;font-size:13px;font-weight:400;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.ctl{display:flex;gap:10px;justify-content:center}
+.ctl button{border:0;border-radius:999px;padding:12px 26px;font:inherit;font-weight:600;cursor:pointer;background:var(--ring);color:var(--fg)}
+.ctl #go{background:var(--acc);color:#1a1118;min-width:110px}
+button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.sess{margin-top:22px;color:var(--mut);font-size:14px}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--ring)}
+.dots i.d{background:var(--acc)}
+.set{margin-top:20px;display:flex;gap:8px;justify-content:center;font-size:13px;color:var(--mut)}
+.set label{display:flex;flex-direction:column;gap:4px;align-items:center}
+.set input{width:64px;background:var(--bg);border:1px solid var(--ring);color:var(--fg);border-radius:8px;padding:6px;text-align:center;font:inherit}
+</style>
+</head>
+<body>
+<main>
+  <div class="tabs" id="tabs">
+    <button data-m="focus" class="on">Focus</button>
+    <button data-m="short">Short break</button>
+    <button data-m="long">Long break</button>
+  </div>
+  <div class="dial">
+    <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="ring" cx="50" cy="50" r="45"/></svg>
+    <div class="time"><span id="t">25:00</span><small id="lbl">Focus</small></div>
+  </div>
+  <div class="ctl">
+    <button id="go">Start</button>
+    <button id="reset">Reset</button>
+    <button id="skip">Skip</button>
+  </div>
+  <div class="sess"><span id="count">0 pomodoros done</span><div class="dots" id="dots"></div></div>
+  <div class="set">
+    <label>Focus min<input type="number" id="s-focus" min="1" max="120" value="25"></label>
+    <label>Short<input type="number" id="s-short" min="1" max="60" value="5"></label>
+    <label>Long<input type="number" id="s-long" min="1" max="60" value="15"></label>
+  </div>
+</main>
+<script>
+(function(){
+  var C=2*Math.PI*45;
+  var dur={focus:25,short:5,long:15};
+  var mode='focus',total=dur.focus*60,left=total,running=false,end=0,tick=null,done=0;
+  var $=function(i){return document.getElementById(i)};
+  var ring=$('ring');
+  ring.style.strokeDasharray=C;
+  var names={focus:'Focus',short:'Short break',long:'Long break'};
+
+  function fmt(s){var m=Math.floor(s/60),r=s%60;return (m<10?'0':'')+m+':'+(r<10?'0':'')+r}
+  function render(){
+    $('t').textContent=fmt(left);
+    $('lbl').textContent=names[mode];
+    ring.style.strokeDashoffset=C*(1-left/total);
+    $('go').textContent=running?'Pause':'Start';
+    document.title=(running?fmt(left)+' · ':'')+'Pomodoro';
+    document.body.className=mode==='focus'?'':mode;
+    var b=$('tabs').children;
+    for(var i=0;i<b.length;i++)b[i].classList.toggle('on',b[i].dataset.m===mode);
+    $('count').textContent=done+(done===1?' pomodoro done':' pomodoros done');
+    var d=$('dots'),n=done%4,h='';
+    for(var k=0;k<4;k++)h+='<i class="'+(k<n||(done>0&&n===0&&false)?'d':'')+'"></i>';
+    d.innerHTML=h;
+  }
+  function stop(){running=false;clearInterval(tick);tick=null}
+  function setMode(m){stop();mode=m;total=dur[m]*60;left=total;render()}
+  function beep(){
+    try{
+      var a=new (window.AudioContext||window.webkitAudioContext)();
+      [0,0.25,0.5].forEach(function(t){
+        var o=a.createOscillator(),g=a.createGain();
+        o.frequency.value=880;o.connect(g);g.connect(a.destination);
+        g.gain.setValueAtTime(.2,a.currentTime+t);
+        g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.2);
+        o.start(a.currentTime+t);o.stop(a.currentTime+t+.2);
+      });
+    }catch(e){}
+  }
+  function finish(){
+    stop();beep();
+    if(mode==='focus'){done++;setMode(done%4===0?'long':'short')}
+    else setMode('focus');
+  }
+  function update(){
+    left=Math.max(0,Math.round((end-Date.now())/1000));
+    if(left<=0){left=0;render();finish();return}
+    render();
+  }
+  function start(){
+    if(running)return;
+    running=true;end=Date.now()+left*1000;
+    tick=setInterval(update,250);render();
+  }
+  $('go').onclick=function(){running?(stop(),render()):start()};
+  $('reset').onclick=function(){stop();left=total;render()};
+  $('skip').onclick=function(){
+    var was=running;
+    if(mode==='focus')setMode(((done+1)%4===0)?'long':'short');else setMode('focus');
+    if(was)start();
+  };
+  $('tabs').onclick=function(e){var m=e.target.dataset&&e.target.dataset.m;if(m)setMode(m)};
+  ['focus','short','long'].forEach(function(k){
+    $('s-'+k).onchange=function(){
+      var v=Math.min(+this.max,Math.max(1,parseInt(this.value,10)||dur[k]));
+      this.value=v;dur[k]=v;
+      if(mode===k&&!running){total=v*60;left=total;render()}
+    };
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT')return;
+    if(e.code==='Space'){e.preventDefault();$('go').click()}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

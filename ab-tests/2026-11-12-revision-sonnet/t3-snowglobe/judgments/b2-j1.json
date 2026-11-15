@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 7, "presentation": 6, "overall": 8, "note": "Convincing glass dome on a brass collar and wood base with a lit cabin, but the scene is small and the side panel crowds the desktop and phone layouts."},
+"V": {"likeness": 8, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Clear dome and base, but the scene is dim and tiny, the blue base is bland, and snow sits as an odd cluster at rest."},
+"W": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 9, "overall": 9, "note": "Moonlit night cabin with pines, stars, smoke and a glowing window, a settled snow mound and a clean centered layout that works on phone."},
+"X": {"likeness": 8, "visuals": 7, "motion": 8, "presentation": 6, "overall": 7, "note": "Large glassy dome with lively falling snow and a cozy cabin, but the black angular base looks off and the controls crowd the bottom edge."},
+"Z": {"likeness": 7, "visuals": 7, "motion": 6, "presentation": 7, "overall": 7, "note": "Charming shelf room staging, but the globe sits tilted at rest, the glass looks milky and the base is clumsy."},
+"Y": {"likeness": 6, "visuals": 5, "motion": 5, "presentation": 6, "overall": 5, "note": "Flat daytime scene, the base is a clipped brown blob and the snow bunches at the top of the dome instead of falling convincingly."}
+}, "ranking": ["W", "U", "X", "Z", "V", "Y"]}

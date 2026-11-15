@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"simple": 8, "correctness": 7, "usability": 6, "craft": 7, "code": 7, "overall": 7, "note": "Clean ring dial with tabs, working auto-advance and editable lengths, but Space is the only keyboard support, no live region, and tabs lack pressed state."},
+"V": {"simple": 4, "correctness": 6, "usability": 6, "craft": 4, "code": 4, "overall": 5, "note": "Thorough accessibility and a countdown that is accurate, but text-heavy and overbuilt with two-press reset confirmations (the scripted reset did not reset) and no phase switcher."},
+"W": {"simple": 8, "correctness": 9, "usability": 9, "craft": 9, "code": 8, "overall": 9, "note": "Polished ring timer with clear mode, state text, pressed tabs, keyboard shortcuts, live announcements, undo on reset, and a pause-before-next-phase flow on session end."},
+"X": {"simple": 6, "correctness": 8, "usability": 8, "craft": 8, "code": 6, "overall": 8, "note": "Big readable clock with phase-coloured background, pips and progress bar; solid correctness and a11y, though presets, persistence and clear-count with undo add bulk and skip from focus always goes to a short break."},
+"Y": {"simple": 8, "correctness": 6, "usability": 5, "craft": 7, "code": 8, "overall": 6, "note": "Compact and tidy dark card with working countdown, but skip from focus wrongly counts a pomodoro, and there is no keyboard beyond Space and no screen-reader support."},
+"Z": {"simple": 10, "correctness": 8, "usability": 8, "craft": 8, "code": 9, "overall": 8, "note": "Minimal and clear: mode tabs, huge time, progress bar, pause state in label, stops at 00:00 and offers the next phase on a button, with a timer role and live announcements; lacks keyboard shortcuts and skip."}
+},
+"ranking": ["W", "Z", "X", "U", "Y", "V"]}

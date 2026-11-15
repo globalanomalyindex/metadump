@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Calculator</title>
+<style>
+  :root {
+    --desk: #d9d3c4;
+    --desk-2: #cbc4b2;
+    --body: #2f3a3d;
+    --body-hi: #44525a;
+    --body-lo: #1c2427;
+    --lcd: #b7c4a2;
+    --lcd-lo: #a5b38f;
+    --ink: #1d2a1c;
+    --ghost: rgba(29, 42, 28, 0.08);
+    --key: #e7e2d4;
+    --key-edge: #a49e8d;
+    --key-text: #1f2527;
+    --key-op: #f0a63c;
+    --key-op-edge: #b8741a;
+    --key-clear: #d9604a;
+    --key-clear-edge: #94382a;
+    --key-eq: #3d8f7a;
+    --key-eq-edge: #1f5b4b;
+    --key-dark: #5b6a70;
+    --key-dark-edge: #333f44;
+    --ring: #ffd36b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background:
+      radial-gradient(1200px 700px at 30% 20%, #e6e1d3, var(--desk) 55%, var(--desk-2));
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--key-text);
+  }
+  .calc {
+    width: min(340px, 100%);
+    padding: 18px 16px 18px;
+    border-radius: 26px 26px 34px 34px;
+    background: linear-gradient(160deg, var(--body-hi), var(--body) 40%, var(--body-lo));
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.18) inset,
+      0 -3px 0 rgba(0,0,0,.35) inset,
+      0 26px 40px -14px rgba(40, 32, 18, .55),
+      0 3px 0 #11181a;
+  }
+  .brand {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 6px 10px;
+    font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+    color: #c4cec9;
+  }
+  .brand b { color: #e9e4d6; font-weight: 700; }
+  .solar {
+    display: flex; gap: 2px;
+  }
+  .solar i {
+    width: 14px; height: 9px; border-radius: 2px;
+    background: linear-gradient(#3a2f40, #1c1522);
+    box-shadow: 0 0 0 1px #0e0b11;
+  }
+
+  /* LCD window */
+  .window {
+    position: relative;
+    border-radius: 10px;
+    padding: 6px 12px 10px;
+    background: linear-gradient(180deg, var(--lcd-lo), var(--lcd) 35%);
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45) inset,
+      0 0 0 3px #161d1f,
+      0 1px 0 3px rgba(255,255,255,.1);
+    color: var(--ink);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .window::after { /* glass glare */
+    content: ""; position: absolute; inset: 0 0 55% 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    height: 20px;
+    font: 600 12px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    letter-spacing: .06em;
+    opacity: .85;
+  }
+  .meta .held { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta .flags { display: flex; gap: 8px; }
+  .flag { opacity: .14; transition: opacity .08s; }
+  .flag.on { opacity: 1; }
+  .digits { display: block; width: 100%; height: auto; margin-top: 2px; }
+  .seg { fill: var(--ghost); transition: fill .04s; }
+  .seg.on { fill: var(--ink); }
+  .sr {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* keys */
+  .pad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .key {
+    appearance: none; -webkit-appearance: none;
+    height: 56px;
+    border: 0; border-radius: 10px;
+    background: linear-gradient(180deg, #f3efe3, var(--key));
+    color: var(--key-text);
+    font: 600 22px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    box-shadow:
+      0 1px 0 #fff inset,
+      0 4px 0 var(--key-edge),
+      0 7px 8px rgba(0,0,0,.4);
+    cursor: pointer;
+    position: relative;
+    top: 0;
+    touch-action: manipulation;
+    user-select: none; -webkit-user-select: none;
+    transition: top .06s, box-shadow .06s, filter .12s;
+  }
+  .key:hover { filter: brightness(1.06); }
+  .key:active, .key.press {
+    top: 4px;
+    box-shadow:
+      0 1px 0 #fff inset,
+      0 0 0 var(--key-edge),
+      0 2px 3px rgba(0,0,0,.4);
+  }
+  .key:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+  .key small {
+    display: block; font-size: 9px; letter-spacing: .12em; font-weight: 700; margin-top: 3px; opacity: .7;
+  }
+  .key.op { background: linear-gradient(180deg, #f8bd62, var(--key-op)); box-shadow: 0 1px 0 #ffe3b3 inset, 0 4px 0 var(--key-op-edge), 0 7px 8px rgba(0,0,0,.4); font-size: 26px; }
+  .key.op:active, .key.op.press { box-shadow: 0 1px 0 #ffe3b3 inset, 0 0 0 var(--key-op-edge), 0 2px 3px rgba(0,0,0,.4); }
+  .key.op.pending {
+    background: linear-gradient(180deg, #fff3d0, #ffd88a);
+    outline: 3px solid #fff3d0; outline-offset: -3px;
+  }
+  .key.op.pending:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+  .key.clear { background: linear-gradient(180deg, #c8503b, #b3402d); color: #fff; box-shadow: 0 1px 0 #f7b3a7 inset, 0 4px 0 var(--key-clear-edge), 0 7px 8px rgba(0,0,0,.4); }
+  .key.clear:active, .key.clear.press { box-shadow: 0 1px 0 #f7b3a7 inset, 0 0 0 var(--key-clear-edge), 0 2px 3px rgba(0,0,0,.4); }
+  .key.util { background: linear-gradient(180deg, #55656b, #46555b); color: #f4f1e8; box-shadow: 0 1px 0 #a6b4b9 inset, 0 4px 0 var(--key-dark-edge), 0 7px 8px rgba(0,0,0,.4); font-size: 20px; }
+  .key.util:active, .key.util.press { box-shadow: 0 1px 0 #a6b4b9 inset, 0 0 0 var(--key-dark-edge), 0 2px 3px rgba(0,0,0,.4); }
+  .key.eq { background: linear-gradient(180deg, #55ae97, var(--key-eq)); color: #fff; font-size: 28px; box-shadow: 0 1px 0 #a4dccd inset, 0 4px 0 var(--key-eq-edge), 0 7px 8px rgba(0,0,0,.4); }
+  .key.eq:active, .key.eq.press { box-shadow: 0 1px 0 #a4dccd inset, 0 0 0 var(--key-eq-edge), 0 2px 3px rgba(0,0,0,.4); }
+
+  .foot {
+    margin-top: 16px; text-align: center;
+    font-size: 12px; color: #b9c4bf; letter-spacing: .04em;
+  }
+  .foot kbd { font: inherit; color: #c9d1cc; }
+
+  @media (max-width: 360px) {
+    .calc { padding: 14px 12px; }
+    .pad { gap: 8px; }
+    .key { height: 52px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .key, .seg, .flag { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="brand"><span><b>PK-8</b> basic</span><span class="solar" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+
+  <div class="window" role="group" aria-label="Display">
+    <div class="meta" aria-hidden="true">
+      <span class="held" id="held"></span>
+      <span class="flags"><span class="flag" id="flagErr">ERROR</span></span>
+    </div>
+    <svg class="digits" id="digits" viewBox="0 0 704 100" aria-hidden="true" focusable="false"></svg>
+    <div class="sr" id="sr" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="pad" id="pad">
+    <button class="key clear" data-k="C" aria-label="Clear all">C</button>
+    <button class="key util" data-k="CE" aria-label="Clear entry">CE</button>
+    <button class="key util" data-k="BS" aria-label="Backspace">&#9003;</button>
+    <button class="key op" data-k="/" aria-label="Divide">&divide;</button>
+
+    <button class="key" data-k="7">7</button>
+    <button class="key" data-k="8">8</button>
+    <button class="key" data-k="9">9</button>
+    <button class="key op" data-k="*" aria-label="Multiply">&times;</button>
+
+    <button class="key" data-k="4">4</button>
+    <button class="key" data-k="5">5</button>
+    <button class="key" data-k="6">6</button>
+    <button class="key op" data-k="-" aria-label="Subtract">&minus;</button>
+
+    <button class="key" data-k="1">1</button>
+    <button class="key" data-k="2">2</button>
+    <button class="key" data-k="3">3</button>
+    <button class="key op" data-k="+" aria-label="Add">+</button>
+
+    <button class="key util" data-k="SIGN" aria-label="Toggle sign">&plusmn;</button>
+    <button class="key" data-k="0">0</button>
+    <button class="key" data-k=".">.</button>
+    <button class="key eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+  <div class="foot">Keyboard: digits, <kbd>+ - * /</kbd>, <kbd>Enter</kbd>, <kbd>Backspace</kbd>, <kbd>Del</kbd> clear entry, <kbd>Esc</kbd> clear all</div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- seven-segment display (inline SVG, no font) ---------- */
+  var CELLS = 11;           /* cell 0 holds the minus sign, cells 1-10 hold digits */
+  var CELL_W = 64;
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('digits');
+
+  function hpoly(y) {
+    return [12 + ',' + y, 16 + ',' + (y - 4), 40 + ',' + (y - 4), 44 + ',' + y, 40 + ',' + (y + 4), 16 + ',' + (y + 4)].join(' ');
+  }
+  function vpoly(x, y1, y2) {
+    return [x + ',' + y1, (x + 4) + ',' + (y1 + 4), (x + 4) + ',' + (y2 - 4), x + ',' + y2, (x - 4) + ',' + (y2 - 4), (x - 4) + ',' + (y1 + 4)].join(' ');
+  }
+  var SEG_SHAPES = {
+    a: hpoly(8), g: hpoly(50), d: hpoly(92),
+    f: vpoly(8, 12, 46), b: vpoly(48, 12, 46),
+    e: vpoly(8, 54, 88), c: vpoly(48, 54, 88)
+  };
+  var GLYPHS = {
+    '0': 'abcdef', '1': 'bc', '2': 'abdeg', '3': 'abcdg', '4': 'bcfg',
+    '5': 'acdfg', '6': 'acdefg', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg',
+    '-': 'g', 'E': 'adefg', 'r': 'eg', 'o': 'cdeg', ' ': ''
+  };
+  var cells = [];
+  (function build() {
+    for (var i = 0; i < CELLS; i++) {
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('transform', 'translate(' + (i * CELL_W) + ' 0) skewX(-6)');
+      var segs = {};
+      Object.keys(SEG_SHAPES).forEach(function (k) {
+        var p = document.createElementNS(NS, 'polygon');
+        p.setAttribute('points', SEG_SHAPES[k]);
+        p.setAttribute('class', 'seg');
+        g.appendChild(p);
+        segs[k] = p;
+      });
+      var dp = document.createElementNS(NS, 'circle');
+      dp.setAttribute('cx', 56); dp.setAttribute('cy', 92); dp.setAttribute('r', 4.5);
+      dp.setAttribute('class', 'seg');
+      g.appendChild(dp);
+      svg.appendChild(g);
+      cells.push({ segs: segs, dp: dp });
+    }
+  })();
+
+  function paint(i, ch, dot) {
+    var on = GLYPHS[ch] || '';
+    var c = cells[i];
+    Object.keys(c.segs).forEach(function (k) {
+      c.segs[k].setAttribute('class', on.indexOf(k) >= 0 ? 'seg on' : 'seg');
+    });
+    c.dp.setAttribute('class', dot ? 'seg on' : 'seg');
+  }
+
+  /* text -> cells, right-aligned. Text like "-12.5" or "Error" */
+  function drawText(text) {
+    var i;
+    for (i = 0; i < CELLS; i++) paint(i, ' ', false);
+    var glyphs = [];  /* {ch, dot} */
+    for (i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (ch === '.') {
+        if (glyphs.length) glyphs[glyphs.length - 1].dot = true;
+        else glyphs.push({ ch: '0', dot: true });
+      } else {
+        glyphs.push({ ch: ch, dot: false });
+      }
+    }
+    var start = CELLS - glyphs.length;
+    if (start < 0) start = 0;
+    glyphs.forEach(function (gl, n) { paint(start + n, gl.ch, gl.dot); });
+  }
+
+  /* ---------- calculator state ---------- */
+  var MAX_DIGITS = 10;
+  var SYMBOL = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+  var NAME = { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' };
+
+  var s;
+  function fresh() {
+    return {
+      cur: '0',         /* the number being typed, as a string */
+      entering: false,  /* true while the user is typing cur */
+      acc: null,        /* the held value (left operand or last result) */
+      op: null,         /* the pending operator */
+      lastOp: null,     /* for repeat-equals */
+      lastB: null,
+      justEq: false,
+      error: false
+    };
+  }
+  s = fresh();
+
+  function digitCount(str) { return str.replace(/[^0-9]/g, '').length; }
+
+  /* round to 10 significant digits so 0.1 + 0.2 reads 0.3; null when it cannot fit */
+  function fmt(n) {
+    if (!isFinite(n)) return null;
+    var r = parseFloat(n.toPrecision(MAX_DIGITS));
+    if (Object.is(r, -0)) r = 0;
+    if (Math.abs(r) >= 1e10) return null;
+    var str = String(r);
+    if (str.indexOf('e') >= 0) {
+      if (Math.abs(r) < 1e-9) return '0';
+      str = r.toFixed(9).replace(/0+$/, '').replace(/\.$/, '');
+    }
+    return str;
+  }
+
+  function apply(a, op, b) {
+    switch (op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0 ? NaN : a / b;
+    }
+    return b;
+  }
+
+  function setError() {
+    var keep = fresh();
+    keep.error = true;
+    s = keep;
+  }
+
+  function shownValue() {
+    if (s.error) return 'Error';
+    if (s.entering) return s.cur;
+    return s.acc === null ? '0' : fmt(s.acc);
+  }
+
+  function spoken() {
+    if (s.error) return 'Error. Cannot divide by zero. Press C to clear.';
+    var v = shownValue();
+    return v.replace('-', 'minus ').replace('.', ' point ');
+  }
+
+  var announce = false;
+  function render() {
+    var v = shownValue();
+    drawText(v);
+    var heldEl = document.getElementById('held');
+    if (s.op !== null && s.acc !== null && !s.error) {
+      heldEl.textContent = fmt(s.acc) + ' ' + SYMBOL[s.op];
+    } else {
+      heldEl.textContent = '';
+    }
+    document.getElementById('flagErr').className = s.error ? 'flag on' : 'flag';
+    var keys = document.querySelectorAll('.key.op');
+    for (var i = 0; i < keys.length; i++) {
+      var pending = s.op !== null && !s.entering && keys[i].getAttribute('data-k') === s.op && !s.error;
+      keys[i].classList.toggle('pending', pending);
+      keys[i].setAttribute('aria-pressed', pending ? 'true' : 'false');
+    }
+    var cb = document.querySelector('[data-k="C"]');
+    if (announce) {   /* only results and errors are spoken, so typing stays quiet */
+      document.getElementById('sr').textContent = spoken();
+      announce = false;
+    }
+  }
+
+  function digit(d) {
+    if (s.error) s = fresh();
+    if (s.justEq) { s.acc = null; s.op = null; s.justEq = false; }
+    if (!s.entering) { s.cur = d; s.entering = true; return; }
+    if (digitCount(s.cur) >= MAX_DIGITS) return;
+    s.cur = (s.cur === '0') ? d : (s.cur === '-0' ? '-' + d : s.cur + d);
+  }
+
+  function point() {
+    if (s.error) s = fresh();
+    if (s.justEq) { s.acc = null; s.op = null; s.justEq = false; }
+    if (!s.entering) { s.cur = '0.'; s.entering = true; return; }
+    if (s.cur.indexOf('.') >= 0) return;          /* a second point is ignored */
+    if (digitCount(s.cur) >= MAX_DIGITS) return;
+    s.cur += '.';
+  }
+
+  function operator(o) {
+    if (s.error) return;
+    if (s.entering) {
+      var b = parseFloat(s.cur);
+      if (s.op !== null && s.acc !== null) {
+        var res = apply(s.acc, s.op, b);
+        var f = fmt(res);
+        if (f === null) { setError(); announce = true; return; }
+        s.acc = parseFloat(f);
+        announce = true;
+      } else {
+        s.acc = b;
+      }
+      s.entering = false;
+    } else if (s.acc === null) {
+      s.acc = 0;
+    }
+    s.op = o;            /* an operator after an operator replaces it */
+    s.justEq = false;
+  }
+
+  function equals() {
+    if (s.error) return;
+    var f, res;
+    if (s.op !== null) {
+      var b = s.entering ? parseFloat(s.cur) : s.acc;    /* 5 + = gives 10 */
+      res = apply(s.acc, s.op, b);
+      f = fmt(res);
+      if (f === null) { setError(); announce = true; return; }
+      s.lastOp = s.op; s.lastB = b;
+      s.acc = parseFloat(f);
+      s.op = null; s.entering = false; s.justEq = true;
+    } else if (s.justEq && s.lastOp !== null) {         /* = again repeats the last step */
+      res = apply(s.acc, s.lastOp, s.lastB);
+      f = fmt(res);
+      if (f === null) { setError(); announce = true; return; }
+      s.acc = parseFloat(f);
+    } else if (s.entering) {
+      s.acc = parseFloat(s.cur); s.entering = false; s.justEq = true; s.lastOp = null;
+    }
+    announce = true;
+  }
+
+  function clearAll() { s = fresh(); announce = true; }
+
+  function clearEntry() {
+    if (s.error || s.justEq) { clearAll(); return; }
+    s.cur = '0'; s.entering = true;                      /* keeps the pending operator */
+  }
+
+  function backspace() {
+    if (s.error) { clearAll(); return; }
+    if (!s.entering) return;
+    s.cur = s.cur.slice(0, -1);
+    if (s.cur === '' || s.cur === '-') s.cur = '0';
+  }
+
+  function sign() {
+    if (s.error) return;
+    if (s.entering) {
+      if (parseFloat(s.cur) === 0 && s.cur.indexOf('.') < 0) return;
+      s.cur = s.cur.charAt(0) === '-' ? s.cur.slice(1) : '-' + s.cur;
+    } else if (s.acc !== null) {
+      s.acc = -s.acc;
+      announce = true;
+    }
+  }
+
+  function press(k) {
+    if (k >= '0' && k <= '9' && k.length === 1) digit(k);
+    else if (k === '.') point();
+    else if (k === '+' || k === '-' || k === '*' || k === '/') operator(k);
+    else if (k === '=') equals();
+    else if (k === 'C') clearAll();
+    else if (k === 'CE') clearEntry();
+    else if (k === 'BS') backspace();
+    else if (k === 'SIGN') sign();
+    render();
+  }
+
+  /* ---------- wiring ---------- */
+  document.getElementById('pad').addEventListener('click', function (e) {
+    var b = e.target.closest('.key');
+    if (b) press(b.getAttribute('data-k'));
+  });
+
+  var KEYMAP = {
+    'Enter': '=', '=': '=', 'Backspace': 'BS', 'Escape': 'C', 'Delete': 'CE',
+    '+': '+', '-': '-', '*': '*', 'x': '*', 'X': '*', '/': '/', '.': '.', ',': '.', 'F9': 'SIGN'
+  };
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key, id = null;
+    if (k.length === 1 && k >= '0' && k <= '9') id = k;
+    else if (KEYMAP.hasOwnProperty(k)) id = KEYMAP[k];
+    if (id === null) return;
+    e.preventDefault();                  /* stops Enter or / from also clicking a focused key */
+    press(id);
+    var btn = document.querySelector('.key[data-k="' + (id === '/' ? '/' : id) + '"]');
+    if (btn) {
+      btn.classList.add('press');
+      setTimeout(function () { btn.classList.remove('press'); }, 110);
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

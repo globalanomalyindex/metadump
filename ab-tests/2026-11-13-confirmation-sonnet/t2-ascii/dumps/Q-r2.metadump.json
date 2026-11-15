@@ -1,0 +1,84 @@
+{
+  "request": "a simple interactive ascii color mixing engine",
+  "thesis": "Colour is mixed out of text: every glyph is a coloured cell, and the mix is something you can watch happen, character by character, and then read as a hex code.",
+  "job": [
+    "see the pigments on offer",
+    "add a drop of a pigment (or take one away)",
+    "watch the mix change in the ascii bowl",
+    "switch the mixing model (paint vs light) and see the difference",
+    "read the resulting colour: hex, rgb, parts",
+    "copy the hex",
+    "keep a mix as a swatch and bring it back",
+    "reset and start again"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["direct manipulation: click the thing to change the thing", "every input has visible, immediate output", "undoable: a remove and a reset always exist"],
+      "steps": ["pick", "add", "look", "adjust", "keep"],
+      "tricks": ["keyboard shortcuts printed next to the control", "show the parts as a bar so ratios are readable without maths", "animate the change so the cause is visible"],
+      "tests": ["can a stranger mix orange in two clicks", "does every click change something visible"]
+    },
+    "colour science": {
+      "principles": ["paint mixes subtractively, light additively", "averaging sRGB values directly is wrong for light; use linear light", "weighted geometric mean of rgb approximates subtractive paint"],
+      "steps": ["convert to linear or log space", "weight by parts", "mix", "convert back, clamp"],
+      "tricks": ["blue + yellow = green only under the subtractive model", "white lightens without changing hue; black darkens", "red + green is yellow in light, mud in paint"],
+      "tests": ["yellow+blue gives green in paint", "red+green gives yellow in light", "equal parts of one pigment returns that pigment"]
+    },
+    "ascii art": {
+      "principles": ["density ramp maps lightness to glyph", "monospace grid with fixed cell size", "colour carries the hue, glyph carries the texture"],
+      "steps": ["build a grid", "pick a glyph per cell from noise and lightness", "colour each glyph", "redraw on change"],
+      "tricks": ["per-cell jitter makes the mix look stirred", "ramp ' .:-=+*#%@' ", "block glyphs for bars: █▓▒░"],
+      "tests": ["columns line up", "text stays crisp on a dark ground"]
+    },
+    "front-end code": {
+      "principles": ["one state object, one render function", "no external requests", "pre elements or spans in a monospace grid"],
+      "steps": ["state", "render", "events", "animation loop only while changing"],
+      "tricks": ["requestAnimationFrame that stops when settled", "build the grid as rows of spans, update style.color only"],
+      "tests": ["works from disk", "buttons are real buttons, tabbable", "phone width has no horizontal scroll"]
+    }
+  },
+  "the_thing": {
+    "parts": ["pigment buttons", "ascii mixing bowl", "parts bar per pigment", "result readout (hex, rgb)", "model toggle", "keep / reset / copy"],
+    "expectations": ["clicking a pigment adds it", "result is visibly the mix of what was added", "hex shown", "works with keyboard"],
+    "kinds": [
+      {"name": "drop mixer", "what": "click pigments to add drops; the bowl shows the blended colour"},
+      {"name": "slider mixer", "what": "one slider per primary, bowl follows"},
+      {"name": "stir canvas", "what": "drag across a glyph field to smear colours into each other"}
+    ]
+  },
+  "specifics": {
+    "pigments": {
+      "keywords": {"1": ["red", "yellow", "blue", "white", "black", "mix"], "2": ["cyan", "magenta", "drops", "parts", "tube"], "3": ["cadmium", "ultramarine", "ochre", "titanium white"]},
+      "descriptions": ["each pigment has a glyph letter and a colour", "a drop is one part"],
+      "behaviors": ["click adds one part", "shift-click or minus removes one part"],
+      "tokens": {"parts max": "1 to 12 each", "count": "5 to 7 pigments"}
+    },
+    "bowl": {
+      "keywords": {"1": ["ascii", "bowl", "glyph", "grid"], "2": ["density ramp", "jitter", "swirl", "monospace"], "3": ["cellular", "dither", "stir"]},
+      "descriptions": ["grid of about 40 to 56 columns by 12 to 18 rows", "cells ease toward the target colour so the mix visibly flows"],
+      "behaviors": ["new pigment drops show as a ripple from a point", "settles in 400 to 900 ms"],
+      "tokens": {"font size": "12 to 16 px", "line height": "1.0 to 1.2", "jitter": "4 to 12 percent lightness"}
+    },
+    "readout": {
+      "keywords": {"1": ["hex", "rgb", "result"], "2": ["copy", "swatch", "keep"], "3": ["contrast text colour"]},
+      "descriptions": ["hex in large monospace", "copy gives feedback"],
+      "behaviors": ["empty bowl says so"],
+      "tokens": {}
+    }
+  },
+  "anti_keywords": [
+    {"not": "a colour picker with sliders only", "instead": "ascii is the display, everything is glyphs"},
+    {"not": "simple means no history, no palettes import/export, no saving to storage, no gradients editor", "instead": "pigments, bowl, readout, keep, reset"},
+    {"not": "plain rgb averaging as the only model", "instead": "paint and light models, switchable"},
+    {"not": "static output", "instead": "bowl animates its change then rests"},
+    {"not": "grey on grey UI", "instead": "dark ground so the coloured glyphs glow"}
+  ],
+  "checks": [
+    "yellow + blue in paint gives a green",
+    "red + green in light gives yellow",
+    "every button changes visible state",
+    "no horizontal scroll at phone width",
+    "bowl is still when idle"
+  ],
+  "built": ["drop mixer"]
+}

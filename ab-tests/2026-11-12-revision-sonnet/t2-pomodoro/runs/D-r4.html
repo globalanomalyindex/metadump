@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{
+  --bg:#f6efe6; --ink:#2b2320; --muted:#6f625a; --track:#e4d8ca; --accent:#c8412b; --card:#fffaf3;
+  --focus:#c8412b;--onacc:#fff; --short:#25704f; --long:#35628f;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1a1514;--ink:#f3e9df;--muted:#b3a399;--track:#3a2f2b;--card:#231c1a;--focus:#ef6a52;--short:#58b58b;--long:#6ea3d8;--onacc:#1a1514}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex;align-items:center;justify-content:center;transition:background .4s}
+body[data-phase=focus]{--accent:var(--focus)}
+body[data-phase=short]{--accent:var(--short)}
+body[data-phase=long]{--accent:var(--long)}
+main{width:min(92vw,420px);padding:16px 0;text-align:center}
+.tabs{display:flex;gap:6px;justify-content:center;margin-bottom:22px}
+.tabs button{font:inherit;font-size:.95rem;padding:10px 14px;min-height:44px;border:1.5px solid transparent;background:none;color:var(--muted);border-radius:999px;cursor:pointer}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-pressed=true]{border-color:var(--accent);color:var(--ink);font-weight:600}
+.dial{position:relative;width:min(78vw,340px);aspect-ratio:1;margin:0 auto}
+.dial svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.track{fill:none;stroke:var(--track);stroke-width:10}
+.arc{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke .4s}
+.inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.phase{font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.time{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:clamp(3rem,15vw,4.6rem);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:-.02em}
+.state{font-size:.9rem;color:var(--muted);min-height:1.3em}
+.marks{display:flex;gap:10px;justify-content:center;margin:22px 0 4px}
+.marks i{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);transition:background .3s}
+.marks i.on{background:var(--accent)}
+.cap{font-size:.85rem;color:var(--muted);margin:0 0 20px}
+.row{display:flex;gap:10px;justify-content:center;align-items:center}
+.row button{font:inherit;cursor:pointer;min-height:48px;border-radius:999px;border:1.5px solid var(--track);background:var(--card);color:var(--ink);padding:0 20px}
+.row button:hover{border-color:var(--accent)}
+.row button.main{background:var(--accent);border-color:var(--accent);color:var(--onacc);font-weight:700;min-width:140px;font-size:1.1rem}
+.row button.main:hover{filter:brightness(1.08)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.hint{margin-top:18px;font-size:.78rem;color:var(--muted)}
+kbd{font:inherit;border:1px solid var(--track);border-radius:4px;padding:0 5px;background:var(--card)}
+.undo{min-height:1.6em;margin-top:8px;font-size:.85rem;color:var(--muted)}
+.undo button{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:6px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body data-phase="focus">
+<main>
+  <div class="tabs" role="group" aria-label="Phase">
+    <button id="t-focus" data-p="focus" aria-pressed="true">Focus</button>
+    <button id="t-short" data-p="short" aria-pressed="false">Short break</button>
+    <button id="t-long" data-p="long" aria-pressed="false">Long break</button>
+  </div>
+  <div class="dial">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="track" cx="60" cy="60" r="54"/>
+      <circle class="arc" id="arc" cx="60" cy="60" r="54" stroke-dasharray="339.292" stroke-dashoffset="339.292"/>
+    </svg>
+    <div class="inner">
+      <div class="phase" id="phase">Focus</div>
+      <div class="time" id="time">25:00</div>
+      <div class="state" id="state">Ready</div>
+    </div>
+  </div>
+  <div class="marks" id="marks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <p class="cap" id="cap">0 of 4 focus sessions done</p>
+  <div class="row">
+    <button class="main" id="go">Start</button>
+    <button id="reset">Reset</button>
+    <button id="skip">Skip</button>
+  </div>
+  <div class="undo" id="undo" aria-live="polite"></div>
+  <div class="hint"><kbd>Space</kbd> start / pause &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>S</kbd> skip</div>
+  <div class="vh" id="live" role="status" aria-live="assertive"></div>
+</main>
+<script>
+(function(){
+  var LEN={focus:25*60,short:5*60,long:15*60};
+  var NAME={focus:'Focus',short:'Short break',long:'Long break'};
+  var s={phase:'focus',running:false,remaining:LEN.focus,end:0,done:0,fresh:true};
+  var timer=null,undoT=null,undoSnap=null,audio=null;
+  var $=function(i){return document.getElementById(i)};
+  var C=2*Math.PI*54;
+
+  function fmt(t){t=Math.max(0,Math.ceil(t));var m=Math.floor(t/60),x=t%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x}
+  function left(){return s.running?Math.max(0,(s.end-Date.now())/1000):s.remaining}
+
+  function render(){
+    var r=left(),len=LEN[s.phase];
+    $('time').textContent=fmt(r);
+    $('arc').style.strokeDashoffset=String(C*(r/len)); // ring fills as time passes
+    document.body.dataset.phase=s.phase;
+    $('phase').textContent=NAME[s.phase];
+    $('state').textContent=s.running?'Running':(s.fresh?'Ready':'Paused');
+    $('go').textContent=s.running?'Pause':(s.fresh?'Start':'Resume');
+    ['focus','short','long'].forEach(function(p){$('t-'+p).setAttribute('aria-pressed',String(p===s.phase))});
+    var m=$('marks').children,n=s.done%4;
+    for(var i=0;i<4;i++)m[i].className=(i<n||(s.done>0&&n===0))?'on':'';
+    $('cap').textContent=(n===0&&s.done>0?4:n)+' of 4 focus sessions done'+(s.done>0?' · '+s.done+' total':'');
+    document.title=(s.running?fmt(r)+' · ':'')+NAME[s.phase]+' – Pomodoro';
+  }
+
+  function stop(){s.running=false;clearInterval(timer);timer=null}
+  function setPhase(p){stop();s.phase=p;s.remaining=LEN[p];s.fresh=true;render()}
+
+  function start(){
+    if(s.running)return;
+    chimeUnlock();
+    s.end=Date.now()+s.remaining*1000;s.running=true;s.fresh=false;
+    timer=setInterval(tick,250);render();
+  }
+  function pause(){if(!s.running)return;s.remaining=left();stop();render()}
+
+  function tick(){
+    if(left()<=0)finish();else render();
+  }
+  function finish(){
+    var was=s.phase;
+    stop();
+    if(was==='focus'){s.done++}
+    var next=was==='focus'?(s.done%4===0?'long':'short'):'focus';
+    s.phase=next;s.remaining=LEN[next];s.fresh=true;
+    render();
+    $('state').textContent=NAME[was]+' done – press Start for '+NAME[next].toLowerCase();
+    $('live').textContent=NAME[was]+' finished. Next: '+NAME[next]+'.';
+    chime();
+    document.title='Done – '+NAME[next]+' next';
+  }
+
+  function doReset(){
+    undoSnap={phase:s.phase,running:s.running,remaining:left(),done:s.done,fresh:s.fresh};
+    var wasActive=!s.fresh;
+    stop();s.remaining=LEN[s.phase];s.fresh=true;render();
+    if(wasActive)offerUndo();
+  }
+  function offerUndo(){
+    var u=$('undo');u.textContent='Interval reset. ';
+    var b=document.createElement('button');b.textContent='Undo';
+    b.onclick=function(){
+      var o=undoSnap;if(!o)return;
+      stop();s.phase=o.phase;s.remaining=o.remaining;s.done=o.done;s.fresh=o.fresh;
+      if(o.running){s.end=Date.now()+o.remaining*1000;s.running=true;timer=setInterval(tick,250)}
+      u.textContent='';undoSnap=null;render();
+    };
+    u.appendChild(b);
+    clearTimeout(undoT);undoT=setTimeout(function(){u.textContent='';undoSnap=null},6000);
+  }
+  function skip(){
+    var was=s.phase;stop();
+    if(was==='focus'){setPhase(s.done%4===3?'long':'short');} // skipped focus is not counted
+    else setPhase('focus');
+  }
+
+  // chime: audio is unlocked by the Start press, never before
+  function chimeUnlock(){
+    try{
+      if(!audio){var A=window.AudioContext||window.webkitAudioContext;if(A)audio=new A()}
+      if(audio&&audio.state==='suspended')audio.resume();
+    }catch(e){}
+  }
+  function chime(){
+    if(!audio)return;
+    try{
+      [660,880,1100].forEach(function(f,i){
+        var o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+i*.22;
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.25,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.5);
+        o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.55);
+      });
+    }catch(e){}
+  }
+
+  $('go').onclick=function(){s.running?pause():start()};
+  $('reset').onclick=doReset;
+  $('skip').onclick=skip;
+  ['focus','short','long'].forEach(function(p){$('t-'+p).onclick=function(){setPhase(p)}});
+  document.addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    var k=e.key.toLowerCase();
+    if(e.target.tagName==='BUTTON'&&(k===' '||k==='enter'))return; // let the focused button act
+    if(k===' '){e.preventDefault();s.running?pause():start()}
+    else if(k==='r')doReset();
+    else if(k==='s')skip();
+  });
+  document.addEventListener('visibilitychange',function(){if(s.running)tick()});
+  render();
+})();
+</script>
+</body>
+</html>

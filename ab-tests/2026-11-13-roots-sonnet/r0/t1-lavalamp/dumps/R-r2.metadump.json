@@ -1,0 +1,31 @@
+{
+  "request": "a lava lamp",
+  "thesis": "A lamp is a slow heat engine you can watch: wax melts, rises, cools, sinks, and the glow is the whole room's mood.",
+  "job": ["see the lamp at a glance on a dim backdrop", "switch it on", "wait through warm-up as wax softens and first blobs lift", "watch blobs rise, merge, pinch off, sink", "change wax and liquid colours", "change heat (faster or lazier flow)", "poke or stir the wax by hand", "add or remove a blob", "switch off and watch it cool and settle", "use it on phone and desktop"],
+  "disciplines": {
+    "physical-product design": {"principles": ["tapered glass capsule, metal cap and base", "light comes from below, base glows", "silhouette reads instantly"], "steps": ["draw base, glass, cap", "light the bulb", "place wax"], "tricks": ["bulb glow bleeds up through liquid as vertical gradient", "dark room, lamp is the only light"], "tests": ["name it from the silhouette alone"]},
+    "fluid simulation": {"principles": ["metaballs: sum of r^2/d^2 field, threshold gives merge and pinch", "buoyancy from temperature", "heat at bottom, cooling at top"], "steps": ["blobs with position radius temperature", "update temperature by height", "accelerate by temp minus ambient", "damp, bounce softly off glass", "render field with smooth threshold"], "tricks": ["low-res field upscaled gives soft edges for free", "smoothstep on threshold avoids jaggies", "slight wobble in radius"], "tests": ["blobs merge and split", "none stuck on the ceiling forever"]},
+    "interaction design": {"principles": ["direct manipulation", "every control changes visible state", "show state in words"], "steps": ["power", "heat", "colour", "poke", "add blob", "stir"], "tricks": ["status line says warming, flowing, cooling, off"], "tests": ["each control visibly changes the lamp"]},
+    "accessibility": {"principles": ["real buttons, labels, focus rings", "reduced motion slows it"], "steps": ["aria-pressed on switch", "aria-live status"], "tricks": ["keyboard: space toggles power"], "tests": ["tab through every control"]}
+  },
+  "the_thing": {
+    "parts": ["base", "glass capsule", "liquid", "wax blobs", "cap", "bulb glow", "power switch"],
+    "expectations": ["slow motion", "blobs merge and split", "warm-up delay", "colour glow on surroundings", "dark room"],
+    "kinds": [{"name": "classic glass lamp, red wax in amber/orange liquid", "what": "tapered capsule on metal base"}, {"name": "retro neon colour pairs", "what": "purple wax in blue, green in teal"}, {"name": "flat vector lamp", "what": "stylised shapes"}]
+  },
+  "specifics": {
+    "shape": {"keywords": {"1": ["lava lamp", "wax", "blob", "glass"], "2": ["tapered capsule", "metal cap", "base", "glow"], "3": ["metaball", "thermal convection", "pinch-off"]}, "descriptions": ["glass narrows toward top, widest near lower third", "cap is a small cone, base a flared bell"], "tokens": {"glass width": "150-190 px", "glass height": "360-440 px", "blob radius": "14-44 px"}},
+    "colour": {"keywords": {"1": ["red wax", "orange liquid"], "2": ["magenta", "violet", "cyan", "lime"], "3": ["subsurface glow", "rim light"]}, "descriptions": ["wax brighter at bottom near bulb, darker at top", "liquid gradient warm at base"], "tokens": {"backdrop": "#0b0610 to #1a0a1f", "wax": "#ff3d5a to #ff9a3c"}},
+    "motion": {"keywords": {"1": ["slow rise", "sink"], "2": ["merge", "stretch", "warm-up"], "3": ["Rayleigh-Benard"]}, "behaviors": ["heat raises temperature near bottom, wax rises when warm", "cools at top, sinks", "off: cools, settles into pool"], "tokens": {"warm-up": "6-15 s", "cool settle": "10-30 s", "rise speed": "8-30 px/s"}},
+    "states": {"keywords": {"1": ["on", "off"], "2": ["warming", "flowing", "cooling"], "3": ["pool"]}, "behaviors": ["off lamp dim with wax pooled at bottom"]},
+    "copy": {"keywords": {"1": ["Power", "Heat", "Colour", "Stir"], "2": ["Add blob"], "3": []}, "descriptions": ["short plain labels"]}
+  },
+  "anti_keywords": [
+    {"not": "fast bouncing balls", "instead": "slow thermal drift with long stretches and pinch-offs"},
+    {"not": "flat circles with CSS blur only", "instead": "true metaball field with merge and split"},
+    {"not": "bright white page background", "instead": "dark room where the lamp is the light source"},
+    {"not": "controls that do nothing", "instead": "every control changes heat, colour, or blob state visibly"}
+  ],
+  "checks": ["Would a stranger say lava lamp at a glance?", "Do blobs merge and split?", "Does power off visibly cool and pool the wax?", "Does each control change visible state?", "Does it fit a phone width?"],
+  "built": ["classic glass lamp, red wax in amber/orange liquid"]
+}

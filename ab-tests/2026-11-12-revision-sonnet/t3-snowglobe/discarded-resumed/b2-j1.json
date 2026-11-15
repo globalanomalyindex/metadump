@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 7, "presentation": 6, "overall": 8, "note": "Convincing glass dome with brass collar and wood base and a lit cabin, but the control panel is heavy and the snow is very fine and faint."},
+"V": {"likeness": 8, "visuals": 6, "motion": 7, "presentation": 6, "overall": 6, "note": "Clear globe on a blue base, but the scene is dim and tiny, the highlight is an odd rectangle, and the panel is busy."},
+"W": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 8, "note": "Atmospheric night scene with moon, smoke and glowing cabin and a restrained layout, though the dome is faint and the shake is subtle."},
+"X": {"likeness": 8, "visuals": 7, "motion": 8, "presentation": 5, "overall": 7, "note": "Big, nicely lit dome with a real snowstorm, but the black base is oddly skewed and the controls are cramped and cut off at the bottom."},
+"Y": {"likeness": 6, "visuals": 5, "motion": 6, "presentation": 6, "overall": 5, "note": "Clean and bright, but the flat base and glass read less like a physical globe and the snow stays up at the top."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 7, "overall": 8, "note": "A charming shelf room gives the globe context, but the base is tilted and the glass looks washed out, and the snow is sparse."}
+}, "ranking": ["U", "W", "Z", "X", "V", "Y"]}

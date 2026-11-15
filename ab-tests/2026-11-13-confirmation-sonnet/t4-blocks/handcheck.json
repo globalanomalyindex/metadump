@@ -1,0 +1,122 @@
+{
+ "A-r1": {
+  "world_box": {
+   "x": 320,
+   "y": 103,
+   "w": 640,
+   "h": 640
+  },
+  "change_after_three_clicks_on_world_pct": 0.82,
+  "js_errors": 0
+ },
+ "A-r2": {
+  "world_box": {
+   "x": 335,
+   "y": 121.984375,
+   "w": 610,
+   "h": 610
+  },
+  "change_after_three_clicks_on_world_pct": 0.31,
+  "js_errors": 0
+ },
+ "A-r3": {
+  "world_box": {
+   "x": 213,
+   "y": 45.1875,
+   "w": 640,
+   "h": 640
+  },
+  "change_after_three_clicks_on_world_pct": 0.19,
+  "js_errors": 0
+ },
+ "A-r4": {
+  "world_box": {
+   "x": 316,
+   "y": 60,
+   "w": 648,
+   "h": 648
+  },
+  "change_after_three_clicks_on_world_pct": 0.63,
+  "js_errors": 0
+ },
+ "F-r1": {
+  "world_box": {
+   "x": 352,
+   "y": 96.796875,
+   "w": 576,
+   "h": 576
+  },
+  "change_after_three_clicks_on_world_pct": 0.64,
+  "js_errors": 0
+ },
+ "F-r2": {
+  "world_box": {
+   "x": 335,
+   "y": 101.1875,
+   "w": 610,
+   "h": 610
+  },
+  "change_after_three_clicks_on_world_pct": 2.14,
+  "js_errors": 0
+ },
+ "F-r3": {
+  "world_box": {
+   "x": 336,
+   "y": 66,
+   "w": 608,
+   "h": 608
+  },
+  "change_after_three_clicks_on_world_pct": 0.45,
+  "js_errors": 0
+ },
+ "F-r4": {
+  "world_box": {
+   "x": 323,
+   "y": 148.1875,
+   "w": 634,
+   "h": 634
+  },
+  "change_after_three_clicks_on_world_pct": 2.26,
+  "js_errors": 0
+ },
+ "Q-r1": {
+  "world_box": {
+   "x": 335,
+   "y": 50,
+   "w": 610,
+   "h": 610
+  },
+  "change_after_three_clicks_on_world_pct": 0.53,
+  "js_errors": 0
+ },
+ "Q-r2": {
+  "world_box": {
+   "x": 361,
+   "y": 56,
+   "w": 558,
+   "h": 558
+  },
+  "change_after_three_clicks_on_world_pct": 0.38,
+  "js_errors": 0
+ },
+ "Q-r3": {
+  "world_box": {
+   "x": 320,
+   "y": 151,
+   "w": 640,
+   "h": 640
+  },
+  "change_after_three_clicks_on_world_pct": 0.12,
+  "js_errors": 0
+ },
+ "Q-r4": {
+  "world_box": {
+   "x": 221.25,
+   "y": 93.390625,
+   "w": 837.5,
+   "h": 547.96875
+  },
+  "change_after_three_clicks_on_world_pct": 0.52,
+  "js_errors": 0
+ }
+}

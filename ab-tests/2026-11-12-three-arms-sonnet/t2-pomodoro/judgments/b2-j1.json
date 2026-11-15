@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"simple": 7, "correctness": 9, "usability": 9, "craft": 8, "code": 7, "overall": 8, "note": "Huge clear clock, drift-free deadline timing, labelled Pause/Resume, live-region and keyboard shortcuts, good phone layout; a bit padded with presets, undo toast and persistence."},
+"V": {"simple": 7, "correctness": 8, "usability": 7, "craft": 7, "code": 7, "overall": 7, "note": "Bold red full-bleed with big mono clock and mode shown, solid timing and live region, but the phase pills are inert li elements and the confirm-reset and odd skip logic add friction."},
+"W": {"simple": 9, "correctness": 8, "usability": 7, "craft": 8, "code": 9, "overall": 8, "note": "Compact dark card with ring, working tabs and settings in very little code and accurate deadline timing; no aria-live or timer role and the pause state is only the button label."},
+"X": {"simple": 5, "correctness": 8, "usability": 7, "craft": 7, "code": 6, "overall": 6, "note": "Warm, polished and accessible with good state messages, but the giant pomodoro count outranks the clock and the page is overbuilt with persistence, settings and a hacked-in inline-styled button."},
+"Y": {"simple": 9, "correctness": 8, "usability": 7, "craft": 8, "code": 9, "overall": 8, "note": "Large ring with clear time, mode tabs and settings, correct deadline timing in tiny readable code; no screen-reader announcements, and skip keeps running into the next phase."},
+"Z": {"simple": 5, "correctness": 7, "usability": 6, "craft": 5, "code": 5, "overall": 5, "note": "Big readable clock and thorough announcements, but the monospaced text-heavy look is plain, reset needs a confirm press even when merely paused, and two reset buttons plus notifications overbuild it."}
+},
+"ranking": ["U", "W", "Y", "X", "V", "Z"]}

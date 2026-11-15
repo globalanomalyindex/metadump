@@ -1,0 +1,29 @@
+{
+  "request": "a simple block-building sandbox game with a 32x32 block world",
+  "thesis": "A tiny world you can reshape: every click changes a cell, and the 32x32 grid is small enough to read at a glance and finish a build in minutes.",
+  "job": ["open the file and see a 32x32 world", "pick a block type from a palette", "place blocks by click or drag", "remove blocks (erase / right-click)", "see what is selected and where the cursor is", "undo a mistake", "clear or reset the world", "save the world and have it back after reload", "switch layer or view to judge the build"],
+  "disciplines": {
+    "game design": {"principles": ["instant feedback per click", "low-stakes creativity", "few verbs: place, remove, pick"], "steps": ["pick", "place", "look", "adjust"], "tricks": ["drag to paint", "hover ghost shows where block lands", "pick-block with middle/alt click"], "tests": ["can a stranger build a house in 60s", "does every click visibly change state"]},
+    "interaction design": {"principles": ["direct manipulation", "keyboard shortcuts 1-9 for palette"], "steps": [], "tricks": ["prevent context menu so right-click erases", "pointer events cover mouse and touch"], "tests": ["works on touch and mouse"]},
+    "visual design": {"principles": ["blocks read as material not flat colour", "grid lines subtle"], "steps": [], "tricks": ["lighten top edge, darken bottom edge for bevel", "noise speckle per cell for texture"], "tests": ["palette swatches distinguishable at small size"]},
+    "front-end code": {"principles": ["state in a 2D array, render from state", "canvas for 1024 cells"], "steps": [], "tricks": ["Uint8Array 32*32", "redraw only changed cell", "localStorage in try/catch"], "tests": ["reload keeps world", "undo restores exactly"]}
+  },
+  "the_thing": {
+    "parts": ["32x32 grid", "block palette", "tools (place, erase)", "cursor highlight", "undo", "clear", "save/load"],
+    "expectations": ["click places selected block", "right-click or eraser removes", "hover feedback", "world persists"],
+    "kinds": [{"name": "top-down grid painter", "what": "flat 2D map where each cell is a block type"}, {"name": "isometric stack builder", "what": "cells hold height columns shown in iso view"}, {"name": "side-view terraria-like", "what": "32x32 side slice with gravity-free placing"}]
+  },
+  "specifics": {
+    "blocks": {"keywords": {"1": ["block", "place", "break", "32x32", "world", "sandbox"], "2": ["palette", "grass", "dirt", "stone", "wood", "water", "sand", "brick", "glass"], "3": ["bevel", "speckle texture", "hotbar", "pick block"]}, "descriptions": ["each block type has base colour plus top-light bevel and noise speckle", "hotbar numbered 1-9 matches keys"], "behaviors": ["click places, right-click erases", "drag paints a line", "key 1-9 selects block", "ctrl/cmd-z undoes a stroke"], "tokens": {"cell size": "18 to 24 px", "bevel": "2 to 3 px", "grid line alpha": "0.05 to 0.15"}},
+    "world": {"keywords": {"1": ["32x32", "grid", "world"], "2": ["starter terrain", "sky", "ground layer"], "3": ["flood fill", "seeded noise"]}, "descriptions": ["start with a little pre-made terrain so the world isn't a blank void"], "behaviors": ["clear empties to sky; reset restores starter terrain"], "tokens": {"ground height": "rows 20 to 24"}},
+    "feedback": {"keywords": {"1": ["selected block", "cursor coordinates"], "2": ["hover ghost", "block count"], "3": ["toast"]}, "descriptions": ["status line shows x,y and block under cursor"], "behaviors": [], "tokens": {"ghost alpha": "0.4 to 0.6"}}
+  },
+  "anti_keywords": [
+    {"not": "3D engine, physics, crafting, inventory, mobs, multiplayer", "instead": "simple means place and remove blocks, nothing else"},
+    {"not": "tiny unreadable cells on phone", "instead": "canvas scales to width, pointer coordinates mapped by bounding rect"},
+    {"not": "flat default-red rectangles", "instead": "bevelled textured material colours"},
+    {"not": "state only in the DOM", "instead": "one array is the truth, render from it"}
+  ],
+  "checks": ["click a cell: its block changes and count updates", "right-click erases", "drag paints continuous", "undo restores", "reload keeps world", "grid is exactly 32x32", "works at phone width"],
+  "built": ["top-down grid painter"]
+}

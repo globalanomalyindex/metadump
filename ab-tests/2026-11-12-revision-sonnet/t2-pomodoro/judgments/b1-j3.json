@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"simple": 8, "correctness": 8, "usability": 6, "craft": 8, "code": 7, "overall": 7, "note": "Pretty ring card with mode tabs and settings, accurate end-time countdown and auto mode switch, but no screen-reader support and no skip or end feedback beyond a beep."},
+"V": {"simple": 6, "correctness": 9, "usability": 9, "craft": 9, "code": 6, "overall": 8, "note": "Huge full-bleed clock, colour per phase, strong a11y (timer, live status, shortcuts) and robust logic, though auto-start, chime toggle, notifications and persistence stretch past simple."},
+"W": {"simple": 7, "correctness": 8, "usability": 4, "craft": 3, "code": 6, "overall": 5, "note": "Logic and a11y are good, but an inline font-size:inherit on the h1 shrinks the clock to tiny text, wrecking hierarchy so the time is not clear at a glance."},
+"X": {"simple": 9, "correctness": 9, "usability": 8, "craft": 7, "code": 8, "overall": 8, "note": "Big readable clock with phase colour, accurate timing, skip/reset, keyboard and aria-label, and a clean minimal scope; mobile layout a bit loose."},
+"Y": {"simple": 7, "correctness": 7, "usability": 6, "craft": 8, "code": 8, "overall": 7, "note": "Polished dark card with ring and editable durations, correct timing, but no aria support or live announcements and the skip-from-focus counts as a finished pomodoro."},
+"Z": {"simple": 9, "correctness": 9, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Large clock, clear phase and status text, correct drift-free countdown and transitions with live-region announcements, the primary button emphasised, and a tight, focused feature set."}
+}, "ranking": ["Z", "V", "X", "U", "Y", "W"]}

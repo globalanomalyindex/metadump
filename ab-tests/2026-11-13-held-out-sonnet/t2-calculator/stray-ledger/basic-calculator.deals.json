@@ -1,0 +1,52 @@
+{
+ "angles": {
+  "keypad on a card": 1
+ },
+ "deals": 1,
+ "deep_cuts": {
+  "/arithmetic/options/opt-zero-blank": 1,
+  "/exemplars/ex-windows": 1
+ },
+ "entries": {
+  "/arithmetic/ar-display-precision": 1,
+  "/arithmetic/ar-number-model": 1,
+  "/arithmetic/ar-operators": 1,
+  "/arithmetic/options/opt-precision-fit": 1,
+  "/arithmetic/options/opt-zero-blank": 1,
+  "/calculator_conventions/cc-keyboard-map": 1,
+  "/exemplars/ex-iphone": 1,
+  "/exemplars/ex-windows": 1,
+  "/keypad_display/ex-fem-proportional": 1,
+  "/keypad_display/kp-groups": 1,
+  "/keypad_display/kp-keys": 1,
+  "/keypad_display/kp-sizes": 1,
+  "/keypad_display/options/kp-reg-flat": 1,
+  "/keypad_display/options/kp-reg-handheld": 1,
+  "/moodboard/desc-found-handheld": 1,
+  "/moodboard/shared-look": 1,
+  "/moodboard/skipped-images": 1,
+  "/moodboard/skipped-images-repeats": 1,
+  "/principles/interaction/int-conventions-grouping": 1,
+  "/principles/interaction/int-fitts": 1,
+  "/principles/interaction/int-heuristics": 1,
+  "/principles/interaction/int-hick": 1,
+  "/states_and_input/options/opt-announce-digits": 1,
+  "/states_and_input/options/opt-backspace-result": 1,
+  "/states_and_input/options/opt-error-clear": 1,
+  "/states_and_input/st-focus-press": 1,
+  "/states_and_input/st-keyboard-bindings": 1,
+  "/states_and_input/st-play-scripted-use": 1,
+  "/vocabulary/lx-register-core": 1,
+  "/vocabulary/lx-register-feel": 1,
+  "/vocabulary/lx-searches/lx-q-build": 1,
+  "/vocabulary/lx-searches/lx-q-feel": 1
+ },
+ "schema": "metadump-deals/1",
+ "worn": {
+  "ak-wp-display-overflow": 1,
+  "ak-wp-eval": 1,
+  "ak-wp-history": 1,
+  "ak-wp-memory": 1,
+  "ak-wp-nan-blank": 1
+ }
+}

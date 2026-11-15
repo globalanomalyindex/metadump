@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 7, "presentation": 8, "overall": 8, "note": "Elegant tall classic lamp with rocket cap, glowing pool and soft merging wax, minimal controls below; wax is a bit murky and low contrast."},
+"V": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 8, "overall": 9, "note": "Convincing classic lamp with purple liquid, glowing hot wax that stretches and splits, chrome base with indicator and floor glow, tidy control bar."},
+"W": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 7, "overall": 6, "note": "Brass lamp with discrete flat pink blobs that merge a bit, but the glass is dark and flat, the wax is sparse and the panel dominates."},
+"X": {"likeness": 7, "visuals": 6, "motion": 5, "presentation": 7, "overall": 6, "note": "Good rosy glass and copper base, but the wax is mostly one lumpy mass with a single orbiting ball, so the motion is less organic."},
+"Y": {"likeness": 6, "visuals": 5, "motion": 5, "presentation": 6, "overall": 5, "note": "Wax reads as a big flat orange mass filling the lower glass and the tiny cap is odd; switching off blacks out the whole lamp, breaking the illusion."},
+"Z": {"likeness": 7, "visuals": 8, "motion": 7, "presentation": 8, "overall": 7, "note": "Pretty bulbous glass with highlights and warm ambient glow and believable column of wax, though the shape is less iconic and the wax is monotone."}
+}, "ranking": ["V", "U", "Z", "X", "W", "Y"]}

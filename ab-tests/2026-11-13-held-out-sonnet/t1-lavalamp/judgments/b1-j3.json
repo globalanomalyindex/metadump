@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"likeness": 6, "visuals": 5, "motion": 5, "presentation": 6, "overall": 5, "note": "Flat-sided cone with a big orange wax mass that sloshes as a block; reads as a lamp but the wax looks like a smooth gradient slab and the glass is barely there."},
+"V": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 7, "note": "Beautiful violet glass with chrome base and glow, but the wax is pale, blurry and pools like cream, with small blobs that feel soft rather than lava."},
+"W": {"likeness": 8, "visuals": 8, "motion": 8, "presentation": 8, "overall": 8, "note": "Bulbous glass with warm amber liquid, glowing ember wax that stretches into columns and splits convincingly, with good glass highlights and a stylish panel."},
+"X": {"likeness": 5, "visuals": 7, "motion": 5, "presentation": 6, "overall": 5, "note": "A round fishbowl-style globe on a stand is atmospheric but strays from a lava lamp silhouette, and the wax stays a low lumpy pool before breaking into small dots."},
+"Y": {"likeness": 7, "visuals": 6, "motion": 7, "presentation": 7, "overall": 6, "note": "Brass-capped tapered lamp with crisp metaball blobs that merge and split nicely, but the flat vector look and unlit glass lack depth."},
+"Z": {"likeness": 10, "visuals": 9, "motion": 7, "presentation": 9, "overall": 9, "note": "The most classic silhouette with chrome cap and waisted base, a hot yellow-orange glow at the bottom and lit translucent wax, with minimal centered controls that keep the lamp the hero."}
+}, "ranking": ["Z", "W", "V", "Y", "U", "X"]}

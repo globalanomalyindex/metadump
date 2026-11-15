@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Clear pelican with big pouch seated on a detailed bike with chain, spinning spoked wheels and scrolling road; pause, cadence and honk all work, though the wing and body overlap the frame a little awkwardly."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 6, "usability": 8, "overall": 7, "note": "Simple, readable pelican on a bike with parallax hills and clouds and working pause and speed, but the neck and frame are crude and the pelican is a bit generic."},
+"W": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 8, "overall": 7, "note": "Pleasant scene with a bell, DING text and distance readout, but the pelican floats above a thin frame, the wheels are faint, and the wing arm is pale and plain."},
+"X": {"fidelity": 8, "correctness": 7, "craft": 6, "usability": 8, "overall": 7, "note": "Recognisable pelican on a teal bike with scrolling scenery and pedals, but the grey triangular wing is odd, the legs read thinly and the frame geometry is off."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Dark-themed page with a fun helmeted pelican, reverse, honk and distance readout; the pelican and bike are clean but the wing is a flat slab and the legs are thin."},
+"Z": {"fidelity": 8, "correctness": 9, "craft": 9, "usability": 9, "overall": 9, "note": "Most polished build with a cargo crate, chain, eased start and stop, reverse, bell with sound, a status line and 44px controls; the pelican is small, and the crate and loaf and fish are an addition beyond the request."}
+},
+"ranking": ["U", "Z", "Y", "X", "W", "V"]}

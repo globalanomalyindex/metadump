@@ -1,0 +1,47 @@
+[
+  {
+    "angle": "seated on the saddle",
+    "text": "A pelican sits on the saddle with its feet on the pedals and the whole bicycle in view; the body dips with each stroke and the wheels roll beneath it.",
+    "draws_on": [
+      "ps-rider-contact",
+      "pb-rider-contacts",
+      "mo-body-bob",
+      "mb-bicycle-silhouette"
+    ]
+  },
+  {
+    "angle": "bird on the bars",
+    "text": "A pelican perched forward on the handlebars, feet on the pedals and bill ahead of the front wheel; the bird leans into each turn while the wheels spin under it.",
+    "draws_on": [
+      "pb-pelican-head",
+      "pb-pelican-legs-feet",
+      "ps-rider-contact"
+    ]
+  },
+  {
+    "angle": "slim racer",
+    "text": "A pelican low over a light racer with drop bars and a thin frame, cranks turning quickly; the same seat and pedal contacts on a lighter machine.",
+    "draws_on": [
+      "mb-bicycle-silhouette",
+      "mb-crank-and-contact-layout"
+    ]
+  },
+  {
+    "angle": "cargo bike",
+    "text": "A pelican upright on a cargo bike with a crate over the front wheel, pedaling slowly; the heavier machine gives the bob a smaller, steadier dip.",
+    "draws_on": [
+      "mb-crank-and-contact-layout",
+      "mo-cranks"
+    ]
+  },
+  {
+    "angle": "townie with a basket",
+    "text": "A pelican sitting upright on a townie bicycle with a wicker basket on the bars and mudguards over both wheels, pedaling at an easy pace; the wheels and cranks turn at a gentle rate.",
+    "draws_on": [
+      "ps-bicycle-parts",
+      "ps-rider-contact",
+      "pr-slow-in-out",
+      "mo-ground"
+    ]
+  }
+]

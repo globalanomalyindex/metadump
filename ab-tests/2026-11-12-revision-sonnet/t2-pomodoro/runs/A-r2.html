@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{--bg:#fdf1ec;--card:#fff;--ink:#2b1d1a;--muted:#8a7570;--accent:#e5533d;--track:#f3d9d1}
+body.break{--bg:#e9f5ee;--accent:#2f9e6a;--track:#cfe8da}
+body.long{--bg:#e8f0fb;--accent:#3a72c4;--track:#cddcf2}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;transition:background .4s}
+main{background:var(--card);border-radius:28px;padding:28px 32px 32px;width:min(380px,92vw);box-shadow:0 12px 40px rgba(0,0,0,.08);text-align:center}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:999px;margin-bottom:24px}
+.tabs button{flex:1;border:0;background:none;padding:8px 4px;border-radius:999px;font:600 13px inherit;font-family:inherit;color:var(--muted);cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.ring{position:relative;width:260px;height:260px;margin:0 auto}
+svg{width:100%;height:100%;transform:rotate(-90deg)}
+circle{fill:none;stroke-width:12}
+.t{stroke:var(--track)}
+.p{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .3s linear,stroke .4s}
+.time{position:absolute;inset:0;display:grid;place-content:center}
+.time b{font-size:58px;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.time span{color:var(--muted);font-size:13px}
+.ctl{display:flex;gap:10px;justify-content:center;margin-top:26px}
+.ctl button{font:600 16px inherit;font-family:inherit;border:0;border-radius:999px;padding:13px 0;cursor:pointer}
+#go{background:var(--accent);color:#fff;width:150px}
+#reset{background:var(--track);color:var(--ink);width:90px}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:active{transform:scale(.97)}
+.dots{margin-top:22px;display:flex;justify-content:center;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--track)}
+.dots i.f{background:var(--accent)}
+details{margin-top:18px;text-align:left;font-size:13px;color:var(--muted)}
+summary{cursor:pointer;text-align:center}
+.set{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;align-items:center}
+.set input{width:64px;padding:6px;border:1px solid var(--track);border-radius:8px;font:inherit;text-align:center}
+</style>
+</head>
+<body>
+<main>
+  <div class="tabs" role="tablist">
+    <button data-m="focus" class="on">Focus</button>
+    <button data-m="break">Short break</button>
+    <button data-m="long">Long break</button>
+  </div>
+  <div class="ring">
+    <svg viewBox="0 0 120 120"><circle class="t" cx="60" cy="60" r="54"/><circle class="p" id="arc" cx="60" cy="60" r="54"/></svg>
+    <div class="time"><b id="time">25:00</b><span id="label">Focus</span></div>
+  </div>
+  <div class="ctl">
+    <button id="go">Start</button>
+    <button id="reset">Reset</button>
+  </div>
+  <div class="dots"><span id="count">0 done</span><span id="pips"></span></div>
+  <details>
+    <summary>Settings</summary>
+    <div class="set"><label for="s-focus">Focus (min)</label><input id="s-focus" type="number" min="1" max="120" value="25">
+      <label for="s-break">Short break (min)</label><input id="s-break" type="number" min="1" max="60" value="5">
+      <label for="s-long">Long break (min)</label><input id="s-long" type="number" min="1" max="60" value="15"></div>
+  </details>
+</main>
+<script>
+(function(){
+  var C=2*Math.PI*54, arc=document.getElementById('arc');
+  arc.style.strokeDasharray=C;
+  var $=function(i){return document.getElementById(i)};
+  var names={focus:'Focus',break:'Short break',long:'Long break'};
+  var mins={focus:25,break:5,long:15};
+  var mode='focus', total=1500, left=1500, end=0, timer=null, done=0;
+
+  function fmt(s){var m=Math.floor(s/60),r=s%60;return (m<10?'0':'')+m+':'+(r<10?'0':'')+r}
+  function render(){
+    $('time').textContent=fmt(left);
+    $('label').textContent=names[mode]+(timer?'':(left===total?'':' (paused)'));
+    arc.style.strokeDashoffset=C*(1-left/total);
+    $('go').textContent=timer?'Pause':(left<total?'Resume':'Start');
+    document.body.className=mode==='focus'?'':mode;
+    document.title=(timer?fmt(left)+' · ':'')+'Pomodoro';
+    $('count').textContent=done+' done';
+    var p='';for(var i=0;i<4;i++)p+='<i class="'+(i<done%4||(done>0&&done%4===0&&false)?'f':'')+'"></i>';
+    $('pips').innerHTML=p;
+    $('pips').style.display='flex';$('pips').style.gap='6px';
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.classList.toggle('on',b.dataset.m===mode)});
+  }
+  function stop(){clearInterval(timer);timer=null}
+  function setMode(m){stop();mode=m;total=left=mins[m]*60;render()}
+  function tick(){
+    left=Math.max(0,Math.round((end-Date.now())/1000));
+    if(left<=0){finish();return}
+    render();
+  }
+  function beep(){
+    try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();
+      o.connect(g);g.connect(a.destination);o.frequency.value=800;g.gain.setValueAtTime(.2,a.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,a.currentTime+1);o.start();o.stop(a.currentTime+1)}catch(e){}
+  }
+  function finish(){
+    stop();beep();
+    if(mode==='focus'){done++;setMode(done%4===0?'long':'break')}else setMode('focus');
+  }
+  $('go').onclick=function(){
+    if(timer){stop();render();return}
+    end=Date.now()+left*1000;timer=setInterval(tick,250);render();
+  };
+  $('reset').onclick=function(){setMode(mode)};
+  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){setMode(b.dataset.m)}});
+  [['s-focus','focus'],['s-break','break'],['s-long','long']].forEach(function(x){
+    $(x[0]).onchange=function(){
+      var v=Math.min(+this.max,Math.max(1,parseInt(this.value,10)||+this.defaultValue));
+      this.value=v;mins[x[1]]=v;if(mode===x[1])setMode(mode);
+    };
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.code==='Space'&&!/INPUT|BUTTON|SUMMARY/.test(e.target.tagName)){e.preventDefault();$('go').click()}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

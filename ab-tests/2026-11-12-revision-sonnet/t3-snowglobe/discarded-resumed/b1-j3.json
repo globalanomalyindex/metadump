@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"likeness": 8, "visuals": 6, "motion": 6, "presentation": 7, "overall": 7, "note": "Clear night-cottage globe with falling snow and a gold-plaque base, but the flat snow floor and plain glass feel simple."},
+"V": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 6, "overall": 7, "note": "Charming shelf vignette with a tilting globe and warm light, but the control panel covers part of the scene and the dome is small."},
+"W": {"likeness": 9, "visuals": 8, "motion": 6, "presentation": 8, "overall": 8, "note": "Handsome chapel in a framed room with a polished brass-and-green base, though the snow reads soft and the shake is subtle."},
+"X": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 7, "overall": 8, "note": "Richest glass and depth, with layered hills, a lit cabin and glitter that churns and settles believably, though the side panel is busy."},
+"Y": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 6, "overall": 7, "note": "Atmospheric night cabin with a dense snowfall and a good drift after the shake, but the controls run off the bottom of the desktop view."},
+"Z": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Bright glossy sphere with a tidy base, but the dome is empty at rest, the snow is sparse and the interior looks like a flat blue ball."}
+}, "ranking": ["X", "W", "V", "Y", "U", "Z"]}

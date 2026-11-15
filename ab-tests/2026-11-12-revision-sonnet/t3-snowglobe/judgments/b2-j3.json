@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"likeness": 5, "visuals": 4, "motion": 4, "presentation": 5, "overall": 4, "note": "Flat clipart globe with a wedge-shaped base and snow bunched at the top that never visibly settles, and the globe floats loose from the base."},
+"V": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 8, "overall": 8, "note": "Charming shelf room staging with a convincing tilting globe, though the base looks lopsided at rest and the dome is rather pale."},
+"W": {"likeness": 7, "visuals": 7, "motion": 7, "presentation": 6, "overall": 7, "note": "Moody blue dome with nice glass highlights and a cabin, but the base is a dark flat slab and the controls are cropped at the bottom."},
+"X": {"likeness": 9, "visuals": 9, "motion": 8, "presentation": 8, "overall": 9, "note": "Best glass, brass collar and wood base with a rich cabin; the snow churns and settles believably, though the side panel is busy."},
+"Y": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 8, "note": "Polished night scene with moon, chimney smoke and glowing windows, but the dome is too short and the shake barely adds snow."},
+"Z": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 6, "overall": 7, "note": "Clean blue glass dome on a brass collar with swirling flakes, but the cabin is washed out and the framed panel feels generic."}
+}, "ranking": ["X", "V", "Y", "Z", "W", "U"]}

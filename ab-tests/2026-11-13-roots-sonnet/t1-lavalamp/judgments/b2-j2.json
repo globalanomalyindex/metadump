@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 8, "overall": 8, "note": "Brass lamp with warm amber glow and soft red wax that stretches and merges, with a tasteful switch on the base."},
+"V": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Clean chrome and purple lamp with a nice pink glow, but wax is flat pink blobs and the vessel is a bit plain."},
+"W": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 7, "note": "Elegant purple lamp with a bottom glow and neat control bar, but the pink wax is soft fuzzy balls that cluster at the top."},
+"X": {"likeness": 5, "visuals": 3, "motion": 4, "presentation": 5, "overall": 4, "note": "Pixelated jagged wax edges, dark empty glass and a lone big blob that stalls at the top make it look unfinished."},
+"Y": {"likeness": 8, "visuals": 9, "motion": 4, "presentation": 7, "overall": 7, "note": "Most beautiful glowing glass and bubbling molten pool, but the wax collapses into one stuck mass at the top and blobs run out."},
+"Z": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 9, "note": "Most convincing lava lamp: violet liquid, glowing amber blobs that rise, merge, split and pool, on a polished chrome base."}
+},
+"ranking": ["Z", "U", "W", "Y", "V", "X"]}

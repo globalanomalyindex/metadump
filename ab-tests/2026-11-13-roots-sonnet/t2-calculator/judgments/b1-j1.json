@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"basic": 9, "correctness": 9, "usability": 9, "craft": 8, "code": 8, "overall": 9, "note": "Clean dark calculator with a 12-digit cap, shows the last expression, labelled keys, live region, good keyboard handling and a clear Error state; slightly small keys on desktop."},
+"V": {"basic": 5, "correctness": 8, "usability": 7, "craft": 8, "code": 6, "overall": 6, "note": "Charming retro LCD design, but the history panel and extra backspace bar overbuild a basic calculator, and the Escape handler contains odd leftover code."},
+"W": {"basic": 8, "correctness": 8, "usability": 7, "craft": 7, "code": 8, "overall": 7, "note": "Solid iOS-style calculator with repeat-equals and percent; equals styled identically to the operators, error message is just Error, and the 15-digit cap overflows the display."},
+"X": {"basic": 9, "correctness": 9, "usability": 9, "craft": 9, "code": 8, "overall": 9, "note": "Polished light calculator with strong hierarchy, thousands separators, repeat-equals, a readable 'Cannot divide by zero' message, labelled keys and screen-reader status; the display shrinks the 12-digit number to fit."},
+"Y": {"basic": 9, "correctness": 8, "usability": 6, "craft": 7, "code": 8, "overall": 7, "note": "Compact and correct with a clear error message, but the operator keys have no aria labels and the display has no status role; the dark palette is fine but plain."},
+"Z": {"basic": 8, "correctness": 8, "usability": 8, "craft": 9, "code": 6, "overall": 8, "note": "A seven-segment pocket calculator with a distinctive look and a screen-reader live region; limited to 9 digits and larger results turn to Error, and the SVG display code adds weight."}
+},
+"ranking": ["X", "U", "Z", "W", "Y", "V"]}

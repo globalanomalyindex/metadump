@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"simple": 6, "correctness": 9, "usability": 9, "craft": 8, "code": 6, "overall": 8, "note": "Huge clock, colour-coded phases, accurate end-time timing and good keyboard support, but notifications, confirm dialog, skip and cycle-clear make it a bit padded."},
+"V": {"simple": 8, "correctness": 9, "usability": 9, "craft": 8, "code": 7, "overall": 8, "note": "Lean full-screen timer with big clock, clear Start/Pause/Resume, sr-only announcements and a sensible auto-stop at each phase end; slightly plain."},
+"W": {"simple": 6, "correctness": 8, "usability": 6, "craft": 7, "code": 7, "overall": 6, "note": "Attractive dark card with progress ring, but tiny text, silent tab switching mid-run, settings inputs add bulk, and almost no screen-reader support."},
+"X": {"simple": 7, "correctness": 8, "usability": 2, "craft": 3, "code": 6, "overall": 3, "note": "Logic is sound and a11y thoughtful, but an inline font-size:inherit on the h1 shrinks the clock to tiny text, defeating the at-a-glance requirement."},
+"Y": {"simple": 6, "correctness": 8, "usability": 6, "craft": 7, "code": 7, "overall": 6, "note": "Clean light card with ring and tabs, works correctly, but small type, no live announcements, and a stray dead expression in the pips code."},
+"Z": {"simple": 5, "correctness": 9, "usability": 9, "craft": 9, "code": 5, "overall": 8, "note": "Most polished with big clock, progress bar, phase tabs and good a11y, but auto-start, chime toggle, notifications and persistence overbuild a simple timer."}
+},
+"ranking": ["V", "U", "Z", "Y", "W", "X"]}

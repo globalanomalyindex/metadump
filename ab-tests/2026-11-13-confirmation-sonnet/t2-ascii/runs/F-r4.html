@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASCII Color Mixer</title>
+<style>
+  :root{
+    --bg:#1d1d22; --panel:#26262d; --field:#34343b; --ink:#e8e6df; --dim:#9a9aa6; --line:#44444e; --accent:#f2c14e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+       display:flex;justify-content:center;padding:16px}
+  main{width:100%;max-width:760px;display:flex;flex-direction:column;gap:12px}
+  h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.04em;color:var(--dim)}
+  h1 b{color:var(--ink)}
+  #field,#strip{margin:0;background:var(--field);border:1px solid var(--line);border-radius:6px;overflow:hidden;
+       font:inherit;line-height:1;white-space:pre;text-align:center;user-select:none}
+  #field{font-size:clamp(8px,1.9vw,17px);padding:10px 4px;line-height:1.05;font-weight:700;letter-spacing:0}
+  #strip{font-size:clamp(10px,2.6vw,16px);padding:8px 4px;line-height:1.3}
+  #strip span.sel{outline:1px solid var(--ink);outline-offset:1px}
+  #readout{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  #hex{font-size:26px;font-weight:700;letter-spacing:.06em;background:none;border:0;color:var(--ink);cursor:pointer;padding:0;font-family:inherit}
+  #hex:hover{text-decoration:underline dotted}
+  #rgb,#msg{color:var(--dim)}
+  #chip{width:28px;height:28px;border-radius:4px;border:1px solid var(--line)}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .col{display:flex;align-items:center;gap:6px}
+  label{color:var(--dim)}
+  input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--line);background:none;border-radius:4px;cursor:pointer}
+  input[type=text]{width:88px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 6px;font:inherit}
+  input[type=text].bad{border-color:#e5604d}
+  input[type=range]{flex:1 1 220px;min-width:160px;accent-color:var(--accent);height:28px}
+  button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer;min-height:32px}
+  button:hover{border-color:var(--dim)}
+  button[aria-pressed=true]{background:var(--accent);color:#17171a;border-color:var(--accent);font-weight:700}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  #ratio-label{min-width:12ch;text-align:right}
+  small{color:var(--dim)}
+</style>
+</head>
+<body>
+<main>
+  <h1><b>ASCII COLOR MIXER</b> &mdash; two colors, one ratio, one mix</h1>
+
+  <pre id="field" aria-label="Mixed color drawn as a shaded sphere of ASCII glyphs"></pre>
+  <pre id="strip" aria-label="Ramp from color A to color B with the chosen step marked"></pre>
+
+  <div id="readout">
+    <div id="chip" title="mixed color"></div>
+    <button id="hex" title="Click to copy">#000000</button>
+    <span id="rgb"></span>
+    <span id="msg" role="status" aria-live="polite"></span>
+  </div>
+
+  <div class="row">
+    <div class="col"><label for="ca">A</label><input type="color" id="ca"><input type="text" id="ta" maxlength="7" aria-label="Color A hex"></div>
+    <div class="col"><label for="cb">B</label><input type="color" id="cb"><input type="text" id="tb" maxlength="7" aria-label="Color B hex"></div>
+    <button id="swap" title="Swap A and B (S)">swap</button>
+  </div>
+
+  <div class="row">
+    <label for="ratio">ratio</label>
+    <input type="range" id="ratio" min="0" max="100" value="50">
+    <span id="ratio-label"></span>
+  </div>
+
+  <div class="row" role="group" aria-label="Mix model">
+    <label>model</label>
+    <button id="m-srgb" aria-pressed="true">channel mean</button>
+    <button id="m-lin" aria-pressed="false">linear light</button>
+    <small id="model-note"></small>
+  </div>
+
+  <small>Keys: &larr; &rarr; move ratio 5% (Shift 1%) &middot; M switch model &middot; S swap &middot; Home/End jump to A/B. Glyph density = brightness, glyph color = mix.</small>
+</main>
+
+<script>
+(function(){
+  var RAMP = " .,:;-=+*#%@";
+  var state = { a:"#d62839", b:"#1b6ee0", t:50, model:"srgb" };
+
+  function $(id){ return document.getElementById(id); }
+  function parseHex(s){
+    s = String(s).trim();
+    var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(s);
+    if(!m) return null;
+    var h = m[1];
+    if(h.length===3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  }
+  function toHex(c){
+    return "#"+c.map(function(v){ v=Math.max(0,Math.min(255,Math.round(v))); return (v<16?"0":"")+v.toString(16); }).join("");
+  }
+  function toLin(v){ v/=255; return v<=0.04045 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); }
+  function toEnc(l){ var v = l<=0.0031308 ? l*12.92 : 1.055*Math.pow(l,1/2.4)-0.055; return v*255; }
+
+  // The mix function: two colors, a ratio 0..1 (0 = all A, 1 = all B), a model.
+  function mix(a,b,t,model){
+    var out=[0,0,0];
+    for(var i=0;i<3;i++){
+      if(model==="lin") out[i]=toEnc(toLin(a[i])*(1-t)+toLin(b[i])*t);
+      else out[i]=a[i]*(1-t)+b[i]*t;
+    }
+    return out;
+  }
+  function lum(c){ return 0.2126*toLin(c[0])+0.7152*toLin(c[1])+0.0722*toLin(c[2]); }
+  // perceived lightness 0..1 for glyph density
+  function light(c){ var y=lum(c); return y<=0.008856 ? y*9.033 : 1.16*Math.cbrt(y)-0.16; }
+
+  function glyph(v){
+    v=Math.max(0,Math.min(1,v));
+    return RAMP[Math.round(v*(RAMP.length-1))];
+  }
+
+  // Sphere of the mix: lit from upper left; density follows mix lightness times the light.
+  var W=56, H=24;
+  function drawField(c){
+    var L = light(c), rows=[];
+    for(var y=0;y<H;y++){
+      var line="";
+      for(var x=0;x<W;x++){
+        var nx=(x-W/2+0.5)*0.57/(H/2), ny=(y-H/2+0.5)/(H/2);
+        var d2=nx*nx+ny*ny;
+        if(d2>1){ line+=" "; continue; }
+        var nz=Math.sqrt(1-d2);
+        var lit=Math.max(0,(-nx*0.45-ny*0.5+nz*0.74));
+        line+=glyph(0.15+0.85*lit*(0.45+0.55*L));
+      }
+      rows.push(line);
+    }
+    var f=$("field");
+    f.textContent=rows.join("\n");
+    f.style.color=toHex(c);
+  }
+
+  var S=40;
+  function drawStrip(a,b,t,model){
+    var html="", sel=Math.round(t*(S-1));
+    for(var i=0;i<S;i++){
+      var c=mix(a,b,i/(S-1),model), g=glyph(light(c));
+      if(g===" ") g="."; // keep dark ends visible
+      html+='<span'+(i===sel?' class="sel"':'')+' style="color:'+toHex(c)+'">'+(i===sel?"@":g)+'</span>';
+    }
+    $("strip").innerHTML=html;
+  }
+
+  function render(){
+    var a=parseHex(state.a), b=parseHex(state.b), t=state.t/100;
+    var c=mix(a,b,t,state.model);
+    drawField(c);
+    drawStrip(a,b,t,state.model);
+    var hex=toHex(c);
+    $("chip").style.background=hex;
+    $("hex").textContent=hex.toUpperCase();
+    $("rgb").textContent="rgb("+c.map(function(v){return Math.round(v);}).join(", ")+")  L*"+Math.round(light(c)*100);
+    $("ratio").value=state.t;
+    $("ratio-label").textContent="A "+(100-state.t)+"% / B "+state.t+"%";
+    $("ca").value=state.a; $("cb").value=state.b;
+    if(document.activeElement!==$("ta")) $("ta").value=state.a;
+    if(document.activeElement!==$("tb")) $("tb").value=state.b;
+    $("m-srgb").setAttribute("aria-pressed",state.model==="srgb");
+    $("m-lin").setAttribute("aria-pressed",state.model==="lin");
+    $("model-note").textContent = state.model==="srgb"
+      ? "averages the encoded numbers: darker, greyer middles"
+      : "averages light: brighter middles";
+  }
+  function say(s){ $("msg").textContent=s; }
+  function setT(t){ state.t=Math.max(0,Math.min(100,t)); say(""); render(); }
+
+  $("ratio").addEventListener("input",function(e){ setT(+e.target.value); });
+  $("ca").addEventListener("input",function(e){ state.a=e.target.value; $("ta").classList.remove("bad"); render(); });
+  $("cb").addEventListener("input",function(e){ state.b=e.target.value; $("tb").classList.remove("bad"); render(); });
+  function hexField(id,key){
+    $(id).addEventListener("input",function(e){
+      var rgb=parseHex(e.target.value);
+      if(rgb){ state[key]=toHex(rgb); e.target.classList.remove("bad"); say(""); render(); }
+      else { e.target.classList.add("bad"); say("Not a hex color; keeping "+state[key]); }
+    });
+    $(id).addEventListener("blur",function(e){ e.target.classList.remove("bad"); e.target.value=state[key]; });
+  }
+  hexField("ta","a"); hexField("tb","b");
+  $("swap").addEventListener("click",function(){ var x=state.a; state.a=state.b; state.b=x; state.t=100-state.t; say("swapped"); render(); });
+  $("m-srgb").addEventListener("click",function(){ state.model="srgb"; render(); });
+  $("m-lin").addEventListener("click",function(){ state.model="lin"; render(); });
+  $("hex").addEventListener("click",function(){
+    var h=$("hex").textContent;
+    try{ navigator.clipboard.writeText(h).then(function(){say("copied "+h);},function(){say("select and copy "+h);}); }
+    catch(e){ say("select and copy "+h); }
+  });
+
+  document.addEventListener("keydown",function(e){
+    var tag=(e.target.tagName||"").toLowerCase();
+    if(tag==="input" && e.target.type==="text") return;
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var step=e.shiftKey?1:5, k=e.key;
+    if(k==="ArrowRight"&&tag!=="input"){ setT(state.t+step); e.preventDefault(); }
+    else if(k==="ArrowLeft"&&tag!=="input"){ setT(state.t-step); e.preventDefault(); }
+    else if(k==="Home"&&tag!=="input"){ setT(0); e.preventDefault(); }
+    else if(k==="End"&&tag!=="input"){ setT(100); e.preventDefault(); }
+    else if(k==="m"||k==="M"){ state.model=state.model==="srgb"?"lin":"srgb"; render(); }
+    else if(k==="s"||k==="S"){ $("swap").click(); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

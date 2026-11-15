@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root {
+    --bg: #14161a;
+    --body: #1d2026;
+    --screen: #0f1115;
+    --key: #2a2e36;
+    --key-hover: #353a44;
+    --op: #b85400;
+    --op-hover: #d06410;
+    --fn: #3b414d;
+    --text: #f2f3f5;
+    --muted: #8b92a0;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(circle at 30% 20%, #20242c, var(--bg));
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .calc {
+    width: 100%; max-width: 340px;
+    background: var(--body);
+    border-radius: 24px;
+    padding: 18px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .screen {
+    background: var(--screen);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    text-align: right;
+    min-height: 96px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    overflow: hidden;
+  }
+  .expr { color: var(--muted); font-size: 14px; min-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .value { font-size: 44px; font-weight: 300; line-height: 1.15; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  button {
+    font: inherit; font-size: 22px; color: var(--text);
+    background: var(--key); border: 0; border-radius: 14px;
+    height: 62px; cursor: pointer;
+    transition: background .12s, transform .08s;
+  }
+  button:hover { background: var(--key-hover); }
+  button:active { transform: scale(.95); }
+  button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  button.fn { background: var(--fn); }
+  button.fn:hover { background: #4a515f; }
+  button.op { background: var(--op); font-size: 26px; }
+  button.op:hover { background: var(--op-hover); }
+  button.op.active { background: #fff; color: var(--op); }
+  button.zero { grid-column: span 2; text-align: left; padding-left: 26px; }
+  .err .value { color: #ff6b6b; font-size: 30px; }
+</style>
+</head>
+<body>
+<main class="calc" id="calc" aria-label="Calculator">
+  <div class="screen" aria-live="polite">
+    <div class="expr" id="expr"></div>
+    <div class="value" id="value">0</div>
+  </div>
+  <div class="keys">
+    <button class="fn" data-k="clear" id="clr">AC</button>
+    <button class="fn" data-k="sign" aria-label="Plus minus">+/−</button>
+    <button class="fn" data-k="percent" aria-label="Percent">%</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="op" data-k="=" aria-label="Equals">=</button>
+  </div>
+</main>
+<script>
+(function () {
+  var state = { cur: "0", prev: null, op: null, fresh: true, lastOp: null, lastOperand: null, error: false };
+  var SYM = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+  var elV = document.getElementById("value"), elE = document.getElementById("expr"),
+      calc = document.getElementById("calc"), clr = document.getElementById("clr");
+
+  function compute(a, b, op) {
+    a = parseFloat(a); b = parseFloat(b);
+    var r;
+    if (op === "+") r = a + b;
+    else if (op === "-") r = a - b;
+    else if (op === "*") r = a * b;
+    else if (op === "/") { if (b === 0) return null; r = a / b; }
+    return parseFloat(r.toPrecision(12));
+  }
+  function fmt(s) {
+    if (s === "Error") return s;
+    var neg = s[0] === "-", t = neg ? s.slice(1) : s;
+    if (/e/i.test(t)) return s;
+    var parts = t.split("."), i = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return (neg ? "-" : "") + i + (parts.length > 1 ? "." + parts[1] : "");
+  }
+  function str(n) {
+    if (n === null) return "Error";
+    var s = String(n);
+    if (Math.abs(n) >= 1e15 || (n !== 0 && Math.abs(n) < 1e-9)) s = n.toExponential(6).replace(/\.?0+e/, "e");
+    return s;
+  }
+  function render() {
+    var t = fmt(state.cur);
+    elV.textContent = t;
+    var size = t.length > 16 ? 22 : t.length > 12 ? 28 : t.length > 8 ? 36 : 44;
+    elV.style.fontSize = state.error ? "" : size + "px";
+    calc.classList.toggle("err", state.error);
+    elE.textContent = state.op && state.prev !== null ? fmt(state.prev) + " " + SYM[state.op] + (state.fresh ? "" : " " + fmt(state.cur)) : "";
+    clr.textContent = (state.cur !== "0" || state.prev !== null) && !state.error ? "C" : "AC";
+    if (state.error) clr.textContent = "AC";
+    document.querySelectorAll("button.op").forEach(function (b) {
+      b.classList.toggle("active", state.op === b.dataset.k && state.fresh && state.prev !== null);
+    });
+  }
+  function reset() { state = { cur: "0", prev: null, op: null, fresh: true, lastOp: null, lastOperand: null, error: false }; }
+  function fail() { reset(); state.cur = "Error"; state.error = true; }
+
+  function digit(d) {
+    if (state.error) reset();
+    if (state.fresh) { state.cur = d; state.fresh = false; if (!state.op) { state.lastOp = null; } }
+    else {
+      var digits = state.cur.replace(/[-.]/g, "").length;
+      if (digits >= 15) return;
+      state.cur = state.cur === "0" ? d : state.cur + d;
+    }
+  }
+  function dot() {
+    if (state.error) reset();
+    if (state.fresh) { state.cur = "0."; state.fresh = false; }
+    else if (state.cur.indexOf(".") < 0) state.cur += ".";
+  }
+  function operator(o) {
+    if (state.error) return;
+    if (state.op && !state.fresh) {
+      var r = compute(state.prev, state.cur, state.op);
+      if (r === null) return fail();
+      state.prev = str(r); state.cur = state.prev;
+    } else if (!state.op) state.prev = state.cur;
+    state.op = o; state.fresh = true; state.lastOp = null;
+  }
+  function equals() {
+    if (state.error) return;
+    var r;
+    if (state.op) {
+      var operand = state.fresh ? state.prev : state.cur; // "5 + =" uses 5
+      r = compute(state.prev, operand, state.op);
+      if (r === null) return fail();
+      state.lastOp = state.op; state.lastOperand = operand;
+      state.cur = str(r); state.prev = null; state.op = null; state.fresh = true;
+    } else if (state.lastOp) {
+      r = compute(state.cur, state.lastOperand, state.lastOp);
+      if (r === null) return fail();
+      state.cur = str(r); state.fresh = true;
+    }
+  }
+  function sign() {
+    if (state.error || state.cur === "0") return;
+    state.cur = state.cur[0] === "-" ? state.cur.slice(1) : "-" + state.cur;
+  }
+  function percent() {
+    if (state.error) return;
+    var v = parseFloat(state.cur);
+    if (state.op && state.prev !== null && (state.op === "+" || state.op === "-")) v = parseFloat(state.prev) * v / 100;
+    else v = v / 100;
+    state.cur = str(parseFloat(v.toPrecision(12))); state.fresh = false;
+  }
+  function backspace() {
+    if (state.error || state.fresh) return;
+    state.cur = state.cur.length > 1 && !(state.cur.length === 2 && state.cur[0] === "-") ? state.cur.slice(0, -1) : "0";
+  }
+  function clear() {
+    if (clr.textContent === "C" && !state.error) { state.cur = "0"; state.fresh = true; if (!state.op) state.prev = null; }
+    else reset();
+  }
+  function press(k) {
+    if (k >= "0" && k <= "9" && k.length === 1) digit(k);
+    else if (k === ".") dot();
+    else if ("+-*/".indexOf(k) >= 0 && k.length === 1) operator(k);
+    else if (k === "=") equals();
+    else if (k === "sign") sign();
+    else if (k === "percent") percent();
+    else if (k === "clear") clear();
+    else if (k === "back") backspace();
+    render();
+  }
+
+  calc.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b) press(b.dataset.k);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key, map = { Enter: "=", "=": "=", Backspace: "back", Escape: "clear", Delete: "clear", "%": "percent", ",": "." };
+    if (/^[0-9]$/.test(k) || "+-*/.".indexOf(k) >= 0 && k.length === 1) press(k);
+    else if (map[k]) { if (k === "Enter" && document.activeElement && document.activeElement.tagName === "BUTTON") document.activeElement.blur(); press(map[k]); }
+    else return;
+    e.preventDefault();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

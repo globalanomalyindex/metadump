@@ -1,0 +1,638 @@
+{
+ "scores": {
+  "A": {
+   "fidelity": 8.17,
+   "correctness": 7.5,
+   "craft": 7.17,
+   "usability": 7.67,
+   "overall": 7.25,
+   "mean_rank": 3.83,
+   "per_run_overall": {
+    "A-r1": 6.67,
+    "A-r2": 7.67,
+    "A-r3": 8.0,
+    "A-r4": 6.67
+   }
+  },
+  "F": {
+   "fidelity": 8.25,
+   "correctness": 8.25,
+   "craft": 8.08,
+   "usability": 8.25,
+   "overall": 8.08,
+   "mean_rank": 2.67,
+   "per_run_overall": {
+    "F-r1": 7.67,
+    "F-r2": 8.67,
+    "F-r3": 9.0,
+    "F-r4": 7.0
+   }
+  },
+  "Q": {
+   "fidelity": 8.17,
+   "correctness": 7.42,
+   "craft": 7.08,
+   "usability": 7.33,
+   "overall": 7.25,
+   "mean_rank": 4,
+   "per_run_overall": {
+    "Q-r1": 7.33,
+    "Q-r2": 7.0,
+    "Q-r3": 7.0,
+    "Q-r4": 7.67
+   }
+  }
+ },
+ "pairwise": {
+  "F_vs_A": {
+   "wins": 16,
+   "losses": 4,
+   "ties": 4,
+   "win_rate": 0.75,
+   "p": 0.257
+  },
+  "Q_vs_A": {
+   "wins": 7,
+   "losses": 7,
+   "ties": 10,
+   "win_rate": 0.5,
+   "p": 1.0
+  },
+  "F_vs_Q": {
+   "wins": 15,
+   "losses": 3,
+   "ties": 6,
+   "win_rate": 0.75,
+   "p": 0.257
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 8762,
+   "change_0_to_2s_pct": 6.31,
+   "change_20_to_22s_pct": 4.77,
+   "controls_used": [
+    {
+     "control": "#pel",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 4.95
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 3.98
+    },
+    {
+     "control": "4",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.09
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.4062744140625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r2": {
+   "bytes": 11226,
+   "change_0_to_2s_pct": 9.66,
+   "change_20_to_22s_pct": 8.78,
+   "controls_used": [
+    {
+     "control": "A pelican riding a bicycle. Click the pe",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 6.8
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 4.29
+    },
+    {
+     "control": "1",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.09
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.50625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r3": {
+   "bytes": 13686,
+   "change_0_to_2s_pct": 9.9,
+   "change_20_to_22s_pct": 9.83,
+   "controls_used": [
+    {
+     "control": "#bird",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 9.78
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 7.43
+    },
+    {
+     "control": "Speed",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.73
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.50625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r4": {
+   "bytes": 11828,
+   "change_0_to_2s_pct": 7.68,
+   "change_20_to_22s_pct": 8.11,
+   "controls_used": [
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 5.2
+    },
+    {
+     "control": "1",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.85
+    },
+    {
+     "control": "Ring bell",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.69
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.4449462890625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r1": {
+   "bytes": 9795,
+   "change_0_to_2s_pct": 4.53,
+   "change_20_to_22s_pct": 4.6,
+   "controls_used": [
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 4.17
+    },
+    {
+     "control": "Speed",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.1
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.4449462890625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r2": {
+   "bytes": 10945,
+   "change_0_to_2s_pct": 9.09,
+   "change_20_to_22s_pct": 7.52,
+   "controls_used": [
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 6.24
+    },
+    {
+     "control": "1",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.49
+    },
+    {
+     "control": "Honk",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.71
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.4449462890625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r3": {
+   "bytes": 12373,
+   "change_0_to_2s_pct": 8.84,
+   "change_20_to_22s_pct": 8.63,
+   "controls_used": [
+    {
+     "control": "Ring bell",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 8.72
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 6.04
+    },
+    {
+     "control": "1",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.48
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.48125390625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r4": {
+   "bytes": 13113,
+   "change_0_to_2s_pct": 9.15,
+   "change_20_to_22s_pct": 9.37,
+   "controls_used": [
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 5.28
+    },
+    {
+     "control": "Pedalling speed",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.12
+    },
+    {
+     "control": "on",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.03
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.50625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r1": {
+   "bytes": 12985,
+   "change_0_to_2s_pct": 3.21,
+   "change_20_to_22s_pct": 2.75,
+   "controls_used": [
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 11.46
+    },
+    {
+     "control": "75",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 3.45
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.47950434494018557,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r2": {
+   "bytes": 21333,
+   "change_0_to_2s_pct": 7.08,
+   "change_20_to_22s_pct": 7.42,
+   "controls_used": [
+    {
+     "control": "#bell",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 6.47
+    },
+    {
+     "control": "#bird",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 5.81
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 6.04
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.48546112060546875,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r3": {
+   "bytes": 20171,
+   "change_0_to_2s_pct": 7.49,
+   "change_20_to_22s_pct": 5.11,
+   "controls_used": [
+    {
+     "control": "Ring bell",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 8.78
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 9.85
+    },
+    {
+     "control": "1",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.2
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.5898792724609375,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r4": {
+   "bytes": 11411,
+   "change_0_to_2s_pct": 8.03,
+   "change_20_to_22s_pct": 7.79,
+   "controls_used": [
+    {
+     "control": "Ring bell",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 6.75
+    },
+    {
+     "control": "Pause",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 7.6
+    },
+    {
+     "control": "55",
+     "kind": "range",
+     "verb": "slid",
+     "change_pct": 0.92
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "pelican": {
+    "largest": "svg",
+    "share": 0.5625,
+    "canvas": 0,
+    "img": 0,
+    "image": 0
+   },
+   "checks": {
+    "svg_main": true,
+    "no_raster": true,
+    "animates": true,
+    "still_animating": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 81796,
+   "mean_seconds": 52.8
+  },
+  "F": {
+   "runs": 4,
+   "mean_tokens": 121750,
+   "mean_seconds": 120.8
+  },
+  "Q": {
+   "runs": 4,
+   "mean_tokens": 91606,
+   "mean_seconds": 105.0
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 203576,
+   "ms": 1194888,
+   "tool_uses": 39,
+   "agents_spawned": 18
+  }
+ },
+ "agreement_r": 0.65,
+ "notes": {
+  "b1/j1/F-r1": "Clear pelican with big pouch seated on a detailed bike with chain, spinning spoked wheels and scrolling road; pause, cadence and honk all work, though the wing and body overlap the frame a little awkwardly.",
+  "b1/j1/Q-r1": "Simple, readable pelican on a bike with parallax hills and clouds and working pause and speed, but the neck and frame are crude and the pelican is a bit generic.",
+  "b1/j1/A-r1": "Pleasant scene with a bell, DING text and distance readout, but the pelican floats above a thin frame, the wheels are faint, and the wing arm is pale and plain.",
+  "b1/j1/Q-r2": "Recognisable pelican on a teal bike with scrolling scenery and pedals, but the grey triangular wing is odd, the legs read thinly and the frame geometry is off.",
+  "b1/j1/A-r2": "Dark-themed page with a fun helmeted pelican, reverse, honk and distance readout; the pelican and bike are clean but the wing is a flat slab and the legs are thin.",
+  "b1/j1/F-r2": "Most polished build with a cargo crate, chain, eased start and stop, reverse, bell with sound, a status line and 44px controls; the pelican is small, and the crate and loaf and fish are an addition beyond the request.",
+  "b1/j2/Q-r2": "Clear pelican with pouch, pedalling legs and scrolling scenery plus pause, speed and honk, though the honk has little visible effect and the pose is a bit stiff.",
+  "b1/j2/A-r2": "Large, charming pelican in a helmet with a wing on the handlebar, smooth pedalling, reverse, distance and honk counters and a HONK text on click.",
+  "b1/j2/F-r2": "Most polished: expressive pelican, detailed chain, wheel and rack, gentle eased start and stop, audio bell, reduced-motion handling and 44px controls; the cargo bike is an embellishment.",
+  "b1/j2/A-r1": "Works, but the straight vertical legs look awkward, the cloud collides with the sun and the bird is simplistic.",
+  "b1/j2/Q-r1": "Clean outlined pelican with a swinging pouch and good pedalling, but the bird is small and the controls are minimal.",
+  "b1/j2/F-r1": "Detailed large bicycle with toothed chainring and a hidden click-to-honk, but the pelican reads less clearly, the road moves slowly and the honk has little feedback.",
+  "b1/j3/A-r2": "Readable pelican with big pouch, helmet and wing on the handlebar, working pause, speed, reverse and honk controls, though the legs and hip placement are a bit odd.",
+  "b1/j3/F-r2": "Most polished in craft, controls and accessibility, but it swaps in a cargo bike with a crate and the S-curved neck and wing are not on the handlebar.",
+  "b1/j3/Q-r2": "Clean and correct pelican on a regular bike with pause, speed and honk, but the legs and pedals look slightly tangled.",
+  "b1/j3/F-r1": "Large, well-drawn bike and pelican with a nice pouch and chain details, a hand-on-bar wing, and pause, cadence and click-to-honk controls.",
+  "b1/j3/A-r1": "Layered parallax hills, a bell and a speed readout, but the pelican's neck is faint and the legs and frame are thin.",
+  "b1/j3/Q-r1": "Cute outlined pelican with a clear neck and bill that reads well, a simple bike and few controls (pause, speed).",
+  "b2/j1/F-r3": "Large, well-outlined pelican with wing gripping the bars, IK legs, spinning spokes, visible bell with ding bubble, road-scroll toggle, good phone layout and reduced-motion handling.",
+  "b2/j1/Q-r3": "Clean parallax scene with trees and clouds and a charming pelican, but the bike is small, the wing does not reach the grip, and the bell gives only text feedback.",
+  "b2/j1/A-r3": "Helmeted pelican with wing on the bars, honk visual, live readout and keyboard shortcuts; cadence reads 0 at start and the readout text is tiny on mobile.",
+  "b2/j1/Q-r4": "Attractive scene with helmet and trees, but the arm is a thin stub, the bell is a checkbox whose puff effect is barely visible, and the pelican is small.",
+  "b2/j1/A-r4": "Many features (night mode, reverse, synth bell) but the pelican looks blobby, the legs and feet are crude, and the grey-green ground band is awkward.",
+  "b2/j1/F-r4": "Cute thick-outlined pelican and a visible bell, but the sky is plain, the wing hangs behind rather than gripping the bars, and the scenery is sparse.",
+  "b2/j2/Q-r4": "Charming helmeted pelican with a wing on the bar, clean IK legs, parallax scenery and tidy controls, though the pedal mechanics are a bit small.",
+  "b2/j2/A-r4": "Oversized pelican body on a thin frame with a murky grey band behind the road, but night mode, reverse, bell with sound and a readout make it feature-rich and working.",
+  "b2/j2/F-r4": "Clean, readable pelican on bike with a bell button, accessible controls and good phone layout, but the scenery is sparse and the rider is a little stiff.",
+  "b2/j2/A-r3": "Well-composed scene with helmet, blinking eye, honk, parallax hills and keyboard shortcuts; the wing and legs read clearly, though the speed slider's range is odd.",
+  "b2/j2/Q-r3": "Good trees and pouch detail, but hill tiles show a visible seam, the wheels are small against the large bird, and a focus box appears on the bell click.",
+  "b2/j2/F-r3": "Most polished: big racing bike, arm reaching the grip, S-curved neck with nod, bell with speech bubble, road-scroll toggle, reduced-motion handling and 44px touch targets.",
+  "b2/j3/A-r4": "Charming helmeted pelican with parallax, working pedal IK and extra night/reverse controls, but the wing just sits on the body and the bird looks a bit pasted on.",
+  "b2/j3/F-r4": "Clean outlined pelican with bell on the handlebar and spinning chainring, but the pale washed-out scene and wing not reaching the bars make it less lively.",
+  "b2/j3/Q-r4": "Polished helmeted pelican with wing arm to the grip, trees and parallax; the bell as a checkbox with a faint puff is a weak control.",
+  "b2/j3/F-r3": "Largest, most convincing pelican with wing arm gripping the bars, bell on the handlebar, ding bubble, sunset sky and well-labelled keyboard-friendly controls.",
+  "b2/j3/A-r3": "Strong helmeted pelican with blinking, honk bubble and keyboard shortcuts, though the dense monospace status line is cramped on a phone.",
+  "b2/j3/Q-r3": "Works and has trees and a ring message, but the pelican is small with a flat grey sheet for a wing, a salmon pouch, and a stray focus box on bell click."
+ }
+}

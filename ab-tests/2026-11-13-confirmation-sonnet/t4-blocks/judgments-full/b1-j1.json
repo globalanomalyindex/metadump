@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Clean empty 32x32 sandbox with four kinds, per-stroke undo, confirm-to-clear, live counts and a good phone layout, but only four plain blocks and an empty start make it less delightful."},
+"V": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Richest and most polished: textured pixel blocks, sky, trees and pond in a ready seeded world, nine blocks, undo, new world, clear, hover ghost and persistence, all working on desktop and mobile."},
+"W": {"fidelity": 8, "correctness": 8, "craft": 6, "usability": 7, "overall": 7, "note": "Functional with Place/Erase/Pick/Fill tools and a pre-built ground layer, but the tiny key-number labels are barely legible, the blocks are flat and a full-width ground slab fills the world."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Seeded little scene with ten block types, working erase tool, Shift/right-click break, Ctrl+Z, cell readout and persistence; blocks are simpler than V but the whole thing is solid and responsive."},
+"Y": {"fidelity": 7, "correctness": 7, "craft": 5, "usability": 6, "overall": 6, "note": "Works as a basic painter with eight blocks, erase, grid toggle and a generate button, but it starts as a nearly black empty canvas, looks flat, has stray grid artifacts, and its toolbar crowds the swatches with actions."},
+"Z": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Tidy block box with per-kind counts, hover ghost, placement flash and good accessibility text, but only four kinds, an empty start, and Ctrl+Z does nothing even though bare Z undoes."}
+},
+"ranking": ["V", "X", "U", "Z", "W", "Y"]}

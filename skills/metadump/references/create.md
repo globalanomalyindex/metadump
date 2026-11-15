@@ -27,7 +27,8 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `lite` | quick single-consumer tasks, small prompts, or the user asks for fast/cheap | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 8–15K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
+| `quick` | the user asks for a quick, fast or light dump, or one with no agents | none: the main loop writes the dump itself in one pass and builds from it (`quick.md`; none of the steps below apply) | 1 pass | 2–4K tokens, no manifest, routes or index | a few thousand tokens, about a minute |
+| `lite` | small prompts, single-consumer tasks, or the user asks for a cheap swarm build | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 8–15K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
 | `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 15–30K tokens | ~2–4M, 40–70 min (estimate) |
 | `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 30–50K tokens, still routed | ~4–7M, 1–2 h (estimate) |
 
@@ -162,7 +163,7 @@ How to choose the section plan for any domain:
 
 7. Write every section as facets. A dump reads like the owner's hand-made ones when it has, in some form:
    - a **thesis** (what's interesting about the subject, never a recipe for the deliverable) and a one-line **summary** (`essence.one_sentence`, `essence.summary`);
-   - 2 to 5 **angles**: contrasting ways in, each a move and what it draws on, none the default (`essence.angles`);
+   - 4 to 6 **angles**: kinds of the thing that people make, each keeping everything the request names, with what it draws on (`essence.angles`). The first is the home angle, the kind a stranger pictures; none is a shot (a camera position, a lighting effect, a moment). The deal hands each session one, the first one first (ADR 0019);
    - an **identity** facet: descriptors and principles;
    - one section per **facet area**, named in the domain's words (geometry, color, materials, motion; or seams, test list, error model), each holding a few facets with properties, behaviors and a principle;
    - a **keyword taxonomy** across registers, and **influences** with what each contributes;

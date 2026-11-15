@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Playful stack-to-grid idea with a tilted bento tile layout, but the nav is oddly offset on desktop and the tiles are thin on real function."},
+"V": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Cohesive Ember & Oak bento with working roast, subscription, bag and collapsible tiles plus a status line and Escape and outside-click close."},
+"W": {"fidelity": 8, "correctness": 7, "craft": 8, "usability": 7, "overall": 7, "note": "Polished, genuine menu-ordering bento with varied tile sizes, though the size chips on the featured card have weak contrast."},
+"X": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Compact dark floating nav bar that unfolds into a tight bento with a bag stepper, newsletter signup and Escape hint; tidy and legible."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Feature-rich bento (roast, bag, plan, cafes, guides) with a state readout, but the big dark card has dead space and the brand name drops out on mobile."},
+"Z": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 6, "overall": 6, "note": "Bold editorial look with an unfolding bento panel, but the panel overlaps and cuts the hero headline and the layout feels cramped."}
+},
+"ranking": ["V", "X", "W", "Y", "Z", "U"]}

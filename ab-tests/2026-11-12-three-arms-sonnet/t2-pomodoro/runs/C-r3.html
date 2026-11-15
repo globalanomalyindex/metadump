@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus 25:00 · Pomodoro</title>
+<style>
+  :root{
+    --bg:#b3261e;           /* focus: warm red */
+    --ink:#fff;
+    --soft:rgba(255,255,255,.78);
+    --line:rgba(255,255,255,.55);
+    --fill:rgba(255,255,255,.14);
+  }
+  body[data-phase="short"]{--bg:#1d7a4a}
+  body[data-phase="long"]{--bg:#1e2a3a}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    transition:background-color .6s ease;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:100vh;min-height:100dvh;padding:24px 16px;text-align:center;
+  }
+  body.done{animation:flash 1.2s ease 2}
+  @keyframes flash{50%{background:#fff;color:#000}}
+  .phase{font-size:clamp(20px,4vw,32px);font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin:0}
+  .tabs{display:flex;gap:8px;margin:14px 0 0;padding:0;list-style:none;justify-content:center}
+  .tabs li{padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:14px;color:var(--soft)}
+  .tabs li[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
+  #time{
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-variant-numeric:tabular-nums;font-weight:700;
+    font-size:clamp(88px,26vw,200px);line-height:1;margin:.18em 0 .1em;letter-spacing:-.02em;
+  }
+  #status{font-size:18px;color:var(--soft);min-height:1.5em;margin:0 0 22px}
+  .row{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
+  button{font:inherit;cursor:pointer;border-radius:12px;border:2px solid var(--ink);color:var(--ink);background:transparent;min-height:48px;padding:0 20px}
+  button:hover{background:var(--fill)}
+  button:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  #go{background:var(--ink);color:var(--bg);font-size:24px;font-weight:700;min-width:180px;min-height:64px;padding:0 32px}
+  #go:hover{background:#fff;opacity:.92}
+  #reset.armed{background:var(--ink);color:var(--bg)}
+  .dots{display:flex;gap:10px;justify-content:center;margin:28px 0 6px}
+  .dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink)}
+  .dots i.on{background:var(--ink)}
+  .count{font-size:16px;color:var(--soft);margin:0}
+  .opts{margin-top:22px;display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+  .opts label{display:flex;gap:8px;align-items:center;min-height:44px;cursor:pointer}
+  .opts input{width:20px;height:20px;accent-color:#fff}
+  .link{border:0;min-height:44px;text-decoration:underline;color:var(--soft);padding:0 8px;border-radius:6px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  @media (prefers-reduced-motion:reduce){body{transition:none}body.done{animation:none}}
+</style>
+</head>
+<body data-phase="focus">
+  <main>
+    <p class="phase" id="phase">Focus</p>
+    <ul class="tabs" aria-label="Phases">
+      <li data-p="focus" aria-current="true">Focus</li>
+      <li data-p="short">Break</li>
+      <li data-p="long">Long break</li>
+    </ul>
+    <div id="time" role="timer" aria-label="Time remaining">25:00</div>
+    <p id="status">Time to focus!</p>
+    <div class="row">
+      <button id="go" type="button">Start</button>
+      <button id="reset" type="button">Reset</button>
+      <button id="skip" type="button">Skip</button>
+    </div>
+    <div class="dots" id="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p class="count" id="count">0 pomodoros finished · 4 until the long break</p>
+    <div class="opts">
+      <label><input type="checkbox" id="auto"> Start next phase automatically</label>
+      <button class="link" id="clear" type="button">Clear count</button>
+    </div>
+  </main>
+  <div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+(function(){
+  var LEN={focus:25*60,short:5*60,long:20*60};
+  var NAME={focus:"Focus",short:"Break",long:"Long break"};
+  var st={phase:"focus",state:"idle",remaining:LEN.focus,end:0,count:0,auto:false};
+  var handle=null,audio=null,resetTimer=null,armed=false;
+  var $=function(i){return document.getElementById(i)};
+  var go=$("go"),rs=$("reset"),sk=$("skip");
+
+  function save(){try{sessionStorage.setItem("pomo",JSON.stringify({p:st.phase,s:st.state,r:st.remaining,e:st.end,c:st.count,a:st.auto}))}catch(e){}}
+  function load(){
+    try{var d=JSON.parse(sessionStorage.getItem("pomo")||"null");if(!d)return;
+      st.phase=d.p;st.count=d.c|0;st.auto=!!d.a;st.remaining=d.r;st.state=d.s;st.end=d.e;
+      if(st.state==="running"){ if(Date.now()>=st.end){st.remaining=0}else{st.remaining=Math.ceil((st.end-Date.now())/1000)} st.state="paused"; st.restored=true; }
+    }catch(e){}
+  }
+  function fmt(s){s=Math.max(0,s);var m=Math.floor(s/60),x=s%60;return (m<10?"0":"")+m+":"+(x<10?"0":"")+x}
+  function say(t){var l=$("live");l.textContent="";setTimeout(function(){l.textContent=t},30)}
+
+  function render(){
+    document.body.dataset.phase=st.phase;
+    $("phase").textContent=NAME[st.phase];
+    var lis=document.querySelectorAll(".tabs li");
+    for(var i=0;i<lis.length;i++)lis[i].setAttribute("aria-current",lis[i].dataset.p===st.phase?"true":"false");
+    $("time").textContent=fmt(st.remaining);
+    document.title=fmt(st.remaining)+" · "+NAME[st.phase]+(st.state==="paused"?" (paused)":"");
+    var s;
+    if(st.state==="idle")s=st.phase==="focus"?"Time to focus!":"Time for a "+(st.phase==="long"?"long break":"break")+". Press Start.";
+    else if(st.state==="paused")s=(st.restored?"Restored after reload. ":"")+"Paused. "+NAME[st.phase]+" is on hold.";
+    else s=st.phase==="focus"?"Focusing. Stay with one task.":"Resting. Step away from the screen.";
+    $("status").textContent=s;
+    go.textContent=st.state==="running"?"Pause":(st.state==="paused"?"Resume":"Start");
+    var inCycle=st.count%4, dots=$("dots").children;
+    for(var j=0;j<4;j++){dots[j].className=(j<inCycle||(st.phase==="long"&&st.count>0))?"on":""}
+    var left=4-inCycle;
+    $("count").textContent=st.count+" pomodoro"+(st.count===1?"":"s")+" finished · "+(st.phase==="long"?"long break now":left+" until the long break");
+    $("auto").checked=st.auto;
+    rs.textContent=armed?"Confirm reset?":"Reset";
+    rs.classList.toggle("armed",armed);
+    sk.textContent=st.phase==="focus"?"Skip to break":"Skip break";
+  }
+
+  function tick(){
+    if(st.state!=="running")return;
+    var left=Math.ceil((st.end-Date.now())/1000);
+    if(left<=0){finish();return}
+    if(left!==st.remaining){st.remaining=left;render();save()}
+  }
+  function startLoop(){stopLoop();handle=setInterval(tick,250)}
+  function stopLoop(){if(handle){clearInterval(handle);handle=null}}
+
+  function unlockAudio(){
+    try{ if(!audio){var C=window.AudioContext||window.webkitAudioContext;if(C)audio=new C()} if(audio&&audio.state==="suspended")audio.resume() }catch(e){}
+  }
+  function chime(){
+    if(!audio)return;
+    try{[0,.28,.56].forEach(function(t,i){
+      var o=audio.createOscillator(),g=audio.createGain(),n=audio.currentTime+t;
+      o.type="sine";o.frequency.value=i===2?1046:784;
+      g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(.25,n+.02);g.gain.exponentialRampToValueAtTime(.0001,n+.5);
+      o.connect(g);g.connect(audio.destination);o.start(n);o.stop(n+.55);
+    })}catch(e){}
+  }
+
+  function enter(phase,run){
+    st.phase=phase;st.remaining=LEN[phase];st.restored=false;
+    if(run){st.state="running";st.end=Date.now()+st.remaining*1000;startLoop()}
+    else{st.state="idle";stopLoop()}
+    render();save();
+  }
+  function finish(){
+    stopLoop();
+    var was=st.phase;
+    chime();
+    document.body.classList.remove("done");void document.body.offsetWidth;document.body.classList.add("done");
+    var next;
+    if(was==="focus"){st.count++;next=(st.count%4===0)?"long":"short"}else next="focus";
+    say(NAME[was]+" finished. "+NAME[next]+(st.auto?" started.":" is next."));
+    document.title="Done! "+NAME[was]+" finished";
+    enter(next,st.auto);
+    if(!st.auto)document.title="Done! "+NAME[was]+" finished";
+  }
+
+  go.addEventListener("click",function(){
+    unlockAudio();
+    if(st.state==="running"){ // pause
+      st.remaining=Math.max(1,Math.ceil((st.end-Date.now())/1000));
+      st.state="paused";stopLoop();
+    }else{ // start or resume; never stacks a second loop
+      st.restored=false;
+      st.state="running";st.end=Date.now()+st.remaining*1000;startLoop();
+    }
+    render();save();
+  });
+
+  function disarm(){armed=false;clearTimeout(resetTimer);rs.textContent="Reset";rs.classList.remove("armed")}
+  rs.addEventListener("click",function(){
+    if(st.state==="running"&&!armed){armed=true;render();resetTimer=setTimeout(function(){disarm()},3000);return}
+    disarm();
+    var wasFocusRunning=st.phase==="focus"&&st.state!=="idle"&&st.remaining<LEN.focus;
+    enter(st.phase,false);
+    say("Reset. "+NAME[st.phase]+" back to "+fmt(LEN[st.phase])+(wasFocusRunning?". That interval does not count.":"."));
+  });
+  sk.addEventListener("click",function(){
+    disarm();
+    // skipping never counts a pomodoro
+    var next=st.phase==="focus"?(st.count%4===3?"long":"short"):"focus";
+    if(st.phase==="focus"&&st.count%4===3){next="long"} // abandoned work is not counted, but offer the break
+    enter(next,false);
+    say(NAME[next]+" ready.");
+  });
+  $("clear").addEventListener("click",function(){st.count=0;render();save();say("Count cleared.")});
+  $("auto").addEventListener("change",function(e){st.auto=e.target.checked;save()});
+  document.addEventListener("keydown",function(e){
+    if(e.code==="Space"&&e.target===document.body){e.preventDefault();go.click()}
+  });
+  document.addEventListener("visibilitychange",tick);
+
+  load();
+  if(st.state==="paused"&&st.remaining<=0){enter(st.phase,false)}
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j3","scores":{
+"U":{"fidelity":7,"correctness":7,"craft":7,"usability":7,"overall":7,"note":"Clean pill nav opening a bento grid of beans, subscription, guides, cafes, saved; polished but sparse and fairly conventional."},
+"V":{"fidelity":8,"correctness":8,"craft":9,"usability":7,"overall":8,"note":"Illustrated, colourful bento tiles that fold to a strip and reflow into a rich grid with working tile selection, though the folded state is not fully hidden and mobile loses labels."},
+"W":{"fidelity":6,"correctness":7,"craft":6,"usability":7,"overall":6,"note":"Compact bento panel with roast chips, grind toggle and quantity stepper that reflects in the button, but visually plain and small."},
+"X":{"fidelity":7,"correctness":7,"craft":8,"usability":7,"overall":7,"note":"Bold dark tin-themed design with a popover bento grid that overlaps the hero and sits somewhat cramped, but is distinctive and works."},
+"Y":{"fidelity":8,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Colourful bento panel with working roast slider, subscription picker, accordions and toggles that update live page state, and a cohesive warm look."},
+"Z":{"fidelity":6,"correctness":5,"craft":6,"usability":6,"overall":5,"note":"Menu panel opens narrow and left-aligned, overlapping and clipping the hero text, which looks unfinished despite a working cart stepper."}
+},"ranking":["V","Y","X","U","W","Z"]}

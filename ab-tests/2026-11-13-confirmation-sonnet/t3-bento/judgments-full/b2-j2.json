@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Compact, coherent bento nav that unfolds from a pill bar with staggered tiles, working roast cycling, quantity, newsletter validation and keyboard arrows, but the content is thin and the tile text is small."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Rich, well-made bento drawer with working roast chips, price math, subscription toggle, cafes, accordion and toasts plus dark mode, though it reads more like a shop panel than a menu and the logo text vanishes on mobile."},
+"W": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Distinctive condensed-type brand with a popover bento that scales out of the handle and a persistent state summary, but the open panel covers the hero text and the hero copy spacing is slightly off."},
+"X": {"fidelity": 7, "correctness": 6, "craft": 6, "usability": 6, "overall": 6, "note": "A functional drink-ordering bento with working cart math, but the size chips on the dark hero tile are cream-on-cream and nearly unreadable and it drifts toward an order app."},
+"Y": {"fidelity": 9, "correctness": 9, "craft": 9, "usability": 8, "overall": 9, "note": "Most polished: a cohesive oat-colored box with varied tile sizes, expandable sub-tiles, badge feedback, status line, inert handling and a good mobile layout."},
+"Z": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 6, "overall": 7, "note": "Inventive tin-stack unfold animation with a real nav grid, but tiles are small and tilted with tiny text, the menu is mostly navigation links with little depth, and the opened panel is cramped."}
+},
+"ranking": ["Y", "V", "W", "U", "Z", "X"]}

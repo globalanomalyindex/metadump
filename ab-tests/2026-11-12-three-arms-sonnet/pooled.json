@@ -1,0 +1,98 @@
+{
+ "C_vs_B": {
+  "tasks": [
+   "t1-fieldguide",
+   "t2-pomodoro",
+   "t3-snowglobe"
+  ],
+  "per_task": {
+   "t1-fieldguide": {
+    "B_mean": 7.83,
+    "C_mean": 7.92,
+    "diff": 0.09
+   },
+   "t2-pomodoro": {
+    "B_mean": 7.79,
+    "C_mean": 6.71,
+    "diff": -1.08
+   },
+   "t3-snowglobe": {
+    "B_mean": 7.58,
+    "C_mean": 5.92,
+    "diff": -1.67
+   }
+  },
+  "pooled_mean_diff": -0.888,
+  "p_two_sided": 0.0745,
+  "p_one_sided_C_better": 0.9645,
+  "splits": 343000,
+  "wins": 17,
+  "losses": 46,
+  "ties": 9,
+  "win_rate": 0.3
+ },
+ "C_vs_A": {
+  "tasks": [
+   "t1-fieldguide",
+   "t2-pomodoro",
+   "t3-snowglobe"
+  ],
+  "per_task": {
+   "t1-fieldguide": {
+    "A_mean": 5.17,
+    "C_mean": 7.92,
+    "diff": 2.75
+   },
+   "t2-pomodoro": {
+    "A_mean": 7.08,
+    "C_mean": 6.71,
+    "diff": -0.37
+   },
+   "t3-snowglobe": {
+    "A_mean": 7.42,
+    "C_mean": 5.92,
+    "diff": -1.5
+   }
+  },
+  "pooled_mean_diff": 0.292,
+  "p_two_sided": 0.5833,
+  "p_one_sided_C_better": 0.2916,
+  "splits": 343000,
+  "wins": 33,
+  "losses": 30,
+  "ties": 9,
+  "win_rate": 0.52
+ },
+ "B_vs_A": {
+  "tasks": [
+   "t1-fieldguide",
+   "t2-pomodoro",
+   "t3-snowglobe"
+  ],
+  "per_task": {
+   "t1-fieldguide": {
+    "A_mean": 5.17,
+    "B_mean": 7.83,
+    "diff": 2.67
+   },
+   "t2-pomodoro": {
+    "A_mean": 7.08,
+    "B_mean": 7.79,
+    "diff": 0.71
+   },
+   "t3-snowglobe": {
+    "A_mean": 7.42,
+    "B_mean": 7.58,
+    "diff": 0.17
+   }
+  },
+  "pooled_mean_diff": 1.18,
+  "p_two_sided": 0.0195,
+  "p_one_sided_B_better": 0.0097,
+  "splits": 343000,
+  "wins": 51,
+  "losses": 15,
+  "ties": 6,
+  "win_rate": 0.75
+ }
+}

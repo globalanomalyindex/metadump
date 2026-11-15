@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{--bg:#16171a;--body:#222428;--key:#33363c;--fn:#4a4e57;--op:#ff9f1c;--opt:#1a1100;--text:#f4f4f5;--mute:#9a9ea8}
+@media (prefers-color-scheme:light){:root{--bg:#ece8e1;--body:#faf8f4;--key:#e4e0d8;--fn:#cfcac0;--text:#1c1c1e;--mute:#6e6a62}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:16px}
+.calc{width:100%;max-width:340px;background:var(--body);border-radius:28px;padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06)}
+.screen{padding:10px 8px 16px;text-align:right;min-height:112px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.expr{font-size:15px;color:var(--mute);min-height:20px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result{font-size:56px;font-weight:300;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-1px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+button{font:inherit;font-size:24px;height:64px;border:0;border-radius:20px;background:var(--key);color:var(--text);cursor:pointer;transition:transform .08s,filter .12s;-webkit-tap-highlight-color:transparent}
+button:hover{filter:brightness(1.12)}
+button:active{transform:scale(.94)}
+button:focus-visible{outline:3px solid var(--op);outline-offset:2px}
+button.fn{background:var(--fn)}
+button.op{background:var(--op);color:var(--opt);font-size:28px}
+button.op.active{background:var(--text);color:var(--op)}
+button.eq{background:var(--op);color:var(--opt)}
+button.zero{grid-column:span 2;text-align:left;padding-left:26px}
+.err{color:#ff6b6b;font-size:30px!important}
+@media (prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="screen">
+    <div class="expr" id="expr"></div>
+    <div class="result" id="out" role="status" aria-live="polite">0</div>
+  </div>
+  <div class="grid" id="keys">
+    <button class="fn" data-a="ac" id="ac" aria-label="All clear">AC</button>
+    <button class="fn" data-a="neg" aria-label="Toggle sign">+/−</button>
+    <button class="fn" data-a="pct" aria-label="Percent">%</button>
+    <button class="op" data-a="op" data-v="/" aria-label="Divide">÷</button>
+    <button data-a="d" data-v="7">7</button><button data-a="d" data-v="8">8</button><button data-a="d" data-v="9">9</button>
+    <button class="op" data-a="op" data-v="*" aria-label="Multiply">×</button>
+    <button data-a="d" data-v="4">4</button><button data-a="d" data-v="5">5</button><button data-a="d" data-v="6">6</button>
+    <button class="op" data-a="op" data-v="-" aria-label="Subtract">−</button>
+    <button data-a="d" data-v="1">1</button><button data-a="d" data-v="2">2</button><button data-a="d" data-v="3">3</button>
+    <button class="op" data-a="op" data-v="+" aria-label="Add">+</button>
+    <button class="zero" data-a="d" data-v="0">0</button>
+    <button data-a="dot" aria-label="Decimal point">.</button>
+    <button class="fn" data-a="back" aria-label="Backspace">⌫</button>
+    <button class="eq" data-a="eq" aria-label="Equals" style="grid-column:1/-1;height:56px">=</button>
+  </div>
+</main>
+<script>
+(function(){
+  var SYM={'+':'+','-':'−','*':'×','/':'÷'};
+  var s;
+  function reset(){s={cur:'0',prev:null,op:null,fresh:false,err:false,lastOp:null,lastVal:null,expr:''};}
+  reset();
+  var out=document.getElementById('out'),expr=document.getElementById('expr');
+
+  function clean(n){return Number(n.toPrecision(12));}
+  function calc(a,op,b){
+    switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;case '/':return b===0?NaN:a/b;}
+    return b;
+  }
+  function fmt(str){
+    if(s.err)return str;
+    var neg=str[0]==='-';if(neg)str=str.slice(1);
+    var p=str.split('.');
+    if(/e/i.test(str))return (neg?'-':'')+str;
+    p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    return (neg?'-':'')+p.join('.');
+  }
+  function toStr(n){
+    if(!isFinite(n))return null;
+    n=clean(n);
+    var a=Math.abs(n);
+    if(a!==0&&(a>=1e12||a<1e-9))return n.toExponential(6).replace(/\.?0+e/,'e').replace('e+','e');
+    return String(n);
+  }
+  function fail(msg){s.err=true;s.cur=msg;s.prev=null;s.op=null;s.expr='';s.fresh=true;}
+  function render(){
+    var t=fmt(s.cur);
+    out.textContent=t;
+    out.classList.toggle('err',s.err);
+    var size=56;if(!s.err){var l=t.length;if(l>8)size=Math.max(26,Math.floor(56*8/l));}
+    out.style.fontSize=s.err?'':size+'px';
+    expr.textContent=s.expr;
+    document.querySelectorAll('button.op').forEach(function(b){
+      b.classList.toggle('active',s.op===b.dataset.v&&s.fresh&&s.prev!==null&&!s.justEq);
+    });
+    document.getElementById('ac').textContent=(s.cur!=='0'&&!s.err&&!s.fresh)?'C':'AC';
+  }
+  function digit(d){
+    if(s.err||s.fresh&&s.justEq){var keep=s.err?false:false;reset();}
+    else if(s.fresh){s.cur='0';}
+    s.fresh=false;s.justEq=false;
+    if(s.cur==='0')s.cur=d;
+    else if(s.cur==='-0')s.cur='-'+d;
+    else if(s.cur.replace(/[-.]/g,'').length<12)s.cur+=d;
+  }
+  function dot(){
+    if(s.err||s.fresh&&s.justEq)reset();
+    else if(s.fresh){s.cur='0';}
+    s.fresh=false;s.justEq=false;
+    if(s.cur.indexOf('.')<0)s.cur+='.';
+  }
+  function op(o){
+    if(s.err)return;
+    if(s.op&&!s.fresh&&s.prev!==null){
+      var r=calc(parseFloat(s.prev),s.op,parseFloat(s.cur));
+      var str=toStr(r);
+      if(str===null){fail('Cannot divide by zero');return;}
+      s.cur=str;
+    }
+    s.prev=s.cur;s.op=o;s.fresh=true;s.justEq=false;
+    s.expr=fmt(s.prev)+' '+SYM[o];
+  }
+  function eq(){
+    if(s.err)return;
+    var a,b,o;
+    if(s.op&&s.prev!==null){a=parseFloat(s.prev);o=s.op;b=parseFloat(s.cur);if(s.fresh)b=a;
+      s.lastOp=o;s.lastVal=b;
+      s.expr=fmt(String(a))+' '+SYM[o]+' '+fmt(String(b))+' =';
+    }else if(s.lastOp){a=parseFloat(s.cur);o=s.lastOp;b=s.lastVal;
+      s.expr=fmt(String(a))+' '+SYM[o]+' '+fmt(String(b))+' =';
+    }else return;
+    var str=toStr(calc(a,o,b));
+    if(str===null){var lo=null;fail('Cannot divide by zero');s.lastOp=null;return;}
+    s.cur=str;s.prev=null;s.op=null;s.fresh=true;s.justEq=true;
+  }
+  function neg(){
+    if(s.err)return;
+    if(s.fresh&&!s.justEq){s.cur='-0';s.fresh=false;return;}
+    s.cur=s.cur[0]==='-'?s.cur.slice(1):(s.cur==='0'?'-0':'-'+s.cur);
+    if(s.justEq){s.fresh=true;}
+  }
+  function pct(){
+    if(s.err)return;
+    var str=toStr(parseFloat(s.cur)/100);
+    s.cur=str===null?'0':str;
+    if(s.justEq)s.fresh=true;
+  }
+  function back(){
+    if(s.err){reset();return;}
+    if(s.fresh){if(s.justEq){s.cur='0';s.expr='';}return;}
+    s.cur=s.cur.slice(0,-1);
+    if(s.cur===''||s.cur==='-'||s.cur==='-0')s.cur='0';
+  }
+  function ac(){
+    if(s.cur!=='0'&&!s.err&&!s.fresh&&s.op){s.cur='0';return;} // C: clear entry
+    reset();
+  }
+  function act(a,v){
+    ({d:function(){digit(v)},dot:dot,op:function(){op(v)},eq:eq,neg:neg,pct:pct,back:back,ac:ac})[a]();
+    render();
+  }
+  document.getElementById('keys').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(b)act(b.dataset.a,b.dataset.v);
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,a=null,v;
+    if(/^[0-9]$/.test(k)){a='d';v=k;}
+    else if(k==='.'||k===','){a='dot';}
+    else if('+-*/'.indexOf(k)>=0){a='op';v=k;e.preventDefault();}
+    else if(k==='x'||k==='X'){a='op';v='*';}
+    else if(k==='Enter'||k==='='){a='eq';e.preventDefault();}
+    else if(k==='Backspace'){a='back';}
+    else if(k==='Escape'||k==='Delete'){a='ac';s.cur='0';if(k==='Escape'){reset();}}
+    else if(k==='%'){a='pct';}
+    if(a){act(a,v);}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

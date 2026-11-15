@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{
+  --body:#c9ccd1; --key:#e1e3e7; --key-hi:#eef0f3; --key-press:#cfd2d8;
+  --ink:#16181d; --muted:#3f4452;
+  --accent:#e0561f; --accent-ink:#fff; --accent-soft:#f6d9cb; --accent-press:#b9430f;
+  --win:#eef3e9; --win-ink:#14171a;
+  --focus:#1d4ed8;
+}
+@media (prefers-color-scheme: dark){
+  :root{--body:#2b2e34; --key:#3c4047; --key-hi:#474c54; --key-press:#2f3238;
+  --ink:#f1f2f4; --muted:#a4a9b4; --win:#d8e2d0; --win-ink:#14171a; --accent:#f06a30; --accent-soft:#5a3524; --focus:#8ab4ff;}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;display:grid;place-items:center;background:#e9eaed;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);padding:16px}
+@media (prefers-color-scheme: dark){body{background:#17181b}}
+.calc{width:min(100%,340px);background:var(--body);border-radius:22px;padding:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 30px rgba(0,0,0,.18)}
+.display{background:var(--win);color:var(--win-ink);border-radius:12px;padding:10px 14px 12px;
+  height:104px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.18);overflow:hidden}
+.pending{font-size:15px;min-height:20px;color:#4a5148;font-variant-numeric:tabular-nums;
+  white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.value{font-size:56px;line-height:1;font-weight:500;font-variant-numeric:tabular-nums;
+  white-space:nowrap;letter-spacing:-.5px;max-width:100%;text-align:right}
+.value.err{color:#a3200e;font-size:36px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+button{font:inherit;font-size:22px;height:62px;border:0;border-radius:14px;cursor:pointer;
+  background:var(--key);color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 2px 0 rgba(0,0,0,.14);
+  transition:background .08s,transform .06s,box-shadow .08s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:hover{background:var(--key-hi)}
+button:active,button.press{background:var(--key-press);transform:translateY(2px);box-shadow:none}
+button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button.fn{font-size:18px;color:var(--muted);font-weight:600}
+button.op{background:var(--accent-soft);color:var(--accent-press);font-size:28px;font-weight:600}
+button.op:hover{background:var(--accent-soft);filter:brightness(.96)}
+button.op.active{background:var(--accent);color:var(--accent-ink)}
+button.eq{background:var(--accent);color:var(--accent-ink);font-size:28px;font-weight:600}
+button.eq:hover{background:var(--accent);filter:brightness(1.07)}
+button.eq:active,button.eq.press{background:var(--accent-press)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:360px){button{height:56px}.value{font-size:48px}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="display">
+    <div class="pending" id="pending" aria-hidden="true"></div>
+    <div class="value" id="value" aria-hidden="true">0</div>
+  </div>
+  <div class="sr" id="live" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="C" aria-label="Clear all">C</button>
+    <button class="fn" data-k="CE" aria-label="Clear entry">CE</button>
+    <button class="fn" data-k="BS" aria-label="Backspace">&#9003;</button>
+    <button class="op" data-k="/" aria-label="divide">&divide;</button>
+
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="multiply">&times;</button>
+
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="minus">&minus;</button>
+
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="plus">+</button>
+
+    <button data-k="NEG" aria-label="Toggle sign">&plusmn;</button>
+    <button data-k="0">0</button>
+    <button data-k="." aria-label="Decimal point">.</button>
+    <button class="eq" data-k="=" aria-label="equals">=</button>
+  </div>
+</main>
+<script>
+(function(){
+  var SYM={'+':'+','-':'−','*':'×','/':'÷'};
+  var NAME={'+':'plus','-':'minus','*':'times','/':'divided by'};
+  var LIMIT=12;
+  var s={entry:'0',acc:null,op:null,fresh:true,justEq:false,err:false,pend:''};
+  var elV=document.getElementById('value'),elP=document.getElementById('pending'),
+      live=document.getElementById('live');
+
+  function fmt(n){
+    if(!isFinite(n))return 'Error';
+    var r=Number(n.toPrecision(LIMIT));
+    var t=String(r);
+    if(Math.abs(r)>=1e12||(Math.abs(r)<1e-9&&r!==0)){t=r.toExponential(6).replace(/\.?0+e/,'e').replace('e+','e+');}
+    return t;
+  }
+  function pretty(t){ // add thin grouping to integer part, keep trailing point
+    if(/e/.test(t)||t==='Error'||t==='Cannot divide by 0')return t.replace('-','−');
+    var neg=t[0]==='-';if(neg)t=t.slice(1);
+    var p=t.split('.');p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    return (neg?'−':'')+p.join('.');
+  }
+  function render(announce){
+    var txt=s.err?'Cannot divide by 0':pretty(s.entry);
+    elV.textContent=txt;elV.classList.toggle('err',s.err);
+    var len=txt.length,px=56;
+    if(!s.err){px=len<=8?56:len<=10?46:len<=13?38:32;}
+    elV.style.fontSize=s.err?'':px+'px';
+    var p='';
+    if(s.pend)p=s.pend;
+    else if(s.op!==null&&s.acc!==null)p=pretty(fmt(s.acc))+' '+SYM[s.op];
+    elP.textContent=p;
+    document.querySelectorAll('button.op').forEach(function(b){
+      b.classList.toggle('active',s.op===b.dataset.k&&s.fresh&&!s.err&&!s.justEq);
+    });
+    if(announce)live.textContent=announce;
+  }
+  function calc(a,op,b){
+    switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;case '/':return b===0?NaN:a/b;}
+    return b;
+  }
+  function reset(){s={entry:'0',acc:null,op:null,fresh:true,justEq:false,err:false,pend:''};}
+  function digit(d){
+    if(s.err)reset();
+    if(s.justEq){s.acc=null;s.op=null;s.pend='';s.justEq=false;s.fresh=true;}
+    if(s.fresh){s.entry=d;s.fresh=false;}
+    else{
+      var digits=s.entry.replace(/[-.]/g,'').length;
+      if(digits>=LIMIT)return;
+      s.entry=(s.entry==='0')?d:(s.entry==='-0'?'-'+d:s.entry+d);
+    }
+    render();
+  }
+  function dot(){
+    if(s.err)reset();
+    if(s.justEq){s.acc=null;s.op=null;s.pend='';s.justEq=false;s.fresh=true;}
+    if(s.fresh){s.entry='0.';s.fresh=false;}
+    else if(s.entry.indexOf('.')<0)s.entry+='.';
+    render();
+  }
+  function neg(){
+    if(s.err)return;
+    if(s.fresh&&!s.justEq&&s.op!==null){s.entry='-0';s.fresh=false;}
+    else if(s.entry==='0'&&!s.fresh){s.entry='-0';}
+    else s.entry=s.entry[0]==='-'?s.entry.slice(1):'-'+s.entry;
+    if(s.justEq){s.pend='';}
+    render();
+  }
+  function setErr(){s.err=true;s.entry='0';s.acc=null;s.op=null;s.pend='';s.fresh=true;s.justEq=false;render('Error, cannot divide by zero');}
+  function operator(o){
+    if(s.err)return;
+    var cur=parseFloat(s.entry);
+    if(s.op!==null&&!s.fresh&&!s.justEq){
+      var r=calc(s.acc,s.op,cur);
+      if(!isFinite(r))return setErr();
+      s.acc=Number(r.toPrecision(LIMIT));s.entry=fmt(s.acc);
+    }else if(s.op===null||s.justEq){s.acc=cur;}
+    s.op=o;s.fresh=true;s.justEq=false;s.pend='';
+    render(NAME[o]);
+  }
+  function equals(){
+    if(s.err||s.op===null)return;
+    var b=parseFloat(s.entry);
+    if(s.fresh&&!s.justEq)b=s.acc; // 5 + = -> 5 + 5
+    var a=s.acc,r=calc(a,s.op,b);
+    if(!isFinite(r))return setErr();
+    var shown=fmt(r);
+    s.pend=pretty(fmt(a))+' '+SYM[s.op]+' '+pretty(fmt(b))+' =';
+    s.entry=shown;s.acc=Number(shown);s.justEq=true;s.fresh=true;
+    s.op=null; // after =, an operator continues from the result
+    render(shown.replace('-','minus ')+'');
+  }
+  function backspace(){
+    if(s.err){reset();render('Cleared');return;}
+    if(s.fresh||s.justEq)return;
+    s.entry=s.entry.slice(0,-1);
+    if(s.entry===''||s.entry==='-'||s.entry==='-0')s.entry='0';
+    render();
+  }
+  function clearEntry(){
+    if(s.err){reset();render('Cleared');return;}
+    s.entry='0';s.fresh=(s.op!==null)?false:true;
+    if(s.justEq){reset();}
+    render('Entry cleared');
+  }
+  function clearAll(){reset();render('Cleared');}
+
+  function press(k){
+    if(k>='0'&&k<='9'&&k.length===1)digit(k);
+    else if(k==='.')dot();
+    else if(k==='NEG')neg();
+    else if(k==='+'||k==='-'||k==='*'||k==='/')operator(k);
+    else if(k==='=')equals();
+    else if(k==='BS')backspace();
+    else if(k==='CE')clearEntry();
+    else if(k==='C')clearAll();
+  }
+  document.getElementById('keys').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(b)press(b.dataset.k);
+  });
+  function flash(k){
+    var b=document.querySelector('button[data-k="'+(k==='/'?'/':k)+'"]');
+    if(!b)return;b.classList.add('press');setTimeout(function(){b.classList.remove('press')},110);
+  }
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,m=null;
+    if(/^[0-9]$/.test(k))m=k;
+    else if(k==='.'||k===',')m='.';
+    else if(k==='+'||k==='-'||k==='*'||k==='/')m=k;
+    else if(k==='Enter'||k==='=')m='=';
+    else if(k==='Escape')m='C';
+    else if(k==='Backspace')m='BS';
+    else if(k==='Delete')m='CE';
+    if(m===null)return;
+    e.preventDefault(); // no quick-find on /, no form submit on Enter, no back on Backspace
+    if(m==='='&&document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();
+    press(m);flash(m);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

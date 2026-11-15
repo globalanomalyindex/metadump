@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j2","scores":{
+"U":{"fidelity":8,"correctness":7,"craft":7,"usability":7,"overall":7,"note":"Clear pelican with pouch and teal bike, but the wing lies flat like a blanket and the leg and pedal geometry is clumsy."},
+"V":{"fidelity":8,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Big expressive pelican with a helmet on a red bike, with parallax scenery, a distance counter and a reverse control, though the leg looks a little thin."},
+"W":{"fidelity":8,"correctness":8,"craft":9,"usability":9,"overall":8,"note":"Richly detailed pelican on a cargo bike with chain, basket, bell and a good responsive layout, though the basket is an embellishment."},
+"X":{"fidelity":7,"correctness":6,"craft":6,"usability":7,"overall":6,"note":"Recognizable pelican on a red bike, but the legs are stiff, the pelican is small on mobile and the cloud overlaps the sun."},
+"Y":{"fidelity":8,"correctness":7,"craft":7,"usability":7,"overall":7,"note":"Clean flat style with a good beak, but the bike is simple and the pelican looks perched rather than gripping the bars."},
+"Z":{"fidelity":9,"correctness":8,"craft":9,"usability":8,"overall":9,"note":"Best bike, with chainring, chain and drop bars, plus a convincing pelican with a gradient pouch, a pause control and a cadence slider."}},
+"ranking":["Z","W","V","U","Y","X"]}

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{
+  --bg:#f6efe6; --ink:#2b2420; --mute:#7a6c62; --accent:#c9442f; --chip:#ece1d3; --line:#d9cbb9;
+  --on-accent:#fff;
+}
+[data-phase="short"]{--bg:#e8f0e4; --ink:#1f2e22; --mute:#5d7262; --accent:#2f7a4a; --chip:#d6e4d2; --line:#bdd1bb}
+[data-phase="long"]{--bg:#e5ecf3; --ink:#1c2733; --mute:#586a7d; --accent:#2f5f8f; --chip:#d1dfec; --line:#b6c9dc}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#231c18; --ink:#f3e8dc; --mute:#a99a8c; --accent:#e5694f; --chip:#33292354; --line:#4a3d34; --on-accent:#1b1411}
+  [data-phase="short"]{--bg:#17221a; --ink:#e3f0e4; --mute:#97ae9b; --accent:#5cbf80; --chip:#24352a; --line:#37503f}
+  [data-phase="long"]{--bg:#161f29; --ink:#e1ecf6; --mute:#94a8bc; --accent:#6aa3d8; --chip:#223244; --line:#35506b}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex;align-items:center;justify-content:center;transition:background .4s}
+main{width:100%;max-width:440px;padding:24px 16px;text-align:center}
+.modes{display:flex;gap:6px;justify-content:center;margin-bottom:28px;flex-wrap:wrap}
+.modes button{font:inherit;font-size:.95rem;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);
+  background:transparent;color:var(--mute);cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.phase{font-size:1.1rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 4px;min-height:1.4em}
+#time{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;
+  font-size:clamp(4.5rem,24vw,8.5rem);font-weight:600;line-height:1.05;margin:0;letter-spacing:-.02em}
+.done #time{color:var(--accent)}
+.bar{height:6px;border-radius:3px;background:var(--chip);margin:18px auto 26px;overflow:hidden;max-width:320px}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+.controls{display:flex;gap:12px;justify-content:center;align-items:center}
+#go{font:inherit;font-size:1.25rem;font-weight:600;min-width:170px;min-height:60px;padding:0 28px;border:0;border-radius:30px;
+  background:var(--accent);color:var(--on-accent);cursor:pointer}
+#reset{font:inherit;font-size:.95rem;min-height:44px;min-width:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);
+  background:transparent;color:var(--mute);cursor:pointer}
+button:hover{filter:brightness(1.07)}
+button:active{transform:scale(.98)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.marks{display:flex;gap:10px;justify-content:center;margin-top:30px}
+.marks span{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);background:transparent}
+.marks span.on{background:var(--accent)}
+.count{margin:10px 0 0;color:var(--mute);font-size:.95rem}
+.next{margin:14px 0 0;color:var(--mute);font-size:.95rem;min-height:1.4em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:no-preference){
+  .done #time{animation:pulse 1.2s ease-in-out 3}
+  @keyframes pulse{50%{opacity:.45}}
+}
+</style>
+</head>
+<body data-phase="work">
+<main id="app">
+  <div class="modes" role="group" aria-label="Timer mode">
+    <button type="button" data-mode="work" aria-pressed="true">Focus</button>
+    <button type="button" data-mode="short" aria-pressed="false">Short break</button>
+    <button type="button" data-mode="long" aria-pressed="false">Long break</button>
+  </div>
+  <p class="phase" id="phase">Focus</p>
+  <p id="time" role="timer" aria-label="Time remaining">25:00</p>
+  <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+  <div class="controls">
+    <button type="button" id="go">Start</button>
+    <button type="button" id="reset">Reset</button>
+  </div>
+  <div class="marks" id="marks" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <p class="count" id="count">0 of 4 focus sessions done</p>
+  <p class="next" id="next">Next: short break</p>
+  <div class="sr" aria-live="polite" id="live"></div>
+</main>
+<script>
+(function(){
+  var LEN = {work:25*60, short:5*60, long:15*60};
+  var NAME = {work:"Focus", short:"Short break", long:"Long break"};
+  var mode = "work", total = LEN.work, remaining = LEN.work;
+  var running = false, deadline = 0, handle = null, finished = 0, hold = false;
+
+  var $ = function(id){return document.getElementById(id)};
+  var timeEl=$("time"), goEl=$("go"), phaseEl=$("phase"), fillEl=$("fill"),
+      countEl=$("count"), nextEl=$("next"), liveEl=$("live"), appEl=$("app");
+  var marks = $("marks").children;
+
+  function fmt(s){s=Math.max(0,Math.ceil(s));var m=Math.floor(s/60),r=s%60;return (m<10?"0":"")+m+":"+(r<10?"0":"")+r}
+  function nextMode(){ return mode==="work" ? (finished>0 && finished%4===0 ? "long":"short") : "work" }
+  function announce(t){liveEl.textContent=""; setTimeout(function(){liveEl.textContent=t},30)}
+
+  function render(){
+    var left = running ? Math.max(0,(deadline-Date.now())/1000) : remaining;
+    timeEl.textContent = fmt(left);
+    fillEl.style.width = (100*(1-left/total)).toFixed(2)+"%";
+    document.body.setAttribute("data-phase", mode);
+    appEl.classList.toggle("done", hold);
+    var state = hold ? "Finished" : running ? "" : (remaining<total ? "Paused" : "");
+    phaseEl.textContent = NAME[mode] + (state ? " · " + state : "");
+    document.title = fmt(left) + " · " + NAME[mode];
+    goEl.textContent = hold ? "Start " + NAME[nextMode()].toLowerCase()
+      : running ? "Pause" : (remaining<total ? "Resume" : "Start");
+    var inCycle = finished % 4;
+    for(var i=0;i<4;i++) marks[i].className = (i<inCycle || (finished>0 && inCycle===0 && mode==="long" ) ) ? "on" : "";
+    countEl.textContent = finished + (finished===1 ? " focus session done" : " focus sessions done") + " · " + (finished%4) + " of 4 in this round";
+    nextEl.textContent = "Next: " + NAME[nextMode()].toLowerCase();
+    var btns = document.querySelectorAll(".modes button");
+    for(var j=0;j<btns.length;j++) btns[j].setAttribute("aria-pressed", btns[j].dataset.mode===mode);
+  }
+
+  function stopLoop(){ if(handle){clearInterval(handle);handle=null} }
+  function tick(){
+    if(!running) return;
+    if(Date.now() >= deadline){ finish(); return; }
+    render();
+  }
+  function start(){
+    stopLoop(); running = true; hold = false;
+    deadline = Date.now() + remaining*1000;
+    handle = setInterval(tick, 250);
+    render();
+  }
+  function pause(){
+    remaining = Math.max(0,(deadline-Date.now())/1000);
+    running = false; stopLoop(); render();
+  }
+  function setMode(m){
+    stopLoop(); running = false; hold = false;
+    mode = m; total = remaining = LEN[m]; render();
+  }
+  function finish(){
+    stopLoop(); running = false; remaining = 0; hold = true;
+    if(mode==="work") finished++;
+    render();
+    timeEl.textContent = "00:00"; fillEl.style.width = "100%";
+    announce(NAME[mode]+" finished. Next: "+NAME[nextMode()]+".");
+    beep();
+  }
+  function beep(){
+    try{
+      var A = window.AudioContext||window.webkitAudioContext; if(!A) return;
+      var c = new A(), o = c.createOscillator(), g = c.createGain();
+      o.frequency.value = 660; g.gain.setValueAtTime(.15,c.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.8);
+      o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+.8);
+    }catch(e){}
+  }
+
+  goEl.addEventListener("click", function(){
+    if(hold){ setMode(nextMode()); start(); }
+    else if(running) pause();
+    else start();
+  });
+  $("reset").addEventListener("click", function(){
+    stopLoop(); running = false; hold = false; remaining = total; render();
+  });
+  document.querySelector(".modes").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(b) setMode(b.dataset.mode);
+  });
+  document.addEventListener("visibilitychange", function(){ if(running) tick(); });
+  render();
+})();
+</script>
+</body>
+</html>

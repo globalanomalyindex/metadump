@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Tins-fly-out-of-a-pile bento overlay with distinct cells, working page navigation, bag counter, Esc and outside-click close, and a strong dark roastery identity."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Clean collapsible tray with varied tile sizes, cart stepper and arrow-key navigation, but visually softer and the tray feels like a generic dropdown."},
+"W": {"fidelity": 7, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Rich bento of live widgets (bean chips, roast slider, subscription toggle, accordions, theme switch) that works well but reads more as a settings dashboard than a site menu."},
+"X": {"fidelity": 6, "correctness": 7, "craft": 5, "usability": 7, "overall": 5, "note": "Functional but sparse and small, with a tiny panel, minimal page chrome and plain tiles that underuse the bento idea."},
+"Y": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Handsome dark bar and widget tiles with nested accordions, but the tiles are mostly controls rather than menu destinations and the cart chip hides on mobile."},
+"Z": {"fidelity": 10, "correctness": 9, "craft": 9, "usability": 8, "overall": 10, "note": "Truly collapsible bento that reflows the same tiles between a compact icon row and a full grid with FLIP animation, working navigation, status, keyboard use and mobile layout."}
+}, "ranking": ["Z", "U", "W", "V", "Y", "X"]}

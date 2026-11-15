@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 6, "overall": 8, "note": "Thick glass rim, hollow-glass highlight and glittery blizzard in a blue dome look convincing, but the large control panel crowds the staging."},
+"V": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 5, "overall": 6, "note": "Clean glossy dome on a maroon and gold base, but the dome is a flat pale blue, the scene is small, there is no snow at rest, and the controls are cut off at the bottom."},
+"W": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 7, "overall": 8, "note": "Night cabin with moon, chimney smoke and dense falling snow reads instantly as a snow globe, with a tidy base and controls."},
+"X": {"likeness": 7, "visuals": 6, "motion": 5, "presentation": 6, "overall": 6, "note": "Chapel on a mantel with a blurred room is charming, but the scene is washed out behind milky glass and the snow is faint."},
+"Y": {"likeness": 9, "visuals": 7, "motion": 8, "presentation": 8, "overall": 8, "note": "Clean night cottage with snow that falls and settles, a moon, a wood base and an unobtrusive control row; simple and polished."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 6, "overall": 7, "note": "Warm shelf vignette with candle, books and plant is rich, and the globe tilts when shaken, but the globe is small, the snow is sparse and the panel covers the scene."}
+}, "ranking": ["W", "U", "Y", "Z", "V", "X"]}

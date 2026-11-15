@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"likeness": 7, "visuals": 6, "motion": 5, "presentation": 6, "overall": 6, "note": "Clear lamp with cap, base and glow, but the wax is a single fuzzy lump with a small dot, little merging or splitting, and the panel is generic."},
+"V": {"likeness": 5, "visuals": 5, "motion": 6, "presentation": 6, "overall": 5, "note": "Wax reads as a soft orange fill with hard-edged flat-cut glass and a cap that looks inverted, though the stretching and splitting is organic; the lamp goes dark when turned off."},
+"W": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 8, "overall": 8, "note": "Bulbous glass vessel with highlights, believable stretching wax column and a thoughtful panel; the shape is less classic but richly crafted."},
+"X": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Crisp metaballs that merge and split read nicely, but flat vector fill, a dark void in the glass and a tiny pooled puddle make it less luminous."},
+"Y": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 9, "note": "Classic silhouette with chrome cap and base, glowing hot-core wax that stretches and merges slowly, and a clean toolbar, though the wax edges are slightly pixelated."},
+"Z": {"likeness": 8, "visuals": 9, "motion": 6, "presentation": 8, "overall": 8, "note": "Most atmospheric glass, glow and base with warm light from below, but the wax is murky and low-contrast and tends to fuse into one glowing mass."}
+}, "ranking": ["Y", "W", "Z", "X", "U", "V"]}

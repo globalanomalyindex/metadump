@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j3","scores":{
+"U":{"basic":8,"correctness":7,"usability":7,"craft":7,"code":8,"overall":7,"note":"Clean iOS-style dark calculator with history line and clear divide-by-zero message, but few aria hooks and the % key is extra."},
+"V":{"basic":5,"correctness":7,"usability":7,"craft":8,"code":5,"overall":6,"note":"Beautiful skeuomorphic LCD with Error state, but it is overbuilt (branding, indicators, shortcut footer, CE plus backspace) and the long source pads a basic calculator."},
+"W":{"basic":8,"correctness":8,"usability":8,"craft":9,"code":6,"overall":8,"note":"Compact retro pocket calculator with seven-segment display, wide equals and good semantics; a bit decorative, truncates to 8 digits."},
+"X":{"basic":8,"correctness":9,"usability":9,"craft":8,"code":8,"overall":9,"note":"Light, high-contrast and legible with a red divide-by-zero message, thousands grouping, auto-shrinking display, solid aria and keyboard support."},
+"Y":{"basic":8,"correctness":7,"usability":7,"craft":7,"code":8,"overall":7,"note":"Solid dark layout with strong orange operators and Error state, but the long 20-nine display is tiny and 0 label is left-aligned oddly."},
+"Z":{"basic":9,"correctness":8,"usability":8,"craft":8,"code":8,"overall":8,"note":"Minimal dark theme with a restrained blue accent, history line, Error in red, 12-digit cap, good roles and keyboard handling."}
+},"ranking":["X","Z","W","U","Y","V"]}

@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"basic": 9, "correctness": 9, "usability": 9, "craft": 9, "code": 9, "overall": 9, "note": "Clean iOS-style calculator with expression line, grouped digits, clear zero message, aria-live and keyboard; complete and not overbuilt."},
+"V": {"basic": 9, "correctness": 8, "usability": 8, "craft": 7, "code": 9, "overall": 8, "note": "Tidy dark basic calculator with correct results and divide-by-zero message; plain look and small text on long numbers but solid."},
+"W": {"basic": 8, "correctness": 8, "usability": 8, "craft": 9, "code": 7, "overall": 8, "note": "Striking seven-segment pocket calculator with tactile keys and backspace; 8-digit cap and Error display are authentic, though the styling adds code weight."},
+"X": {"basic": 9, "correctness": 8, "usability": 8, "craft": 7, "code": 8, "overall": 8, "note": "Dark orange iOS-like calculator that works well; shows only 'Error' on divide by zero and the 0 key label sits left, slightly less polished."},
+"Y": {"basic": 6, "correctness": 8, "usability": 8, "craft": 8, "code": 6, "overall": 7, "note": "Attractive retro LCD design, but the history panel and extra Backspace bar overbuild a basic calculator and add the most code."},
+"Z": {"basic": 9, "correctness": 9, "usability": 8, "craft": 8, "code": 8, "overall": 8, "note": "Polished dark blue-accent calculator with expression line, backspace, clear Error state and good phone layout; thin key labels slightly low contrast."}
+},
+"ranking": ["U", "Z", "W", "X", "V", "Y"]}

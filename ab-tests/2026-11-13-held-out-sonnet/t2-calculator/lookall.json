@@ -1,0 +1,76 @@
+{
+ "A-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "A-r2": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "A-r3": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "A-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r2": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r3": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "B-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r1": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r2": {
+  "findings": {
+   "hover-static": 1
+  },
+  "played": 0,
+  "at_rest": 1,
+  "details": []
+ },
+ "C-r3": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ },
+ "C-r4": {
+  "findings": {},
+  "played": 0,
+  "at_rest": 0,
+  "details": []
+ }
+}

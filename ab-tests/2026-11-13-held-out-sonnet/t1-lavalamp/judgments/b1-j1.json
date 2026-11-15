@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"likeness": 5, "visuals": 7, "motion": 5, "presentation": 7, "overall": 5, "note": "A glass globe on a pedestal with a lovely glass and glow, but it reads more like a fishbowl or potion flask, and the wax stays a low pool for the first seconds."},
+"V": {"likeness": 9, "visuals": 9, "motion": 7, "presentation": 8, "overall": 9, "note": "The classic tapered lamp with a chrome cap and base, a hot glowing bottom and translucent soft wax, the most convincing and best staged, though the wax is slightly murky."},
+"W": {"likeness": 6, "visuals": 5, "motion": 7, "presentation": 6, "overall": 6, "note": "Clear gooey metaball wax that merges and splits, but flat gold cap and base, a dark purple liquid and a generic control panel make it feel basic."},
+"X": {"likeness": 8, "visuals": 8, "motion": 8, "presentation": 8, "overall": 8, "note": "A bulbous glass with chrome base, glowing wax columns that stretch, detach and sink convincingly, and a tidy panel."},
+"Y": {"likeness": 6, "visuals": 6, "motion": 5, "presentation": 6, "overall": 5, "note": "A tapered cone with a big wax mass that pools and shifts rather than forming distinct blobs, and the lamp goes almost fully black when switched off."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 8, "overall": 8, "note": "A violet lamp with a good glass body, a chrome cap and a pearly wax pool that sends up soft blobs, but the wax looks pale and chalky and the blobs are blurry."}
+},
+"ranking": ["V", "X", "Z", "W", "U", "Y"]}

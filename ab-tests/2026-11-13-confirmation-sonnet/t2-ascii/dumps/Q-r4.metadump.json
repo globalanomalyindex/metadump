@@ -1,0 +1,77 @@
+{
+  "request": "a simple interactive ascii color mixing engine",
+  "thesis": "Colour mixing made tangible with nothing but characters: a grid of glyphs whose density and hue are the mix, so you see paint behave as text.",
+  "job": [
+    "open the page and see a populated ascii canvas at once",
+    "pick or tweak source colours (primaries)",
+    "mix them: change amounts/ratios and see the blend result",
+    "see the result as ascii glyphs coloured, plus a swatch and hex/rgb readout",
+    "switch mixing model (additive light vs subtractive paint) to see the difference",
+    "reset / randomise and try again",
+    "copy or read the resulting colour"
+  ],
+  "disciplines": {
+    "colour science": {
+      "principles": ["additive RGB: light sums toward white", "subtractive CMY: pigment absorbs toward black/brown", "linear-light blending differs from naive sRGB averaging (gamma)", "mix by weighted average of channels, weights sum to 1"],
+      "steps": ["choose weights", "normalise", "blend per channel", "clamp 0-255", "format hex"],
+      "tricks": ["subtractive mix approximated by multiplying normalised channels", "gamma-aware mix: square channels, average, sqrt", "luminance = 0.2126R+0.7152G+0.0722B picks glyph density"],
+      "tests": ["red+green additive = yellow", "red+green subtractive = dark olive/brown", "equal RGB = grey", "weights 100/0 returns the source colour exactly"]
+    },
+    "ascii art": {
+      "principles": ["glyph density stands in for brightness", "monospace cells are ~1:2 so squash vertically", "colour carries hue, character carries value"],
+      "steps": ["map luminance to a ramp", "pick glyph per cell", "colour the span", "render rows as pre text"],
+      "tricks": ["ramp ' .:-=+*#%@'", "batch same-colour runs into spans for speed", "line-height 1 and letter-spacing tuned so cells are near square"],
+      "tests": ["dark cells use sparse glyphs", "grid stays aligned on resize", "no reflow jitter while dragging"]
+    },
+    "interaction design": {
+      "principles": ["direct manipulation", "instant feedback, no apply button", "visible state"],
+      "steps": ["sliders per source", "click glyph canvas to paint/pick", "keyboard operable"],
+      "tricks": ["pointer events for drag-painting", "range inputs with labelled values", "preset buttons"],
+      "tests": ["moving a slider changes the readout and canvas", "works with keyboard only", "works at phone width"]
+    },
+    "front-end code": {
+      "principles": ["one state object, one render function", "no dependencies"],
+      "steps": ["state -> render()", "events mutate state then render"],
+      "tricks": ["pre element with innerHTML of spans", "requestAnimationFrame for gentle drift"],
+      "tests": ["no console errors", "opens from disk"]
+    }
+  },
+  "the_thing": {
+    "parts": ["colour sources", "mix weights", "mixing model toggle", "ascii field", "result swatch and readout"],
+    "expectations": ["sliders", "live preview", "named primaries", "hex shown"],
+    "kinds": [
+      {"name": "blend field", "what": "a grid where each cell is a mix of sources by position, with sliders for source weights and a model toggle"},
+      {"name": "palette mixer", "what": "pick two colours, ascii gradient strip between them"},
+      {"name": "paint-by-glyph", "what": "drop colour blobs on a canvas that blend where they meet"}
+    ]
+  },
+  "specifics": {
+    "colour": {
+      "keywords": {"1": ["ascii", "color", "mixing", "engine", "interactive", "simple"], "2": ["primaries", "blend", "ratio", "additive", "subtractive", "hex"], "3": ["linear light", "gamma", "luminance ramp", "chroma", "multiply blend"]},
+      "descriptions": ["three sources A B C with weights", "result = weighted blend in chosen model", "gamma toggle shows why naive averaging looks muddy"],
+      "behaviors": ["raising one weight pulls the result toward it", "switching model changes result instantly", "field cells interpolate by position between sources"],
+      "tokens": {"grid": "48 to 72 cols by 20 to 28 rows", "ramp": "8 to 12 glyphs", "font size": "11 to 15 px monospace", "bg": "near-black #0b0d10 to #14161a"}
+    },
+    "layout": {
+      "keywords": {"1": ["canvas", "sliders", "readout"], "2": ["swatch", "presets", "reset"], "3": ["crt glow", "phosphor"]},
+      "descriptions": ["controls beside the field on desktop, stacked on phone"],
+      "behaviors": ["field scales to container width"],
+      "tokens": {"gap": "12 to 20 px", "radius": "6 to 12 px"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "layer stacks, undo history, save/export formats, accounts", "instead": "one screen, mix, read the result"},
+    {"not": "photo upload or image to ascii", "instead": "generated colour field"},
+    {"not": "pure RGB slider app with a flat swatch", "instead": "make the glyph field the star"},
+    {"not": "monochrome green terminal cliche only", "instead": "full-colour glyphs on dark ground"},
+    {"not": "external libraries or fonts", "instead": "system monospace stack"}
+  ],
+  "checks": [
+    "red 100% shows pure red result and red cells",
+    "red+green additive reads yellow, subtractive reads dark",
+    "model toggle changes readout",
+    "paint click changes state",
+    "phone width has no horizontal scroll"
+  ],
+  "built": ["blend field"]
+}

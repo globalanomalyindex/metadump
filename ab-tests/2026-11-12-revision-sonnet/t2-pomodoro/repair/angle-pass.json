@@ -1,0 +1,8 @@
+{"angles": [
+  {"angle": "bare big number", "passes": true, "drops": "", "kind": ""},
+  {"angle": "ring that fills over the session", "passes": true, "drops": "", "kind": ""},
+  {"angle": "quiet text-only status", "passes": true, "drops": "", "kind": ""},
+  {"angle": "marks for the cycle", "passes": true, "drops": "", "kind": ""},
+  {"angle": "full-bleed phase colour", "passes": true, "drops": "", "kind": ""},
+  {"angle": "held between phases", "passes": true, "drops": "", "kind": ""}
+]}

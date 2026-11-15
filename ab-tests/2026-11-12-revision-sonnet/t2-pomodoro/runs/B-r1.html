@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{
+  --bg:#2f4f6f; --fg:#f4f1ea; --dim:rgba(244,241,234,.72); --line:rgba(244,241,234,.35);
+  --btn:#f4f1ea; --btn-fg:#1d2f42;
+}
+body[data-phase="short"]{--bg:#b87400;--btn-fg:#4a2e00}
+body[data-phase="long"]{--bg:#5b3fa8;--btn-fg:#2e1d5c}
+body[data-phase="done"]{--bg:#00793c;--btn-fg:#00391c}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2.2vmin;padding:16px;transition:background .6s ease;text-align:center;
+}
+.phase{font-size:clamp(1.1rem,4vmin,1.8rem);letter-spacing:.28em;text-transform:uppercase;font-weight:600;margin:0}
+.time{
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;
+  font-size:clamp(4.5rem,26vw,18rem);line-height:1;font-weight:700;letter-spacing:-.02em;margin:0;
+}
+.status{min-height:1.5em;margin:0;color:var(--dim);font-size:clamp(1rem,2.6vmin,1.25rem)}
+.dots{display:flex;gap:12px;align-items:center;margin:.4rem 0}
+.dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--fg);transition:background .3s}
+.dot.on{background:var(--fg)}
+.count{margin:0;color:var(--dim);font-size:.95rem}
+.row{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:1vmin}
+button{font:inherit;cursor:pointer;border-radius:999px;min-height:48px}
+.primary{background:var(--btn);color:var(--btn-fg);border:0;font-weight:700;font-size:1.35rem;min-width:11rem;padding:0 2rem}
+.ghost{background:transparent;color:var(--fg);border:2px solid var(--line);padding:0 1.2rem;min-width:48px;font-size:1rem}
+.ghost:hover{border-color:var(--fg)}
+button:hover{filter:brightness(1.05)}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.link{background:none;border:0;color:var(--dim);text-decoration:underline;font-size:.9rem;min-height:44px;padding:0 .8rem}
+.hint{color:var(--dim);font-size:.8rem;margin:0}
+kbd{border:1px solid var(--line);border-radius:4px;padding:0 5px;font-family:inherit}
+body.flash{animation:flash .9s ease 2}
+@keyframes flash{50%{filter:brightness(1.35)}}
+@media (prefers-reduced-motion:reduce){body{transition:none}body.flash{animation:none}button:active{transform:none}}
+@media (max-width:480px){.hint{display:none}}
+</style>
+</head>
+<body data-phase="work">
+  <p class="phase" id="phase">Focus</p>
+  <h1 class="time" id="time" role="timer" aria-label="Time remaining">25:00</h1>
+  <p class="status" id="status" aria-live="polite">Ready when you are.</p>
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <p class="count" id="count">0 pomodoros finished</p>
+  <div class="row">
+    <button class="ghost" id="reset" title="Reset this interval (R)" aria-label="Reset this interval">Reset</button>
+    <button class="primary" id="go">Start</button>
+    <button class="ghost" id="skip" title="Skip to the next interval (S)" aria-label="Skip to next interval">Skip</button>
+  </div>
+  <button class="link" id="cycle" hidden>Start over: clear count</button>
+  <p class="hint"><kbd>Space</kbd> start / pause &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>S</kbd> skip</p>
+
+<script>
+(function(){
+  var MIN = {work:25, short:5, long:20};
+  var NAME = {work:"Focus", short:"Short break", long:"Long break"};
+  var s = { phase:"work", running:false, remaining:MIN.work*60*1000, end:0, finished:0, handle:null };
+  var $ = function(id){return document.getElementById(id)};
+  var elTime=$("time"), elPhase=$("phase"), elStatus=$("status"), elGo=$("go"),
+      elDots=$("dots"), elCount=$("count"), elCycle=$("cycle");
+  for(var i=0;i<4;i++){var d=document.createElement("span");d.className="dot";elDots.appendChild(d)}
+
+  function fmt(ms){
+    var t=Math.max(0,Math.ceil(ms/1000)), m=Math.floor(t/60), sec=t%60;
+    return (m<10?"0":"")+m+":"+(sec<10?"0":"")+sec;
+  }
+  function left(){ return s.running ? Math.max(0,s.end-Date.now()) : s.remaining; }
+
+  function render(){
+    var ms=left(), t=fmt(ms);
+    elTime.textContent=t;
+    elTime.setAttribute("aria-label","Time remaining "+t);
+    elPhase.textContent=NAME[s.phase];
+    document.body.setAttribute("data-phase",s.phase);
+    document.title=t+" · "+NAME[s.phase];
+    elGo.textContent = s.running ? "Pause" : (ms<MIN[s.phase]*60000 ? "Resume" : "Start");
+    var inCycle = s.finished % 4;
+    var lit = (s.phase==="long") ? 4 : inCycle;
+    Array.prototype.forEach.call(elDots.children,function(d,i){d.classList.toggle("on",i<lit)});
+    elCount.textContent = s.finished+" pomodoro"+(s.finished===1?"":"s")+" finished";
+    elCycle.hidden = s.finished===0;
+  }
+  function status(msg){ elStatus.textContent=msg; }
+
+  function tick(){
+    if(!s.running) return;
+    if(s.end-Date.now()<=0){ finish(); return; }
+    render();
+  }
+  function startLoop(){ stopLoop(); s.handle=setInterval(tick,250); }
+  function stopLoop(){ if(s.handle){clearInterval(s.handle);s.handle=null} }
+
+  function start(){
+    if(s.running) return;
+    s.running=true; s.end=Date.now()+s.remaining;
+    startLoop(); status(s.phase==="work"?"Focus. One thing only.":"Rest. Step away from the screen.");
+    unlockAudio(); render();
+  }
+  function pause(){
+    if(!s.running) return;
+    s.remaining=Math.max(0,s.end-Date.now()); s.running=false; stopLoop();
+    status("Paused. The interval is held."); render();
+  }
+  function toggle(){ s.running ? pause() : start(); }
+
+  function setPhase(p){
+    s.phase=p; s.running=false; stopLoop(); s.remaining=MIN[p]*60000;
+  }
+  function nextPhase(){
+    if(s.phase==="work") return (s.finished>0 && s.finished%4===0) ? "long" : "short";
+    return "work";
+  }
+  function finish(){
+    stopLoop(); s.running=false;
+    var was=s.phase;
+    if(was==="work") s.finished++;
+    setPhase(nextPhase());
+    chime(); flash();
+    status(was==="work"
+      ? (s.phase==="long" ? "Four done. Take a long break, press Start." : "Pomodoro done. Press Start for a short break.")
+      : "Break over. Press Start for the next pomodoro.");
+    s.remaining=MIN[s.phase]*60000;
+    render();
+    if("Notification" in window && Notification.permission==="granted" && document.hidden){
+      try{new Notification(was==="work"?"Pomodoro done":"Break over",{body:NAME[s.phase]+" is next."})}catch(e){}
+    }
+  }
+  function skip(){
+    var was=s.phase;
+    // skipping a work interval does not count as finished
+    var p = was==="work" ? ((s.finished>0 && s.finished%4===0) ? "long" : "short") : "work";
+    setPhase(p); status("Skipped to "+NAME[p].toLowerCase()+"."); render();
+  }
+  function reset(){
+    // reset the current interval; the finished count is kept
+    setPhase(s.phase); status("Interval reset."); render();
+  }
+  function clearCycle(){
+    if(!confirm("Clear the finished count and start the cycle over?")) return;
+    s.finished=0; setPhase("work"); status("Cycle cleared."); render();
+  }
+
+  function flash(){
+    document.body.classList.remove("flash"); void document.body.offsetWidth; document.body.classList.add("flash");
+    setTimeout(function(){document.body.classList.remove("flash")},1900);
+  }
+  var ctx=null;
+  function unlockAudio(){
+    try{
+      if(!ctx){var C=window.AudioContext||window.webkitAudioContext; if(C) ctx=new C();}
+      if(ctx&&ctx.state==="suspended") ctx.resume();
+    }catch(e){}
+  }
+  function chime(){
+    if(!ctx) return;
+    try{
+      [660,880,1100].forEach(function(f,i){
+        var o=ctx.createOscillator(), g=ctx.createGain(), t=ctx.currentTime+i*0.22;
+        o.type="sine"; o.frequency.value=f;
+        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
+        o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.55);
+      });
+    }catch(e){}
+  }
+
+  elGo.addEventListener("click",toggle);
+  $("reset").addEventListener("click",reset);
+  $("skip").addEventListener("click",skip);
+  elCycle.addEventListener("click",clearCycle);
+  document.addEventListener("keydown",function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey) return;
+    var k=e.key.toLowerCase();
+    if(k===" "&&e.target.tagName!=="BUTTON"){e.preventDefault();toggle()}
+    else if(k==="r"){reset()}
+    else if(k==="s"){skip()}
+  });
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) tick(); });
+  if("Notification" in window && Notification.permission==="default"){
+    elGo.addEventListener("click",function once(){
+      elGo.removeEventListener("click",once);
+      try{Notification.requestPermission()}catch(e){}
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>

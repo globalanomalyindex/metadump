@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{
+  --bg:#f6efe4; --ink:#2a1d17; --muted:#6e5d52; --card:#fffaf2; --line:#e0d3c1;
+  --accent:#c8402a; --accent-ink:#fff; --accent-soft:#f3d5cc;
+  --pip-off:#e4d7c6;
+}
+body[data-phase="short"]{--bg:#e6f0e4; --card:#f7fbf5; --line:#c5d9c2; --accent:#2f7d4f; --accent-soft:#cfe6d3; --pip-off:#cfdfcc; --muted:#4d6455; --ink:#16301f}
+body[data-phase="long"]{--bg:#e3e9f4; --card:#f6f8fd; --line:#c3cde3; --accent:#3b55a8; --accent-soft:#cdd6ee; --pip-off:#ccd5ea; --muted:#4f5b7a; --ink:#17203d}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Georgia,"Iowan Old Style","Times New Roman",serif;transition:background .5s;display:flex;justify-content:center;padding:16px}
+main{width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;padding:8px 0 24px}
+header{display:flex;justify-content:space-between;align-items:baseline}
+h1{font-size:15px;letter-spacing:.14em;text-transform:uppercase;margin:0;font-weight:600;font-family:system-ui,sans-serif}
+.phase{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tabs button{font:600 14px system-ui,sans-serif;min-height:44px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:10px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.face{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px 20px 22px;text-align:center}
+.count{font-size:clamp(110px,34vw,168px);line-height:.9;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.count.bump{animation:bump .5s ease-out}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+.countlabel{font:600 13px system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.pips{display:flex;justify-content:center;gap:10px;margin:16px 0 18px}
+.pip{width:16px;height:16px;border-radius:50%;background:var(--pip-off);border:2px solid var(--pip-off)}
+.pip.on{background:var(--accent);border-color:var(--accent)}
+.pip.now{border-color:var(--accent);background:transparent}
+.clockwrap{border-top:1px dashed var(--line);padding-top:16px}
+.clock{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:clamp(44px,15vw,64px);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.bar{height:6px;border-radius:3px;background:var(--pip-off);margin:14px auto 10px;overflow:hidden;max-width:300px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s linear}
+.status{font:15px system-ui,sans-serif;color:var(--muted);min-height:22px}
+.controls{display:flex;gap:10px}
+.controls button{font:600 16px system-ui,sans-serif;min-height:52px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;padding:0 18px}
+#go{flex:1;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-size:18px}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#go:hover{filter:brightness(1.1)}
+.controls button:hover{border-color:var(--accent)}
+button:active{transform:translateY(1px)}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 14px;font:14px system-ui,sans-serif}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--muted)}
+.set{display:grid;grid-template-columns:1fr 84px;gap:8px 12px;align-items:center;padding:4px 0 12px}
+.set input[type=number]{font:inherit;min-height:40px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.set label.chk{grid-column:1/-1;display:flex;gap:10px;align-items:center;min-height:36px}
+.set input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.hint{font:12px system-ui,sans-serif;color:var(--muted);text-align:center}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.running .face{box-shadow:0 0 0 3px var(--accent-soft)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-phase="work">
+<main>
+  <header><h1>Pomodoro</h1><span class="phase" id="phaseName">Focus</span></header>
+
+  <div class="tabs" role="group" aria-label="Interval">
+    <button type="button" data-phase="work" aria-pressed="true">Focus</button>
+    <button type="button" data-phase="short" aria-pressed="false">Short break</button>
+    <button type="button" data-phase="long" aria-pressed="false">Long break</button>
+  </div>
+
+  <section class="face" aria-label="Timer">
+    <div class="count" id="count">0</div>
+    <div class="countlabel" id="countLabel">pomodoros finished</div>
+    <div class="pips" id="pips" role="img" aria-label="0 of 4 until long break"></div>
+    <div class="clockwrap">
+      <div class="clock" id="clock" role="timer" aria-label="Time remaining">25:00</div>
+      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      <div class="status" id="status">Ready for pomodoro 1.</div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button type="button" id="go">Start</button>
+    <button type="button" id="skip" title="Skip to the next interval">Skip</button>
+    <button type="button" id="reset" title="Restart this interval">Reset</button>
+  </div>
+  <div class="hint">Space starts and pauses. Reset keeps your count.</div>
+
+  <details>
+    <summary>Settings</summary>
+    <div class="set">
+      <label for="sWork">Focus (min)</label><input id="sWork" type="number" min="1" max="120" value="25">
+      <label for="sShort">Short break (min)</label><input id="sShort" type="number" min="1" max="60" value="5">
+      <label for="sLong">Long break (min)</label><input id="sLong" type="number" min="1" max="90" value="15">
+      <label class="chk"><input id="sAuto" type="checkbox"> Start the next interval automatically</label>
+      <label class="chk"><input id="sSound" type="checkbox" checked> Chime at the end</label>
+      <label class="chk" style="grid-column:1/-1"><button type="button" id="zero" style="min-height:40px;font:600 14px system-ui,sans-serif;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer">Clear count</button></label>
+    </div>
+  </details>
+
+  <div class="sr" aria-live="polite" id="live"></div>
+</main>
+
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var NAMES = {work:"Focus", short:"Short break", long:"Long break"};
+  var KEY = "pomodoro-simple-v1";
+  var S = {phase:"work", count:0, cfg:{work:25,short:5,long:15,auto:false,sound:true},
+           running:false, end:0, remaining:25*60*1000};
+  var tick = null, audio = null;
+
+  function load(){
+    try{
+      var j = JSON.parse(localStorage.getItem(KEY)||"null");
+      if(j){
+        S.count = j.count|0; S.phase = NAMES[j.phase]?j.phase:"work";
+        if(j.cfg){ for(var k in S.cfg) if(k in j.cfg) S.cfg[k]=j.cfg[k]; }
+        S.remaining = Math.max(0, +j.remaining || full());
+        if(j.running && j.end){
+          S.remaining = Math.max(0, j.end - Date.now());
+          S.paused = true; // restored from a reload: wait for a press
+          S.restored = true;
+        }
+      } else S.remaining = full();
+    }catch(e){ S.remaining = full(); }
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify({phase:S.phase,count:S.count,cfg:S.cfg,
+      running:S.running, end:S.end, remaining:S.remaining})); }catch(e){}
+  }
+  function full(p){ return (S.cfg[p||S.phase]||1)*60*1000; }
+  function fmt(ms){
+    var s = Math.ceil(ms/1000); if(s<0)s=0;
+    var m = Math.floor(s/60), r = s%60;
+    return (m<10?"0":"")+m+":"+(r<10?"0":"")+r;
+  }
+  function left(){ return S.running ? Math.max(0, S.end - Date.now()) : S.remaining; }
+  function inCycle(){ return S.count % 4; }
+
+  function say(msg){ $("status").textContent = msg; $("live").textContent = msg; }
+
+  function render(bump){
+    var ms = left();
+    $("clock").textContent = fmt(ms);
+    $("count").textContent = S.count;
+    $("countLabel").textContent = S.count===1 ? "pomodoro finished" : "pomodoros finished";
+    document.body.dataset.phase = S.phase;
+    document.body.classList.toggle("running", S.running);
+    $("phaseName").textContent = NAMES[S.phase] + (S.running ? "" : (S.restored||ms<full()?" (paused)":""));
+    var f = full(); $("bar").style.width = (100*(1-ms/f)).toFixed(1)+"%";
+    var c = inCycle(), pips = "";
+    for(var i=0;i<4;i++){
+      var cls = "pip" + (i<c?" on":"") + (i===c && S.phase==="work"?" now":"");
+      pips += '<span class="'+cls+'"></span>';
+    }
+    $("pips").innerHTML = pips;
+    $("pips").setAttribute("aria-label", c+" of 4 until long break");
+    document.querySelectorAll(".tabs button").forEach(function(b){
+      b.setAttribute("aria-pressed", String(b.dataset.phase===S.phase));
+    });
+    $("go").textContent = S.running ? "Pause" : (ms<full() && ms>0 ? "Resume" : "Start");
+    document.title = (S.running||ms<full() ? fmt(ms)+" · " : "") + NAMES[S.phase] + " · Pomodoro";
+    if(bump){ var el=$("count"); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  }
+
+  function loop(){
+    if(tick) clearInterval(tick);
+    tick = null;
+    if(S.running) tick = setInterval(onTick, 250);
+  }
+  function onTick(){
+    if(left()<=0) finish(); else render();
+  }
+
+  function unlockAudio(){
+    try{
+      if(!audio){ var AC = window.AudioContext||window.webkitAudioContext; if(AC) audio = new AC(); }
+      if(audio && audio.state==="suspended") audio.resume();
+    }catch(e){}
+  }
+  function chime(){
+    if(!S.cfg.sound || !audio) return;
+    try{
+      [0,0.28,0.56].forEach(function(t,i){
+        var o = audio.createOscillator(), g = audio.createGain(), n = audio.currentTime+t;
+        o.type="sine"; o.frequency.value = [660,880,1100][i];
+        g.gain.setValueAtTime(0.0001,n); g.gain.exponentialRampToValueAtTime(0.25,n+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,n+0.4);
+        o.connect(g); g.connect(audio.destination); o.start(n); o.stop(n+0.45);
+      });
+    }catch(e){}
+  }
+
+  function start(){
+    unlockAudio();
+    S.restored = false;
+    if(S.remaining<=0) S.remaining = full();
+    S.end = Date.now() + S.remaining;
+    S.running = true;
+    say(NAMES[S.phase] + " running." + (S.phase==="work"?" Pomodoro "+(S.count+1)+".":""));
+    loop(); render(); save();
+  }
+  function pause(){
+    S.remaining = left();
+    S.running = false;
+    loop();
+    say("Paused at " + fmt(S.remaining) + ". Same interval, nothing lost.");
+    render(); save();
+  }
+  function setPhase(p, quiet){
+    S.running = false; S.restored = false; loop();
+    S.phase = p; S.remaining = full();
+    if(!quiet) say(NAMES[p] + " ready. Press Start.");
+    render(); save();
+  }
+  function finish(){
+    var wasWork = S.phase==="work";
+    S.running = false; loop(); S.remaining = 0;
+    chime();
+    if(wasWork) S.count++;
+    var next, msg;
+    if(wasWork){
+      next = (S.count % 4===0) ? "long" : "short";
+      msg = "Pomodoro " + S.count + " done. " + (next==="long" ? "Four finished: long break next." : "Short break next.");
+    } else {
+      next = "work";
+      msg = NAMES[S.phase] + " over. Focus next: pomodoro " + (S.count+1) + ".";
+    }
+    try{ document.title = "Done · " + NAMES[S.phase]; }catch(e){}
+    S.phase = next; S.remaining = full();
+    render(wasWork);
+    say(msg + (S.cfg.auto ? "" : " Press Start when ready."));
+    save();
+    if(S.cfg.auto) start();
+  }
+
+  $("go").addEventListener("click", function(){ S.running ? pause() : start(); });
+  $("reset").addEventListener("click", function(){
+    var wasRunning = S.running;
+    S.running = false; loop(); S.restored = false; S.remaining = full();
+    say(NAMES[S.phase] + " restarted at " + fmt(S.remaining) + ". Count stays at " + S.count + ".");
+    render(); save();
+  });
+  $("skip").addEventListener("click", function(){
+    // skipping never counts a pomodoro
+    var next = S.phase==="work" ? ((S.count+1)%4===0 ? "long" : "short") : "work";
+    setPhase(next, true);
+    say("Skipped to " + NAMES[next] + ". Skipped work is not counted.");
+  });
+  document.querySelectorAll(".tabs button").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.dataset.phase!==S.phase || S.running || left()<full()) setPhase(b.dataset.phase); });
+  });
+  $("zero").addEventListener("click", function(){ S.count=0; say("Count cleared."); render(); save(); });
+
+  function cfgInput(id, key, min, max){
+    $(id).addEventListener("change", function(){
+      var v = Math.round(+this.value); if(!(v>=min)) v=min; if(v>max) v=max;
+      this.value = v; S.cfg[key]=v;
+      if(S.phase===key && !S.running){ S.remaining = full(); }
+      render(); save();
+    });
+  }
+  cfgInput("sWork","work",1,120); cfgInput("sShort","short",1,60); cfgInput("sLong","long",1,90);
+  $("sAuto").addEventListener("change", function(){ S.cfg.auto=this.checked; save(); });
+  $("sSound").addEventListener("change", function(){ S.cfg.sound=this.checked; if(this.checked) unlockAudio(); save(); });
+
+  document.addEventListener("keydown", function(e){
+    if(e.code!=="Space" && e.key!==" ") return;
+    var t = e.target, tag = t && t.tagName;
+    if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"||tag==="BUTTON"||tag==="SUMMARY") return;
+    e.preventDefault(); S.running ? pause() : start();
+  });
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden && S.running){ onTick(); } });
+
+  load();
+  $("sWork").value=S.cfg.work; $("sShort").value=S.cfg.short; $("sLong").value=S.cfg.long;
+  $("sAuto").checked=!!S.cfg.auto; $("sSound").checked=!!S.cfg.sound;
+  if(S.restored){
+    S.running=false;
+    say("Restored " + NAMES[S.phase] + " at " + fmt(S.remaining) + ", paused. Press Resume.");
+  } else if(S.count>0){
+    say("Ready for pomodoro " + (S.count+1) + ".");
+  }
+  render(); save();
+})();
+</script>
+</body>
+</html>

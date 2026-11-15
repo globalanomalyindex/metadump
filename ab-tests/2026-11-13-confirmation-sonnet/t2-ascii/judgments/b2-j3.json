@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Many controls and a live ink preview, but the canvas starts blank black and the small canvas sits beside a lot of empty space."},
+"V": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Elegant two-color ratio mixer with a glyph orb and hex validation, but it is a single static mix, a bit passive and cut off below the fold on desktop."},
+"W": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Rich three-source field with draggable sources, light/paint/naive models and a probe, immediately colorful and responsive on mobile."},
+"X": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 7, "overall": 6, "note": "Useful side-by-side comparison of sRGB vs linear light with keyboard shortcuts, but the ASCII output is a tiny static block and the design is plain."},
+"Y": {"fidelity": 7, "correctness": 7, "craft": 5, "usability": 6, "overall": 6, "note": "Paint-on-canvas mixer with picker, but it opens empty and black, and the canvas card has a dead white area below the canvas."},
+"Z": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 9, "note": "Pre-seeded paintable field showing additive vs subtractive mixing with a theme flip, clear ink buttons and cell inspector; polished and works well on mobile."}
+}, "ranking": ["Z", "W", "V", "X", "U", "Y"]}

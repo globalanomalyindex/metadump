@@ -1,0 +1,572 @@
+{
+ "scores": {
+  "A": {
+   "fidelity": 7.83,
+   "correctness": 7.33,
+   "craft": 7.58,
+   "usability": 7.08,
+   "overall": 7.5,
+   "mean_rank": 3,
+   "per_run_overall": {
+    "A-r1": 8.33,
+    "A-r2": 7.33,
+    "A-r3": 6.83,
+    "A-r4": 7.5
+   }
+  },
+  "F": {
+   "fidelity": 7.42,
+   "correctness": 7.42,
+   "craft": 7.75,
+   "usability": 6.67,
+   "overall": 7.17,
+   "mean_rank": 3.5,
+   "per_run_overall": {
+    "F-r1": 7.33,
+    "F-r2": 8.0,
+    "F-r3": 6.5,
+    "F-r4": 6.83
+   }
+  },
+  "Q": {
+   "fidelity": 7.17,
+   "correctness": 7.0,
+   "craft": 6.75,
+   "usability": 7.0,
+   "overall": 6.82,
+   "mean_rank": 4,
+   "per_run_overall": {
+    "Q-r1": 5.67,
+    "Q-r2": 5.67,
+    "Q-r3": 8.6,
+    "Q-r4": 7.33
+   }
+  }
+ },
+ "pairwise": {
+  "F_vs_A": {
+   "wins": 5,
+   "losses": 14,
+   "ties": 5,
+   "win_rate": 0.31,
+   "p": 0.543
+  },
+  "Q_vs_A": {
+   "wins": 9,
+   "losses": 15,
+   "ties": 0,
+   "win_rate": 0.38,
+   "p": 0.429
+  },
+  "F_vs_Q": {
+   "wins": 13,
+   "losses": 9,
+   "ties": 2,
+   "win_rate": 0.58,
+   "p": 0.686
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 17972,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Cart",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.68
+    },
+    {
+     "control": "Menu",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 49.87
+    },
+    {
+     "control": "Hearth",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 2.05
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#menuBtn",
+    "focusable": true,
+    "grid_children": 6,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r2": {
+   "bytes": 15074,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Menu",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 42.81
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#toggle",
+    "focusable": true,
+    "grid_children": 5,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r3": {
+   "bytes": 13233,
+   "change_0_to_2s_pct": 0.02,
+   "change_20_to_22s_pct": 0.02,
+   "controls_used": [
+    {
+     "control": "Open menu",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 47.6
+    },
+    {
+     "control": "Small",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.84
+    },
+    {
+     "control": "Medium",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.49
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#toggle",
+    "focusable": true,
+    "grid_children": 8,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r4": {
+   "bytes": 17292,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Bag",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "Menu",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 61.94
+    },
+    {
+     "control": "Light",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 3.97
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#toggle",
+    "focusable": true,
+    "grid_children": 5,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r1": {
+   "bytes": 11211,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Menu",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 25.48
+    },
+    {
+     "control": "Remove one",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 3.51
+    },
+    {
+     "control": "Add one",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.04
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#lid",
+    "focusable": true,
+    "grid_children": 7,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r2": {
+   "bytes": 9438,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Menu · 1 × medium, whole",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 20.26
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#trigger",
+    "focusable": true,
+    "grid_children": 8,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r3": {
+   "bytes": 18586,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Menu 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 40.13
+    },
+    {
+     "control": "Light",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 7.85
+    },
+    {
+     "control": "Medium",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 2.91
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#trigger",
+    "focusable": true,
+    "grid_children": 7,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r4": {
+   "bytes": 12791,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Menu",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 30.8
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#trigger",
+    "focusable": true,
+    "grid_children": 7,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r1": {
+   "bytes": 14595,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "BAG 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.21
+    },
+    {
+     "control": "MENU",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 21.25
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#trigger",
+    "focusable": true,
+    "grid_children": 7,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r2": {
+   "bytes": 17216,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "OPEN MENU",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 51.87
+    },
+    {
+     "control": "Today's roast",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 2.09
+    },
+    {
+     "control": "Whole beans",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 7.43
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#trigger",
+    "focusable": true,
+    "grid_children": 6,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r3": {
+   "bytes": 11498,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "MENU",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 15.79
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#trigger",
+    "focusable": true,
+    "grid_children": 8,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r4": {
+   "bytes": 15250,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "MENU",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 36.88
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "bento": {
+    "toggle": "button#handle",
+    "focusable": true,
+    "grid_children": 7,
+    "brands_named": []
+   },
+   "checks": {
+    "collapses": true,
+    "keyboard": true,
+    "grid": true,
+    "fictional": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 82606,
+   "mean_seconds": 53.5
+  },
+  "F": {
+   "runs": 4,
+   "mean_tokens": 124265,
+   "mean_seconds": 130.1
+  },
+  "Q": {
+   "runs": 4,
+   "mean_tokens": 92673,
+   "mean_seconds": 140.6
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 212344,
+   "ms": 2411569,
+   "tool_uses": 60,
+   "agents_spawned": 23
+  }
+ },
+ "agreement_r": 0.59,
+ "notes": {
+  "b1/j1/F-r1": "Bold dark tin-themed design with a tidy bento popover, but the popover overlaps hero text and the closed state shows no bento at all.",
+  "b1/j1/Q-r1": "Bento panel with quantity stepper works but opens narrow, covers page copy awkwardly, and the 'Nothing selected yet' state is clunky.",
+  "b1/j1/A-r1": "Rich bento menu with roast chips, sliders, toggles and accordions, though the tiny type is dense and the toast overlaps the headline.",
+  "b1/j1/Q-r2": "Functional small bento with roast, grind and quantity controls, but plain, sparse and the bento sits in an unstyled page.",
+  "b1/j1/A-r2": "Clean dark-pill nav opening a well-composed bento with subscription and guides, a bit generic and small in text.",
+  "b1/j1/F-r2": "Strongest bento: colorful tiles collapse to an icon strip and expand into a rich illustrated grid, with state readout and keyboard hints.",
+  "b1/j2/Q-r2": "Working collapsible pill with a small bento of controls, but the open panel is cramped and the page is nearly empty.",
+  "b1/j2/A-r2": "Polished nav with a real bento panel of interactive cards (roast, subscription, accordion guides), though the open panel pushes content down.",
+  "b1/j2/F-r2": "Folded state is a tidy row of tiles that expands into a bento with page-change feedback, but the folded state is plain and the status chips are clutter.",
+  "b1/j2/A-r1": "Richest and most bento-like: varied tile sizes with illustrations, clear fold and unfold, tiles that change the page, and good keyboard cues.",
+  "b1/j2/Q-r1": "Good bento content and working cart stepper, but the open panel is narrow and awkwardly overlaps the hero text.",
+  "b1/j2/F-r1": "Distinctive dark tin theme with a floating bento popover; the popover covers the hero and the tiles are fairly small.",
+  "b1/j3/A-r2": "Clean pill nav opening a bento grid of beans, subscription, guides, cafes, saved; polished but sparse and fairly conventional.",
+  "b1/j3/F-r2": "Illustrated, colourful bento tiles that fold to a strip and reflow into a rich grid with working tile selection, though the folded state is not fully hidden and mobile loses labels.",
+  "b1/j3/Q-r2": "Compact bento panel with roast chips, grind toggle and quantity stepper that reflects in the button, but visually plain and small.",
+  "b1/j3/F-r1": "Bold dark tin-themed design with a popover bento grid that overlaps the hero and sits somewhat cramped, but is distinctive and works.",
+  "b1/j3/A-r1": "Colourful bento panel with working roast slider, subscription picker, accordions and toggles that update live page state, and a cohesive warm look.",
+  "b1/j3/Q-r1": "Menu panel opens narrow and left-aligned, overlapping and clipping the hero text, which looks unfinished despite a working cart stepper.",
+  "b2/j1/F-r3": "Playful stack-to-grid idea with a tilted bento tile layout, but the nav is oddly offset on desktop and the tiles are thin on real function.",
+  "b2/j1/Q-r3": "Cohesive Ember & Oak bento with working roast, subscription, bag and collapsible tiles plus a status line and Escape and outside-click close.",
+  "b2/j1/A-r3": "Polished, genuine menu-ordering bento with varied tile sizes, though the size chips on the featured card have weak contrast.",
+  "b2/j1/Q-r4": "Compact dark floating nav bar that unfolds into a tight bento with a bag stepper, newsletter signup and Escape hint; tidy and legible.",
+  "b2/j1/A-r4": "Feature-rich bento (roast, bag, plan, cafes, guides) with a state readout, but the big dark card has dead space and the brand name drops out on mobile.",
+  "b2/j1/F-r4": "Bold editorial look with an unfolding bento panel, but the panel overlaps and cuts the hero headline and the layout feels cramped.",
+  "b2/j2/Q-r4": "Tidy dark pill nav that opens a compact six-tile bento with a bag stepper and roast picker, but sparse content and small tiles.",
+  "b2/j2/A-r4": "Rich bento with working roast, subscription and cafe controls and a visible state readout, though dense and a little debug-looking.",
+  "b2/j2/F-r4": "Bold Kiln and Kettle branding and a floating bento panel with working controls, but the panel covers the hero text and is fairly small on a cramped layout.",
+  "b2/j2/A-r3": "Clean full-width bento with featured blend, categories, order list, milk options and a running total; cohesive and usable, with a blank page at rest.",
+  "b2/j2/Q-r3": "Most complete and polished bento: expanding tiles, roast and subscription toggles, bag, cafe select, with Escape and outside-click close and a cohesive palette.",
+  "b2/j2/F-r3": "Stacked-tins concept with playful tilted tiles and a distinctive look, but the tiles are small and mobile puts the menu below the hero.",
+  "b2/j3/A-r4": "Rich, well-built bento with working roast, subscription, cafe and guide controls, but the logo text vanishes on mobile and the debug state line clutters the page.",
+  "b2/j3/F-r4": "Bold poster-style page with a tidy floating bento panel and working controls, though the panel covers the headline and the intro text is cramped.",
+  "b2/j3/Q-r4": "Compact, coherent bento drop-down with varied tiles and a working bag stepper, but fairly thin in content.",
+  "b2/j3/F-r3": "Inventive stacked-tins concept with a good grid, but the tiles are small, rotated and text-light, and the header sits awkwardly.",
+  "b2/j3/A-r3": "Ambitious ordering UI with a good tile layout, but the size pills are nearly invisible on the dark card and the page is empty at rest.",
+  "b2/j3/Q-r3": "Cleanest and most complete bento menu, with collapsible tiles, roast and bag state, Escape and click-outside handling, and a layout that holds up on mobile."
+ }
+}

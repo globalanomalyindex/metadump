@@ -246,6 +246,7 @@ def _validate_anti_keyword(ak, ptr, report):
 
 
 MIN_ANGLES = 2
+ROUND_OF_ANGLES = 4   # the deal rotates sessions through the angles (ADR 0019): fewer, and four sessions can't go four ways
 
 
 def _validate_spine(out, report):
@@ -270,8 +271,15 @@ def _validate_spine(out, report):
               "check out), so the default reading and every build can cover all of it")
     if len(out["essence"].get("angles") or []) < MIN_ANGLES:
         _note(report, "warnings", "no_angles", "/essence/angles",
-              "give the head %d to 5 `angles`: contrasting ways into the task, each a move and what it draws on, none a "
-              "default, so consumers start from different places instead of one recipe (ADR 0012)" % MIN_ANGLES)
+              "give the head %d to 6 `angles`: kinds of the thing that people make, the home angle (the kind a stranger "
+              "pictures) first, each with what it draws on, so consumers start from different places instead of one recipe "
+              "(ADR 0012)" % ROUND_OF_ANGLES)
+    elif len(out["essence"]["angles"]) < ROUND_OF_ANGLES:
+        _note(report, "warnings", "few_angles", "/essence/angles",
+              "the deal hands each session a different angle until they run out (ADR 0019): give at least %d, each a kind of "
+              "the thing that people make (none drops a part that makes it that thing, none is a camera position or a moment "
+              "caught), the home angle first, so a round of sessions goes %d ways"
+              % (ROUND_OF_ANGLES, ROUND_OF_ANGLES))
     if not isinstance(out["routing"], list):
         _note(report, "errors", "bad_routing", "/routing", "routing must be a list of routes")
         out["routing"] = []
@@ -458,8 +466,9 @@ def _deal_note(fname):
     """The first thing in every dump (ADR 0014): a builder that opens the file before reading use mode still meets the deal."""
     return ("Deal before reading on: python3 <SKILL>/scripts/deal.py %s (<SKILL> is the metadump skill's folder) prints your hand, "
             "an angle to start from and two deep cuts, and writes a dealt copy: the user's words and don'ts, tier 1 and the review "
-            "questions, plus a random half of everything else, in a fresh order. Work from that copy: read whole and "
-            "as stored, this file pulls every session toward the same shape." % fname)
+            "questions, plus half of everything else, in a fresh order. Deals rotate, so each session starts from an angle and a "
+            "half the others didn't get. Work from that copy: read whole and as stored, this file pulls every session toward "
+            "the same shape." % fname)
 
 
 def _how_to_read(fname, head_lines):
@@ -471,7 +480,8 @@ def _how_to_read(fname, head_lines):
         "5. Look up any term (lowercase): jq '.index[\"<term>\"]' %s  -> hits give id + path; not_meant lists senses to avoid." % fname,
         "6. Grep works too: every entry is one line, so grep -n '<word>' %s returns whole entries." % fname,
         "7. When you have built something that renders, look at it before you finish: python3 <SKILL>/scripts/look.py <your file.html> "
-        "screenshots it, hovers and opens it, and lists clipping, overlap and overflow. Read the screenshots and fix what you see.",
+        "screenshots it at desktop and phone widths, then plays it (clicks, types, slides, drags and tabs through everything) and lists "
+        "what breaks along the way and what the page said. Fix what it lists, read its sheet, and look again.",
     ]
 
 
@@ -1176,6 +1186,34 @@ def _combine(*reports):
     return out
 
 
+def is_quick(dump):
+    """A quick dump: written in one pass by the model doing the task (references/quick.md). It has the user's request at
+    the top and no manifest, routes or index, and is small enough to read whole."""
+    return isinstance(dump, dict) and "manifest" not in dump and any(k in dump for k in ("request", "the_thing", "disciplines"))
+
+
+def quick_kinds(dump):
+    """A quick dump's kinds of the thing, in its own order (the classic first), as (name, what) pairs."""
+    thing = dump.get("the_thing") if isinstance(dump.get("the_thing"), dict) else {}
+    out = []
+    for k in thing.get("kinds") or dump.get("kinds") or []:
+        name = (k.get("name") or k.get("kind") or "") if isinstance(k, dict) else str(k)
+        if name:
+            out.append((name, (k.get("what") or k.get("text") or "") if isinstance(k, dict) else ""))
+    return out
+
+
+def ledger_path(dump_path):
+    """Where a dump's deal ledger lives: `.deals/<slug>.deals.json` beside it (deal.py keeps it, ADR 0019). The name
+    keeps it out of every search for `*.metadump.json`."""
+    folder, name = os.path.split(os.path.abspath(dump_path))
+    for suffix in (".metadump.json", ".json"):
+        if name.endswith(suffix):
+            name = name[:-len(suffix)]
+            break
+    return os.path.join(folder, ".deals", name + ".deals.json")
+
+
 def _write(path, text):
     tmp = "%s.tmp.%d" % (path, os.getpid())  # unique: parallel workers may merge at once
     with open(tmp, "w", encoding="utf-8") as f:
@@ -1219,6 +1257,17 @@ def main(argv=None):
         if dump is None:
             print(_summary(report))
             return 1
+        if is_quick(dump):
+            if not (isinstance(dump.get("request"), str) and dump["request"].strip()):
+                print("error    no_request                       /request  a quick dump opens with the user's request, verbatim; "
+                      "everything else in it is the model's own")
+                return 1
+            kinds, built = quick_kinds(dump), [str(b) for b in dump.get("built") or []]
+            print("quick dump: about %d tokens, %d kinds (%d built), %d checks, %d anti-keywords. Read it whole; it has no routes "
+                  "or index (references/quick.md)." % (len(json.dumps(dump, ensure_ascii=False)) // 4, len(kinds),
+                                                        sum(1 for name, _ in kinds if name in built), len(dump.get("checks") or []),
+                                                        len(dump.get("anti_keywords") or [])))
+            return 0
         text, _out, built = finish(dump)
         report = _combine(report, built)
         with open(args.dump, encoding="utf-8") as f:
@@ -1257,6 +1306,11 @@ def main(argv=None):
         print("NOT WRITTEN: fix the errors above, then rerun build.")
         return 1
     _write(out_path, text)
+    if os.path.isdir(src):   # a dump built from a work dir is a new deck: a dry run's deal must not spend its home angle
+        try:
+            os.remove(ledger_path(out_path))
+        except OSError:
+            pass
     stats = out["manifest"].get("stats", {})
     print(_summary(report))
     oversized = _oversized_by_shard(report, shard_of) if os.path.isdir(src) else None

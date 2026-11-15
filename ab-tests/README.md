@@ -26,8 +26,17 @@ Does a meta dump make downstream work better? Each test builds the same brief wi
 | [2026-11-05-three-tasks-sonnet-0.8.0](2026-11-05-three-tasks-sonnet-0.8.0/writeup.md) | Sonnet 5.5 at medium (builders and graders), **metadump 0.8.0** restored (ADR 0017), test 12's dumps | the same three tasks, 24 fresh runs: button **8.08** vs 5.75, haiku 5.25 vs **7.50**, toast **7.33** vs 6.62 | 6.89 (mean of the three) | – | 6.62 | 0.42 | r = 0.13 to 0.80 |
 | [2026-11-05-three-tasks-sonnet-medium-v3](2026-11-05-three-tasks-sonnet-medium-v3/writeup.md) | Sonnet 5.5 at medium (builders and graders), **metadump 0.12.0** (0.11.0 plus the look, ADR 0018); test 16's dumps and prompt-only builds reused | the same three tasks, 12 new B runs: button 6.50 vs **8.25**, haiku 5.08 vs **8.00**, toast 6.83 vs **7.50** | 6.14 (mean of the three) | – | **7.92** | **0.84** | r = 0.79 to 0.90 |
 | [2026-11-05-recipe-game-lemon-sonnet](2026-11-05-recipe-game-lemon-sonnet/writeup.md) | Sonnet 5.5 at medium (builders and graders), metadump 0.12.0, **three new tasks**, fresh dumps from the Haiku swarm, both arms fresh | 24 runs: mammoth steak recipe 4.92 vs **7.00**, basic tic tac toe 6.50 vs **7.67**, 3D lemon 5.00 vs **6.67** | 5.47 (mean of the three) | – | **7.11** | **0.80** | r = 0.87 to 0.95 |
+| [2026-11-12-three-arms-sonnet](2026-11-12-three-arms-sonnet/writeup.md) | Sonnet 5.5 at medium, **three arms**: prompt alone / 0.12.0's use mode / 0.13.0 as first built (deals rotate, the look plays the page), fresh dumps, three new tasks | 36 runs: field guide entry for a dragon 5.17 / 7.83 / **7.92**, simple pomodoro timer 7.08 / **7.79** / 6.71, snow globe 7.42 / **7.58** / 5.92 | 6.56 | – | 6.85 (0.12.0: **7.73**) | 0.52 (0.12.0: 0.75) | r = 0.78 to 0.95 |
+| [2026-11-12-revision-sonnet](2026-11-12-revision-sonnet/writeup.md) | Sonnet 5.5 at medium, 0.13.0 revised (angles keep what the request names, a size word bounds the build); test 20's dumps, prompt-only and 0.12.0 builds reused, in-sample | 8 new runs: timer 6.25 / 7.21 / **7.54**, snow globe 7.08 / **7.25** / 6.08 | 6.67 | – | 6.81 (0.12.0: **7.23**) | 0.52 (0.12.0: 0.63) | r = 0.81 to 0.92 |
+| [2026-11-13-held-out-sonnet](2026-11-13-held-out-sonnet/writeup.md) | Sonnet 5.5 at medium, **0.13.0** (angles are kinds of the thing, home angle dealt first), **two held-out tasks**, fresh dumps, all three arms fresh | 24 runs: lava lamp 5.08 / 6.17 / **8.00**, basic calculator 6.83 / 7.42 / **8.17** | 5.96 | – | **8.09** (0.12.0: 6.80) | **0.96** (0.12.0: 0.71) | r = 0.65 to 0.95 |
+| [2026-11-13-roots-sonnet](2026-11-13-roots-sonnet/writeup.md) | Sonnet 5.5 at medium, **the one-page roots skill**: the builder writes its own dump in one pass, no workers; test 22's prompt-only and 0.13.0 builds reused | 8 new runs (prompt / 0.13.0 with the swarm's dump / roots): lava lamp 5.25 / **7.58** / 7.25, basic calculator 7.17 / **8.50** / 7.75 | 6.21 | – | 7.50 (0.13.0: **8.04**) | 0.78 (0.13.0: 0.96) | r = 0.77 to 0.93 |
+| [2026-11-13-confirmation-sonnet](2026-11-13-confirmation-sonnet/writeup.md) | Sonnet 5.5 at medium, **metadump 1.0.0 frozen by hash before the tasks were known, four tasks named by the owner**, pre-registered; three arms: prompt alone / full build (lite dump) / quick mode | 48 runs: pelican on a bike 7.17 / **8.17** / 7.25, ASCII colour mixer 5.67 / 7.08 / **7.92**, bento menu **7.50** / 7.17 / 6.82, block world 5.92 / 6.17 / **8.75** | 6.56 | – | 7.15 (quick mode: **7.69**) | 0.64 (quick mode: 0.71) | r = 0.59 to 0.92 |
 
 Scores are 0–10 means across graders. The win rate counts every A×B pair the same grader scored in the same block.
+
+Variety scores (0 to 10, how different an arm's four builds are from each other) describe a set; they are not a score an arm wins. Spread is good in what a request leaves open and bad where it breaks what the thing is or the standards it has to meet, and the graders in tests 12 to 22 did not tell the two apart.
+
+From test 20 on there are three arms: the prompt alone, the dump read with the released 0.12.0's use mode, and the dump read with 0.13.0's. Each task lists them in that order, the B column is 0.13.0, and 0.12.0's figure sits beside it in brackets. In test 24 the three arms are the prompt alone, the full build and quick mode: the B column is the full build, and quick mode's figure sits beside it in brackets.
 
 ## What the tests showed
 
@@ -81,12 +90,37 @@ Scores are 0–10 means across graders. The win rate counts every A×B pair the 
   - The dump side won all three and **54–11–7** pooled (p = 0.019): recipe 22–0–2, game 15–5–4, lemon 17–6–1.
   - Variety split: the dump games were more varied, but the dump recipes (three of four the same bone-in bison tomahawk) and lemons (one sidebar layout) were less varied. Builders still converge on a dump's strong thesis.
   - The lemon builders read their screenshots 4 to 10 times each; the game builders never opened theirs, and a squashed-row bug that only shows mid-game got past the look.
+- **Deals that rotate, and a look that plays the page (test 20, 0.13.0 as first built).**
+  - In tests 18 and 19 every session drew its starting angle independently, and in four of six tasks three of the four sessions drew the same one and built the same thing. 0.13.0 deals from a ledger, so sessions sharing a dump start from different angles (ADR 0019). Its look also uses the page: clicks, types, drags, tabs, and reports what breaks (ADR 0020).
+  - Three arms on three new tasks. Every round of four sessions got four angles, and 0.13.0's sets were the most varied on all three. Quality fell on the two HTML tasks: 17–46–9 against 0.12.0's use mode.
+  - The dumps had been asked for angles that were "different finished things", and wrote a snow globe with no base, one with no scene, and a timer whose count was bigger than its clock. Rotation built every one of them.
+- **Fixing the angles fixed the timer and not the snow globe (test 21, in-sample).**
+  - With angles that keep everything the request names and a rule that a size word bounds the build, the timer went from 6.71 to 7.54 and beat 0.12.0 15–6–3. `simple` went from 5.67 to 8.17.
+  - The snow globe stayed behind, 6.08 against 7.25. Its angles were ways of photographing a snow globe (a close-up, a view across a room, one colour cast, a long exposure), not kinds of snow globe.
+- **Kinds of the thing, the classic first (test 22, two held-out tasks).**
+  - An angle became a kind of the thing that people make, with the kind a stranger pictures first and dealt first.
+  - 0.13.0 beat 0.12.0's use mode 38–6–4 (p = 0.016) and the prompt alone 46–2–0 (p = 0.0004): lava lamp 8.00 against 6.17 and 5.08, basic calculator 8.17 against 7.42 and 6.83. `basic` was 8.25 against 6.58.
+  - 0.12.0's lava lamps were rated more varied, and two of them "read more like a fishbowl". That is when the variety score stopped being read as higher-is-better (see the note under the table).
+  - No arm shipped a behaviour bug, so the look's playing checks again had nothing to catch.
+- **The original idea, on one page (test 23).**
+  - The plugin began as one request: before the task, write out what you know as structured JSON, from the disciplines down to the specifics. Test 23 ran that as a one-page skill. The builder writes its own dump in one pass, in under a minute, with no workers.
+  - It beat the prompt alone 35–8–5 (p = 0.038), about 70% of 0.13.0's gain, without a 25-minute dump build. It trailed 0.13.0 14–27–7 (p = 0.28).
+  - The gap was in two places. Roots calculators overbuilt against "basic", and two roots lava lamps ran down after a few seconds, which no look shows.
+  - In a first round only three of eight builders looked at what they made, because the page mentioned the look in passing. As its own numbered step, all eight did.
+  - It became quick mode: the lightest depth, opt-in, with the full build still the default (ADR 0021).
+- **The confirmation test (test 24): quick mode confirmed, the full build not.**
+  - The skill was frozen by hash, the owner named four tasks afterwards, and the analysis was fixed first: two comparisons against the prompt alone, each at p < 0.025.
+  - Quick mode beat the prompt alone 65–25–6 (+1.12, p = 0.012). The full build beat it 49–23–24 (+0.58, p = 0.036), which is short of the threshold. Quick mode's result leans on the block world (24–0–0): on the other three tasks it is +0.55, p = 0.23.
+  - Neither dump arm beat the other (the full build −0.54, p = 0.17). Each won two tasks, and on the bento menu both scored below the prompt alone.
+  - An audit of the graders' own transcripts, made before any score was read, found they opened 80% of the pictures and read no source. Graders made to open everything put the full build at +1.03 (p = 0.0008) and quick mode at +1.16 (p = 0.0045). By a rule written before unblinding, that second reading is not a confirmation.
+  - The full build's dump for the block world had five angles of one kind (a flat grid seen five ways), and all four of its builds were empty grid editors. Quick mode's builders listed a side view, a top-down grid and an isometric world, and built worlds.
 - **The meta dump beat the hand-made file** in both tests that had one (61% and 54% head to head). Scoped anti-keywords and provenance stopped the drift to cyan, aqua and frosted glass that the hand-made file caused.
 
 ## Caveats
 
 - Small n: 4 runs per arm in the shopping tests, where the smallest possible two-sided p is 0.029. The 0.5.x results (p = 0.086 and 0.114) show a direction, not a settled result.
 - One task per test (four in test 11), LLM graders, and one lite dump build per task.
+- Sonnet graders did not open everything they were shown. Counted from their transcripts in test 24 (`grader_audit.py`): 60 to 92% of the pictures and 0 to 28% of the sources in tests 15 to 24. Haiku graders opened nearly all of both. Test 24 has a second pass by graders who opened everything.
 - Each shopping test after test 3 rebuilt A from scratch, so A's quality varies from run to run (test 5's A had a CSS bug in one run).
 - Fixed harness bugs, documented in each results file:
   - cropped phone screenshots in test 3's first grading round;

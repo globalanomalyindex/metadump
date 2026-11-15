@@ -1,0 +1,136 @@
+{
+ "scores": {
+  "A": {
+   "imagination": 4.58,
+   "fieldguide": 7.75,
+   "specificity": 5.83,
+   "voice": 5.75,
+   "freshness": 3.58,
+   "overall": 5.17,
+   "mean_rank": 5.5,
+   "per_run_overall": {
+    "A-r1": 5.0,
+    "A-r2": 6.0,
+    "A-r3": 5.0,
+    "A-r4": 4.67
+   }
+  },
+  "B": {
+   "imagination": 7.5,
+   "fieldguide": 8.5,
+   "specificity": 8.17,
+   "voice": 7.58,
+   "freshness": 7.42,
+   "overall": 7.83,
+   "mean_rank": 2.58,
+   "per_run_overall": {
+    "B-r1": 8.0,
+    "B-r2": 7.67,
+    "B-r3": 8.33,
+    "B-r4": 7.33
+   }
+  },
+  "C": {
+   "imagination": 7.67,
+   "fieldguide": 8.17,
+   "specificity": 8.25,
+   "voice": 7.5,
+   "freshness": 7.58,
+   "overall": 7.92,
+   "mean_rank": 2.42,
+   "per_run_overall": {
+    "C-r1": 9.0,
+    "C-r2": 7.0,
+    "C-r3": 8.67,
+    "C-r4": 7.0
+   }
+  }
+ },
+ "pairwise": {
+  "C_vs_B": {
+   "wins": 11,
+   "losses": 10,
+   "ties": 3,
+   "win_rate": 0.52,
+   "p": 0.943
+  },
+  "C_vs_A": {
+   "wins": 24,
+   "losses": 0,
+   "ties": 0,
+   "win_rate": 1.0,
+   "p": 0.029
+  },
+  "B_vs_A": {
+   "wins": 24,
+   "losses": 0,
+   "ties": 0,
+   "win_rate": 1.0,
+   "p": 0.029
+  }
+ },
+ "functional": {},
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 73470,
+   "mean_seconds": 30.6
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 111844,
+   "mean_seconds": 64.6
+  },
+  "C": {
+   "runs": 4,
+   "mean_tokens": 107167,
+   "mean_seconds": 57.8
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 192578,
+   "ms": 895813,
+   "tool_uses": 35,
+   "agents_spawned": 13
+  }
+ },
+ "agreement_r": 0.95,
+ "notes": {
+  "b1/j1/B-r1": "Trace-first entry (burn line vs lightning scar, unknown winter range, disputed flame) is inventive, compact and honest about sources.",
+  "b1/j1/C-r1": "Fjord wyrm with seasonal table, hoard-as-midden, reused roosts and wingless lindworm variants is richly consistent, though a little long.",
+  "b1/j1/A-r1": "Competent but stock dragon (hoarding, horns, fire gland, thief remembered) with vague lore and some generic padding.",
+  "b1/j1/C-r2": "Taxonomic-record form with etymology, type skin and disputed shepherd sighting is clever, but opens with a chatty preamble and is dense.",
+  "b1/j1/A-r2": "Ember seam is a nice mark and the at-a-glance table and sighting log are usable, but the rest is familiar fantasy-dragon fare.",
+  "b1/j1/B-r2": "Grounded wingless fell dragon with band-count identification and synonyms is tidy and usable, if modest in invention.",
+  "b1/j2/C-r2": "Taxonomic-record form with etymology and a sheep-ledger first record is grounded and usable, but the chatty preamble and flat tone hold it back.",
+  "b1/j2/A-r2": "Well-organised guide with tables and the ember seam as a nice mark, yet the cinder dragon with similar-species list is fairly stock.",
+  "b1/j2/B-r2": "A wingless, Komodo-scaled fell wyrm with band-count individual ID and a bluff display is coherent, well-sourced and compact.",
+  "b1/j2/A-r1": "Competent but leans on stock dragon tropes (hoards, thermals, buckle in scat) with little new.",
+  "b1/j2/C-r1": "Fjord wyrm known by sign first, with seasonal table, sealers' lore and vivid measurements set beside familiar objects; rich, though long.",
+  "b1/j2/B-r1": "Opens with the burn line and shed skin and works back to the animal, with honest unknowns about winter; clever and usable.",
+  "b1/j3/A-r2": "Clean, well-structured entry with a nice ember-seam mark, but the ash-and-volcano dragon and its lookalike list are stock.",
+  "b1/j3/B-r2": "A wingless, Komodo-scaled fell dragon with taxonomic history and a bluffing fire display; grounded, witty and usable.",
+  "b1/j3/C-r2": "Draco-lizard wing ribs and a sheep-fold type record are inventive, though the chatty preamble line and length cost it a little.",
+  "b1/j3/B-r1": "Opens with the burn-line trace and vanishing winter records, which makes it feel like real fieldcraft.",
+  "b1/j3/A-r1": "Competent but generic high-fantasy dragon with hoards, thermals and horns, and little new.",
+  "b1/j3/C-r1": "The fjord-wyrm sign-first structure, seasonal table and sealers' similes are vivid and consistent, though it runs long.",
+  "b2/j1/B-r3": "Grounds fire in a burned-ewes record and a scholar who never saw one, with honest disputes over clutch size; long but earns it.",
+  "b2/j1/C-r3": "Rain-wyrm with a chin pearl and a ferryman's disputed measurement is vivid and well-argued, with a slightly chatty preamble.",
+  "b2/j1/A-r3": "Clean and usable but leans on stock dragon tropes; the hoard-as-radiator idea is the one fresh touch.",
+  "b2/j1/C-r4": "Compact, plate-style and consistent, but dry and visibly a Komodo/frilled-lizard remix.",
+  "b2/j1/A-r4": "Competent generic fantasy-bestiary entry with stock ember dragon and standard sections; padded safety and journal notes.",
+  "b2/j1/B-r4": "Thorough taxonomic entry with synonyms, lifecycle and lookalike table, but long and a bit encyclopedic.",
+  "b2/j2/C-r4": "Compact, usable, well-measured wingless monitor-dragon with a nice goatherd source note, but fairly restrained and Komodo-anchored.",
+  "b2/j2/A-r4": "Textbook-complete field guide format but every beat (ember glow, hoard as radiator, wyvern leg count) is the stock fantasy dragon.",
+  "b2/j2/B-r4": "Rich taxonomy, synonyms and seasonal movement make it feel real, though long and a bit dry with gliding-drake premise.",
+  "b2/j2/A-r3": "Pleasant with a few good lines (a tired dragon, remembers who took the cup), but still the familiar ember-hoard dragon.",
+  "b2/j2/C-r3": "A named scholar, a ferryman with a punting pole, and honest gaps give a wet river wyrm real personality and restraint.",
+  "b2/j2/B-r3": "Wonderful archival detail (burned ewes, four-claw lesser dragon, disputed sheen) but long and dense.",
+  "b2/j3/A-r4": "Clean, usable field guide layout but a stock fire-breathing hoarding dragon with generic stats.",
+  "b2/j3/B-r4": "Rigorous taxonomy, synonymy, lifecycle and lookalike table with Komodo and frilled-lizard anchors; slightly dry but very usable.",
+  "b2/j3/C-r4": "Compact plate-style entry with a nice goatherd-witness sources note; less expansive than the others.",
+  "b2/j3/B-r3": "Richly invented provenance (sheep-reeve's roll, disputed colour, lost specimen) and honest gaps, though dense and long.",
+  "b2/j3/A-r3": "Charming touches like infrasound and the remembered missing cup, but still a conventional ember dragon.",
+  "b2/j3/C-r3": "A wingless rain-wyrm recorded by a named surveyor with a ferryman's disputed measurement and scrupulous gaps; only the chatty preamble line detracts."
+ }
+}

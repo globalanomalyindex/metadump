@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 7, "overall": 6, "note": "Clean working collapsible bento with roast, grind and count controls, but visually modest and the folded state is a lone pill."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Polished pill bar and a varied bento with accordions, a subscription radiogroup and cafe hours, all wired with status announcements and keyboard support."},
+"W": {"fidelity": 9, "correctness": 9, "craft": 9, "usability": 8, "overall": 9, "note": "The bento itself collapses and expands with FLIP animation into a rich tile grid, and the tiles stay usable when folded, which is the most faithful take on a collapsible bento menu."},
+"X": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Feature-rich bento with a roast slider, subscription, accordions, night theme and toasts, though it reads more like a settings dashboard than a navigation menu."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "A true navigation bento dropdown with arrow-key focus and a cart stepper, but the overlay covers the page text and the panel feels small and plain."},
+"Z": {"fidelity": 8, "correctness": 8, "craft": 9, "usability": 8, "overall": 8, "note": "Distinctive dark tin-pile concept where tiles fly out of the handle into a grid, with good focus handling, though the overlay covers the hero and the rest state is heavy."}
+},
+"ranking": ["W", "Z", "X", "V", "Y", "U"]}

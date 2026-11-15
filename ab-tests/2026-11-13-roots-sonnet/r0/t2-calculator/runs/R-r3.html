@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{--bg:#16181d;--body:#22252c;--lcd:#0f1114;--txt:#f2f3f5;--dim:#8b909a;--digit:#343842;--digit-h:#3f444f;--op:#4a4f5c;--op-h:#575d6b;--acc:#ff9f1c;--acc-h:#ffb347;--acc-t:#1a1100}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,#262a33,var(--bg));font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--txt);padding:16px}
+.calc{width:min(340px,100%);background:var(--body);border-radius:28px;padding:18px;box-shadow:0 24px 60px #0009,inset 0 1px #fff1}
+.lcd{background:var(--lcd);border-radius:16px;padding:14px 16px;margin-bottom:16px;text-align:right;min-height:112px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;box-shadow:inset 0 2px 8px #000a}
+.expr{min-height:20px;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.val{font-size:52px;font-weight:300;font-variant-numeric:tabular-nums;line-height:1.15;white-space:nowrap;letter-spacing:-1px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+button{font:inherit;font-size:24px;height:62px;border:0;border-radius:16px;color:var(--txt);background:var(--digit);cursor:pointer;box-shadow:0 4px 0 #0006;transition:transform .06s,box-shadow .06s,background .15s}
+button:hover{background:var(--digit-h)}
+button:active,button.press{transform:translateY(3px);box-shadow:0 1px 0 #0006}
+button:focus-visible{outline:3px solid #8ab4ff;outline-offset:2px}
+button.op{background:var(--op);color:var(--acc)}
+button.op:hover{background:var(--op-h)}
+button.op.active{background:var(--acc);color:var(--acc-t)}
+button.fn{background:var(--op);color:var(--txt)}
+button.fn:hover{background:var(--op-h)}
+button.eq{background:var(--acc);color:var(--acc-t);font-weight:600}
+button.eq:hover{background:var(--acc-h)}
+button.zero{grid-column:span 2}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="lcd">
+    <div class="expr" id="expr"></div>
+    <div class="val" id="val" role="status" aria-live="polite">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="AC" id="ac" aria-label="All clear">AC</button>
+    <button class="fn" data-k="neg" aria-label="Plus minus">+/−</button>
+    <button class="fn" data-k="pct" aria-label="Percent">%</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+    <button class="zero" data-k="0">0</button><button data-k=".">.</button>
+    <button class="eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+  <div class="keys" style="margin-top:10px">
+    <button class="fn" data-k="bs" style="grid-column:span 4;height:44px;font-size:18px" aria-label="Backspace">⌫ Backspace</button>
+  </div>
+</main>
+<script>
+(function(){
+  var SYM={'+':'+','-':'−','*':'×','/':'÷'};
+  var s;
+  function reset(){s={cur:'0',acc:null,op:null,fresh:true,last:null,err:false,expr:''};}
+  reset();
+  function clean(n){return parseFloat(n.toPrecision(12));}
+  function calc(a,op,b){
+    if(op==='+')return a+b; if(op==='-')return a-b; if(op==='*')return a*b;
+    if(op==='/')return b===0?NaN:a/b; return b;
+  }
+  function fmt(n){
+    if(!isFinite(n))return 'Error';
+    n=clean(n);
+    var t=String(n);
+    if(t.length>12||/e/.test(t)){t=n.toExponential(6).replace(/\.?0+e/,'e');}
+    return t;
+  }
+  function set(n){
+    if(isNaN(n)||!isFinite(n)){s.err=true;s.cur='Error';s.acc=null;s.op=null;s.fresh=true;return;}
+    s.cur=fmt(n);
+  }
+  function num(){return parseFloat(s.cur);}
+  function digit(d){
+    if(s.err)reset();
+    if(s.fresh){
+      if(s.op===null&&s.expr.indexOf('=')>-1){s.expr='';s.acc=null;}
+      s.cur=d;s.fresh=false;
+    } else if(s.cur==='0')s.cur=d;
+    else if(s.cur.replace(/[-.]/g,'').length<12)s.cur+=d;
+  }
+  function dot(){
+    if(s.err)reset();
+    if(s.fresh){s.cur='0.';s.fresh=false;return;}
+    if(s.cur.indexOf('.')<0)s.cur+='.';
+  }
+  function operator(o){
+    if(s.err)return;
+    if(s.op!==null&&!s.fresh){
+      set(calc(s.acc,s.op,num()));
+      if(s.err)return;
+    }
+    s.acc=num();s.op=o;s.fresh=true;s.last=null;
+    s.expr=fmt(s.acc)+' '+SYM[o];
+  }
+  function equals(){
+    if(s.err)return;
+    var b,a,o;
+    if(s.op!==null){
+      a=s.acc;o=s.op;b=s.fresh?s.acc:num();
+      // pressing = right after operator uses acc as second operand
+      s.last={op:o,b:b};
+      s.expr=fmt(a)+' '+SYM[o]+' '+fmt(b)+' =';
+      set(calc(a,o,b));
+      s.op=null;s.acc=null;s.fresh=true;
+    } else if(s.last){
+      a=num();
+      s.expr=fmt(a)+' '+SYM[s.last.op]+' '+fmt(s.last.b)+' =';
+      set(calc(a,s.last.op,s.last.b));
+      s.fresh=true;
+    }
+  }
+  function back(){
+    if(s.err){reset();return;}
+    if(s.fresh)return;
+    s.cur=s.cur.length>1&&!(s.cur.length===2&&s.cur[0]==='-')?s.cur.slice(0,-1):'0';
+    if(s.cur==='0'||s.cur==='-0')s.cur='0';
+  }
+  function neg(){
+    if(s.err)return;
+    if(s.cur==='0'&&!s.fresh)return;
+    s.cur=s.cur[0]==='-'?s.cur.slice(1):'-'+s.cur;
+    if(s.fresh&&s.op===null)s.fresh=true;
+  }
+  function pct(){
+    if(s.err)return;
+    var v=num();
+    if(s.op!==null&&s.acc!==null&&(s.op==='+'||s.op==='-'))v=s.acc*v/100;
+    else v=v/100;
+    set(v);s.fresh=false;
+  }
+  function press(k){
+    if(k>='0'&&k<='9'&&k.length===1)digit(k);
+    else if(k==='.')dot();
+    else if(SYM[k])operator(k);
+    else if(k==='=')equals();
+    else if(k==='AC')reset();
+    else if(k==='bs')back();
+    else if(k==='neg')neg();
+    else if(k==='pct')pct();
+    render();
+  }
+  var valEl=document.getElementById('val'),exprEl=document.getElementById('expr'),acEl=document.getElementById('ac');
+  function render(){
+    valEl.textContent=s.cur;
+    var n=s.cur.length;
+    valEl.style.fontSize=n>16?'26px':n>13?'32px':n>10?'40px':n>8?'46px':'52px';
+    exprEl.textContent=s.expr;
+    acEl.textContent=(s.cur!=='0'&&!s.err&&!s.fresh)?'C':'AC';
+    document.querySelectorAll('button.op').forEach(function(b){
+      b.classList.toggle('active',s.op===b.dataset.k&&s.fresh);
+    });
+  }
+  // C clears entry, AC clears all
+  document.getElementById('keys').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    if(b.dataset.k==='AC'&&b.textContent==='C'){s.cur='0';s.fresh=false;s.err=false;render();return;}
+    press(b.dataset.k);
+  });
+  var KM={'Enter':'=','=':'=','Escape':'AC','Backspace':'bs','Delete':'AC','%':'pct','x':'*','X':'*','*':'*','/':'/','+':'+','-':'-',',':'.','.':'.'};
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=KM[e.key];
+    if(!k&&/^[0-9]$/.test(e.key))k=e.key;
+    if(!k)return;
+    e.preventDefault();
+    if(k==='AC'&&e.key==='Escape')k='AC';
+    var sel=k==='bs'?'[data-k="bs"]':'[data-k="'+k+'"]';
+    var btn=document.querySelector(sel);
+    if(btn){btn.classList.add('press');setTimeout(function(){btn.classList.remove('press');},90);}
+    press(k);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

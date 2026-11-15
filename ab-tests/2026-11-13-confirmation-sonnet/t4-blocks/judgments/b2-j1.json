@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j1","scores":{
+"U":{"fidelity":7,"correctness":7,"craft":6,"usability":5,"overall":6,"note":"Top-down 32x32 grid with stacked heights and only three block types; works but the mobile toolbar is clipped and the empty beige board is bland."},
+"V":{"fidelity":8,"correctness":8,"craft":8,"usability":7,"overall":8,"note":"Textured side-view 32x32 world with a pre-built landscape, ten blocks, undo/reset; attractive though the board runs past the desktop fold."},
+"W":{"fidelity":7,"correctness":8,"craft":6,"usability":6,"overall":6,"note":"Clean empty dark grid with a sidebar palette, autosave and counters; plain visually and the mobile layout pushes the palette below the board."},
+"X":{"fidelity":8,"correctness":8,"craft":9,"usability":8,"overall":9,"note":"Polished isometric 3D 32x32 voxel terrain with place/erase modes, nine blocks and new-terrain; clearly the most impressive and responsive."},
+"Y":{"fidelity":6,"correctness":6,"craft":5,"usability":6,"overall":5,"note":"Flat empty 32x32 grid with eight swatches and save; functional but minimal, with uneven grid lines on mobile."},
+"Z":{"fidelity":7,"correctness":8,"craft":7,"usability":7,"overall":7,"note":"Tidy dark grid with per-block counts, erase tool and undo/clear, but only four block types and the desktop footer is cut off."}},
+"ranking":["X","V","Z","W","U","Y"]}

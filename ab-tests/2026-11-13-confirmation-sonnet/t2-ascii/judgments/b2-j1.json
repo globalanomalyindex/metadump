@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j1","scores":{
+"U":{"fidelity":7,"correctness":8,"craft":6,"usability":8,"overall":7,"note":"Clear two-color ratio mixer comparing sRGB mean with linear light, keyboard shortcuts and copy, but the ASCII is a tiny dull block and the page is sparse."},
+"V":{"fidelity":9,"correctness":8,"craft":9,"usability":8,"overall":9,"note":"Drop-ink field with light/paint models and per-cell readout is seeded with a striking mix, themed, and works well on mobile."},
+"W":{"fidelity":7,"correctness":6,"craft":5,"usability":6,"overall":5,"note":"Paint-the-canvas mixer with ramps and modes is feature-rich, but it opens as a black void with a mismatched white panel area and nothing to see until you drag."},
+"X":{"fidelity":9,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Three draggable color sources with amounts and Light/Paint/Naive models fill the ASCII field with a live blended gradient and a probe readout, with a good mobile layout."},
+"Y":{"fidelity":7,"correctness":6,"craft":5,"usability":6,"overall":5,"note":"Ink mixer with a live ASCII swatch and paint canvas, but the canvas starts blank black, the layout leaves dead space, and controls are busy."},
+"Z":{"fidelity":8,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Elegant two-color sphere rendered in ASCII with a ratio strip, models and keyboard control; the controls fall below the fold on desktop but it stays focused and polished."}
+},"ranking":["V","X","Z","U","Y","W"]}

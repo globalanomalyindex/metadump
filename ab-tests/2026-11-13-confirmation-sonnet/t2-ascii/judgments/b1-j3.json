@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Paint-on-grid mixer with three mix modes and a two-color mixer, but it starts nearly empty, the glyphs are tiny and the panel is crowded."},
+"V": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clean two-color ratio mixer with a command prompt and arrow keys, but the ASCII picture is a static pattern and the interaction is fairly modest."},
+"W": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Pigment bowl with paint and light models and kept mixes, but it opens with an empty bowl and a dim, near-invisible glyph field."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Simple, polished A/B mixer with a live shaded ASCII swatch, a gradient ramp, model toggle and shortcuts, and it holds up on mobile."},
+"Y": {"fidelity": 6, "correctness": 5, "craft": 5, "usability": 4, "overall": 4, "note": "Bowl and paint canvas with several models, but the canvas looks half-filled with dots, the page is empty at rest and it overflows on mobile."},
+"Z": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Pigment pots with paint, light and naive models paint a vivid pre-seeded ASCII grid with smudge and chips, and it is rich, legible and responsive."}
+}, "ranking": ["Z", "X", "V", "W", "U", "Y"]}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+:root{--bg:#14091f;--ink:#f4e9ff;--mute:#a894c4;--panel:#1f1233;--accent:#ff5fa2}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(ellipse at 50% 30%,#2b1250 0%,var(--bg) 70%);color:var(--ink);font-family:ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:32px;padding:24px;min-height:100%}
+.lamp{position:relative;width:200px;height:560px;flex:none;filter:drop-shadow(0 0 40px var(--glow,#ff5fa266))}
+.cap{position:absolute;left:50px;top:0;width:100px;height:46px;background:linear-gradient(90deg,#6b6f7a,#d7dae2 40%,#5a5e69);border-radius:50px 50px 8px 8px/40px 40px 8px 8px;z-index:3}
+.base{position:absolute;left:30px;bottom:0;width:140px;height:110px;background:linear-gradient(90deg,#5a5e69,#d7dae2 35%,#6b6f7a 70%,#454852);clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);z-index:3;border-radius:0 0 10px 10px}
+.base::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;background:#2a2c34}
+.glass{position:absolute;left:46px;top:40px;width:108px;height:420px;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);overflow:hidden;background:var(--liquid,#3a0f5e);z-index:2}
+.glass canvas{position:absolute;inset:0;width:100%;height:100%}
+.shine{position:absolute;left:46px;top:40px;width:108px;height:420px;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);z-index:4;pointer-events:none;background:linear-gradient(90deg,#fff3 0,#fff0 22%,#0000 70%,#0004 100%)}
+.bulb{position:absolute;left:70px;bottom:104px;width:60px;height:30px;border-radius:50%;z-index:1;background:radial-gradient(#fff6c0,#ffb23f 50%,transparent 70%);opacity:var(--heat,.8);filter:blur(4px)}
+.panel{background:var(--panel);border:1px solid #ffffff1a;border-radius:18px;padding:22px;width:300px;display:grid;gap:16px}
+h1{margin:0;font-size:22px;letter-spacing:.02em}
+.sub{margin:-8px 0 0;color:var(--mute);font-size:13px}
+label{display:grid;gap:6px;font-size:13px;color:var(--mute)}
+label span b{color:var(--ink);float:right;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
+.sw[aria-pressed=true]{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+button.act{flex:1;background:#ffffff14;color:var(--ink);border:1px solid #ffffff26;border-radius:10px;padding:10px;font:inherit;font-size:14px;cursor:pointer}
+button.act:hover{background:#ffffff26}
+button.act[aria-pressed=true]{background:var(--accent);color:#2a0a1a;border-color:transparent}
+.stat{font-size:12px;color:var(--mute);display:flex;justify-content:space-between}
+.stat b{color:var(--ink)}
+.hint{font-size:12px;color:var(--mute);margin:0}
+@media (prefers-reduced-motion:reduce){.hint::after{content:" (reduced motion: flow is slowed)"}}
+</style>
+</head>
+<body>
+<div class="lamp" id="lamp">
+  <div class="cap"></div>
+  <div class="glass"><canvas id="cv" width="108" height="420"></canvas></div>
+  <div class="shine"></div>
+  <div class="bulb" id="bulb"></div>
+  <div class="base"></div>
+</div>
+
+<div class="panel">
+  <h1>Lava Lamp</h1>
+  <p class="sub">Click or drag in the glass to poke the wax.</p>
+  <label><span>Heat <b id="heatV">60%</b></span><input id="heat" type="range" min="0" max="100" value="60"></label>
+  <label><span>Blobs <b id="countV">7</b></span><input id="count" type="range" min="3" max="12" value="7"></label>
+  <div>
+    <div class="stat" style="margin-bottom:8px"><span>Color</span><b id="colName">Magma</b></div>
+    <div class="row" id="sws"></div>
+  </div>
+  <div class="row">
+    <button class="act" id="pause" aria-pressed="false">Pause</button>
+    <button class="act" id="power" aria-pressed="true">Lamp on</button>
+    <button class="act" id="shake">Shake</button>
+  </div>
+  <div class="stat"><span>Rising / sinking</span><b id="stat">0 / 0</b></div>
+  <p class="hint">Hotter wax is lighter and rises faster.</p>
+</div>
+
+<script>
+(function(){
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+var W=cv.width,H=cv.height;
+var DPR=Math.min(window.devicePixelRatio||1,2);
+cv.width=W*DPR;cv.height=H*DPR;ctx.scale(DPR,DPR);
+var lamp=document.getElementById('lamp');
+var palettes=[
+ {n:'Magma',wax:['#ff7a3d','#ff3d6e'],liq:'#3a0f5e',glow:'#ff5fa2',sw:'#ff4d6d'},
+ {n:'Lime',wax:['#d9ff4a','#46e08a'],liq:'#0e3a3a',glow:'#7dff9a',sw:'#9cf04a'},
+ {n:'Ocean',wax:['#58e6ff','#5b7bff'],liq:'#0b1e55',glow:'#5ab4ff',sw:'#4aa8ff'},
+ {n:'Sunset',wax:['#ffd23d','#ff5a3d'],liq:'#5a1530',glow:'#ffb04a',sw:'#ffb02e'}
+];
+var pal=0,heat=.6,paused=false,on=true,temp=.6;
+var blobs=[];
+function rnd(a,b){return a+Math.random()*(b-a)}
+function mk(){return{x:rnd(30,78),y:rnd(0,H),r:rnd(12,24),vy:0,ph:rnd(0,6.28),t:Math.random()}}
+function setCount(n){while(blobs.length<n)blobs.push(mk());blobs.length=n}
+setCount(7);
+// pool of wax at the bottom
+var wob=0;
+function step(dt){
+  var target=on?heat:0;
+  temp+=(target-temp)*Math.min(1,dt*0.6);
+  wob+=dt;
+  var k=temp;
+  for(var i=0;i<blobs.length;i++){
+    var b=blobs[i];
+    // temperature of blob: warm near bottom, cools near top
+    var depth=b.y/H; // 0 top,1 bottom
+    b.t+=((depth*1.1)*k-b.t)*dt*0.5;
+    var buoy=(b.t-0.45)*(40+60*k)*(k>.05?1:0)-(k<=.05?10:0);
+    b.vy+=(-buoy-b.vy*1.2)*dt;
+    b.y+=b.vy*dt*(0.6+k);
+    b.x+=Math.sin(wob*0.7+b.ph)*6*dt+(54-b.x)*dt*0.05;
+    var lim=b.r*.6;
+    if(b.y<lim){b.y=lim;b.vy*=-.2;b.t=0}
+    if(b.y>H-lim){b.y=H-lim;b.vy*=-.2}
+    if(b.x<b.r+8)b.x=b.r+8;if(b.x>W-b.r-8)b.x=W-b.r-8;
+  }
+}
+// metaball render via low-res field
+var gw=54,gh=210,off=document.createElement('canvas');off.width=gw;off.height=gh;
+var octx=off.getContext('2d'),img=octx.createImageData(gw,gh);
+function hex(h){return[parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)]}
+function render(){
+  var p=palettes[pal],c1=hex(p.wax[0]),c2=hex(p.wax[1]);
+  var sx=W/gw,sy=H/gh,d=img.data;
+  for(var j=0;j<gh;j++){
+    var y=j*sy;
+    // bottom pool
+    var pool=Math.max(0,(y-(H-26-Math.sin(wob+j*.05)*2))/26);
+    for(var i=0;i<gw;i++){
+      var x=i*sx,f=pool*pool*2.2;
+      for(var n=0;n<blobs.length;n++){
+        var b=blobs[n],dx=x-b.x,dy=y-b.y;
+        f+=b.r*b.r/(dx*dx+dy*dy+1);
+      }
+      var o=(j*gw+i)*4;
+      var a=f>1?1:(f>.8?(f-.8)/.2:0);
+      var m=Math.min(1,y/H+ (f-1)*0.15);
+      d[o]=c1[0]+(c2[0]-c1[0])*m;d[o+1]=c1[1]+(c2[1]-c1[1])*m;d[o+2]=c1[2]+(c2[2]-c1[2])*m;
+      d[o+3]=a*255;
+    }
+  }
+  octx.putImageData(img,0,0);
+  ctx.clearRect(0,0,W,H);
+  var g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(0,0,0,.35)');g.addColorStop(1,'rgba(255,200,120,'+(.25*temp)+')');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(off,0,0,W,H);
+}
+var last=performance.now(),statT=0;
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+function loop(t){
+  var dt=Math.min(.05,(t-last)/1000);last=t;
+  if(!paused)step(reduce?dt*.4:dt);
+  render();
+  document.getElementById('bulb').style.setProperty('--heat',(.15+temp*.85).toFixed(2));
+  statT+=dt;
+  if(statT>.3){statT=0;var u=0,dn=0;blobs.forEach(function(b){if(b.vy<-1)u++;else if(b.vy>1)dn++});
+    document.getElementById('stat').textContent=u+' / '+dn}
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function applyPal(){
+  var p=palettes[pal];
+  lamp.style.setProperty('--liquid',p.liq);
+  lamp.style.setProperty('--glow',p.glow+'88');
+  document.documentElement.style.setProperty('--accent',p.sw);
+  document.getElementById('colName').textContent=p.n;
+  [].forEach.call(document.querySelectorAll('.sw'),function(s,i){s.setAttribute('aria-pressed',i===pal)});
+}
+var sws=document.getElementById('sws');
+palettes.forEach(function(p,i){
+  var b=document.createElement('button');b.className='sw';b.title=p.n;b.setAttribute('aria-label',p.n);
+  b.style.background='linear-gradient(135deg,'+p.wax[0]+','+p.wax[1]+')';
+  b.onclick=function(){pal=i;applyPal()};sws.appendChild(b);
+});
+applyPal();
+var heatEl=document.getElementById('heat');
+heatEl.oninput=function(){heat=heatEl.value/100;document.getElementById('heatV').textContent=heatEl.value+'%'};
+var cEl=document.getElementById('count');
+cEl.oninput=function(){setCount(+cEl.value);document.getElementById('countV').textContent=cEl.value};
+var pb=document.getElementById('pause');
+pb.onclick=function(){paused=!paused;pb.setAttribute('aria-pressed',paused);pb.textContent=paused?'Resume':'Pause'};
+var po=document.getElementById('power');
+po.onclick=function(){on=!on;po.setAttribute('aria-pressed',on);po.textContent=on?'Lamp on':'Lamp off'};
+document.getElementById('shake').onclick=function(){
+  blobs.forEach(function(b){b.vy+=rnd(-120,120);b.x+=rnd(-15,15)});
+};
+// poke
+var down=false;
+function poke(e){
+  var r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+  blobs.forEach(function(b){
+    var dx=b.x-x,dy=b.y-y,d=Math.sqrt(dx*dx+dy*dy)+1;
+    if(d<70){var f=(70-d)/70;b.vy+=dy/d*140*f;b.x+=dx/d*10*f;b.t=Math.min(1.2,b.t+.2*f)}
+  });
+}
+cv.addEventListener('pointerdown',function(e){down=true;cv.setPointerCapture(e.pointerId);poke(e)});
+cv.addEventListener('pointermove',function(e){if(down)poke(e)});
+cv.addEventListener('pointerup',function(){down=false});
+cv.style.touchAction='none';cv.style.cursor='pointer';
+})();
+</script>
+</body>
+</html>

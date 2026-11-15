@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Alive at rest with three draggable colored sources, Light/Paint/Naive models, readable mix swatch and probe, and a clean mobile stack."},
+"V": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Ink mixer with RGB sliders, modes and ramps works, but the canvas opens as an empty black rectangle and the layout is plain with the canvas not filling its card."},
+"W": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Elegant two-color ratio mix as an ascii disc with a gradient strip and a channel-mean versus linear-light model, but narrow in scope and the model controls fall below the fold."},
+"X": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Paint-on-canvas mixer with modes, ramps and pick-from-canvas, but it opens as an empty black box in a half-empty white card and does nothing until the user draws."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Pre-seeded drops of red, green and blue show additive mixing in colored ascii, with a Light/Paint toggle that swaps the inks to CMY, plus a cell inspector and a good phone layout."},
+"Z": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Compact two-color comparison of sRGB and linear-light mixing with keyboard shortcuts and hex validation, but the result is small and the ascii is mostly a single repeated tile."}
+},
+"ranking": ["U", "Y", "W", "Z", "V", "X"]}

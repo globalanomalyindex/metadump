@@ -1,0 +1,104 @@
+{
+  "request": "a lava lamp",
+  "thesis": "A slow, warm, hypnotic object: wax blobs that merge, stretch, pinch off and sink in a glowing glass, which you can also run like a real lamp (switch on, wait for heat, tweak).",
+  "job": [
+    "arrive and see a lamp at a glance (glass, base, cap, glow)",
+    "switch the lamp on; wax is cold and settled at the bottom",
+    "wait while the bulb heats: wax softens, rises, first blob detaches",
+    "watch blobs rise, merge, stretch, pinch, cool, sink, repeat",
+    "poke the wax: click/drag a blob, stir with the pointer, shake the lamp",
+    "change colour pairing (wax and liquid), heat level, blob count/size",
+    "switch off: glow fades, wax cools and slumps to the bottom",
+    "switch back on and run again; settings persist during the session"
+  ],
+  "disciplines": {
+    "physical simulation": {
+      "principles": ["buoyancy follows temperature", "wax is viscous so motion is slow and damped", "surface tension merges and pinches blobs", "heat from the bottom, cooling at the top"],
+      "steps": ["per-blob temperature", "temp drives vertical force", "add drag", "heat bottom, cool top", "metaball field renders merging"],
+      "tricks": ["metaball field summed from r^2/d^2 falloff, thresholded", "a pool blob at the bottom that is wide and flat", "tiny horizontal wander noise so paths never repeat", "ease temperature, never snap it"],
+      "tests": ["do blobs ever stall at the top forever", "do they ever clump into one mass", "does it look different after 2 minutes"]
+    },
+    "rendering": {
+      "principles": ["metaballs are an implicit surface", "low-res field upscaled is soft and cheap", "glow comes from layered radial gradients and additive light"],
+      "steps": ["render field at ~1/3 resolution to offscreen canvas", "threshold with smooth edge", "shade by field value for a rim highlight", "composite glass highlights over"],
+      "tricks": ["ImageData per-pixel field with smoothstep threshold gives soft edges", "gradient within the blob via field strength gives volume", "vertical colour gradient in wax (hotter near bulb)"],
+      "tests": ["are edges jaggy", "does the wax look flat or volumetric", "is it fast at 60fps"]
+    },
+    "product and industrial design": {
+      "principles": ["silhouette is a tapered glass flask on a metal base and cap", "the object reads before the UI does"],
+      "steps": ["draw base cone, glass, cap, spill glow", "controls are small and secondary"],
+      "tricks": ["bulb glow visible at the bottom of the glass", "vertical specular streak on glass", "warm light cast on surface below"],
+      "tests": ["would a stranger say lava lamp in one second"]
+    },
+    "interaction and accessibility": {
+      "principles": ["real controls for real state", "motion reduced option", "labels on all controls"],
+      "steps": ["power toggle button with aria-pressed", "colour swatches as radio group", "range inputs with labels", "keyboard operable"],
+      "tricks": ["pointer gives a repulsion/attraction push", "double click drops a new blob"],
+      "tests": ["does every control change visible state", "tab through it", "prefers-reduced-motion slows sim"]
+    },
+    "front-end code": {
+      "principles": ["one file, no external requests", "requestAnimationFrame with dt clamp", "devicePixelRatio aware"],
+      "steps": ["canvas for wax", "CSS for lamp body", "state object", "resize handler"],
+      "tricks": ["clamp dt to avoid jumps after tab switch", "pause when hidden"],
+      "tests": ["opens from disk", "no console errors", "phone width works"]
+    }
+  },
+  "the_thing": {
+    "parts": ["glass flask (tapered, narrow top, wider bottom)", "liquid", "wax blobs and a wax pool", "bulb and glow", "metal base (cone)", "metal cap", "background room and light spill"],
+    "expectations": ["slow motion, seconds per rise", "blobs merge and split", "warm glow", "wax sits on bottom when cold", "lamp takes minutes to warm in real life"],
+    "kinds": [
+      {"name": "classic glass-and-base lamp", "what": "Tapered flask on a metal base, metaballs on canvas, power switch and colour choices"},
+      {"name": "bare blob field", "what": "Full-screen metaball canvas with no lamp body"},
+      {"name": "mini lamp with temperature dial", "what": "Small lamp with a prominent heat dial and thermometer readout"}
+    ]
+  },
+  "specifics": {
+    "shape": {
+      "keywords": {"1": ["lava lamp", "blob", "glass", "wax", "base", "cap"], "2": ["metaball", "tapered flask", "rim light", "pool", "neck"], "3": ["implicit surface", "isosurface", "smoothstep threshold", "pinch-off", "Rayleigh-Plateau"]},
+      "descriptions": ["flask is a rounded trapezoid: top width ~34 to 42% of bottom", "blobs are slightly taller than wide when rising, flat when pooled"],
+      "behaviors": ["close blobs merge by field sum", "stretched blobs neck then split"],
+      "tokens": {"blob radius": "0.05 to 0.11 of glass width x 2", "blob count": "6 to 12", "threshold": "0.9 to 1.2"}
+    },
+    "colour": {
+      "keywords": {"1": ["orange", "red", "glow", "warm"], "2": ["wax and liquid pairs", "dark room", "bulb yellow-white"], "3": ["additive light", "rim fresnel", "colour temperature"]},
+      "descriptions": ["wax brighter than liquid; hot end lighter", "liquid is a deep saturated tint, darker at top"],
+      "behaviors": ["colour pairs: magma red on amber, magenta on violet, lime on teal, ice cyan on navy"],
+      "tokens": {"room bg": "#0c0710 to #170a12", "wax hot": "#ffd56a to #ff9a3c", "wax cool": "#ff4d2e to #c1121f", "liquid": "#5b0f1f to #8a1c2b"}
+    },
+    "motion": {
+      "keywords": {"1": ["rise", "sink", "merge", "slow"], "2": ["heat up", "cool down", "wobble", "stretch"], "3": ["damped buoyancy", "thermal lag"]},
+      "descriptions": ["rise takes 10 to 25 s end to end", "warm-up 6 to 15 s in a demo (real lamp 45 min)", "cool-down similar"],
+      "behaviors": ["on: bulb temp ramps, pool softens, blobs peel up", "off: temps fall, blobs sink, pool reforms", "pointer near blob pushes it away"],
+      "tokens": {"buoyancy": "gentle", "drag": "0.96 to 0.99 per frame", "bulb ramp": "8 to 14 s"}
+    },
+    "states": {
+      "keywords": {"1": ["on", "off", "heating", "cooling"], "2": ["cold", "warm", "running"], "3": ["thermal state"]},
+      "descriptions": ["status label shows state and a temperature readout"],
+      "behaviors": ["controls update live: heat slider scales buoyancy; blob size slider and count reseed"],
+      "tokens": {}
+    },
+    "copy": {
+      "keywords": {"1": ["Lamp", "Heat", "Colour", "Blobs"], "2": ["Stir", "Shake"], "3": []},
+      "descriptions": ["short labels, no marketing text"],
+      "behaviors": [],
+      "tokens": {}
+    }
+  },
+  "anti_keywords": [
+    {"not": "circles that bounce around like a screensaver", "instead": "temperature-driven slow rise and sink with viscous drag"},
+    {"not": "flat hard-edged discs", "instead": "metaball field with soft threshold and shaded volume"},
+    {"not": "wax glued to the top", "instead": "cooling near the top so everything returns down"},
+    {"not": "controls that only change a label", "instead": "every control alters the simulation or look immediately"},
+    {"not": "external libraries or fonts", "instead": "inline canvas and CSS"},
+    {"not": "always-on instantly hot lamp", "instead": "on switch starts a warm-up with the wax slumped first"}
+  ],
+  "checks": [
+    "would a stranger say lava lamp at a glance",
+    "do blobs visibly merge and pinch",
+    "does power off cool and sink the wax, and power on restart it",
+    "does every control change the sim",
+    "does it work at phone width and with no network",
+    "does it look different after two minutes"
+  ],
+  "built": ["classic glass-and-base lamp"]
+}

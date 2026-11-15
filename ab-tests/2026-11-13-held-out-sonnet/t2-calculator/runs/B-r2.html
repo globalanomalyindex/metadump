@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Calculator</title>
+<style>
+:root{
+  --desk:#2b2a27;
+  --desk2:#3a3833;
+  --body:#34373a;
+  --body-hi:#4a4e52;
+  --bezel:#17181a;
+  --lcd:#b9c9a0;
+  --lcd-dark:#1d2a17;
+  --lcd-ghost:rgba(29,42,23,.1);
+  --key-num:#e9e6dc;
+  --key-num-lo:#b9b5a8;
+  --key-op:#e08a2c;
+  --key-op-lo:#a45f14;
+  --key-clr:#c8473b;
+  --key-clr-lo:#8a2c24;
+  --key-fn:#6f757b;
+  --key-fn-lo:#464b50;
+  --key-eq:#3f8f6a;
+  --key-eq-lo:#256046;
+  --ink:#1b1b1b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;display:grid;place-items:center;padding:16px;
+  background:
+    radial-gradient(ellipse at 30% 20%,var(--desk2),var(--desk) 70%);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);
+}
+.calc{
+  width:min(340px,100%);
+  background:linear-gradient(160deg,var(--body-hi),var(--body) 40%,#2a2d30);
+  border-radius:22px 22px 30px 30px;
+  padding:18px 18px 22px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.18) inset,
+    0 -3px 0 rgba(0,0,0,.35) inset,
+    0 24px 40px rgba(0,0,0,.55),
+    0 4px 0 #1f2123;
+}
+.brand{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:#aeb3b7;margin:0 4px 10px;
+}
+.brand b{font-weight:700;color:#dfe2e4;letter-spacing:.28em}
+.solar{display:flex;gap:2px}
+.solar i{width:9px;height:12px;background:linear-gradient(#3a2f2a,#201713);border:1px solid #111;display:block}
+
+.window{
+  background:var(--bezel);
+  border-radius:10px;padding:8px;
+  box-shadow:0 2px 0 rgba(255,255,255,.12),0 5px 10px rgba(0,0,0,.5) inset;
+  margin-bottom:18px;
+}
+.lcd{
+  position:relative;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 40%),
+    var(--lcd);
+  border-radius:5px;padding:6px 10px 8px;
+  box-shadow:0 0 0 1px #0b0d09 inset,0 3px 8px rgba(0,0,0,.45) inset;
+  overflow:hidden;
+}
+.annun{
+  display:flex;justify-content:space-between;align-items:center;height:16px;
+  font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.08em;color:var(--lcd-dark);
+}
+.annun .flags{display:flex;gap:8px}
+.annun .flag{opacity:.12;transition:opacity .08s}
+.annun .flag.on{opacity:1}
+.annun .tape{opacity:.7;min-height:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
+#seg{display:block;width:100%;height:auto;margin-top:2px}
+#seg .off{fill:var(--lcd-ghost)}
+#seg .on{fill:var(--lcd-dark)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.key{
+  appearance:none;border:0;cursor:pointer;
+  font:600 22px/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  height:56px;min-width:44px;border-radius:9px;
+  color:var(--ink);
+  background:linear-gradient(180deg,#fff7,#fff0 50%),var(--k,var(--key-num));
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.55) inset,
+    0 5px 0 var(--kl,var(--key-num-lo)),
+    0 7px 8px rgba(0,0,0,.45);
+  transform:translateY(0);
+  transition:transform .07s,box-shadow .07s,filter .1s;
+  position:relative;touch-action:manipulation;user-select:none;
+}
+.key:hover{filter:brightness(1.07)}
+.key:active,.key.press{
+  transform:translateY(4px);
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 1px 0 var(--kl,var(--key-num-lo)),0 2px 3px rgba(0,0,0,.4);
+}
+.key:focus-visible{outline:3px solid #7fd0ff;outline-offset:3px}
+.key.op{--k:var(--key-op);--kl:var(--key-op-lo);color:#1d1204}
+.key.op.held{
+  transform:translateY(4px);
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 1px 0 var(--key-op-lo),0 0 0 3px #ffe3a8,0 0 14px 2px rgba(255,200,100,.7);
+  filter:brightness(1.12);
+}
+.key.clr{--k:var(--key-clr);--kl:var(--key-clr-lo);color:#fff}
+.key.fn{--k:var(--key-fn);--kl:var(--key-fn-lo);color:#fff;font-size:19px}
+.key.eq{--k:var(--key-eq);--kl:var(--key-eq-lo);color:#fff}
+.key .sub{position:absolute;left:0;right:0;bottom:3px;font-size:8px;font-weight:700;letter-spacing:.12em;opacity:.7}
+.hint{margin:14px 4px 0;font-size:12px;color:#b4b9bd;text-align:center;letter-spacing:.03em}
+kbd{font:inherit;color:#c4c8cb;border:1px solid #555;border-radius:3px;padding:0 3px}
+@media (max-width:360px){
+  .pad{gap:8px}.key{height:52px;font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){.key,.annun .flag{transition:none}}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="brand"><b>Pocketcalc</b><span class="solar" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+
+  <div class="window">
+    <div class="lcd">
+      <div class="annun" aria-hidden="true">
+        <span class="tape" id="tape"></span>
+        <span class="flags">
+          <span class="flag" id="f-add">+</span><span class="flag" id="f-sub">&minus;</span><span class="flag" id="f-mul">&times;</span><span class="flag" id="f-div">&divide;</span>
+          <span class="flag" id="f-err">E</span>
+        </span>
+      </div>
+      <svg id="seg" viewBox="0 0 164 36" aria-hidden="true"></svg>
+      <div class="sr" id="live" role="status" aria-live="polite" aria-atomic="true">0</div>
+    </div>
+  </div>
+
+  <div class="pad" id="pad">
+    <button class="key clr" data-k="C" aria-label="Clear all">C</button>
+    <button class="key fn" data-k="CE" aria-label="Clear entry">CE</button>
+    <button class="key fn" data-k="BS" aria-label="Backspace">&#9003;</button>
+    <button class="key op" data-k="/" aria-label="Divide">&divide;</button>
+
+    <button class="key" data-k="7">7</button>
+    <button class="key" data-k="8">8</button>
+    <button class="key" data-k="9">9</button>
+    <button class="key op" data-k="*" aria-label="Multiply">&times;</button>
+
+    <button class="key" data-k="4">4</button>
+    <button class="key" data-k="5">5</button>
+    <button class="key" data-k="6">6</button>
+    <button class="key op" data-k="-" aria-label="Subtract">&minus;</button>
+
+    <button class="key" data-k="1">1</button>
+    <button class="key" data-k="2">2</button>
+    <button class="key" data-k="3">3</button>
+    <button class="key op" data-k="+" aria-label="Add">+</button>
+
+    <button class="key fn" data-k="SIGN" aria-label="Change sign">&plusmn;</button>
+    <button class="key" data-k="0">0</button>
+    <button class="key" data-k="." aria-label="Decimal point">.</button>
+    <button class="key eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+  <p class="hint"><kbd>Enter</kbd> equals &middot; <kbd>Esc</kbd> clear &middot; <kbd>Del</kbd> clear entry &middot; <kbd>&#9003;</kbd> backspace</p>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var CELLS = 10;               // digits the window holds
+  var SYM = {'+':'+','-':'−','*':'×','/':'÷'};
+  var FLAG = {'+':'f-add','-':'f-sub','*':'f-mul','/':'f-div'};
+
+  // ---------- seven-segment display (drawn inline, no font) ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  var seg = document.getElementById('seg');
+  var W = 14, H = 30, T = 3, STEP = 15;
+  // segments a b c d e f g as [x, y, w, h]
+  var SEGS = [
+    [T, 0, W - 2*T, T],                 // a
+    [W - T, T, T, H/2 - T - 1],         // b
+    [W - T, H/2 + 1, T, H/2 - T - 1],   // c
+    [T, H - T, W - 2*T, T],             // d
+    [0, H/2 + 1, T, H/2 - T - 1],       // e
+    [0, T, T, H/2 - T - 1],             // f
+    [T, H/2 - T/2, W - 2*T, T]          // g
+  ];
+  var MAP = {
+    '0':'abcdef','1':'bc','2':'abdeg','3':'abcdg','4':'bcfg','5':'acdfg','6':'acdefg',
+    '7':'abc','8':'abcdefg','9':'abcdfg','-':'g','E':'adefg','r':'eg','o':'cdeg',' ':''
+  };
+  var cells = [];
+  (function build(){
+    var g = document.createElementNS(NS,'g');
+    g.setAttribute('transform','translate(2,2) skewX(-6)');
+    for(var i=0;i<CELLS;i++){
+      var seg7 = [], x = i*STEP + 4;
+      for(var s=0;s<7;s++){
+        var r = document.createElementNS(NS,'rect');
+        r.setAttribute('x', x + SEGS[s][0]); r.setAttribute('y', SEGS[s][1]);
+        r.setAttribute('width', SEGS[s][2]); r.setAttribute('height', SEGS[s][3]);
+        r.setAttribute('rx', 1); r.setAttribute('class','off');
+        g.appendChild(r); seg7.push(r);
+      }
+      var dot = document.createElementNS(NS,'rect');
+      dot.setAttribute('x', x + W + .2); dot.setAttribute('y', H - T);
+      dot.setAttribute('width', T); dot.setAttribute('height', T);
+      dot.setAttribute('rx', 1); dot.setAttribute('class','off');
+      g.appendChild(dot);
+      cells.push({s:seg7, dot:dot});
+    }
+    seg.appendChild(g);
+  })();
+
+  function paint(text){
+    // text: chars with '.' attached to the previous char; right-aligned
+    var chars = [], dots = [];
+    for(var i=0;i<text.length;i++){
+      var c = text[i];
+      if(c === '.' && chars.length && !dots[chars.length-1]){ dots[chars.length-1] = true; }
+      else { chars.push(c); }
+    }
+    var off = CELLS - chars.length;
+    for(var k=0;k<CELLS;k++){
+      var ch = k - off >= 0 ? chars[k-off] : ' ';
+      var on = MAP[ch] || '';
+      for(var s=0;s<7;s++) cells[k].s[s].setAttribute('class', on.indexOf('abcdefg'[s]) >= 0 ? 'on' : 'off');
+      cells[k].dot.setAttribute('class', (k-off >= 0 && dots[k-off]) ? 'on' : 'off');
+    }
+  }
+
+  // ---------- calculator state ----------
+  var st;
+  function reset(){
+    st = {entry:'0', fresh:true, acc:null, op:null, shown:null,
+          justEq:false, error:false, lastOp:null, lastArg:null, tape:''};
+  }
+  reset();
+
+  function fmt(x){
+    if(!isFinite(x)) return null;
+    x = Number(x.toPrecision(12));            // drop float tails: 0.1+0.2 -> 0.3
+    if(Object.is(x,-0)) x = 0;
+    var neg = x < 0, a = Math.abs(x);
+    var intDigits = a >= 1 ? Math.floor(Math.log10(a)) + 1 : 1;
+    if(Math.floor(a) >= Math.pow(10, CELLS - (neg?1:0))) return null;   // won't fit
+    var room = CELLS - (neg?1:0) - intDigits;
+    var s = a.toFixed(Math.max(0, Math.min(room, 20)));
+    if(s.indexOf('.') >= 0) s = s.replace(/0+$/,'').replace(/\.$/,'');
+    if(s === '' ) s = '0';
+    if(Number(s) === 0) neg = false;
+    return (neg?'-':'') + s;
+  }
+
+  function current(){ return parseFloat(st.entry); }
+
+  function apply(a, op, b){
+    switch(op){
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0 ? NaN : a / b;
+    }
+    return b;
+  }
+
+  function setError(){
+    st.error = true; st.acc = null; st.op = null; st.fresh = true;
+    st.entry = '0'; st.shown = 'Error'; st.tape = '';
+  }
+
+  function showResult(v){
+    var f = fmt(v);
+    if(f === null){ setError(); return false; }
+    st.entry = f; st.shown = null; st.fresh = true;
+    return true;
+  }
+
+  function digit(d){
+    if(st.error) reset();
+    if(st.justEq){ st.acc = null; st.op = null; st.justEq = false; st.tape = ''; st.entry = '0'; st.fresh = true; }
+    if(st.fresh){ st.entry = '0'; st.fresh = false; st.shown = null; }
+    var digits = st.entry.replace(/[-.]/g,'').length;
+    if(digits >= CELLS - (st.entry[0]==='-'?1:0)) return;
+    st.entry = (st.entry === '0') ? d : (st.entry === '-0' ? '-' + d : st.entry + d);
+  }
+
+  function dot(){
+    if(st.error) reset();
+    if(st.justEq){ st.acc = null; st.op = null; st.justEq = false; st.tape = ''; st.fresh = true; }
+    if(st.fresh){ st.entry = '0'; st.fresh = false; st.shown = null; }
+    if(st.entry.indexOf('.') >= 0) return;            // second point ignored
+    if(st.entry.replace(/-/g,'').length >= CELLS) return;
+    st.entry += '.';
+  }
+
+  function operator(o){
+    if(st.error) return;
+    if(st.op && st.fresh && !st.justEq){ st.op = o; st.tape = fmt(st.acc) + ' ' + SYM[o]; return; }   // replace pending
+    var v = current();
+    if(st.op && !st.justEq){
+      var r = apply(st.acc, st.op, v);
+      if(!showResult(r)) return;
+      st.acc = current();
+    } else {
+      st.acc = v;                                     // also continues from a result after =
+    }
+    st.op = o; st.justEq = false; st.fresh = true;
+    st.tape = fmt(st.acc) + ' ' + SYM[o];
+  }
+
+  function equals(){
+    if(st.error) return;
+    var v = current(), r;
+    if(st.op && !st.justEq){
+      st.lastOp = st.op; st.lastArg = v;
+      st.tape = fmt(st.acc) + ' ' + SYM[st.op] + ' ' + fmt(v) + ' =';
+      r = apply(st.acc, st.op, v);
+    } else if(st.lastOp){                             // repeat last operation
+      st.tape = fmt(v) + ' ' + SYM[st.lastOp] + ' ' + fmt(st.lastArg) + ' =';
+      r = apply(v, st.lastOp, st.lastArg);
+    } else return;
+    if(!showResult(r)) return;
+    st.acc = null; st.op = null; st.justEq = true;
+  }
+
+  function sign(){
+    if(st.error) return;
+    if(st.fresh && st.justEq){ /* negate the result */ }
+    if(st.entry === '0' && st.fresh) { st.entry = '-0'; st.fresh = false; return; }
+    if(st.entry === '0') { st.entry = '-0'; return; }
+    st.entry = st.entry[0] === '-' ? st.entry.slice(1) : '-' + st.entry;
+    if(st.fresh && st.op) st.fresh = false;
+  }
+
+  function backspace(){
+    if(st.error){ reset(); return; }
+    if(st.fresh) return;                              // nothing typed to remove
+    var e = st.entry.slice(0,-1);
+    if(e === '' || e === '-') e = '0';
+    st.entry = e;
+  }
+
+  function clearEntry(){
+    if(st.error){ reset(); return; }
+    if(st.justEq){ reset(); return; }
+    st.entry = '0'; st.fresh = st.op ? true : true; st.shown = null;
+  }
+
+  function press(k){
+    if(k >= '0' && k <= '9' && k.length === 1) digit(k);
+    else if(k === '.') dot();
+    else if(k === '+' || k === '-' || k === '*' || k === '/') operator(k);
+    else if(k === '=') equals();
+    else if(k === 'C') reset();
+    else if(k === 'CE') clearEntry();
+    else if(k === 'BS') backspace();
+    else if(k === 'SIGN') sign();
+    render();
+  }
+
+  // ---------- render ----------
+  var tapeEl = document.getElementById('tape');
+  var live = document.getElementById('live');
+  var keys = {};
+  [].forEach.call(document.querySelectorAll('.key'), function(b){ keys[b.dataset.k] = b; });
+
+  function render(){
+    var text = st.shown || st.entry;
+    paint(st.error ? 'Error' : text);
+    ['+','-','*','/'].forEach(function(o){
+      var held = st.op === o;
+      keys[o].classList.toggle('held', held);
+      keys[o].setAttribute('aria-pressed', held ? 'true' : 'false');
+      document.getElementById(FLAG[o]).classList.toggle('on', held);
+    });
+    document.getElementById('f-err').classList.toggle('on', st.error);
+    tapeEl.textContent = st.tape;
+    var spoken = st.error ? 'Error, cannot divide by zero or number too large' : text.replace('-','minus ');
+    if(!st.fresh || st.justEq || st.error) live.textContent = spoken;
+    else live.textContent = spoken;
+  }
+
+  // ---------- input ----------
+  document.getElementById('pad').addEventListener('click', function(e){
+    var b = e.target.closest('.key'); if(!b) return;
+    press(b.dataset.k);
+  });
+
+  function flash(k){
+    var b = keys[k]; if(!b) return;
+    b.classList.add('press');
+    setTimeout(function(){ b.classList.remove('press'); }, 110);
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key, m = null;
+    if(/^[0-9]$/.test(k)) m = k;
+    else if(k === '.' || k === ',') m = '.';
+    else if(k === '+' || k === '-' || k === '/') m = k;
+    else if(k === '*' || k === 'x' || k === 'X') m = '*';
+    else if(k === 'Enter' || k === '=') m = '=';
+    else if(k === 'Escape') m = 'C';
+    else if(k === 'Delete') m = 'CE';
+    else if(k === 'Backspace') m = 'BS';
+    else if(k === 'F9') m = 'SIGN';
+    if(!m) return;
+    // let Enter/Space activate a focused button only via its own click
+    if(k === 'Enter' && document.activeElement && document.activeElement.classList.contains('key')) return;
+    e.preventDefault();
+    flash(m);
+    press(m);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

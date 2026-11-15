@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snow Globe</title>
+<style>
+  :root{
+    --bg0:#0b0a12; --bg1:#171526; --ink:#e9e6f2; --mute:#9d98b4; --line:#2c2942;
+    --brass:#c9a35b; --accent:#7fe3d4;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% 38%, #221f3a 0%, var(--bg1) 45%, var(--bg0) 100%);
+    color:var(--ink);
+    font:15px/1.4 ui-rounded,"Avenir Next",system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex;flex-direction:column;align-items:center;
+    min-height:100%;padding:16px 16px 28px;
+  }
+  h1{font-size:13px;letter-spacing:.28em;text-transform:uppercase;font-weight:600;color:var(--mute);margin:4px 0 6px}
+  #stage{width:min(100%,560px);position:relative}
+  canvas{display:block;width:100%;height:auto;touch-action:none;cursor:grab;border-radius:12px;outline-offset:4px}
+  canvas:active{cursor:grabbing}
+  canvas:focus-visible{outline:2px solid var(--accent)}
+  #status{
+    text-align:center;min-height:2.6em;margin:2px 0 10px;
+  }
+  #phase{font-size:18px;font-weight:600;display:block}
+  #meter{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .panel{
+    width:min(100%,560px);display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+  }
+  .panel .wide{grid-column:1/-1}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  button{
+    font:inherit;color:var(--ink);background:#2a2744;border:1px solid #3d3961;border-radius:999px;
+    padding:10px 18px;min-height:44px;cursor:pointer;
+  }
+  button:hover{background:#363259}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  button.primary{background:linear-gradient(#f0cf8a,#c9a35b);color:#241a08;border-color:#e6c780;font-weight:700;flex:1 1 auto}
+  button.primary:hover{background:linear-gradient(#f6d995,#d3ac62)}
+  button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:#2f3b4d}
+  .sw{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+  label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+  label output{color:var(--ink);float:right;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;min-height:32px;accent-color:#c9a35b}
+  .hint{font-size:12px;color:var(--mute);text-align:center;margin-top:10px;max-width:560px}
+  @media (max-width:520px){ .panel{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<h1>Snow globe</h1>
+<div id="stage">
+  <canvas id="globe" tabindex="0" role="img" aria-label="Snow globe, waiting for a shake. Press space or enter to shake."></canvas>
+</div>
+<div id="status">
+  <span id="phase" aria-live="polite">Waiting for a shake</span>
+  <span id="meter"></span>
+</div>
+
+<div class="panel">
+  <div class="wide row">
+    <button id="shake" class="primary" type="button">Shake it</button>
+    <button id="tilt" type="button">Tilt gently</button>
+    <button id="rest" type="button">Let it rest</button>
+  </div>
+  <div>
+    <label for="thick">Glycerin in the water <output id="thickOut">25%</output></label>
+    <input id="thick" type="range" min="0" max="100" value="45">
+  </div>
+  <div>
+    <label for="count">Glitter <output id="countOut">420</output></label>
+    <input id="count" type="range" min="60" max="900" step="10" value="420">
+  </div>
+  <div class="wide row" id="palettes" role="group" aria-label="Glitter colour"></div>
+</div>
+<p class="hint">Drag the globe to shake it, or press Space. Thicker water holds the glitter up longer; thin water drops it fast.</p>
+
+<script>
+(() => {
+  'use strict';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const PALETTES = {
+    aurora:{name:'Aurora', flakes:['#f6f2e4','#7fe3d4','#ffd37a','#ff9bb8','#b9a6ff'],
+            top:'#06122a', mid:'#0c2a4c', bot:'#15506a', glow:'rgba(127,227,212,', glow2:'rgba(185,166,255,', sw:'#7fe3d4'},
+    ember:{name:'Ember', flakes:['#ffe9c2','#ffb347','#ff6a3d','#ffd9a0','#fff4e0'],
+            top:'#16070f', mid:'#431320', bot:'#80301a', glow:'rgba(255,150,70,', glow2:'rgba(255,90,90,', sw:'#ff8a4a'},
+    frost:{name:'Frost', flakes:['#ffffff','#e6f3ff','#cfe6ff','#ffffff','#f4fbff'],
+            top:'#071a36', mid:'#12386a', bot:'#2a6a98', glow:'rgba(180,225,255,', glow2:'rgba(255,255,255,', sw:'#dff0ff'}
+  };
+
+  const S = {
+    palette:'aurora', thick:0.45, count:420,
+    E:0, swirl:0,                 // turbulence energy, swirl of the water
+    shake:null,                   // active shake {t,dur,power}
+    lastAgitate:null, t:0,
+    ox:0, oy:0, vox:0, voy:0, tx:0, ty:0
+  };
+
+  const cv = document.getElementById('globe');
+  const ctx = cv.getContext('2d');
+  let W=560,H=540,R=210,cx=280,cy=230,yF=0,rxF=0,ryF=0,sc=1,dpr=1;
+  const particles = [];
+
+  function layout(){
+    const w = cv.parentElement.clientWidth || 560;
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    W = w; H = Math.round(w*0.96);
+    cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+    cv.style.height = H+'px';
+    R = W*0.385; cx = W/2; cy = R*1.07 + 6;
+    yF = cy + R*0.66; rxF = R*0.75; ryF = R*0.085;
+    sc = R/210;
+    // keep resting particles on the new floor
+    for (const p of particles){ if(p.rest){ p.x = cx+p.fx*rxF*0.95; p.y = floorY(p); } else { p.x = Math.max(cx-R,Math.min(cx+R,p.x)); } }
+  }
+
+  const rnd = (a,b)=>a+Math.random()*(b-a);
+  function makeParticle(rest){
+    const pal = PALETTES[S.palette].flakes;
+    const ang = Math.random()*Math.PI*2, rr = Math.sqrt(Math.random())*0.74;
+    const p = {
+      x:cx, y:yF, vx:0, vy:0,
+      fx: rnd(-1,1), z: rnd(-1,1),            // resting spot on the floor
+      s: rnd(0.9,2.6)*(Math.random()<0.08?1.9:1),   // size (some chunky)
+      c: Math.floor(Math.random()*pal.length),
+      ph: rnd(0,6.28), om: rnd(1.5,5), tilt: rnd(0,6.28), seed: rnd(0,100),
+      m: rnd(0.6,1.4), rest:rest
+    };
+    if(rest){ p.x = cx+p.fx*rxF*0.95*Math.sqrt(1-p.z*p.z*0.0); p.y = floorY(p); }
+    else { p.x = cx+Math.cos(ang)*rr*R; p.y = cy+Math.sin(ang)*rr*R*0.9; p.rest=false; }
+    return p;
+  }
+  function floorY(p){
+    const k = Math.sqrt(Math.max(0,1-Math.pow((p.x-cx)/rxF,2)));
+    return yF + p.z*ryF*k*0.9;
+  }
+  function setCount(n){
+    while(particles.length<n) particles.push(makeParticle(true));
+    if(particles.length>n) particles.length = n;
+    // keep resting flakes inside the floor width
+    for(const p of particles) if(p.rest) p.x = cx+p.fx*rxF*0.92;
+  }
+
+  // ---- physics -----------------------------------------------------------
+  function flow(p,t){
+    // pseudo-turbulence: two scales of drifting sin fields, offset per particle
+    const a = p.seed;
+    const ux = Math.sin(0.018*p.y + 1.9*t + a) + 0.6*Math.sin(0.047*p.x - 2.7*t + a*1.7);
+    const uy = Math.cos(0.016*p.x - 1.4*t + a*0.6) + 0.6*Math.cos(0.05*p.y + 2.2*t + a*1.3);
+    return [ux,uy];
+  }
+
+  function step(dt){
+    const th = S.thick;
+    const tauE = 1.6 + th*5.2;               // how long the water keeps churning
+    const vt0  = 62 - th*52;                  // sinking speed, px/s
+    const follow = 0.25 + th*0.25;            // how tightly flakes follow the flow
+    S.E *= Math.exp(-dt/tauE);
+    S.swirl *= Math.exp(-dt/(tauE*1.6));
+    if(S.E<0.002) S.E=0;
+    const Ehi = S.E*S.E;                       // energy -> speed is superlinear
+    const amp = 330*sc*(0.45+S.E*0.9);
+    const sw = S.swirl*220*sc;
+    const rIn = R-4;
+    const k = 1-Math.exp(-dt/follow);
+    const fall = vt0*sc;
+    for(const p of particles){
+      if(p.rest){
+        // lift off only if the water under it is strongly moving
+        if(S.E*(0.6+0.6*Math.abs(Math.sin(p.seed)))>0.22){
+          p.rest=false; p.vy = -rnd(30,120)*sc*S.E; p.vx = rnd(-60,60)*sc*S.E;
+        } else continue;
+      }
+      const f = flow(p,S.t);
+      const dx = p.x-cx, dy = p.y-cy;
+      let tx = f[0]*amp*S.E, ty = f[1]*amp*S.E;
+      // swirl around the dome centre
+      tx += -dy/R*sw; ty += dx/R*sw;
+      const sink = fall*p.m*(0.7+p.s*0.2);
+      tx += 0; ty += sink;
+      p.vx += (tx-p.vx)*k; p.vy += (ty-p.vy)*k;
+      p.x += p.vx*dt; p.y += p.vy*dt;
+      p.ph += (p.om + Math.hypot(p.vx,p.vy)*0.03)*dt;
+      // dome wall
+      const ex = p.x-cx, ey = p.y-cy, d = Math.hypot(ex,ey);
+      if(d>rIn){
+        const nx=ex/d, ny=ey/d;
+        p.x = cx+nx*rIn; p.y = cy+ny*rIn;
+        const vn = p.vx*nx+p.vy*ny;
+        if(vn>0){ p.vx -= vn*nx*1.2; p.vy -= vn*ny*1.2; }
+      }
+      // floor
+      const fy = floorY(p);
+      if(p.y>=fy){
+        p.y=fy;
+        if(S.E<0.12 || p.vy>0 && Math.abs(p.vx)<40*sc){ p.rest = S.E<0.18; p.vx=0; p.vy=0; }
+        else { p.vy = -Math.abs(p.vy)*0.2; }
+      }
+    }
+    void Ehi;
+  }
+
+  // ---- drawing -----------------------------------------------------------
+  function hex2rgb(h){ const n=parseInt(h.slice(1),16); return [n>>16&255,n>>8&255,n&255]; }
+
+  function drawTable(){
+    // shelf shadow
+    const g = ctx.createRadialGradient(cx,yF+R*0.5,R*0.1,cx,yF+R*0.5,R*1.15);
+    g.addColorStop(0,'rgba(0,0,0,.55)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.save(); ctx.translate(0,0); ctx.scale(1,0.22); ctx.translate(0,(yF+R*0.5)*(1/0.22-1));
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,yF+R*0.5,R*1.15,0,6.2832); ctx.fill(); ctx.restore();
+  }
+
+  function drawBase(){
+    const top = yF-2, bot = yF+R*0.52, wTop = R*0.86, wBot = R*1.0;
+    // plinth body
+    const g = ctx.createLinearGradient(cx-wBot,0,cx+wBot,0);
+    g.addColorStop(0,'#1b0f0a'); g.addColorStop(.18,'#4a2a18'); g.addColorStop(.42,'#6b4128');
+    g.addColorStop(.62,'#4a2a18'); g.addColorStop(1,'#150b07');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.moveTo(cx-wTop,top);
+    ctx.lineTo(cx+wTop,top);
+    ctx.bezierCurveTo(cx+wTop+R*0.02,top+R*0.2,cx+wBot,bot-R*0.18,cx+wBot,bot-R*0.02);
+    ctx.ellipse(cx,bot-R*0.02,wBot,R*0.08,0,0,Math.PI);
+    ctx.bezierCurveTo(cx-wBot,bot-R*0.18,cx-wTop-R*0.02,top+R*0.2,cx-wTop,top);
+    ctx.closePath(); ctx.fill();
+    // brass band
+    const b = ctx.createLinearGradient(0,top,0,top+R*0.12);
+    b.addColorStop(0,'#f0d38d'); b.addColorStop(.5,'#b78a3e'); b.addColorStop(1,'#6e4f1c');
+    ctx.fillStyle=b;
+    ctx.beginPath();
+    ctx.ellipse(cx,top+R*0.08,wTop+R*0.015,R*0.07,0,0,Math.PI);
+    ctx.lineTo(cx-wTop-R*0.015,top-R*0.0); ctx.ellipse(cx,top,wTop+R*0.015,R*0.07,0,Math.PI,0,true);
+    ctx.closePath(); ctx.fill();
+    // second thin band at the foot
+    ctx.strokeStyle='rgba(222,184,100,.7)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(cx,bot-R*0.1,wBot-R*0.02,R*0.07,0,0.05,Math.PI-0.05); ctx.stroke();
+    // wood sheen
+    const sh = ctx.createLinearGradient(cx-wBot,0,cx-wBot*0.2,0);
+    sh.addColorStop(0,'rgba(255,255,255,0)'); sh.addColorStop(.5,'rgba(255,220,180,.12)'); sh.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=sh; ctx.fillRect(cx-wBot,top+R*0.12,wBot*1.2,bot-top-R*0.2);
+    // back rim of the brass ring (inside the glass seat)
+    ctx.fillStyle='#8f6a2c';
+    ctx.beginPath(); ctx.ellipse(cx,yF,rxF+R*0.06,ryF+R*0.045,0,Math.PI,0); ctx.fill();
+  }
+
+  function drawWater(pal){
+    // clip: dome above the floor line
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx,cy,R-1,0,6.2832);
+    ctx.clip();
+    // water body, warm at the bottom, cold at the top
+    const g = ctx.createLinearGradient(0,cy-R,0,cy+R);
+    g.addColorStop(0,pal.top); g.addColorStop(.55,pal.mid); g.addColorStop(1,pal.bot);
+    ctx.fillStyle=g; ctx.fillRect(cx-R,cy-R,2*R,2*R);
+    // soft coloured light drifting in the water: the colour is part of the picture
+    const T = S.t*0.25;
+    const b1x = cx+Math.cos(T)*R*0.35, b1y = cy+R*0.25+Math.sin(T*1.3)*R*0.15;
+    const b2x = cx+Math.cos(T*0.7+2)*R*0.4, b2y = cy-R*0.15+Math.sin(T*0.9+1)*R*0.25;
+    let rg = ctx.createRadialGradient(b1x,b1y,0,b1x,b1y,R*0.8);
+    rg.addColorStop(0,pal.glow+'.34)'); rg.addColorStop(1,pal.glow+'0)');
+    ctx.fillStyle=rg; ctx.fillRect(cx-R,cy-R,2*R,2*R);
+    rg = ctx.createRadialGradient(b2x,b2y,0,b2x,b2y,R*0.7);
+    rg.addColorStop(0,pal.glow2+'.2)'); rg.addColorStop(1,pal.glow2+'0)');
+    ctx.fillStyle=rg; ctx.fillRect(cx-R,cy-R,2*R,2*R);
+    // floor disc
+    ctx.fillStyle='rgba(8,6,14,.9)';
+    ctx.beginPath(); ctx.ellipse(cx,yF,rxF+R*0.03,ryF+R*0.01,0,0,6.2832); ctx.fill();
+    ctx.fillRect(cx-R,yF,2*R,2*R);
+    ctx.restore();
+  }
+
+  function drawParticles(pal){
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,R-2,0,6.2832); ctx.clip();
+    const cols = pal.flakes.map(hex2rgb);
+    // haze: faint big glows add up where flakes crowd, densest low in the dome
+    ctx.globalCompositeOperation='lighter';
+    const hz = 0.018 + S.E*0.01;
+    for(let i=0;i<particles.length;i++){
+      const p=particles[i]; if(p.rest) continue;
+      const c = cols[p.c];
+      ctx.fillStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+hz+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,13*sc,0,6.2832); ctx.fill();
+    }
+    ctx.globalCompositeOperation='source-over';
+    // flakes
+    const order = particles; // draw order is arbitrary on purpose
+    for(let i=0;i<order.length;i++){
+      const p=order[i];
+      const c = cols[p.c];
+      const dx = p.x-cx, dy=p.y-cy, d=Math.hypot(dx,dy)/R;
+      const mag = 1+0.28*d*d*d;               // the curved water magnifies toward the rim
+      const X = cx+dx*(1+0.05*d*d), Y = cy+dy*(1+0.05*d*d);
+      const face = Math.cos(p.ph);
+      const flash = Math.pow(Math.abs(Math.cos(p.ph*1.0+p.tilt)),5);
+      const w = Math.max(0.25, Math.abs(face))*p.s*sc*mag*1.5;
+      const h = p.s*sc*mag*1.5;
+      let a = 0.35 + 0.65*flash;
+      if(p.rest) a = 0.5 + 0.5*Math.pow(Math.abs(Math.cos(p.tilt+p.seed)),8);
+      ctx.globalAlpha = Math.min(1,a);
+      ctx.fillStyle = 'rgb('+c[0]+','+c[1]+','+c[2]+')';
+      const rot = p.tilt;
+      const cr=Math.cos(rot), sr=Math.sin(rot);
+      // diamond rotated by tilt
+      ctx.beginPath();
+      ctx.moveTo(X+(-w)*cr, Y+(-w)*sr);
+      ctx.lineTo(X+(-h*0.2)*(-sr), Y+(-h*0.2)*cr - h);
+      ctx.lineTo(X+w*cr, Y+w*sr);
+      ctx.lineTo(X+(h*0.2)*(-sr), Y+(h*0.2)*cr + h);
+      ctx.closePath(); ctx.fill();
+      if(flash>0.8 && p.s>1.6){
+        ctx.globalAlpha = (flash-0.8)*2.2; ctx.fillStyle='#fff';
+        ctx.fillRect(X-0.6,Y-h*1.8,1.2,h*3.6); ctx.fillRect(X-h*1.8,Y-0.6,h*3.6,1.2);
+      }
+    }
+    ctx.globalAlpha=1;
+    // milky cloud while the water is churning
+    if(S.E>0.01){
+      ctx.fillStyle='rgba(235,240,255,'+Math.min(0.2,S.E*0.2)+')';
+      ctx.fillRect(cx-R,cy-R,2*R,2*R);
+    }
+    ctx.restore();
+  }
+
+  function drawGlass(){
+    // refracting edge: a bright band that hugs the inside of the rim
+    let g = ctx.createRadialGradient(cx,cy,R*0.82,cx,cy,R);
+    g.addColorStop(0,'rgba(180,215,255,0)'); g.addColorStop(.8,'rgba(180,215,255,.08)'); g.addColorStop(1,'rgba(220,240,255,.34)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R,0,6.2832); ctx.fill();
+    // darker inner shell edge (thick glass)
+    ctx.strokeStyle='rgba(10,20,40,.55)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,R-4,0,6.2832); ctx.stroke();
+    ctx.strokeStyle='rgba(215,235,255,.7)'; ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,6.2832); ctx.stroke();
+    // window reflection, upper left
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,R-3,0,6.2832); ctx.clip();
+    ctx.translate(cx-R*0.5,cy-R*0.5); ctx.rotate(-0.78);
+    const hg = ctx.createLinearGradient(0,-R*0.3,0,R*0.3);
+    hg.addColorStop(0,'rgba(255,255,255,0)'); hg.addColorStop(.5,'rgba(255,255,255,.55)'); hg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hg;
+    ctx.beginPath(); ctx.ellipse(0,0,R*0.26,R*0.07,0,0,6.2832); ctx.fill();
+    ctx.restore();
+    // curved rim highlight arc
+    ctx.strokeStyle='rgba(255,255,255,.65)'; ctx.lineWidth=3; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(cx,cy,R*0.93,Math.PI*1.1,Math.PI*1.38); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.28)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,R*0.93,Math.PI*1.43,Math.PI*1.5); ctx.stroke();
+    // cool reflection, lower right
+    ctx.strokeStyle='rgba(160,210,255,.35)'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(cx,cy,R*0.9,Math.PI*0.12,Math.PI*0.3); ctx.stroke();
+    // the front lip of the brass collar sits over the glass foot
+    const b = ctx.createLinearGradient(0,yF-ryF*0.5,0,yF+R*0.14);
+    b.addColorStop(0,'#f6dc97'); b.addColorStop(.45,'#bd913f'); b.addColorStop(1,'#6b4b1b');
+    ctx.fillStyle=b;
+    ctx.beginPath();
+    ctx.ellipse(cx,yF,rxF+R*0.07,ryF+R*0.05,0,0,Math.PI);
+    ctx.ellipse(cx,yF,rxF-R*0.02,ryF-R*0.005,0,Math.PI,0,true);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(255,236,170,.6)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.ellipse(cx,yF,rxF+R*0.07,ryF+R*0.05,0,0.1,Math.PI-0.1); ctx.stroke();
+  }
+
+  function draw(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    const pal = PALETTES[S.palette];
+    ctx.save();
+    drawTable();
+    ctx.translate(S.ox, S.oy);
+    ctx.translate(cx,yF); ctx.rotate(S.ox*0.0016); ctx.translate(-cx,-yF);
+    drawBase();
+    drawWater(pal);
+    drawParticles(pal);
+    drawGlass();
+    ctx.restore();
+  }
+
+  // ---- interaction -------------------------------------------------------
+  function agitate(power, dur){
+    S.shake = {t:0, dur: dur||1.5, power};
+    S.lastAgitate = performance.now();
+  }
+  function bump(amount){
+    S.E = Math.min(1.25, S.E + amount);
+    S.swirl = Math.min(1.2, S.swirl + amount*0.8);
+    S.lastAgitate = performance.now();
+  }
+
+  document.getElementById('shake').addEventListener('click',()=>agitate(1,1.5));
+  document.getElementById('tilt').addEventListener('click',()=>{ bump(0.45); S.shake={t:0,dur:0.9,power:0.3}; });
+  document.getElementById('rest').addEventListener('click',()=>{
+    // the glitter is lowered to the floor: damp the water and let everything sink fast
+    S.E=0; S.swirl=0; S.shake=null;
+    for(const p of particles){ p.vx*=0.2; p.vy=Math.max(p.vy,60*sc); }
+    S.lastAgitate = performance.now()-0; settleNow=true;
+  });
+  let settleNow=false;
+
+  cv.addEventListener('keydown',e=>{
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); agitate(1,1.5); }
+    else if(e.key.startsWith('Arrow')){ e.preventDefault(); bump(0.18); }
+  });
+
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{
+    cv.setPointerCapture(e.pointerId);
+    drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY};
+    S.shake=null; cv.focus({preventScroll:true});
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(!drag) return;
+    const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+    drag.x=e.clientX; drag.y=e.clientY;
+    const dist=Math.hypot(dx,dy);
+    if(dist>0){
+      bump(Math.min(0.12,dist*0.003));
+      if(!reduce){
+        S.tx = Math.max(-34,Math.min(34,(e.clientX-drag.sx)*0.35));
+        S.ty = Math.max(-26,Math.min(26,(e.clientY-drag.sy)*0.35));
+      }
+    }
+  });
+  function endDrag(){ drag=null; S.tx=0; S.ty=0; }
+  cv.addEventListener('pointerup',endDrag);
+  cv.addEventListener('pointercancel',endDrag);
+
+  const thick=document.getElementById('thick'), thickOut=document.getElementById('thickOut');
+  const count=document.getElementById('count'), countOut=document.getElementById('countOut');
+  function thickLabel(v){ return v<20?'thin water':v<45?'light glycerin':v<75?'glycerin':'syrupy'; }
+  thick.addEventListener('input',()=>{ S.thick=thick.value/100; thickOut.textContent=thickLabel(+thick.value)+' '+Math.round(thick.value/100*33)+'%'; });
+  count.addEventListener('input',()=>{ S.count=+count.value; countOut.textContent=count.value; setCount(S.count); });
+
+  const palBox=document.getElementById('palettes');
+  const palBtns={};
+  Object.keys(PALETTES).forEach(k=>{
+    const b=document.createElement('button'); b.type='button';
+    b.innerHTML='<span class="sw" style="background:'+PALETTES[k].sw+'"></span>'+PALETTES[k].name;
+    b.setAttribute('aria-pressed',k===S.palette?'true':'false');
+    b.addEventListener('click',()=>{
+      S.palette=k;
+      Object.keys(palBtns).forEach(j=>palBtns[j].setAttribute('aria-pressed',j===k?'true':'false'));
+      // recolour the flakes already in the water; a gentle stir shows the new colour
+      const n=PALETTES[k].flakes.length; for(const p of particles) p.c=p.c%n;
+      bump(0.3);
+    });
+    palBtns[k]=b; palBox.appendChild(b);
+  });
+  thick.dispatchEvent(new Event('input'));
+
+  // ---- loop & readout ----------------------------------------------------
+  const phaseEl=document.getElementById('phase'), meterEl=document.getElementById('meter');
+  let lastPhase='', lastMeter=0, last=performance.now();
+
+  function readout(now){
+    let resting=0; for(const p of particles) if(p.rest) resting++;
+    const frac = resting/Math.max(1,particles.length);
+    const since = S.lastAgitate==null ? null : (now-S.lastAgitate)/1000;
+    let ph;
+    if(S.lastAgitate==null) ph='Waiting for a shake';
+    else if(S.shake || S.E>0.5) ph='Churning';
+    else if(frac<0.06) ph= S.E>0.12 ? 'Clouded, the water still turning' : 'The cloud hangs';
+    else if(frac<0.5) ph='Haze thinning from the top';
+    else if(frac<0.985) ph='Last flakes settling';
+    else ph='Still';
+    if(ph!==lastPhase){
+      phaseEl.textContent=ph; lastPhase=ph;
+      cv.setAttribute('aria-label','Snow globe. '+ph+'. Press space or enter to shake.');
+    }
+    if(now-lastMeter>200){
+      lastMeter=now;
+      const topClear = (()=>{ let n=0; for(const p of particles) if(p.y<cy-R*0.2) n++; return Math.round(100-100*n/Math.max(1,particles.length)); })();
+      meterEl.textContent = (since==null?'':'since shake '+since.toFixed(1)+' s  ·  ')+Math.round(frac*100)+'% resting  ·  upper dome '+topClear+'% clear';
+    }
+  }
+
+  function frame(now){
+    let dt=(now-last)/1000; last=now; if(dt>0.05) dt=0.05; if(dt<=0) dt=0.016;
+    S.t+=dt;
+    // shake animation
+    if(S.shake){
+      const s=S.shake; s.t+=dt;
+      const env = Math.max(0,1-s.t/s.dur);
+      const amp = reduce?0:16*s.power*env;
+      S.tx = Math.sin(s.t*52)*amp; S.ty = Math.sin(s.t*43+1)*amp*0.7;
+      S.E = Math.min(1.25, S.E + dt*2.4*s.power*(reduce?0.5:1)*(0.4+env));
+      S.swirl = Math.min(1.2, S.swirl + dt*1.1*s.power);
+      S.lastAgitate = now;
+      if(s.t>=s.dur){ S.shake=null; S.tx=0; S.ty=0; }
+    }
+    // globe wobble on its spring
+    const k=220,c=13;
+    S.vox += (-k*(S.ox-S.tx)-c*S.vox)*dt; S.voy += (-k*(S.oy-S.ty)-c*S.voy)*dt;
+    S.ox += S.vox*dt; S.oy += S.voy*dt;
+    if(!S.shake && !drag){
+      const sp=Math.abs(S.vox)+Math.abs(S.voy);
+      if(sp>30) S.E=Math.min(1.25,S.E+sp*dt*0.0012);
+    }
+    const n = 2; for(let i=0;i<n;i++) step(dt/n);
+    draw();
+    readout(now);
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize',()=>{ layout(); });
+  layout();
+  setCount(S.count);
+  draw();
+  requestAnimationFrame(t=>{ last=t; requestAnimationFrame(frame); });
+  // an opening shake so the first thing seen is the settle
+  setTimeout(()=>agitate(0.9,1.3), 500);
+})();
+</script>
+</body>
+</html>

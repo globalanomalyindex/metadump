@@ -1,0 +1,394 @@
+{
+ "t1-lavalamp": {
+  "A-r1": {
+   "agent": "a3b8da2cd6867c9de",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "ae842d77891a4cbb1",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "aafe740bf965f555e",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "ad359dd067e5e56a0",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r1": {
+   "agent": "ae9e561e596463ca8",
+   "angle": "squat round lamp",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 5,
+   "edits_after_first_look": 4,
+   "images_read": 13,
+   "look_findings": [
+    [],
+    [],
+    []
+   ],
+   "looks": 4,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r2": {
+   "agent": "a97f3b41c06927b4e",
+   "angle": "squat round lamp",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "hover-static"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r3": {
+   "agent": "ac5b0c1edfd8eb8c1",
+   "angle": "squat round lamp",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 4,
+   "look_findings": [
+    [],
+    [],
+    [],
+    []
+   ],
+   "looks": 5,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r4": {
+   "agent": "acaeb01d10eba848b",
+   "angle": "silver hourglass base",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "overflow",
+     "overflow"
+    ],
+    [
+     "overflow",
+     "overflow"
+    ]
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r1": {
+   "agent": "abd3b1b2a7c14dd52",
+   "angle": "classic tapered bottle",
+   "deal_no": 1,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 6,
+   "look_findings": [
+    [
+     "hover-static",
+     "small-target"
+    ],
+    [],
+    []
+   ],
+   "looks": 3,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r2": {
+   "agent": "a03d6ab89b673fcf5",
+   "angle": "rounded globe",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 5,
+   "edits_after_first_look": 4,
+   "images_read": 8,
+   "look_findings": [
+    [],
+    [],
+    [],
+    [],
+    []
+   ],
+   "looks": 5,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r3": {
+   "agent": "a0b4cf5805e8dbc22",
+   "angle": "silver hourglass base",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 7,
+   "look_findings": [
+    [],
+    [],
+    [],
+    []
+   ],
+   "looks": 4,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r4": {
+   "agent": "a33d1cedcddd5e974",
+   "angle": "tall tapered violet lamp",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 3,
+   "edits_after_first_look": 2,
+   "images_read": 5,
+   "look_findings": [
+    [
+     "hover-static",
+     "overflow"
+    ],
+    [
+     "hover-static",
+     "overflow"
+    ]
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  }
+ },
+ "t2-calculator": {
+  "A-r1": {
+   "agent": "a3e7fd4ecb0fda5d5",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "ad3ef13430962141a",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a2a6acd7982ad69f5",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "a875949e3ea55954a",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r1": {
+   "agent": "aa3e6854c63ceb032",
+   "angle": "flat phone keypad",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r2": {
+   "agent": "ac71c8dbd558f71cd",
+   "angle": "pocket handheld",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 2,
+   "look_findings": [
+    [],
+    [],
+    []
+   ],
+   "looks": 4,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r3": {
+   "agent": "a7974a9417b3f6b76",
+   "angle": "pocket handheld",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 6,
+   "edits_after_first_look": 5,
+   "images_read": 1,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r4": {
+   "agent": "aa04ed476a93041e6",
+   "angle": "dark glass panel",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r1": {
+   "agent": "ab831e1b7ee508a12",
+   "angle": "dark glass panel",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 3,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 4,
+   "sheet_read": 0
+  },
+  "C-r2": {
+   "agent": "a15c9b1f5f8b282ab",
+   "angle": "pocket handheld",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "hover-static"
+    ]
+   ],
+   "looks": 2,
+   "plays": 2,
+   "sheet_read": 0
+  },
+  "C-r3": {
+   "agent": "a040a3f2503f6d6da",
+   "angle": "flat phone keypad",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "play",
+     "play"
+    ],
+    [],
+    []
+   ],
+   "looks": 3,
+   "plays": 6,
+   "sheet_read": 0
+  },
+  "C-r4": {
+   "agent": "a51429f1885b9e2ec",
+   "angle": "keypad on a card",
+   "deal_no": 1,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 1,
+   "sheet_read": 0
+  }
+ }
+}

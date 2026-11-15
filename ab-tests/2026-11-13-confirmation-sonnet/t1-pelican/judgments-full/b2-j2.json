@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Charming helmeted pelican with a wing on the bar, clean IK legs, parallax scenery and tidy controls, though the pedal mechanics are a bit small."},
+"V": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 8, "overall": 7, "note": "Oversized pelican body on a thin frame with a murky grey band behind the road, but night mode, reverse, bell with sound and a readout make it feature-rich and working."},
+"W": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7, "note": "Clean, readable pelican on bike with a bell button, accessible controls and good phone layout, but the scenery is sparse and the rider is a little stiff."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Well-composed scene with helmet, blinking eye, honk, parallax hills and keyboard shortcuts; the wing and legs read clearly, though the speed slider's range is odd."},
+"Y": {"fidelity": 8, "correctness": 6, "craft": 7, "usability": 7, "overall": 7, "note": "Good trees and pouch detail, but hill tiles show a visible seam, the wheels are small against the large bird, and a focus box appears on the bell click."},
+"Z": {"fidelity": 10, "correctness": 9, "craft": 9, "usability": 9, "overall": 9, "note": "Most polished: big racing bike, arm reaching the grip, S-curved neck with nod, bell with speech bubble, road-scroll toggle, reduced-motion handling and 44px touch targets."}
+}, "ranking": ["Z", "U", "X", "W", "V", "Y"]}

@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j1","scores":{
+"U":{"basic":8,"correctness":9,"usability":9,"craft":8,"code":7,"overall":8,"note":"Light, legible calculator with live region, keyboard, 12-digit cap and a clear friendly divide-by-zero message; C and CE side by side is slightly redundant."},
+"V":{"basic":9,"correctness":9,"usability":9,"craft":8,"code":8,"overall":9,"note":"Clean dark calculator with a wide zero, big readable display, caps at 12 digits, aria-live and keyboard support; the Error message is terse but fine."},
+"W":{"basic":8,"correctness":8,"usability":8,"craft":7,"code":8,"overall":7,"note":"Familiar iOS-style layout that is compact and correct, but the display is small, AC/C label flips and the percent key goes slightly beyond basic."},
+"X":{"basic":6,"correctness":7,"usability":7,"craft":8,"code":5,"overall":6,"note":"Charming segment-LCD skeuomorph, but limited to 9 digits, heavy rendering code and decorative extras overbuild a basic calculator."},
+"Y":{"basic":8,"correctness":8,"usability":7,"craft":6,"code":8,"overall":7,"note":"Small, tidy code and correct maths, but almost no aria, a tiny divide-by-zero message and a low-contrast operator colour."},
+"Z":{"basic":6,"correctness":8,"usability":8,"craft":9,"code":5,"overall":7,"note":"Most polished retro LCD with printed keyboard hints and good accessibility, but it is the largest source and clearly overbuilt for a basic calculator."}},
+"ranking":["V","U","W","Z","Y","X"]}

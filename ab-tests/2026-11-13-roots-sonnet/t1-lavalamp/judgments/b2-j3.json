@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"likeness": 7, "visuals": 6, "motion": 6, "presentation": 6, "overall": 6, "note": "Clear lamp with silver cap and base and a soft magenta glow, but the glass is flat, the wax is a plain pink-orange and the blobs mostly clump."},
+"V": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 7, "note": "Beautiful violet glass, glow and hourglass base with a tidy control bar, though the blobs are small, fuzzy and bunch at the top."},
+"W": {"likeness": 8, "visuals": 8, "motion": 7, "presentation": 8, "overall": 8, "note": "Warm amber liquid, brass base with a switch and a cohesive staging; the red wax blobs drift and merge organically and cooling works."},
+"X": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 8, "note": "Strong silver-capped lamp with glowing wax puddle, wax that rises, merges and sinks in convincing gooey shapes, and responsive stir and cool-down."},
+"Y": {"likeness": 5, "visuals": 4, "motion": 3, "presentation": 5, "overall": 4, "note": "Pixelated metaball edges, a dark glass with no real glow, and the wax settles into one static blob that barely moves."},
+"Z": {"likeness": 7, "visuals": 8, "motion": 3, "presentation": 6, "overall": 5, "note": "Gorgeous glowing bell-cap lamp with a hot pool, but the wax all migrates to the top and stays there, leaving one blob and little life."}
+},
+"ranking": ["X", "W", "V", "U", "Z", "Y"]}

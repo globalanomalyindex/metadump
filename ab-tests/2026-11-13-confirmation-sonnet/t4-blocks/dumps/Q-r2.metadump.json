@@ -1,0 +1,77 @@
+{
+  "request": "a simple block-building sandbox game with a 32x32 block world",
+  "thesis": "A tiny voxel-ish sandbox where one click places or removes a block and the whole 32x32 world is visible, tactile and persistent: the joy is instant, reversible building.",
+  "job": [
+    "open the page and see a 32x32 world at once",
+    "pick a block type from a palette",
+    "place a block on a cell",
+    "remove a block from a cell",
+    "drag to paint many cells",
+    "see which cell is hovered and what is selected",
+    "undo a mistake / clear the world",
+    "keep the build (survives reload)"
+  ],
+  "disciplines": {
+    "game design": {
+      "principles": ["instant feedback per action", "low verbs: place, break, pick", "no fail state in a sandbox", "reversible actions invite play"],
+      "steps": ["pick block", "click cell", "drag to fill", "erase", "reset"],
+      "tricks": ["right-click or shift-click erases", "number keys 1-9 select blocks", "seed a small starter build so the world is not empty"],
+      "tests": ["can a stranger place a block in 3 seconds", "does every click change visible state"]
+    },
+    "interaction design": {
+      "principles": ["hover preview ghost", "pointer events cover mouse and touch", "disable context menu on grid"],
+      "steps": ["pointerdown starts stroke", "pointermove paints", "pointerup ends stroke"],
+      "tricks": ["one stroke = one undo step", "setPointerCapture", "touch-action none on canvas"],
+      "tests": ["drag across 10 cells paints 10", "touch works"]
+    },
+    "visual design": {
+      "principles": ["blocks read as blocks: bevel, top highlight, bottom shade", "limited palette of earthy and bright materials", "grid lines faint"],
+      "tricks": ["draw to canvas with per-cell bevel", "pixel-crisp rendering with devicePixelRatio"],
+      "tests": ["blocks distinguishable at a glance", "contrast of selected swatch"]
+    },
+    "front-end code": {
+      "principles": ["state is a 32x32 array, render from state", "canvas for the grid, DOM for the palette"],
+      "tricks": ["Uint8Array(1024)", "localStorage in try/catch", "undo stack of stroke diffs"],
+      "tests": ["state array changes on click", "reload restores"]
+    }
+  },
+  "the_thing": {
+    "parts": ["32x32 grid", "block palette", "place", "remove", "hover highlight", "block counter", "clear / reset", "undo"],
+    "expectations": ["click places selected block", "right-click or eraser removes", "grid is exactly 32 by 32", "colours are distinct materials"],
+    "kinds": [
+      {"name": "top-down grid builder", "what": "square canvas of 32x32 cells viewed from above, each cell holds one block type"},
+      {"name": "isometric block world", "what": "cells drawn as 3D cubes with height stacking"},
+      {"name": "side-view terraria-like", "what": "32 wide by 32 tall slice, gravity-free building"}
+    ]
+  },
+  "specifics": {
+    "blocks": {
+      "keywords": {"1": ["block", "place", "remove", "32x32", "world"], "2": ["grass", "dirt", "stone", "wood", "water", "sand", "brick", "glass"], "3": ["bevel", "voxel", "material swatch", "ghost preview"]},
+      "descriptions": ["each material has base colour plus lighter top-left edge and darker bottom-right edge", "eraser is a palette entry too, so touch users can remove"],
+      "behaviors": ["click on same type is a no-op", "drag paints with selected block", "erase sets cell to air"],
+      "tokens": {"cell px": "16 to 20 on desktop, scales to fit width", "bevel": "2 to 3 px", "grid line alpha": "0.06 to 0.15", "palette swatch": "36 to 48 px"}
+    },
+    "chrome": {
+      "keywords": {"1": ["palette", "counter", "clear", "undo"], "2": ["hotkeys", "coordinates readout", "selected label"], "3": ["toolbar", "status bar"]},
+      "descriptions": ["status shows hovered x,y and selected block", "counter shows placed blocks of 1024 cells"],
+      "tokens": {"background": "dark slate #1b2330 to #232b3a", "accent": "warm amber or sky", "font": "system-ui stack"}
+    }
+  },
+  "anti_keywords": [
+    {"not": "inventory, crafting, health, enemies, procedural terrain", "instead": "simple means only place, remove, pick a block; leave the rest out"},
+    {"not": "external libraries, CDNs, remote images", "instead": "everything drawn with canvas and inline CSS/JS"},
+    {"not": "flat identical coloured squares", "instead": "bevelled materials with a subtle texture-like shade"},
+    {"not": "an empty grey world with no cue", "instead": "small seeded starter build plus a one-line hint"},
+    {"not": "hidden controls", "instead": "visible eraser, undo, clear, hotkey hints"}
+  ],
+  "checks": [
+    "grid is exactly 32 columns by 32 rows",
+    "click places the selected block and the counter rises",
+    "right-click / eraser removes it and the counter falls",
+    "drag paints multiple cells",
+    "undo reverts the last stroke",
+    "reload keeps the build",
+    "usable at phone width and no console errors"
+  ],
+  "built": ["top-down grid builder"]
+}

@@ -1,0 +1,548 @@
+{
+ "t1-fieldguide": {
+  "A-r1": {
+   "agent": "a06d1f4e5862b6aa8",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "a67a272deb9946f76",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a7552e7521890596e",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "a0b9cc808addb4450",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r1": {
+   "agent": "ad292be4f63ca9114",
+   "angle": "trace first",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r2": {
+   "agent": "aca1b2f1ef6b73eb7",
+   "angle": "taxonomic record",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r3": {
+   "agent": "a9d1bd40e097221e7",
+   "angle": "scholar's file",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r4": {
+   "agent": "ad339eeefd7938222",
+   "angle": "taxonomic record",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r1": {
+   "agent": "aa8f51a3d6a2f674c",
+   "angle": "trace first",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r2": {
+   "agent": "a1f66a1f80ebdefb4",
+   "angle": "taxonomic record",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r3": {
+   "agent": "a3f37e60bb2c426c5",
+   "angle": "scholar's file",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r4": {
+   "agent": "a115da84f99a292cc",
+   "angle": "field plate",
+   "deal_no": 1,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  }
+ },
+ "t2-pomodoro": {
+  "A-r1": {
+   "agent": "a3a0ec7d89f2eba87",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "a67ebbc4ac2f3cb75",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a6330dc8d2a76383e",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "afdc8c2e1ed437128",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r1": {
+   "agent": "aaade2265e24551ac",
+   "angle": "bare big number",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r2": {
+   "agent": "a3dce600de9427204",
+   "angle": "full-bleed phase colour",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r3": {
+   "agent": "a590509ddb16bc1f5",
+   "angle": "long break in view",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 0,
+   "look_findings": [
+    [
+     "small-target",
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 3,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r4": {
+   "agent": "ac8c6621b7da0f1ca",
+   "angle": "quiet text-only status",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    [
+     "small-target",
+     "small-target"
+    ]
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r1": {
+   "agent": "a00c45033cf54382a",
+   "angle": "long break in view",
+   "deal_no": 1,
+   "dealt": true,
+   "edits": 3,
+   "edits_after_first_look": 2,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 2
+  },
+  "C-r2": {
+   "agent": "a5055cc433443865c",
+   "angle": "quiet text-only status",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    [],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r3": {
+   "agent": "a99e13fb943372324",
+   "angle": "full-bleed phase colour",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    [
+     "small-target"
+    ]
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r4": {
+   "agent": "a28e96ceb582c81b2",
+   "angle": "count as the face",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 0,
+   "look_findings": [
+    [
+     "hover-static",
+     "small-target",
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 3,
+   "plays": 1,
+   "sheet_read": 0
+  }
+ },
+ "t3-snowglobe": {
+  "A-r1": {
+   "agent": "aa8a0f699a7ca6413",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "a178eb996b14424c8",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a7fcdfe69063665a3",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "ae916078d260c94ca",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r1": {
+   "agent": "aac845adac16c86bc",
+   "angle": "close-up dome",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r2": {
+   "agent": "a70e4c341c964cc16",
+   "angle": "shelf in a room",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 3,
+   "edits_after_first_look": 1,
+   "images_read": 7,
+   "look_findings": [
+    [
+     "overlap",
+     "overlap",
+     "overlap",
+     "overlap",
+     "overlap",
+     "overlap",
+     "overlap"
+    ],
+    [],
+    []
+   ],
+   "looks": 5,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r3": {
+   "agent": "a5bb665a41b19a01e",
+   "angle": "close-up dome",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 6,
+   "look_findings": [
+    [],
+    [],
+    []
+   ],
+   "looks": 5,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "B-r4": {
+   "agent": "adbbacad897a8a74d",
+   "angle": "shelf in a room",
+   "deal_no": null,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 4,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "C-r1": {
+   "agent": "aeba206f1bd01f86c",
+   "angle": "close-up dome",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 3,
+   "look_findings": [
+    [],
+    [],
+    [
+     "expect"
+    ]
+   ],
+   "looks": 3,
+   "plays": 1,
+   "sheet_read": 0
+  },
+  "C-r2": {
+   "agent": "ad2a6fdb5f4193e84",
+   "angle": "scene-only dome",
+   "deal_no": 5,
+   "dealt": true,
+   "edits": 3,
+   "edits_after_first_look": 2,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "small-target"
+    ]
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 2
+  },
+  "C-r3": {
+   "agent": "a29d81cb8dbced041",
+   "angle": "shelf in a room",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "look_findings": [
+    [
+     "overlap",
+     "overlap",
+     "overlap",
+     "overlap"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 1
+  },
+  "C-r4": {
+   "agent": "a2d8d163feddf7642",
+   "angle": "abstract globe",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 1
+  }
+ }
+}

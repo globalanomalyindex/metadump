@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Paint-on-grid mixer with three mix modes, a two-colour ramp and a seeded red/blue demo works well, but the side panel is crowded and the seeded demo is small."},
+"V": {"fidelity": 7, "correctness": 8, "craft": 7, "usability": 7, "overall": 7, "note": "Clean two-colour ratio mixer with a glyph swatch, mean versus linear light and a command prompt; solid and keyboard-friendly, but the ASCII field is a flat dithered block and the prompt is more than a simple mixer needs."},
+"W": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 6, "overall": 6, "note": "Pigment bowl with animated glyph blending and kept mixes is a nice idea, but it opens empty and nearly invisible, and the Black label is unreadable."},
+"X": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Polished, simple two-colour mixer with ASCII swatch, linear toggle, swap, random, copy and full keyboard control; the block-character gradient bar overflows on mobile."},
+"Y": {"fidelity": 6, "correctness": 6, "craft": 5, "usability": 4, "overall": 5, "note": "Drop-and-paint concept works, but the canvas starts as an empty dotted black box, the bowl preview is a single dull line, and the mobile layout clips on the right."},
+"Z": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Pigment pots with paint/light/naive models paint onto a seeded colourful ASCII canvas with smudge and keyboard painting; the most engaging and polished at rest and on mobile."}
+},
+"ranking": ["Z", "X", "U", "V", "W", "Y"]}

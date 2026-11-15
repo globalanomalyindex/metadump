@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clear pelican with pouch bill and helmet on a bike with many controls, but the body floats above the frame and the legs look disconnected."},
+"V": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 8, "overall": 7, "note": "Clean, readable pelican with chain and bell, but a sparse scene and slightly awkward leg and foot placement."},
+"W": {"fidelity": 8, "correctness": 7, "craft": 8, "usability": 7, "overall": 8, "note": "Charming helmeted pelican with trees and hills and a wing reaching the bars; controls are minimal and the ring-bell checkbox is a little odd."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Largest, most detailed pelican with wing on handlebars, chain, bell and a responsive layout; the most convincing rider."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Polished scene with a believable pedaling pose, honk bubble and a live status readout; the controls are well integrated."},
+"Z": {"fidelity": 7, "correctness": 6, "craft": 6, "usability": 7, "overall": 6, "note": "Pleasant scene, but the wing is a flat grey slab, the legs are awkward and the status label is vague."}
+}, "ranking": ["X", "Y", "W", "U", "V", "Z"]}

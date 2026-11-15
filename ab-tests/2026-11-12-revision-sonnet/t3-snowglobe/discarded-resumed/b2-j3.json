@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"likeness": 7, "visuals": 5, "motion": 6, "presentation": 6, "overall": 5, "note": "Clear but flat daytime globe with a stubby base and sparse top-heavy snow; plain staging."},
+"V": {"likeness": 8, "visuals": 7, "motion": 7, "presentation": 7, "overall": 7, "note": "Charming shelf-room setting and a globe that tilts on shake, though the glass is milky and the base reads slightly off."},
+"W": {"likeness": 7, "visuals": 7, "motion": 7, "presentation": 5, "overall": 6, "note": "Huge moody dome with good snowfall, but the base is a dark angular slab and the controls and text clip at the bottom."},
+"X": {"likeness": 9, "visuals": 8, "motion": 7, "presentation": 6, "overall": 8, "note": "Best glass, brass collar and wood base with a lit cabin and drifting glitter; the side panel and the stray rotating frame on shake distract."},
+"Y": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 8, "overall": 8, "note": "Polished night scene with moon, smoke, glowing windows and tidy staging; snow is sparse and settles quickly."},
+"Z": {"likeness": 7, "visuals": 6, "motion": 7, "presentation": 6, "overall": 6, "note": "Monochrome blue with a dim scene and blocky highlights; the glitter cloud swirls nicely but the cabin is washed out."}
+}, "ranking": ["X", "Y", "V", "W", "Z", "U"]}

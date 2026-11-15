@@ -1,0 +1,602 @@
+{
+ "scores": {
+  "A": {
+   "fidelity": 6.67,
+   "correctness": 7.17,
+   "craft": 5.25,
+   "usability": 6.17,
+   "overall": 5.79,
+   "mean_rank": 5.33,
+   "per_run_overall": {
+    "A-r1": 6.67,
+    "A-r2": 6.0,
+    "A-r3": 5.0,
+    "A-r4": 5.5
+   }
+  },
+  "F": {
+   "fidelity": 6.92,
+   "correctness": 8.0,
+   "craft": 7.08,
+   "usability": 7.58,
+   "overall": 6.94,
+   "mean_rank": 3.67,
+   "per_run_overall": {
+    "F-r1": 7.67,
+    "F-r2": 7.33,
+    "F-r3": 6.17,
+    "F-r4": 6.6
+   }
+  },
+  "Q": {
+   "fidelity": 8.83,
+   "correctness": 8.25,
+   "craft": 8.67,
+   "usability": 7.92,
+   "overall": 8.56,
+   "mean_rank": 1.5,
+   "per_run_overall": {
+    "Q-r1": 9.33,
+    "Q-r2": 8.0,
+    "Q-r3": 8.0,
+    "Q-r4": 8.9
+   }
+  }
+ },
+ "pairwise": {
+  "F_vs_A": {
+   "wins": 20,
+   "losses": 0,
+   "ties": 4,
+   "win_rate": 0.92,
+   "p": 0.086
+  },
+  "Q_vs_A": {
+   "wins": 24,
+   "losses": 0,
+   "ties": 0,
+   "win_rate": 1.0,
+   "p": 0.029
+  },
+  "F_vs_Q": {
+   "wins": 0,
+   "losses": 21,
+   "ties": 3,
+   "win_rate": 0.06,
+   "p": 0.029
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 5656,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "2",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.79
+    },
+    {
+     "control": "3",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.78
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r2": {
+   "bytes": 6091,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "2",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.2
+    },
+    {
+     "control": "3",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.2
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": false,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 3,
+   "failed": 1,
+   "not_run": 0
+  },
+  "A-r3": {
+   "bytes": 5255,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Erase 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.32
+    },
+    {
+     "control": "Grass 1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.32
+    },
+    {
+     "control": "Dirt 2",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.33
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "A-r4": {
+   "bytes": 5294,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "2",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.54
+    },
+    {
+     "control": "3",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.51
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r1": {
+   "bytes": 10247,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Grass 1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.29
+    },
+    {
+     "control": "Wood 2",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.04
+    },
+    {
+     "control": "Stone 3",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.02
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r2": {
+   "bytes": 8618,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Grass 1 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.89
+    },
+    {
+     "control": "Stone 2 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.47
+    },
+    {
+     "control": "Wood 3 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.48
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r3": {
+   "bytes": 10179,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Grass 1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "Stone 2",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.77
+    },
+    {
+     "control": "Wood 3",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.79
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "F-r4": {
+   "bytes": 8996,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "1 Grass 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "2 Stone 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.24
+    },
+    {
+     "control": "3 Wood 0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 1.23
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r1": {
+   "bytes": 9429,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "32 by 32 block world",
+     "kind": "canvas",
+     "verb": "dragged",
+     "change_pct": 0.87
+    },
+    {
+     "control": "Grass",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.21
+    },
+    {
+     "control": "#palette > button:nth-of-type(1) > canvas",
+     "kind": "canvas",
+     "verb": "dragged",
+     "change_pct": 0.0
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r2": {
+   "bytes": 7307,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "32 by 32 block world",
+     "kind": "canvas",
+     "verb": "dragged",
+     "change_pct": 0.58
+    },
+    {
+     "control": "0",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.61
+    },
+    {
+     "control": "1",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.42
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  },
+  "Q-r3": {
+   "bytes": 7710,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Erase",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.27
+    },
+    {
+     "control": "Grass",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.27
+    },
+    {
+     "control": "Dirt",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.27
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": false,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 3,
+   "failed": 1,
+   "not_run": 0
+  },
+  "Q-r4": {
+   "bytes": 9461,
+   "change_0_to_2s_pct": 0.0,
+   "change_20_to_22s_pct": 0.0,
+   "controls_used": [
+    {
+     "control": "Place",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.0
+    },
+    {
+     "control": "Erase",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.68
+    },
+    {
+     "control": "Undo",
+     "kind": "click",
+     "verb": "clicked",
+     "change_pct": 0.13
+    }
+   ],
+   "js_errors": 0,
+   "js_error_text": [],
+   "blocks": {
+    "games_named": []
+   },
+   "checks": {
+    "responds": true,
+    "no_script_errors": true,
+    "world_32": true,
+    "own_game": true
+   },
+   "passed": 4,
+   "failed": 0,
+   "not_run": 0
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 77161,
+   "mean_seconds": 21.5
+  },
+  "F": {
+   "runs": 4,
+   "mean_tokens": 112908,
+   "mean_seconds": 69.9
+  },
+  "Q": {
+   "runs": 4,
+   "mean_tokens": 88725,
+   "mean_seconds": 100.9
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 202236,
+   "ms": 1286411,
+   "tool_uses": 34,
+   "agents_spawned": 17
+  }
+ },
+ "agreement_r": 0.93,
+ "notes": {
+  "b1/j1/F-r1": "Clean empty 32x32 sandbox with four kinds, per-stroke undo, confirm-to-clear, live counts and a good phone layout, but only four plain blocks and an empty start make it less delightful.",
+  "b1/j1/Q-r1": "Richest and most polished: textured pixel blocks, sky, trees and pond in a ready seeded world, nine blocks, undo, new world, clear, hover ghost and persistence, all working on desktop and mobile.",
+  "b1/j1/A-r1": "Functional with Place/Erase/Pick/Fill tools and a pre-built ground layer, but the tiny key-number labels are barely legible, the blocks are flat and a full-width ground slab fills the world.",
+  "b1/j1/Q-r2": "Seeded little scene with ten block types, working erase tool, Shift/right-click break, Ctrl+Z, cell readout and persistence; blocks are simpler than V but the whole thing is solid and responsive.",
+  "b1/j1/A-r2": "Works as a basic painter with eight blocks, erase, grid toggle and a generate button, but it starts as a nearly black empty canvas, looks flat, has stray grid artifacts, and its toolbar crowds the swatches with actions.",
+  "b1/j1/F-r2": "Tidy block box with per-kind counts, hover ghost, placement flash and good accessibility text, but only four kinds, an empty start, and Ctrl+Z does nothing even though bare Z undoes.",
+  "b1/j2/Q-r2": "Seeded 32x32 world with house, tree and pond, beveled blocks, ten-block palette, undo and saved state; sky is plain dark and swatches carry no names.",
+  "b1/j2/A-r2": "Works with erase, grid and generate buttons, but opens to a blank dark grid with flat tiles, an unlabeled toolbar and a hint that does not mention the Grid and Generate buttons.",
+  "b1/j2/F-r2": "Clean, accessible Block Box with counts, flash feedback, status messages and an 8-cell guide grid, though it has only four block kinds and starts empty.",
+  "b1/j2/A-r1": "Starts with a ground layer and adds pick and fill tools with ten blocks, but the swatches are unfocusable divs with no names, the status line is cluttered, and undo records empty actions.",
+  "b1/j2/Q-r1": "Most game-like: textured blocks over a sky with clouds, generated terrain with trees and water, line-interpolated drags, new-world and undo, and it fits desktop and phone well.",
+  "b1/j2/F-r1": "Polished and responsive with hi-DPI canvas, a two-step clear, pop animation and well-labeled kinds, but it opens empty with only four kinds.",
+  "b1/j3/A-r2": "Works with Erase, Grid, Undo, Generate and Clear, but opens as an empty dark grid with faint lines and low-contrast, flat blocks.",
+  "b1/j3/F-r2": "Clean, accessible, with per-kind counts, hover ghost, status text and large touch targets, but only 4 kinds and an empty start that feels bare.",
+  "b1/j3/Q-r2": "Pre-built scene with house, tree, pond and 9 beveled blocks plus erase, Undo, Clear and persistence; sky-less dark background keeps it a bit plain.",
+  "b1/j3/F-r1": "Polished with DPR-aware canvas, pop animation, confirm-to-clear and 8-cell guides, yet only 4 kinds and an empty start.",
+  "b1/j3/A-r1": "Pre-filled ground with 10 colors, Place, Erase, Pick, Fill, Grid and Undo tools gives the most functionality, though visuals are plain and some key labels are hard to read.",
+  "b1/j3/Q-r1": "Textured blocks, sky gradient, clouds, generated terrain with trees and water, line-interpolated drags, New world and Undo make it a charming, complete sandbox.",
+  "b2/j1/F-r3": "Top-down 32x32 with real column stacking (height cap 6), remove mode, undo, keyboard shortcuts, but only three block types, an empty start, and the mobile toolbar overflows.",
+  "b2/j1/Q-r3": "Side-view 32x32 world with a textured starter landscape, ten block types, drag painting with interpolation, undo, reset, autosave and a tidy mobile layout.",
+  "b2/j1/A-r3": "Plain flat-color DOM grid on a dark empty board with 8 types, undo and autosave; functional but bare and the board reads as dark and lifeless.",
+  "b2/j1/Q-r4": "Isometric 32x32 voxel world with stackable blocks, shaded faces, translucent water and glass, starter terrain, place/erase modes, picking and undo; the strongest block-building feel, though redraws are heavy and the mobile view is small.",
+  "b2/j1/A-r4": "Flat top-down painter with 8 types, undo, PNG save and autosave; the grid lines render unevenly on mobile and there is no height.",
+  "b2/j1/F-r4": "Polished and accessible flat grid with counts, status messages, a two-step clear and focus states, but only four block types, an empty start, and the status and help text fall below the fold on desktop.",
+  "b2/j2/Q-r4": "True isometric 3D voxel world on a 32x32 grid with stacked heights, nine block types, place/erase, undo, hover ghost, starter terrain and saving; reads as a real block game, though the canvas is small on phones.",
+  "b2/j2/A-r4": "Flat 2D painter with eight colours and PNG save, but it starts empty, has no stacking, and its mobile grid lines are uneven.",
+  "b2/j2/F-r4": "Clean and well labelled with a counter, undo and keyboard picks, but it is just four block types painted flat on a blank grid with no depth, and the first screen shows nothing built.",
+  "b2/j2/A-r3": "Flat div grid with nine types and a side panel, but it is dark and empty with faint cells, and the mobile layout pushes the palette below the board.",
+  "b2/j2/Q-r3": "Minecraft-like side-view 32x32 world with textured blocks, sky, a tree and water, plus erase, undo and reset; it works well, though it is a 2D slice rather than a full world.",
+  "b2/j2/F-r3": "Top-down grid with stackable columns up to height 6, a clear-armed flow and good keyboard support, but only three block types and a subtle pseudo-height look; the mobile toolbar clips.",
+  "b2/j3/A-r4": "Working flat top-down painter with 8 colors, undo, save PNG, but blank and plain, and the mobile canvas grid renders with uneven moire lines.",
+  "b2/j3/F-r4": "Polished flat 32x32 painter with counts, disabled states, two-step clear and good a11y, but only 4 kinds and starts empty with little sense of building.",
+  "b2/j3/Q-r4": "Isometric 3D voxel world with stacking, terrain, pond and tree, picking, hotbar, undo, erase and persistence; clearly feels like a block-building sandbox and is responsive.",
+  "b2/j3/F-r3": "Top-down grid with stackable columns up to 6 and a fake-height look, clear controls and keyboard shortcuts, but only 3 block types and a dull empty start.",
+  "b2/j3/A-r3": "Plain dark DOM grid with a side palette; works and autosaves but is visually bland, empty at rest, and the mobile palette pushes controls below the fold.",
+  "b2/j3/Q-r3": "Side-view Minecraft-like world with textured blocks, prefilled terrain and tree, 9 block types, undo/clear/reset and persistence; charming and works well though canvas runs slightly below fold on desktop."
+ }
+}

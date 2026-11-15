@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Sandbox 32x32</title>
+<style>
+  :root{--bg:#1d2230;--panel:#262d40;--ink:#e8ecf5;--mute:#8d97b0;--acc:#ffc94d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;user-select:none}
+  header{padding:10px 12px 4px;text-align:center}
+  h1{margin:0;font-size:18px;letter-spacing:.5px}
+  #hint{color:var(--mute);font-size:12px}
+  #bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px;background:var(--panel);border-radius:8px;margin:6px}
+  .sw{width:38px;height:38px;border:3px solid transparent;border-radius:6px;cursor:pointer;position:relative;padding:0}
+  .sw.sel{border-color:var(--acc);box-shadow:0 0 0 2px #0006}
+  .sw span{position:absolute;bottom:-1px;right:2px;font-size:10px;color:#fff;text-shadow:0 0 3px #000}
+  button.t{background:#37405b;color:var(--ink);border:0;border-radius:6px;padding:0 12px;height:38px;cursor:pointer;font:inherit}
+  button.t:hover{background:#46526f}
+  button.t.on{background:var(--acc);color:#222}
+  canvas{background:#0e1220;border-radius:6px;image-rendering:pixelated;cursor:crosshair;touch-action:none;max-width:96vw;max-height:calc(100vh - 190px)}
+  #stat{color:var(--mute);margin:6px;font-size:12px}
+</style>
+</head>
+<body>
+<header><h1>Block Sandbox</h1>
+<div id="hint">Left-click/drag: place &middot; Right-click/drag (or Erase tool): remove &middot; 1-8: pick block &middot; Ctrl+Z: undo</div></header>
+<div id="bar"></div>
+<canvas id="c" width="640" height="640"></canvas>
+<div id="stat"></div>
+<script>
+(function(){
+  var N=32, S=20, KEY='blocksandbox32';
+  var TYPES=[
+    {n:'Grass',c:'#5aa84a'},{n:'Dirt',c:'#8a5a34'},{n:'Stone',c:'#8d9199'},
+    {n:'Wood',c:'#b88a4a'},{n:'Brick',c:'#b5483c'},{n:'Water',c:'#3b82d6'},
+    {n:'Sand',c:'#e3d28c'},{n:'Glass',c:'#a8e4f0'}
+  ];
+  var cv=document.getElementById('c'),ctx=cv.getContext('2d');
+  var bar=document.getElementById('bar'),stat=document.getElementById('stat');
+  var grid=[],sel=1,eraser=false,gridOn=true,hover=null,undo=[],painting=null,stroke=null;
+  for(var i=0;i<N*N;i++)grid.push(0);
+
+  try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&s.length===N*N)grid=s;}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(grid));}catch(e){}}
+
+  // toolbar
+  var sws=[];
+  TYPES.forEach(function(t,i){
+    var b=document.createElement('button');b.className='sw';b.style.background=t.c;b.title=t.n+' ('+(i+1)+')';
+    b.innerHTML='<span>'+(i+1)+'</span>';
+    b.onclick=function(){pick(i+1)};bar.appendChild(b);sws.push(b);
+  });
+  function tool(label,fn){var b=document.createElement('button');b.className='t';b.textContent=label;b.onclick=function(){fn(b)};bar.appendChild(b);return b;}
+  var eb=tool('Erase',function(b){eraser=!eraser;render()});
+  tool('Grid',function(){gridOn=!gridOn;render()});
+  tool('Undo',doUndo);
+  tool('Generate',function(){push();gen();save();render()});
+  tool('Clear',function(){push();grid=grid.map(function(){return 0});save();render()});
+
+  function pick(i){sel=i;eraser=false;render()}
+  function push(){undo.push(grid.slice());if(undo.length>50)undo.shift()}
+  function doUndo(){if(undo.length){grid=undo.pop();save();render()}}
+
+  function gen(){
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var h=Math.sin(x*.3)+Math.cos(y*.25)+Math.sin((x+y)*.17);
+      grid[y*N+x]=h>1.1?3:h>.3?1:h>-.4?2:h>-.8?7:6;
+    }
+  }
+
+  function render(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    var counts={},total=0;
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var v=grid[y*N+x];
+      if(v){
+        var t=TYPES[v-1];ctx.fillStyle=t.c;ctx.fillRect(x*S,y*S,S,S);
+        ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(x*S,y*S,S,3);
+        ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(x*S,y*S+S-3,S,3);
+        counts[t.n]=(counts[t.n]||0)+1;total++;
+      }
+    }
+    if(gridOn){
+      ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;ctx.beginPath();
+      for(var i=0;i<=N;i++){ctx.moveTo(i*S+.5,0);ctx.lineTo(i*S+.5,N*S);ctx.moveTo(0,i*S+.5);ctx.lineTo(N*S,i*S+.5)}
+      ctx.stroke();
+    }
+    if(hover){
+      ctx.strokeStyle=eraser?'#ff5d5d':'#ffc94d';ctx.lineWidth=2;
+      ctx.strokeRect(hover.x*S+1,hover.y*S+1,S-2,S-2);
+    }
+    sws.forEach(function(b,i){b.classList.toggle('sel',!eraser&&sel===i+1)});
+    eb.classList.toggle('on',eraser);
+    var parts=Object.keys(counts).map(function(k){return k+' '+counts[k]});
+    stat.textContent='Blocks: '+total+'/'+(N*N)+(parts.length?'  |  '+parts.join(', '):'')+
+      (hover?'  |  Cell ('+hover.x+','+hover.y+')':'');
+  }
+
+  function cell(e){
+    var r=cv.getBoundingClientRect();
+    var x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N);
+    if(x<0||y<0||x>=N||y>=N)return null;return{x:x,y:y};
+  }
+  function apply(c,erase){
+    if(!c)return;var i=c.y*N+c.x,v=erase?0:sel;
+    if(grid[i]!==v){grid[i]=v;stroke=true}
+  }
+  cv.addEventListener('contextmenu',function(e){e.preventDefault()});
+  cv.addEventListener('pointerdown',function(e){
+    e.preventDefault();cv.setPointerCapture(e.pointerId);
+    push();stroke=false;
+    painting=(e.button===2||eraser)?'erase':'place';
+    apply(cell(e),painting==='erase');render();
+  });
+  cv.addEventListener('pointermove',function(e){
+    hover=cell(e);
+    if(painting)apply(hover,painting==='erase');
+    render();
+  });
+  function end(){
+    if(painting){if(!stroke)undo.pop();else save();painting=null;render()}
+  }
+  cv.addEventListener('pointerup',end);
+  cv.addEventListener('pointercancel',end);
+  cv.addEventListener('pointerleave',function(){hover=null;render()});
+  window.addEventListener('keydown',function(e){
+    if(e.key>='1'&&e.key<='8')pick(+e.key);
+    else if(e.key==='e'||e.key==='E'){eraser=!eraser;render()}
+    else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();doUndo()}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

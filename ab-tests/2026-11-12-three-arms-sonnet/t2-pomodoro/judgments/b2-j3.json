@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"simple": 9, "correctness": 8, "usability": 7, "craft": 8, "code": 8, "overall": 8, "note": "Classic ring timer with tabs, start/reset/skip and editable lengths, accurate end-time countdown and auto phase switch, but tabs lack ARIA and there is no live region or timer role."},
+"V": {"simple": 5, "correctness": 8, "usability": 7, "craft": 6, "code": 5, "overall": 6, "note": "Huge clear clock with good keyboard and screen-reader support, but overbuilt with two reset buttons, two-press confirms, notifications and verbose status text, and plain styling."},
+"W": {"simple": 5, "correctness": 8, "usability": 5, "craft": 7, "code": 5, "overall": 5, "note": "Handsome serif card, but the giant pomodoro-count numeral outranks the actual countdown, which sits small below it, and the persistence, settings panel and pips overbuild a simple timer."},
+"X": {"simple": 7, "correctness": 8, "usability": 9, "craft": 9, "code": 6, "overall": 9, "note": "Full-bleed colour per phase with a huge clock, clear primary Start, progress bar, shortcuts and live announcements; a few extras (presets, undo toast) but still reads as one clear timer."},
+"Y": {"simple": 9, "correctness": 7, "usability": 7, "craft": 7, "code": 9, "overall": 7, "note": "Tiny, tidy ring timer that works with tabs, skip and settings, though it has no ARIA or live region, a thin ring and Reset that also reverts to the current mode only."},
+"Z": {"simple": 7, "correctness": 8, "usability": 9, "craft": 8, "code": 6, "overall": 8, "note": "Bold full-screen red focus view with a giant clock and phase label, role=timer, live announcements, tabs as non-interactive indicators; solid but with extras like reset confirmation and sessionStorage restore."}
+},
+"ranking": ["X", "U", "Z", "Y", "V", "W"]}

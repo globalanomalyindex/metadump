@@ -1,0 +1,98 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A basic calculator is judged by trust: every press visibly does the right thing, arithmetic is exact-looking, and nothing ever shows NaN or garbage.",
+  "job": [
+    "see an empty display reading 0",
+    "enter digits and a decimal point (click or keyboard)",
+    "choose an operator (+ - x /) and see which is pending",
+    "enter second operand, see it on the display",
+    "press equals and read the result",
+    "chain operations (3 + 4 x 2 continues from the result)",
+    "repeat equals to reapply last operation",
+    "correct mistakes: backspace, clear entry, all clear",
+    "flip sign, percent",
+    "recover from error (divide by zero) without reload",
+    "review recent calculations (history)",
+    "copy result"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["every press gives feedback within 100 ms", "display is the single source of truth", "forgive mistakes cheaply", "keyboard parity with mouse"],
+      "steps": ["map key table", "define states: entering first, operator pending, entering second, result shown, error", "decide what each key does in each state"],
+      "tricks": ["highlight pending operator", "repeat-equals reuses last operand", "operator pressed twice replaces the first", "percent relative to the left operand for + and -"],
+      "tests": ["2 + 3 = shows 5", "0.1 + 0.2 shows 0.3", "5 / 0 shows an error and recovers on next digit", "1 + 2 + 3 chains to 6 without pressing equals"]
+    },
+    "visual design": {
+      "principles": ["display is the hero", "operator keys distinct from digit keys", "equals is the one accent", "consistent grid and gaps"],
+      "steps": ["pick palette", "set type scale", "grid 4 columns x 5 rows", "state styles"],
+      "tricks": ["tabular numerals so digits do not jitter", "shrink font as digits grow", "inset shadow for display glass", "pressed key sinks 1 to 2 px"],
+      "tests": ["can a stranger tell it is a calculator in one glance", "is 12-digit number legible and uncut", "contrast 4.5:1 on all labels"]
+    },
+    "motion": {
+      "principles": ["motion confirms, never delays"],
+      "tricks": ["press scale 0.96 over 80 ms", "result flash 150 to 250 ms", "error shake 300 ms"],
+      "tests": ["rapid typing never queues animation lag", "reduced motion respected"]
+    },
+    "accessibility": {
+      "principles": ["real buttons", "aria-live on display", "visible focus"],
+      "tricks": ["aria-label for symbols: multiply, divide, minus", "role=group for keypad"],
+      "tests": ["tab through every key", "screen reader announces result"]
+    },
+    "front-end code": {
+      "principles": ["one state object, one render function", "pure compute function separate from DOM", "no eval"],
+      "tricks": ["round to 12 significant digits to kill float noise", "keep operand as string while typing", "toPrecision then Number to strip trailing zeros", "exponent format for huge numbers"],
+      "tests": ["no console errors", "works from file://", "no external requests"]
+    }
+  },
+  "the_thing": {
+    "parts": ["display with expression line and main number", "digit keys 0-9", "decimal point", "operators + - x /", "equals", "AC / C", "backspace", "plus-minus", "percent", "history list"],
+    "expectations": ["starts at 0", "no leading zeros", "one decimal point per number", "division by zero handled", "keyboard works", "long numbers do not overflow the display"],
+    "kinds": [
+      {"name": "pocket desk calculator", "what": "classic 4x5 keypad with big display and function keys; immediate-execution chaining"},
+      {"name": "tape calculator", "what": "adding-machine style with scrolling paper history"},
+      {"name": "expression calculator", "what": "type whole expression, shows running preview"}
+    ]
+  },
+  "specifics": {
+    "layout": {
+      "keywords": {"1": ["calculator", "keypad", "display", "digits", "operators", "equals", "clear"], "2": ["grid", "pending operator", "history", "keyboard support", "backspace"], "3": ["tabular-nums", "auto-fit text", "chained immediate execution", "repeat equals"]},
+      "descriptions": ["4-column grid, 0 key may span two columns", "display above keys, right-aligned", "expression line small above main number"],
+      "tokens": {"width": "300 to 380 px card", "key height": "56 to 72 px", "gap": "8 to 12 px", "radius": "12 to 20 px", "display font": "36 to 56 px"}
+    },
+    "colour": {
+      "keywords": {"1": ["dark", "accent orange", "light digits"], "2": ["warm neutrals", "two-tone keys"], "3": ["Braun ET66 palette", "signal yellow equals"]},
+      "descriptions": ["digits neutral, operators tinted, equals strongest accent, clear keys muted red or grey"],
+      "tokens": {"bg": "#1b1a19 to #efece6", "accent": "#ff8a1f to #f2b01e", "digit key": "#2b2926 to #fbfaf7"}
+    },
+    "behavior": {
+      "keywords": {"1": ["add", "subtract", "multiply", "divide", "equals", "clear"], "2": ["chain", "sign flip", "percent", "backspace", "error state"], "3": ["float rounding", "operator replacement", "repeat equals"]},
+      "behaviors": ["digit after result starts new number", "operator after result continues from result", "operator right after operator replaces it", "equals with no pending does nothing", "percent: x/100, or x*left/100 with + or -", "divide by zero shows Cannot divide by zero, next key resets", "max 12 digits entered"],
+      "tokens": {"digit cap": "12 to 15", "precision": "12 significant digits"}
+    },
+    "copy": {
+      "keywords": {"1": ["0", "AC", "C"], "2": ["Cannot divide by zero", "History", "Copy"], "3": ["x symbol U+00D7", "minus U+2212", "divide U+00F7"]},
+      "descriptions": ["use true math glyphs, not x and /", "empty history says Nothing yet"]
+    }
+  },
+  "anti_keywords": [
+    {"not": "eval() of a string", "instead": "explicit state machine and pure compute"},
+    {"not": "0.1+0.2 = 0.30000000000000004", "instead": "round to 12 significant digits"},
+    {"not": "NaN or Infinity on screen", "instead": "plain-language error message that clears on next key"},
+    {"not": "generic iOS clone with gradient orange circles", "instead": "committed object-like design with its own character and tactile keys"},
+    {"not": "display overflowing the card", "instead": "scale font down by digit count, scroll expression line"},
+    {"not": "mouse-only", "instead": "full keyboard map: digits, + - * /, Enter, =, Backspace, Escape, ., %"},
+    {"not": "hover-only feedback", "instead": "active and focus-visible states too"}
+  ],
+  "checks": [
+    "does 2 + 3 = give 5",
+    "does 0.1 + 0.2 = give 0.3",
+    "does 5 / 0 show an error and recover",
+    "does chaining 1 + 2 + 3 give 6",
+    "does the keyboard work",
+    "is the pending operator highlighted",
+    "does a 12-digit number fit",
+    "does it work at 375 px wide",
+    "any external requests or console errors"
+  ],
+  "built": ["pocket desk calculator"]
+}

@@ -193,6 +193,19 @@ class Validation(unittest.TestCase):
         _, report = finalize.build_dump(d)
         self.assertNotIn("no_angles", codes(report["warnings"]))
 
+    def test_a_head_with_fewer_angles_than_a_round_of_sessions_warns(self):
+        # Tests 18 and 19: the deal rotates sessions through the angles (ADR 0019), and the tic tac toe dump had two,
+        # so four sessions could go at most two ways.
+        d = base_dump()
+        angle = lambda name: {"angle": name, "text": "Amber seen from %s." % name, "draws_on": ["c-amber"]}
+        d["essence"]["angles"] = [angle("a sill at dusk"), angle("a desk at night"), angle("a street through a blind")]
+        _, report = finalize.build_dump(d)
+        self.assertIn("few_angles", codes(report["warnings"]))
+        self.assertNotIn("no_angles", codes(report["warnings"]))
+        d["essence"]["angles"].append(angle("one candle in a dark room"))
+        _, report = finalize.build_dump(d)
+        self.assertNotIn("few_angles", codes(report["warnings"]))
+
     def test_one_curve_or_one_colour_offered_by_the_build_warns(self):
         # Test 12: each curve facet held one value in tokens.curve, one facet per role; all four builds pasted the set (ADR 0013).
         d = base_dump()
@@ -806,6 +819,60 @@ class Cli(unittest.TestCase):
         self.assertEqual(res.returncode, 1)
         self.assertIn("unresolved_route_path", res.stdout)
         self.assertFalse(os.path.exists(os.path.join(self.root, "metadumps", "demo.metadump.json")))
+
+    def test_a_dump_built_from_a_work_dir_starts_with_no_deal_ledger(self):
+        # Test 22: a verify worker dealt the calculator dump for its dry run, nine minutes before the final build.
+        # That one deal took the home angle, so the first real session would have started from the second.
+        write_work(self.work, good_shards())
+        ledger = os.path.join(self.root, "metadumps", ".deals", "demo.deals.json")
+        os.makedirs(os.path.dirname(ledger))
+        with open(ledger, "w") as f:
+            json.dump({"schema": "metadump-deals/1", "deals": 1, "angles": {"keypad on a card": 1}}, f)
+        res = run_cli("build", self.work)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertFalse(os.path.exists(ledger))
+
+    def test_a_write_back_that_refinishes_a_dump_keeps_its_deal_ledger(self):
+        # Use mode ends with `build F --bump`. If that cleared the ledger, every session after a write-back would
+        # start from the home angle again, which is the collision the ledger exists to stop (ADR 0019).
+        path = os.path.join(self.root, "demo.metadump.json")
+        with open(path, "w") as f:
+            json.dump(base_dump(), f)
+        ledger = os.path.join(self.root, ".deals", "demo.deals.json")
+        os.makedirs(os.path.dirname(ledger))
+        kept = {"schema": "metadump-deals/1", "deals": 2, "angles": {"dusk window": 1, "lamp-lit desk": 1}}
+        with open(ledger, "w") as f:
+            json.dump(kept, f)
+        res = run_cli("build", path, "--bump")
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        with open(ledger) as f:
+            self.assertEqual(json.load(f), kept)
+
+    QUICK = {"request": "a simple pomodoro timer", "thesis": "A timer is a promise about attention.",
+             "job": ["start a session", "see the time fall", "take the break"],
+             "the_thing": {"parts": ["a clock"], "kinds": [{"name": "ring timer", "what": "a ring that empties"},
+                                                         {"name": "bare number", "what": "only the digits"}]},
+             "anti_keywords": [{"not": "settings screen", "instead": "one fixed 25/5"}],
+             "checks": ["the time falls after start"], "built": ["ring timer"]}
+
+    def test_check_reads_a_quick_dump_for_what_it_is(self):
+        # Test 23: a dump written in one pass has no manifest, routes or index. `check` used to crash on one.
+        path = os.path.join(self.root, "timer.metadump.json")
+        with open(path, "w") as f:
+            json.dump(self.QUICK, f)
+        res = run_cli("check", path)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertIn("quick dump", res.stdout)
+        self.assertIn("2 kinds (1 built)", res.stdout)
+
+    def test_check_fails_a_quick_dump_that_has_lost_the_users_request(self):
+        # The one thing a dump of any size must carry is the user's words (ADR 0003): everything else is the model's own.
+        path = os.path.join(self.root, "timer.metadump.json")
+        with open(path, "w") as f:
+            json.dump({k: v for k, v in self.QUICK.items() if k != "request"}, f)
+        res = run_cli("check", path)
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("no_request", res.stdout)
 
     def test_build_existing_dump_in_place_with_bump(self):
         path = os.path.join(self.root, "demo.metadump.json")

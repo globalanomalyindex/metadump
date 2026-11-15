@@ -1,0 +1,91 @@
+{
+  "request": "a bento box-inspired collapsible UI menu component for a fictional coffee company site",
+  "thesis": "A menu that behaves like a bento lunchbox: a lid that opens to reveal a tidy mosaic of compartments of unequal size, each holding one thing, with a calm tray of rounded cells and one hero cell.",
+  "job": [
+    "see a closed trigger/lid on the site header and understand it is the menu",
+    "open it (click, tap, Enter/Space) and watch compartments reveal",
+    "scan the compartments: shop beans, subscriptions, brew guides, cafes, story, cart",
+    "hover/focus a cell to get feedback; open a cell's sub-detail or expand it",
+    "pick a destination (state shows which is selected/active)",
+    "collapse again (button, Esc, outside click, pick an item) and focus returns to trigger",
+    "use on phone: single or two-column grid, big touch targets"
+  ],
+  "disciplines": {
+    "interaction design": {
+      "principles": ["disclosure pattern: trigger + panel", "state is visible: open/closed, active item", "one obvious way in, many ways out"],
+      "steps": ["closed -> open -> item focused -> item chosen -> closed"],
+      "tricks": ["aria-expanded on trigger, hidden panel via grid-template-rows 0fr to 1fr for animatable height", "Esc closes and returns focus", "roving arrow-key focus across cells"],
+      "tests": ["tab through with keyboard only", "open, press Esc, focus is back on trigger", "click outside closes"]
+    },
+    "visual design": {
+      "principles": ["unequal cells on a shared grid, equal gaps", "consistent radius, one hero cell", "warm limited palette"],
+      "steps": ["define grid 4 cols x 3 rows with spans", "assign hero, wide, tall, small cells", "type scale of 2-3 sizes"],
+      "tricks": ["cell radius = gap x 2", "inner content padding matches radius", "each cell a distinct tint of the same palette family"],
+      "tests": ["squint: do you see a tray with a hero?", "no cell has orphan empty space"]
+    },
+    "motion": {
+      "principles": ["stagger reveals compartment by compartment like opening lids", "transform and opacity only", "respect reduced motion"],
+      "tricks": ["stagger via --i custom property", "scale 0.96 to 1 plus 8px rise", "spring-ish cubic-bezier(.2,.9,.3,1.2)"],
+      "tests": ["close mid-open does not glitch", "prefers-reduced-motion removes movement"]
+    },
+    "accessibility": {
+      "principles": ["button semantics, visible focus ring, contrast 4.5:1"],
+      "tests": ["screen reader hears expanded/collapsed", "targets at least 44px"]
+    },
+    "front-end code": {
+      "principles": ["one state object, render from state", "CSS grid, custom properties, no libraries"],
+      "tricks": ["data attributes drive styling", "inert on closed panel so it is not tabbable"]
+    }
+  },
+  "the_thing": {
+    "parts": ["trigger/lid button", "panel tray", "grid of compartments", "hero cell", "cell label + small description", "active indicator", "close affordance", "cart count badge"],
+    "expectations": ["opens and closes", "items are links/buttons that do something", "reads as coffee brand", "works on mobile"],
+    "kinds": [
+      {"name": "lid-lift tray", "what": "header button opens a bento tray under it; cells stagger in"},
+      {"name": "accordion bento", "what": "each cell itself expands in place to reveal sub-links"},
+      {"name": "full-screen sheet", "what": "menu takes the viewport as a bento mosaic"}
+    ]
+  },
+  "specifics": {
+    "brand": {
+      "keywords": {
+        "1": ["bento box", "collapsible menu", "coffee company", "fictional brand"],
+        "2": ["roastery", "single origin", "small batch", "subscription", "brew guide", "cafe locations"],
+        "3": ["cupping notes", "washed process", "crema", "pour-over ritual", "tamp", "first crack"]
+      },
+      "descriptions": ["invented name e.g. Ember & Oak Coffee Roasters", "tone: warm, crafted, slightly playful"],
+      "tokens": {"palette": "espresso #2b1d16, crema #f3e6d3, latte #d9b99b, terracotta #c8553d, moss #5b6b4a, cream paper #fbf5ec", "radius": "14 to 22px", "gap": "8 to 12px"}
+    },
+    "layout": {
+      "keywords": {"1": ["grid", "compartments", "hero cell"], "2": ["span", "tall cell", "wide cell"], "3": ["dense packing", "subgrid"]},
+      "behaviors": ["desktop 4 columns, hero spans 2x2", "under 640px 2 columns, hero spans 2", "panel width 560 to 720px"],
+      "tokens": {"row height": "88 to 120px", "padding": "14 to 20px"}
+    },
+    "motion": {
+      "keywords": {"1": ["collapse", "expand"], "2": ["stagger"], "3": ["lid", "settle"]},
+      "tokens": {"open": "280 to 450ms", "stagger": "30 to 60ms per cell", "hover": "120 to 180ms"}
+    },
+    "states": {
+      "keywords": {"1": ["open", "closed", "active"], "2": ["hover", "focus-visible", "pressed"], "3": ["selected tick", "live region"]},
+      "behaviors": ["choosing a cell marks it active and shows it in a status line", "cart cell increments count", "Esc/outside click closes"]
+    },
+    "copy": {"keywords": {"1": ["Shop beans", "Subscribe", "Brew guides", "Find a cafe", "Our story", "Cart"], "2": ["Free shipping over $35", "Roasted this week"]}}
+  },
+  "anti_keywords": [
+    {"not": "generic hamburger dropdown list", "instead": "visibly unequal compartment tray with a hero cell"},
+    {"not": "all cells same size and colour", "instead": "varied spans, tints from one family, one dark cell for contrast"},
+    {"not": "decorative toggle that does nothing", "instead": "real state: open, active item, cart count, status line"},
+    {"not": "stock coffee-brown-on-beige cliche only", "instead": "add terracotta and moss accents, crema highlights"},
+    {"not": "emoji icons", "instead": "small inline SVG glyphs"},
+    {"not": "animating height/top", "instead": "grid-rows trick plus transform/opacity"},
+    {"not": "external fonts or images", "instead": "system serif for display, system sans for UI, inline SVG/CSS art"}
+  ],
+  "checks": [
+    "keyboard-only: Tab to trigger, Enter opens, arrows move between cells, Esc closes and refocuses trigger",
+    "aria-expanded matches visual state",
+    "click a cell: active state and status line change",
+    "phone width: no horizontal scroll, targets >= 44px",
+    "no network requests"
+  ],
+  "built": ["lid-lift tray"]
+}

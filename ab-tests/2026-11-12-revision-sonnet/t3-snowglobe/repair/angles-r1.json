@@ -1,0 +1,50 @@
+[
+ {
+  "angle": "close-up dome",
+  "text": "The dome fills most of the frame close up: the glass curve, a hard window highlight, and fine glitter hanging through the haze, with the base's rim at the bottom edge.",
+  "draws_on": [
+   "fr-00-00-14",
+   "mb-glass",
+   "lens-magnify",
+   "mb-liquid-particles"
+  ]
+ },
+ {
+  "angle": "shelf in a room",
+  "text": "A small dome on its base sits on a shelf among other objects, seen from across the room, with a few flakes still hanging after a shake and the scene read as a detail.",
+  "draws_on": [
+   "mb-composition",
+   "mb-base-in-context",
+   "sb-base",
+   "p-souvenir"
+  ]
+ },
+ {
+  "angle": "hard shake, long settle",
+  "text": "Caught a few seconds after one hard shake: the whole dome churns with glitter, and the particles keep moving and sink slowly over the base.",
+  "draws_on": [
+   "mo-shake-hard",
+   "sp-glitter-fall",
+   "sp-fall-time",
+   "vs-shake-timing"
+  ]
+ },
+ {
+  "angle": "clear water, one colour family",
+  "text": "A clear dome on its base, uncoloured water with fine white flakes, and a small scene in one colour family: the glass and the highlight carry the look.",
+  "draws_on": [
+   "sb-colour-clear",
+   "w-inside",
+   "vs-scene-subjects"
+  ]
+ },
+ {
+  "angle": "still upright frame",
+  "text": "One upright frame with no motion, the dome on its base: haze and flake heights show the settle, and the miniature scene sits clear at the bottom.",
+  "draws_on": [
+   "mo-still-reading",
+   "fr-00-00-24",
+   "p-liquid"
+  ]
+ }
+]

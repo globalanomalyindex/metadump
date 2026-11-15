@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro 25:00</title>
+<style>
+:root{
+  --bg:#f4f1ea; --fg:#26241f; --dim:#58544a; --line:#d8d3c6; --accent:#b8412b; --btn:#26241f; --btnfg:#f4f1ea;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#161614; --fg:#ece8dd; --dim:#aaa699; --line:#33312c; --accent:#e8745c; --btn:#ece8dd; --btnfg:#161614;}
+}
+body[data-phase="short"]{--accent:#3f7f5a}
+body[data-phase="long"]{--accent:#4a6f9c}
+@media (prefers-color-scheme:dark){
+  body[data-phase="short"]{--accent:#78c99a}
+  body[data-phase="long"]{--accent:#8fb4e6}
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  display:flex;align-items:center;justify-content:center;padding:16px}
+main{width:100%;max-width:560px;text-align:left}
+.phase{font-size:clamp(14px,3.6vw,18px);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 4px;font-weight:700}
+.clock{font-size:clamp(64px,22vw,150px);line-height:1;font-weight:600;letter-spacing:-.02em;margin:0;font-variant-numeric:tabular-nums}
+.status{margin:14px 0 4px;font-size:clamp(14px,3.8vw,17px);line-height:1.5;min-height:3em;color:var(--fg)}
+.next{color:var(--dim)}
+.count{margin:0 0 22px;color:var(--dim);font-size:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-size:15px;min-height:44px;min-width:44px;padding:0 18px;border:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;border-radius:4px}
+button:hover{background:var(--line)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--btn);color:var(--btnfg);font-weight:700;min-width:130px;font-size:17px}
+button.primary:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+button.confirm{border-color:var(--accent);color:var(--accent);font-weight:700}
+.sec{margin-top:12px}
+.opts{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px;color:var(--dim)}
+label{display:flex;align-items:center;gap:8px;min-height:32px;cursor:pointer}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.keys{margin-top:10px;font-size:12px;color:var(--dim)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.flash{animation:fl 1.2s ease-out 1}
+@keyframes fl{from{background:var(--line)}to{background:var(--bg)}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}}
+</style>
+</head>
+<body data-phase="work">
+<main>
+  <p class="phase" id="phase">Focus</p>
+  <p class="clock" id="clock" role="timer" aria-label="Time remaining">25:00</p>
+  <p class="status" id="status">Time to focus!</p>
+  <p class="count" id="count">0 pomodoros finished · 4 make a long break</p>
+
+  <div class="row">
+    <button class="primary" id="toggle" aria-keyshortcuts="Space">Start</button>
+    <button id="skip" title="Skip to the next phase">Skip</button>
+    <button id="reset" title="Back to the start of this interval">Reset</button>
+  </div>
+  <div class="row sec">
+    <button id="resetAll" title="Rewind to the first interval and clear the count">Reset whole cycle</button>
+    <span id="confirmNote" class="next" aria-live="off"></span>
+  </div>
+
+  <div class="opts">
+    <label><input type="checkbox" id="auto"> Start next phase automatically</label>
+    <label><input type="checkbox" id="sound"> Chime at the end</label>
+  </div>
+  <p class="keys">Space start / pause · S skip · R reset · Esc cancel</p>
+  <div class="sr" aria-live="polite" id="live"></div>
+</main>
+
+<script>
+(function(){
+  var LEN = {work:25*60, short:5*60, long:15*60};
+  var NAME = {work:'Focus', short:'Short break', long:'Long break'};
+  var EVERY = 4;
+
+  var s = {
+    phase:'work',          // work | short | long
+    running:false,
+    started:false,         // has this interval been started (paused vs idle)
+    remaining:LEN.work*1000,
+    deadline:0,
+    done:0                 // finished work intervals
+  };
+  var tick=null, confirmKind=null, confirmTimer=null, audioCtx=null;
+
+  var $=function(id){return document.getElementById(id)};
+  var elClock=$('clock'), elPhase=$('phase'), elStatus=$('status'), elCount=$('count'),
+      elToggle=$('toggle'), elSkip=$('skip'), elReset=$('reset'), elResetAll=$('resetAll'),
+      elNote=$('confirmNote'), elLive=$('live'), elAuto=$('auto'), elSound=$('sound');
+
+  try{
+    elAuto.checked = sessionStorage.getItem('pomo.auto')==='1';
+    elSound.checked = sessionStorage.getItem('pomo.sound')==='1';
+  }catch(e){}
+
+  function fmt(ms){
+    var t=Math.max(0,Math.ceil(ms/1000)), m=Math.floor(t/60), sec=t%60;
+    return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
+  }
+  function remainingNow(){
+    return s.running ? Math.max(0, s.deadline-Date.now()) : s.remaining;
+  }
+  function nextAfterWork(){ return ((s.done+1)%EVERY===0) ? 'long' : 'short'; }
+  function nextPhaseName(){
+    if(s.phase==='work') return NAME[nextAfterWork()].toLowerCase();
+    return 'focus';
+  }
+  function untilLong(){
+    var r = EVERY - (s.done % EVERY);
+    return r;
+  }
+
+  function render(){
+    var rem = remainingNow();
+    var t = fmt(rem);
+    elClock.textContent = t;
+    document.title = (s.running?'▶ ':(s.started?'‖ ':''))+t+' · '+NAME[s.phase];
+    document.body.setAttribute('data-phase', s.phase);
+    elPhase.textContent = NAME[s.phase];
+
+    var state = s.running ? 'running' : (s.started ? 'paused' : 'ready');
+    var line;
+    if(s.phase==='work'){
+      if(state==='ready') line = s.done===0 ? 'Time to focus! One press starts '+fmt(LEN.work*1000)+'.' : 'Ready for the next focus interval.';
+      else if(state==='running') line = 'Focus, running.';
+      else line = 'Paused. The same interval waits at '+t+'.';
+      line += ' Next: '+nextPhaseName()+'.';
+    }else{
+      if(state==='ready') line = NAME[s.phase]+' is ready. Start it, or skip to focus.';
+      else if(state==='running') line = NAME[s.phase]+', running. Next: focus.';
+      else line = 'Paused. '+NAME[s.phase]+' waits at '+t+'.';
+    }
+    elStatus.textContent = line;
+
+    var left = untilLong();
+    elCount.textContent = s.done+' pomodoro'+(s.done===1?'':'s')+' finished · '+
+      (s.phase==='long' ? 'long break now' : (left===1 ? 'next focus leads to a long break' : left+' focus intervals until a long break'));
+
+    elToggle.textContent = s.running ? 'Pause' : (s.started ? 'Resume' : 'Start');
+    elToggle.setAttribute('aria-pressed', s.running ? 'true':'false');
+    elSkip.textContent = s.phase==='work' ? 'Skip to break' : 'Skip to focus';
+
+    if(confirmKind!=='reset') elReset.textContent='Reset', elReset.classList.remove('confirm');
+    if(confirmKind!=='all') elResetAll.textContent='Reset whole cycle', elResetAll.classList.remove('confirm');
+  }
+
+  function announce(msg){
+    elLive.textContent='';
+    setTimeout(function(){elLive.textContent=msg},30);
+  }
+
+  function loop(){
+    if(!s.running) return;
+    if(s.deadline-Date.now()<=0){ finish(); return; }
+    render();
+  }
+  function startTicker(){
+    stopTicker();
+    tick=setInterval(loop,250);
+  }
+  function stopTicker(){ if(tick){clearInterval(tick);tick=null} }
+
+  function start(){
+    if(s.running) return;
+    s.started=true; s.running=true;
+    s.deadline=Date.now()+s.remaining;
+    ensureAudio();
+    startTicker(); render();
+  }
+  function pause(){
+    if(!s.running) return;
+    s.remaining=Math.max(0,s.deadline-Date.now());
+    s.running=false; stopTicker(); render();
+  }
+  function toggle(){ s.running ? pause() : start(); }
+
+  function enter(phase, autoRun){
+    s.phase=phase; s.remaining=LEN[phase]*1000; s.started=false; s.running=false; stopTicker();
+    if(autoRun) start(); else render();
+  }
+
+  function finish(){
+    // the interval reached zero
+    var wasWork = s.phase==='work';
+    var to;
+    if(wasWork){ s.done++; to = (s.done%EVERY===0)?'long':'short'; }
+    else to='work';
+    chime();
+    var msg = wasWork
+      ? 'Focus finished. '+NAME[to]+' next.'
+      : NAME[s.phase]+' finished. Time to focus.';
+    announce(msg);
+    document.body.classList.remove('flash'); void document.body.offsetWidth; document.body.classList.add('flash');
+    enter(to, elAuto.checked);
+    if(!elAuto.checked){
+      elStatus.textContent = msg+' Press Start when ready.';
+    }
+    if(typeof Notification!=='undefined' && Notification.permission==='granted' && document.hidden){
+      try{ new Notification(msg); }catch(e){}
+    }
+  }
+
+  function skip(){
+    var wasRunning=s.running;
+    // skipping a focus interval does not count it as finished
+    var to = s.phase==='work' ? (((s.done+1)%EVERY===0) ? 'long':'short') : 'work';
+    if(s.phase==='work'){
+      // only completed intervals advance the count; skipping to a break keeps the count but
+      // chooses the break the next finished interval would earn.
+      to = (s.done>0 && s.done%EVERY===0) ? 'long' : 'short';
+    }
+    enter(to, wasRunning && elAuto.checked);
+    announce('Skipped. '+NAME[to]+'.');
+  }
+
+  // two-press confirmation for destructive actions
+  function arm(kind, btn, label, note){
+    confirmKind=kind;
+    btn.textContent=label; btn.classList.add('confirm');
+    elNote.textContent=note;
+    clearTimeout(confirmTimer);
+    confirmTimer=setTimeout(disarm,4000);
+  }
+  function disarm(){
+    confirmKind=null; clearTimeout(confirmTimer); elNote.textContent=''; render();
+  }
+  function resetInterval(){
+    var needsAsk = s.running || (s.started && remainingNow()!==LEN[s.phase]*1000);
+    if(needsAsk && confirmKind!=='reset'){
+      disarm(); arm('reset', elReset, 'Confirm reset', 'Back to '+fmt(LEN[s.phase]*1000)+'. The count stays.'); return;
+    }
+    disarm();
+    enter(s.phase,false);
+    announce('Interval reset.');
+  }
+  function resetCycle(){
+    if(confirmKind!=='all'){
+      disarm(); arm('all', elResetAll, 'Confirm: clear count', 'Rewinds to the first focus interval and clears '+s.done+' finished.'); return;
+    }
+    disarm();
+    s.done=0; enter('work',false);
+    announce('Cycle reset. Focus ready.');
+  }
+
+  // audio unlocked by a Start press
+  function ensureAudio(){
+    if(!elSound.checked) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC && !audioCtx) audioCtx=new AC();
+      if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+    }catch(e){}
+  }
+  function chime(){
+    if(!elSound.checked || !audioCtx) return;
+    try{
+      var t=audioCtx.currentTime;
+      [880,660,880].forEach(function(f,i){
+        var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.type='sine'; o.frequency.value=f;
+        g.gain.setValueAtTime(0.0001,t+i*.28);
+        g.gain.exponentialRampToValueAtTime(0.2,t+i*.28+.03);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+i*.28+.25);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t+i*.28); o.stop(t+i*.28+.27);
+      });
+    }catch(e){}
+  }
+
+  elToggle.addEventListener('click',function(){disarm();toggle();});
+  elSkip.addEventListener('click',function(){disarm();skip();});
+  elReset.addEventListener('click',resetInterval);
+  elResetAll.addEventListener('click',resetCycle);
+  elAuto.addEventListener('change',function(){try{sessionStorage.setItem('pomo.auto',elAuto.checked?'1':'0')}catch(e){}});
+  elSound.addEventListener('change',function(){
+    try{sessionStorage.setItem('pomo.sound',elSound.checked?'1':'0')}catch(e){}
+    if(elSound.checked){ ensureAudio(); chime(); }
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey) return;
+    var tag=(e.target&&e.target.tagName)||'';
+    if(tag==='INPUT') return;
+    if(e.key==='Escape'){disarm();return;}
+    if(e.code==='Space' && tag!=='BUTTON'){e.preventDefault();disarm();toggle();}
+    else if(e.key==='s'||e.key==='S'){disarm();skip();}
+    else if(e.key==='r'||e.key==='R'){resetInterval();}
+  });
+  // redraw immediately when the tab returns; time comes from the clock, not the tick count
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) loop(); });
+
+  render();
+})();
+</script>
+</body>
+</html>

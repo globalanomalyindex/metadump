@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 8, "overall": 7, "note": "Charming helmeted pelican with parallax, working pedal IK and extra night/reverse controls, but the wing just sits on the body and the bird looks a bit pasted on."},
+"V": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clean outlined pelican with bell on the handlebar and spinning chainring, but the pale washed-out scene and wing not reaching the bars make it less lively."},
+"W": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Polished helmeted pelican with wing arm to the grip, trees and parallax; the bell as a checkbox with a faint puff is a weak control."},
+"X": {"fidelity": 9, "correctness": 9, "craft": 9, "usability": 8, "overall": 9, "note": "Largest, most convincing pelican with wing arm gripping the bars, bell on the handlebar, ding bubble, sunset sky and well-labelled keyboard-friendly controls."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Strong helmeted pelican with blinking, honk bubble and keyboard shortcuts, though the dense monospace status line is cramped on a phone."},
+"Z": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 7, "overall": 6, "note": "Works and has trees and a ring message, but the pelican is small with a flat grey sheet for a wing, a salmon pouch, and a stray focus box on bell click."}
+},
+"ranking": ["X", "W", "Y", "U", "V", "Z"]}

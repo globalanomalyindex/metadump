@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"likeness": 8, "visuals": 7, "motion": 6, "presentation": 8, "overall": 7, "note": "Charming chapel on a green and gold base in a blurred room, but the snow haze washes out the scene and the flakes read as soft blobs."},
+"V": {"likeness": 8, "visuals": 6, "motion": 7, "presentation": 6, "overall": 6, "note": "Clear night globe with a cottage and falling snow, but the flat base, floating gold plate and control row feel plain."},
+"W": {"likeness": 8, "visuals": 8, "motion": 6, "presentation": 5, "overall": 6, "note": "Lovely shelf vignette with candle, books and a tilting base, but the control panel covers the scene, the globe is small and the phone view hides its controls."},
+"X": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 8, "overall": 9, "note": "Polished night cabin with a strong dome rim, moon, chimney smoke and dense snow that settles into a drift, in a clean layout that works on a phone."},
+"Y": {"likeness": 7, "visuals": 6, "motion": 5, "presentation": 6, "overall": 5, "note": "Bright blue glass with a nice base, but the flakes are barely visible, the scene is tiny and the odd dome tilt on shake looks like a bug."},
+"Z": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 7, "overall": 8, "note": "Rich depth with a hill, pines, snowman and thick glitter that churns and settles, but the dome overlaps the base awkwardly and the panel is busy."}
+}, "ranking": ["X", "Z", "U", "W", "V", "Y"]}

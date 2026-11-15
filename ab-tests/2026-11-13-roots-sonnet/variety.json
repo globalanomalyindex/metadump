@@ -1,0 +1,152 @@
+{
+ "t1-lavalamp": {
+  "scores": {
+   "A": [
+    2.0,
+    3.0,
+    4.0
+   ],
+   "C": [
+    6.0,
+    7.0,
+    6.0
+   ],
+   "R": [
+    4.0,
+    6.0,
+    5.0
+   ]
+  },
+  "mean": {
+   "A": 3.0,
+   "C": 6.33,
+   "R": 5.0
+  },
+  "breaks": {
+   "A": [
+    0.0,
+    1.0,
+    1.0
+   ],
+   "C": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "R": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "mean_breaks": {
+   "A": 0.67,
+   "C": 0.0,
+   "R": 0.0
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "C",
+     "R": "R"
+    },
+    "most_varied": "C",
+    "note": "P repeats one template four times (tapered conical tube, lamp left with a control panel right, dark purple room, pink/orange wax, brass or steel cap and base). Q varies the lamp silhouette (rocket cap, bulb vessel), palette (violet, amber-dark, plum) and layout (bottom control bar vs side panel). R is a middle case: it varies the metal (brass, copper, steel), liquid colour (amber, purple, red) and control placement, but is mostly the same tapered cone with a side panel. None of the twelve break the fixed lava-lamp requirements."
+   },
+   "v2": {
+    "sets": {
+     "P": "C",
+     "Q": "R",
+     "R": "A"
+    },
+    "most_varied": "C",
+    "note": "P differs in vessel silhouette (tall pillar, bulbous, classic bottle, tapered with panel), palette (violet/pink, ember, orange, violet/amber) and control layout; Q varies metals, liquid colours and control placement (brass with switch, copper maroon, chrome with bottom bar, bell cap) but shares the tapered cone; R is one design repeated (tapered cone, chrome/brass, right-hand panel, dark background), and R4 is pixelated with wax that barely moves and almost no visible glass, so it weakly breaks the moving-blobs requirement."
+   },
+   "v3": {
+    "sets": {
+     "P": "R",
+     "Q": "A",
+     "R": "C"
+    },
+    "most_varied": "C",
+    "note": "P and Q are all tapered cone lamps with a right-hand control card on a dark ground (P varies metal and palette, Q varies mostly metal and wax colour, with Q3 pixelated); R has the most variation in vessel shape (round bulb, spire, slim bottle), staging (bottom control bar vs side card) and palette (ember, violet, orange). Q3 nearly breaks the fixed 'lit from below' and 'blobs of wax in liquid' brief: dark glass with almost no glow and wax stalled in a blocky mass."
+   }
+  }
+ },
+ "t2-calculator": {
+  "scores": {
+   "A": [
+    1.0,
+    2.0,
+    2.0
+   ],
+   "C": [
+    7.0,
+    8.0,
+    7.0
+   ],
+   "R": [
+    5.0,
+    5.0,
+    5.0
+   ]
+  },
+  "mean": {
+   "A": 1.67,
+   "C": 7.33,
+   "R": 5.0
+  },
+  "breaks": {
+   "A": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "C": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "R": [
+    1.0,
+    0.0,
+    1.0
+   ]
+  },
+  "mean_breaks": {
+   "A": 0.0,
+   "C": 0.0,
+   "R": 0.67
+  },
+  "graders": {
+   "v1": {
+    "sets": {
+     "P": "A",
+     "Q": "C",
+     "R": "R"
+    },
+    "most_varied": "C",
+    "note": "P is the same dark iOS-style 4x5 calculator four times (only the accent colour and button tint shift). Q ranges from a light peach theme to a dark outlined blue one, a cream and green one, and a seven-segment LCD pocket calculator with a wide equals key and a different layout. R is more mixed: an LCD with a history side panel, a dark iOS look, a cream iOS look and a light-green LCD with a Backspace bar, but several share the same layout. R2's history panel goes beyond basic, so R breaks one; the use frames show the arithmetic working in the others."
+   },
+   "v2": {
+    "sets": {
+     "P": "C",
+     "Q": "R",
+     "R": "A"
+    },
+    "most_varied": "C",
+    "note": "P spans a cream soft-key calculator, a dark-grey 7-segment LCD pocket unit, a dark glass/blue-accent look and a peach rounded-key layout with different bottom-row arrangements; Q repeats the iOS-style 4x5 grid with orange operators and % (two variants add a green LCD, one adds a history panel, one a Backspace bar) so it is mid variety; R is the same dark rounded-key iOS grid four times with only the accent colour swapped. None of the twelve break the fixed basics from what the frames show."
+   },
+   "v3": {
+    "sets": {
+     "P": "R",
+     "Q": "A",
+     "R": "C"
+    },
+    "most_varied": "C",
+    "note": "P repeats the standard 4x5 layout with an orange/dark palette but varies light vs dark, an LCD display and a Backspace row; P4 adds a History panel, which goes beyond basic. Q is four near-identical dark rounded keypads with a black display and an amber/orange accent; R differs more (a 7-segment LCD with a wide equals key, a flat light theme with green operators, a C/CE/backspace row with the plus-minus key moved to the bottom, and a dark glass theme with cyan accents), and none of the three sets break the arithmetic."
+   }
+  }
+ }
+}

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASCII Color Mixer</title>
+<style>
+:root{--bg:#0d0e11;--panel:#16181d;--line:#2a2d35;--fg:#e4e6eb;--mut:#a0a5b0;--acc:#f2c230;font-family:ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-size:15px;line-height:1.4}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:.04em}
+p.sub{margin:0 0 14px;color:var(--mut)}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+h2{font-size:13px;margin:0 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.pot{display:grid;grid-template-columns:22px 1fr auto 34px auto;gap:8px;align-items:center;margin-bottom:6px}
+.dot{width:22px;height:22px;border-radius:50%;border:1px solid #555}
+.pot .name{font-size:15px}
+.pot .bar{color:var(--mut);letter-spacing:1px;white-space:nowrap;overflow:hidden}
+.pot .n{text-align:center;font-size:16px;font-weight:700}
+button{font:inherit;color:var(--fg);background:#22252c;border:1px solid #3a3e48;border-radius:6px;min-width:34px;min-height:34px;cursor:pointer}
+button:hover{background:#2d313a}
+button:focus-visible,canvas:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button[aria-pressed=true]{background:var(--acc);color:#111;border-color:var(--acc);font-weight:700}
+.models{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.models button{padding:4px 10px}
+.hint{color:var(--mut);font-size:13px;margin:0 0 10px}
+.out{display:flex;gap:12px;align-items:center;margin-top:12px}
+.sw{width:64px;height:64px;border-radius:8px;border:1px solid #555;flex:none}
+.out .vals div{font-size:15px}
+pre.preview{margin:10px 0 0;font-size:14px;line-height:1.1;overflow:hidden;white-space:pre}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap;min-height:34px;margin-top:8px}
+.chip{width:34px;height:34px;border-radius:6px;padding:0;border:1px solid #666}
+.chip.sel{outline:2px solid var(--acc)}
+.stage{position:relative}
+canvas#field{display:block;width:100%;height:auto;background:#08090b;border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:crosshair}
+.tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.tools label{color:var(--mut);display:flex;align-items:center;gap:6px}
+input[type=range]{accent-color:var(--acc)}
+.empty{color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<h1>ASCII COLOR MIXER</h1>
+<p class="sub">Add drops of pigment, watch the mix, then paint it onto the character grid.</p>
+<div class="layout">
+  <section class="panel" aria-label="Mixer">
+    <h2>Pigments</h2>
+    <div id="pots"></div>
+    <h2 style="margin-top:12px">Mixing model</h2>
+    <div class="models" id="models" role="group" aria-label="Mixing model"></div>
+    <p class="hint" id="modelHint"></p>
+    <div class="out">
+      <div class="sw" id="sw"></div>
+      <div class="vals"><div id="hex">-</div><div id="rgb">-</div><div id="drops">0 drops</div></div>
+    </div>
+    <pre class="preview" id="preview" aria-hidden="true"></pre>
+    <div class="row">
+      <button id="save" style="padding:0 10px">Save chip</button>
+      <button id="resetMix" style="padding:0 10px">Empty pots</button>
+    </div>
+    <div class="chips" id="chips" aria-label="Saved colors"></div>
+  </section>
+  <section class="panel" aria-label="Canvas">
+    <h2>Grid</h2>
+    <div class="tools">
+      <label>Brush <input type="range" id="size" min="1" max="5" step="0.5" value="2.5"></label>
+      <button id="blur" style="padding:0 10px">Smudge</button>
+      <button id="clear" style="padding:0 10px">Clear</button>
+      <span class="empty" id="status">Pick pigments, then drag on the grid.</span>
+    </div>
+    <div class="stage"><canvas id="field" tabindex="0" aria-label="ASCII painting grid. Arrow keys move, space paints."></canvas></div>
+    <p class="hint" style="margin-top:8px">Painting over existing ink blends the colors using the chosen model. Keyboard: arrows move, space paints.</p>
+  </section>
+</div>
+</main>
+<script>
+(function(){
+"use strict";
+var PIG=[
+ {n:"Red",c:[214,45,45]},{n:"Yellow",c:[242,194,48]},{n:"Blue",c:[36,71,200]},
+ {n:"White",c:[244,241,232]},{n:"Black",c:[22,22,26]}];
+var MODELS=[
+ {id:"paint",n:"Paint",h:"Subtractive: pigments multiply, so red + yellow = orange, yellow + blue = green."},
+ {id:"light",n:"Light",h:"Linear light: colors average the way real light does, brighter than naive."},
+ {id:"naive",n:"Naive",h:"Plain average of sRGB numbers. Simple, a little muddy."}];
+var MAXD=12, RAMP=" .:-=+*#%@";
+var COLS=64, ROWS=26;
+var st={counts:PIG.map(function(){return 0}),model:"paint",override:null,chips:[],sel:-1};
+var cells=[];function clearCells(){cells=[];for(var i=0;i<COLS*ROWS;i++)cells.push({c:[0,0,0],ink:0})}
+clearCells();
+function lin(v){v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)}
+function enc(v){v=v<=.0031308?v*12.92:1.055*Math.pow(v,1/2.4)-.055;return Math.max(0,Math.min(255,Math.round(v*255)))}
+// mix list of [color, weight]
+function mix(list,model){
+ var tw=0,i,k;list.forEach(function(x){tw+=x[1]});if(!tw)return null;
+ var out=[0,0,0];
+ for(k=0;k<3;k++){
+  var s=0;
+  if(model==="paint"){list.forEach(function(x){s+=x[1]/tw*Math.log(Math.max(.004,lin(x[0][k])))});out[k]=enc(Math.exp(s))}
+  else if(model==="light"){list.forEach(function(x){s+=x[1]/tw*lin(x[0][k])});out[k]=enc(s)}
+  else{list.forEach(function(x){s+=x[1]/tw*x[0][k]});out[k]=Math.round(s)}
+ }
+ return out;
+}
+function total(){return st.counts.reduce(function(a,b){return a+b},0)}
+function current(){
+ if(st.override)return st.override;
+ var l=[];st.counts.forEach(function(n,i){if(n)l.push([PIG[i].c,n])});
+ return mix(l,st.model);
+}
+function hex(c){return"#"+c.map(function(v){return("0"+v.toString(16)).slice(-2)}).join("")}
+var $=function(id){return document.getElementById(id)};
+// UI build
+var potsEl=$("pots");
+PIG.forEach(function(p,i){
+ var d=document.createElement("div");d.className="pot";
+ d.innerHTML='<span class="dot" style="background:'+hex(p.c)+'"></span><span class="name">'+p.n+'</span><button aria-label="Remove '+p.n+'" data-i="'+i+'" data-d="-1">-</button><span class="n" id="n'+i+'">0</span><button aria-label="Add '+p.n+'" data-i="'+i+'" data-d="1">+</button>';
+ potsEl.appendChild(d);
+});
+potsEl.addEventListener("click",function(e){
+ var b=e.target.closest("button");if(!b)return;
+ var i=+b.dataset.i,d=+b.dataset.d;
+ if(d>0&&total()>=MAXD){$("status").textContent="Pots are full ("+MAXD+" drops).";return}
+ st.counts[i]=Math.max(0,st.counts[i]+d);st.override=null;st.sel=-1;render();
+});
+var modelsEl=$("models");
+MODELS.forEach(function(m){var b=document.createElement("button");b.textContent=m.n;b.dataset.m=m.id;b.style.padding="4px 10px";modelsEl.appendChild(b)});
+modelsEl.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;st.model=b.dataset.m;st.override=null;st.sel=-1;render()});
+$("resetMix").onclick=function(){st.counts=PIG.map(function(){return 0});st.override=null;st.sel=-1;render()};
+$("save").onclick=function(){var c=current();if(!c){$("status").textContent="Add some drops first.";return}
+ st.chips.push(c);if(st.chips.length>10)st.chips.shift();st.sel=st.chips.length-1;st.override=c;render()};
+$("chips").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var i=+b.dataset.i;st.sel=i;st.override=st.chips[i];render()});
+$("clear").onclick=function(){clearCells();draw()};
+$("blur").onclick=function(){smudge();draw()};
+
+function render(){
+ var c=current(),t=total();
+ st.counts.forEach(function(n,i){$("n"+i).textContent=n});
+ Array.prototype.forEach.call(modelsEl.children,function(b){b.setAttribute("aria-pressed",b.dataset.m===st.model)});
+ $("modelHint").textContent=MODELS.filter(function(m){return m.id===st.model})[0].h;
+ $("sw").style.background=c?hex(c):"transparent";
+ $("hex").textContent=c?hex(c).toUpperCase():"empty";
+ $("rgb").textContent=c?"rgb("+c.join(", ")+")":"no color yet";
+ $("drops").textContent=st.override?"saved chip":t+" / "+MAXD+" drops";
+ var pv=$("preview");
+ if(c){var line="",r;for(r=0;r<RAMP.length;r++)line+=RAMP[r]+RAMP[r]+RAMP[r];
+  pv.style.color=hex(c);pv.textContent=line+"\n"+line.split("").reverse().join("")+"\n"+"@".repeat(line.length)}
+ else{pv.style.color="";pv.textContent=""}
+ var ch=$("chips");ch.innerHTML="";
+ st.chips.forEach(function(k,i){var b=document.createElement("button");b.className="chip"+(i===st.sel?" sel":"");b.style.background=hex(k);b.dataset.i=i;b.setAttribute("aria-label","Saved color "+hex(k));ch.appendChild(b)});
+}
+// canvas
+var cv=$("field"),ctx=cv.getContext("2d"),CW=13,CH=21,dpr=1;
+function setup(){
+ dpr=window.devicePixelRatio||1;
+ cv.width=COLS*CW*dpr;cv.height=ROWS*CH*dpr;
+ cv.style.aspectRatio=(COLS*CW)+"/"+(ROWS*CH);
+ draw();
+}
+function draw(){
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.fillStyle="#08090b";ctx.fillRect(0,0,COLS*CW,ROWS*CH);
+ ctx.font="bold 18px ui-monospace,Menlo,Consolas,monospace";ctx.textBaseline="middle";ctx.textAlign="center";
+ for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){
+  var c=cells[y*COLS+x];if(c.ink<.04)continue;
+  var gi=Math.min(RAMP.length-1,Math.max(1,Math.round(c.ink*(RAMP.length-1))));
+  ctx.fillStyle=hex(c.c);ctx.fillText(RAMP[gi],x*CW+CW/2,y*CH+CH/2+1);
+ }
+ if(cur){ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1;ctx.strokeRect(cur.x*CW+.5,cur.y*CH+.5,CW-1,CH-1)}
+}
+var cur=null;
+function stamp(cx,cy){
+ var col=current();if(!col){$("status").textContent="Add pigment first (+ buttons).";return false}
+ var rad=+$("size").value;
+ var x0=Math.max(0,Math.floor(cx-rad)),x1=Math.min(COLS-1,Math.ceil(cx+rad));
+ var y0=Math.max(0,Math.floor(cy-rad)),y1=Math.min(ROWS-1,Math.ceil(cy+rad));
+ for(var y=y0;y<=y1;y++)for(var x=x0;x<=x1;x++){
+  var dx=(x+.5-cx),dy=(y+.5-cy)*.62; // cells are taller than wide
+  var d=Math.sqrt(dx*dx+dy*dy);if(d>rad)continue;
+  var a=(1-d/rad)*.55+.12;
+  var cell=cells[y*COLS+x];
+  if(cell.ink<.04)cell.c=col.slice();
+  else cell.c=mix([[cell.c,cell.ink],[col,a]],st.model);
+  cell.ink=Math.min(1,cell.ink+a);
+ }
+ return true;
+}
+function smudge(){
+ var n=cells.map(function(c){return{c:c.c.slice(),ink:c.ink}});
+ for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){
+  var l=[],ink=0,k=0;
+  for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){
+   var xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=COLS||yy>=ROWS)continue;
+   var c=cells[yy*COLS+xx];ink+=c.ink;k++;if(c.ink>.04)l.push([c.c,c.ink*(dx||dy?1:2)]);
+  }
+  if(l.length){n[y*COLS+x].c=mix(l,st.model);n[y*COLS+x].ink=Math.min(1,ink/k*1.15)}
+ }
+ cells=n;
+}
+function pos(e){var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*COLS,y:(e.clientY-r.top)/r.height*ROWS}}
+var down=false,last=null;
+cv.addEventListener("pointerdown",function(e){
+ down=true;cv.setPointerCapture(e.pointerId);cv.focus({preventScroll:true});
+ var p=pos(e);last=p;if(stamp(p.x,p.y)){$("status").textContent="Painting...";}draw();e.preventDefault();
+});
+cv.addEventListener("pointermove",function(e){
+ if(!down)return;var p=pos(e);
+ var dist=Math.hypot(p.x-last.x,(p.y-last.y)*.6),steps=Math.max(1,Math.ceil(dist/.6));
+ for(var i=1;i<=steps;i++)stamp(last.x+(p.x-last.x)*i/steps,last.y+(p.y-last.y)*i/steps);
+ last=p;draw();
+});
+function up(){down=false}
+cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+cv.addEventListener("keydown",function(e){
+ if(!cur)cur={x:COLS>>1,y:ROWS>>1};
+ var m={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+ if(m){cur.x=Math.max(0,Math.min(COLS-1,cur.x+m[0]));cur.y=Math.max(0,Math.min(ROWS-1,cur.y+m[1]));if(e.shiftKey)stamp(cur.x+.5,cur.y+.5);draw();e.preventDefault()}
+ else if(e.key===" "||e.key==="Enter"){stamp(cur.x+.5,cur.y+.5);draw();e.preventDefault()}
+});
+cv.addEventListener("blur",function(){cur=null;draw()});
+window.addEventListener("resize",function(){if((window.devicePixelRatio||1)!==dpr)setup()});
+render();setup();
+// seed the grid so the first view is not empty
+(function(){var save=st.override;
+ var seeds=[[[PIG[0].c,1],[PIG[1].c,1]],[[PIG[1].c,1],[PIG[2].c,1]],[[PIG[2].c,1],[PIG[0].c,1]]];
+ var cx=[14,32,50];
+ seeds.forEach(function(s,i){var oldM=st.model;st.override=mix(s.slice(0,1),"paint");
+  // paint pure first
+  st.override=s[0][0];for(var k=0;k<6;k++)stamp(cx[i]-5+k*.6,13);
+  st.override=null;});
+ // each pure pigment: red left, yellow middle, blue right, overlapped circles blend
+ clearCells();
+ var spots=[[PIG[0].c,22,10],[PIG[1].c,32,16],[PIG[2].c,42,10]];
+ var sz=$("size").value;$("size").value=5;
+ spots.forEach(function(s){st.override=s[0];for(var k=0;k<14;k++)stamp(s[1]+Math.cos(k)*3,s[2]+Math.sin(k)*2);for(var j=0;j<5;j++)stamp(s[1],s[2])});
+ $("size").value=sz;st.counts[0]=1;st.counts[1]=1;
+ st.override=save;draw();render();$("status").textContent="Red + yellow is in the pots: drag on the grid to paint orange.";
+})();
+})();
+</script>
+</body>
+</html>

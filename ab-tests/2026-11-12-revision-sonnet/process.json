@@ -1,0 +1,135 @@
+{
+ "t2-pomodoro": {
+  "D-r1": {
+   "agent": "ad8e6697522d6a45c",
+   "angle": "full-bleed phase colour",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "D-r2": {
+   "agent": "a0a866370ba78599c",
+   "angle": "quiet text-only status",
+   "deal_no": 1,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 3,
+   "look_findings": [
+    [],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "D-r3": {
+   "agent": "a38dcf1b4cc5a07e9",
+   "angle": "held between phases",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "D-r4": {
+   "agent": "a9c3da804bf508c96",
+   "angle": "ring that fills over the session",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "look_findings": [
+    [],
+    []
+   ],
+   "looks": 3,
+   "plays": 0,
+   "sheet_read": 0
+  }
+ },
+ "t3-snowglobe": {
+  "D-r1": {
+   "agent": "a6d848c53a24842b7",
+   "angle": "long exposure streaks",
+   "deal_no": 2,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 6,
+   "look_findings": [
+    [],
+    [],
+    []
+   ],
+   "looks": 3,
+   "plays": 2,
+   "sheet_read": 0
+  },
+  "D-r2": {
+   "agent": "a9fa678b11462b018",
+   "angle": "shelf in a room",
+   "deal_no": 4,
+   "dealt": true,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "look_findings": [
+    [
+     "focus-static",
+     "hover-static"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "sheet_read": 0
+  },
+  "D-r3": {
+   "agent": "a9f4c98f7ec49a614",
+   "angle": "one colour family",
+   "deal_no": 1,
+   "dealt": true,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 3,
+   "look_findings": [
+    [],
+    []
+   ],
+   "looks": 3,
+   "plays": 1,
+   "sheet_read": 0
+  },
+  "D-r4": {
+   "agent": "a91b22069a7860eb5",
+   "angle": "close-up dome",
+   "deal_no": 3,
+   "dealt": true,
+   "edits": 3,
+   "edits_after_first_look": 2,
+   "images_read": 2,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "sheet_read": 0
+  }
+ }
+}

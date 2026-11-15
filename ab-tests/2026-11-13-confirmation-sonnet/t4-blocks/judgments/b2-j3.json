@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j3","scores":{
+"U":{"fidelity":6,"correctness":7,"craft":4,"usability":6,"overall":5,"note":"Flat top-down 32x32 painter with 8 colors and save; works but looks like a plain pixel grid, empty start, and the mobile grid lines render unevenly."},
+"V":{"fidelity":6,"correctness":7,"craft":6,"usability":6,"overall":6,"note":"Polished dark 32x32 grid with counts and shortcuts but only four kinds, empty dark canvas and the desktop footer is cut off at 800px."},
+"W":{"fidelity":9,"correctness":8,"craft":9,"usability":8,"overall":9,"note":"Isometric 3D 32x32 voxel world with generated terrain, 9 block types, place/erase/undo, and a layout that fits desktop and phone."},
+"X":{"fidelity":7,"correctness":8,"craft":6,"usability":7,"overall":6,"note":"Top-down column stacking with a height cap of 6 and clear hints is sound but visually bare with only three block types."},
+"Y":{"fidelity":6,"correctness":7,"craft":6,"usability":7,"overall":6,"note":"Clean sidebar with 8 blocks, autosave and block count, but it is a flat empty grid with no sense of building."},
+"Z":{"fidelity":8,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Textured side-view 32x32 sandbox with pre-built terrain, tree, 10 tools and good mobile layout; reads as a Minecraft-like builder."}},
+"ranking":["W","Z","X","V","Y","U"]}

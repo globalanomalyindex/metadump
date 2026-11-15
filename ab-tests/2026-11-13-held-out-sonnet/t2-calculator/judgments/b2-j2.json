@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j2","scores":{
+"U":{"basic":9,"correctness":9,"usability":9,"craft":8,"code":7,"overall":9,"note":"Calm, clear light design with AC/C toggle, active-operator highlight, shrinking digits, aria-live and full keyboard; correct on all cases, code a bit tangled."},
+"V":{"basic":9,"correctness":8,"usability":7,"craft":6,"code":7,"overall":7,"note":"Standard iOS-style dark calculator with commas and correct results, but sparse aria labels (symbol-only buttons) and a plain, generic look."},
+"W":{"basic":8,"correctness":8,"usability":8,"craft":8,"code":6,"overall":8,"note":"Polished dark glass look with labelled buttons, C/CE/backspace and a keyboard hint; a little extra chrome and longer source."},
+"X":{"basic":10,"correctness":8,"usability":7,"craft":6,"code":8,"overall":7,"note":"Leanest and most basic, correct, but flat styling, no backspace key on screen, minimal aria labels, and a dead AC ternary."},
+"Y":{"basic":9,"correctness":9,"usability":9,"craft":9,"code":8,"overall":9,"note":"Warm, legible light theme with strong display contrast, C/CE/backspace, helpful error caption, good aria labels and phone fit, in tidy code."},
+"Z":{"basic":6,"correctness":8,"usability":8,"craft":10,"code":4,"overall":7,"note":"Gorgeous seven-segment retro calculator and arithmetic is sound with repeat-equals, but it is overbuilt for 'basic' and the large SVG-drawing source is heavy."}},
+"ranking":["Y","U","W","Z","X","V"]}

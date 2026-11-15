@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember &amp; Oak Bento Menu</title>
+<style>
+:root{
+  --espresso:#2b1d16; --crema:#f3e6d3; --latte:#d9b99b; --terra:#c8553d; --moss:#5b6b4a; --paper:#fbf5ec;
+  --gap:10px; --r:20px;
+  --ease:cubic-bezier(.2,.9,.3,1.15);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--espresso);min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px clamp(16px,4vw,40px);border-bottom:1px solid #e6d6c0;position:relative}
+.brand{font-family:Georgia,"Times New Roman",serif;font-size:1.35rem;font-weight:700;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+.brand svg{width:26px;height:26px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.lid{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--espresso);color:var(--crema);font:600 .95rem inherit;font-family:inherit;cursor:pointer;transition:transform .15s,background .2s}
+.lid:hover{background:#43301f}
+.lid:active{transform:scale(.97)}
+.lid .bars{width:18px;height:14px;display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.lid .bars i{background:var(--crema);border-radius:2px;transition:transform .4s var(--ease)}
+.lid[aria-expanded="true"] .bars i:nth-child(1){transform:translate(-1px,-1px) scale(.8)}
+.lid[aria-expanded="true"] .bars i:nth-child(2){transform:translate(1px,-1px) scale(.8)}
+.lid[aria-expanded="true"] .bars i:nth-child(3){transform:translate(-1px,1px) scale(.8)}
+.lid[aria-expanded="true"] .bars i:nth-child(4){transform:translate(1px,1px) scale(.8)}
+.badge{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:999px;background:var(--crema);font-weight:700}
+:focus-visible{outline:3px solid var(--terra);outline-offset:3px}
+
+.wrap{position:absolute;left:clamp(8px,4vw,40px);top:100%;width:min(720px,calc(100vw - 16px));z-index:10;display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--ease)}
+.wrap[data-open="true"]{grid-template-rows:1fr}
+.wrap>.clip{overflow:hidden;min-height:0}
+.tray{margin-top:10px;padding:var(--gap);background:var(--latte);border-radius:calc(var(--r) + 8px);box-shadow:0 20px 40px -18px rgba(43,29,22,.5);
+  display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;gap:var(--gap)}
+.cell{position:relative;border:0;border-radius:var(--r);padding:16px;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-height:92px;
+  opacity:0;transform:translateY(10px) scale(.95);transition:opacity .3s ease,transform .4s var(--ease),box-shadow .15s,filter .15s;transition-delay:0s}
+.wrap[data-open="true"] .cell{opacity:1;transform:none;transition-delay:calc(var(--i)*45ms)}
+.cell:hover{filter:brightness(1.05);box-shadow:inset 0 0 0 2px rgba(43,29,22,.35)}
+.cell:active{transform:scale(.97)}
+.cell h3{margin:0;font-family:Georgia,serif;font-size:1.05rem;line-height:1.15}
+.cell p{margin:0;font-size:.78rem;opacity:.8;line-height:1.3}
+.cell svg{width:26px;height:26px}
+.cell[aria-current="true"]::after{content:"";position:absolute;top:12px;right:12px;width:12px;height:12px;border-radius:50%;background:var(--terra);box-shadow:0 0 0 3px var(--paper)}
+.hero{grid-column:1/3;grid-row:1/3;background:var(--espresso);color:var(--crema)}
+.hero h3{font-size:1.7rem}
+.hero p{font-size:.9rem}
+.hero .art{width:100%;height:72px}
+.c-sub{grid-column:3/5;grid-row:1;background:var(--terra);color:#fff}
+.c-guide{grid-column:3;grid-row:2/4;background:var(--crema)}
+.c-cafe{grid-column:4;grid-row:2;background:var(--moss);color:#f3efe2}
+.c-story{grid-column:4;grid-row:3;background:var(--paper)}
+.c-cart{grid-column:1/3;grid-row:3;background:var(--crema);flex-direction:row;align-items:center}
+.cart-n{font:700 1.6rem Georgia,serif;min-width:2ch;text-align:center}
+.sub{display:none;font-size:.75rem;margin-top:4px}
+.cell[aria-current="true"] .sub{display:block}
+.status{grid-column:1/-1;font-size:.85rem;padding:2px 8px;color:var(--espresso)}
+main{padding:clamp(20px,5vw,60px);max-width:760px;margin:0 auto}
+main h1{font-family:Georgia,serif;font-size:clamp(1.8rem,5vw,2.8rem);margin:0 0 8px}
+main p{max-width:52ch;line-height:1.5}
+#page{padding:14px 18px;background:var(--crema);border-radius:var(--r);margin-top:20px}
+@media (max-width:640px){
+  .tray{grid-template-columns:repeat(2,1fr)}
+  .hero,.c-sub,.c-guide,.c-cart{grid-column:1/3;grid-row:auto}
+  .c-cafe,.c-story{grid-column:auto;grid-row:auto}
+  .brand{font-size:1.1rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .wrap,.cell,.lid .bars i{transition:none!important}
+  .cell{transform:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="10" ry="13" fill="#c8553d" transform="rotate(25 16 16)"/><path d="M10 6c6 6 6 14 12 20" stroke="#fbf5ec" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+    Ember &amp; Oak
+  </div>
+  <div class="nav-right">
+    <span class="badge" aria-label="Cart items"><span id="badge">0</span> in cart</span>
+    <button class="lid" id="lid" aria-expanded="false" aria-controls="tray"><span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="lidText">Menu</span></button>
+  </div>
+  <div class="wrap" id="wrap" data-open="false">
+    <div class="clip">
+      <nav class="tray" id="tray" aria-label="Main menu" inert>
+        <button class="cell hero" style="--i:0" data-key="beans" data-label="Shop beans">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="9" ry="12" fill="#c8553d" transform="rotate(25 16 16)"/><path d="M11 6c6 6 6 14 11 20" stroke="#2b1d16" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div><h3>Shop beans</h3><p>Single origin, roasted this week. Free shipping over $35.</p><div class="sub">Ethiopia Guji &middot; Colombia Huila &middot; House blend</div></div>
+        </button>
+        <button class="cell c-sub" style="--i:1" data-key="subscribe" data-label="Subscribe">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 16a10 10 0 0 1 17-7l3 3M26 16a10 10 0 0 1-17 7l-3-3M26 6v6h-6M6 26v-6h6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h3>Subscribe</h3><p>Fresh bags every 2 weeks.</p><div class="sub">Pause or skip anytime</div></div>
+        </button>
+        <button class="cell c-guide" style="--i:2" data-key="guides" data-label="Brew guides">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 5h16l-3 10a5 5 0 0 1-10 0zM16 20v7M11 27h10" stroke="#2b1d16" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h3>Brew guides</h3><p>Pour-over, press, espresso.</p><div class="sub">Ratios &amp; timings</div></div>
+        </button>
+        <button class="cell c-cafe" style="--i:3" data-key="cafes" data-label="Find a cafe">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28s9-8 9-14a9 9 0 0 0-18 0c0 6 9 14 9 14z" stroke="#f3efe2" stroke-width="2" fill="none"/><circle cx="16" cy="14" r="3" fill="#f3efe2"/></svg>
+          <div><h3>Find a cafe</h3><p>6 locations</p></div>
+        </button>
+        <button class="cell c-story" style="--i:4" data-key="story" data-label="Our story">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 6h20v20H6zM11 12h10M11 17h10M11 22h6" stroke="#2b1d16" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div><h3>Our story</h3><p>Since 2011</p></div>
+        </button>
+        <div class="cell c-cart" style="--i:5;cursor:default" role="group" aria-label="Cart">
+          <div><h3>Add a bag</h3><p>Try the house blend</p></div>
+          <span style="display:flex;align-items:center;gap:8px">
+            <button type="button" id="minus" class="badge" style="border:0;cursor:pointer;background:var(--latte);font-size:1.2rem" aria-label="Remove one">&minus;</button>
+            <span class="cart-n" id="cartN">0</span>
+            <button type="button" id="plus" class="badge" style="border:0;cursor:pointer;background:var(--espresso);color:var(--crema);font-size:1.2rem" aria-label="Add one">+</button>
+          </span>
+        </div>
+        <div class="status" id="status" role="status" aria-live="polite">Nothing selected yet.</div>
+      </nav>
+    </div>
+  </div>
+</header>
+<main>
+  <h1>Roasted slowly, opened gently.</h1>
+  <p>Open the menu above. Each compartment is a destination; pick one and the page below updates.</p>
+  <div id="page" aria-live="polite">Viewing: Home</div>
+</main>
+<script>
+(function(){
+  var state={open:false,active:null,cart:0};
+  var lid=document.getElementById('lid'),wrap=document.getElementById('wrap'),tray=document.getElementById('tray');
+  var cells=[].slice.call(tray.querySelectorAll('button.cell'));
+  var status=document.getElementById('status'),page=document.getElementById('page');
+  function render(){
+    wrap.dataset.open=state.open;
+    lid.setAttribute('aria-expanded',state.open);
+    document.getElementById('lidText').textContent=state.open?'Close':'Menu';
+    if(state.open){tray.removeAttribute('inert')}else{tray.setAttribute('inert','')}
+    cells.forEach(function(c){
+      if(c.dataset.key===state.active)c.setAttribute('aria-current','true');else c.removeAttribute('aria-current');
+    });
+    var cell=cells.filter(function(c){return c.dataset.key===state.active})[0];
+    status.textContent=cell?'Selected: '+cell.dataset.label:'Nothing selected yet.';
+    page.textContent='Viewing: '+(cell?cell.dataset.label:'Home');
+    document.getElementById('cartN').textContent=state.cart;
+    document.getElementById('badge').textContent=state.cart;
+  }
+  function setOpen(v,refocus){
+    state.open=v;render();
+    if(v){setTimeout(function(){cells[0].focus()},60)}else if(refocus){lid.focus()}
+  }
+  lid.addEventListener('click',function(){setOpen(!state.open,true)});
+  cells.forEach(function(c){
+    c.addEventListener('click',function(){
+      state.active=c.dataset.key;render();
+      setTimeout(function(){setOpen(false,true)},450);
+    });
+  });
+  document.getElementById('plus').addEventListener('click',function(){state.cart++;render()});
+  document.getElementById('minus').addEventListener('click',function(){state.cart=Math.max(0,state.cart-1);render()});
+  document.addEventListener('keydown',function(e){
+    if(!state.open)return;
+    if(e.key==='Escape'){setOpen(false,true);return}
+    var i=cells.indexOf(document.activeElement);
+    if(i<0)return;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){cells[(i+1)%cells.length].focus();e.preventDefault()}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){cells[(i-1+cells.length)%cells.length].focus();e.preventDefault()}
+  });
+  document.addEventListener('click',function(e){
+    if(state.open&&!wrap.contains(e.target)&&!lid.contains(e.target))setOpen(false,false);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

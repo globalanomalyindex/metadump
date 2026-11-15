@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Tidy dark pill nav that opens a compact six-tile bento with a bag stepper and roast picker, but sparse content and small tiles."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 7, "overall": 8, "note": "Rich bento with working roast, subscription and cafe controls and a visible state readout, though dense and a little debug-looking."},
+"W": {"fidelity": 7, "correctness": 7, "craft": 8, "usability": 6, "overall": 7, "note": "Bold Kiln and Kettle branding and a floating bento panel with working controls, but the panel covers the hero text and is fairly small on a cramped layout."},
+"X": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Clean full-width bento with featured blend, categories, order list, milk options and a running total; cohesive and usable, with a blank page at rest."},
+"Y": {"fidelity": 9, "correctness": 8, "craft": 8, "usability": 8, "overall": 9, "note": "Most complete and polished bento: expanding tiles, roast and subscription toggles, bag, cafe select, with Escape and outside-click close and a cohesive palette."},
+"Z": {"fidelity": 7, "correctness": 7, "craft": 8, "usability": 6, "overall": 7, "note": "Stacked-tins concept with playful tilted tiles and a distinctive look, but the tiles are small and mobile puts the menu below the hero."}
+}, "ranking": ["Y", "X", "V", "W", "Z", "U"]}

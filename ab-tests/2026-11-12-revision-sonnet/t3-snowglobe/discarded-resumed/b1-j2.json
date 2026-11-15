@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"likeness": 8, "visuals": 7, "motion": 5, "presentation": 7, "overall": 7, "note": "Charming chapel on a green and gold base in a warm room, but the snow is soft and hazy and the shake barely changes it."},
+"V": {"likeness": 8, "visuals": 6, "motion": 7, "presentation": 6, "overall": 7, "note": "Clean night cottage with readable snow and a visible shake response, but the base is plain and the controls are a bit cluttered."},
+"W": {"likeness": 7, "visuals": 7, "motion": 6, "presentation": 4, "overall": 6, "note": "A lovely shelf vignette with candle and books, but the globe is small, the snow sparse, and the big control panel covers the scene."},
+"X": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 7, "overall": 8, "note": "A convincing night-cabin globe with rich snowfall, a clear dome and a tilt on shake; the controls sit partly below the fold."},
+"Y": {"likeness": 6, "visuals": 6, "motion": 4, "presentation": 6, "overall": 5, "note": "A glossy pale-blue dome with a tiny scene and no visible snow at rest; the flakes only appear as a small glitter cluster after a shake."},
+"Z": {"likeness": 8, "visuals": 8, "motion": 8, "presentation": 6, "overall": 8, "note": "A rich dome with a detailed scene and a convincing churn and settle, held back by a dim globe and a heavy side panel."}
+}, "ranking": ["X", "Z", "V", "U", "W", "Y"]}

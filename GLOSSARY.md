@@ -42,8 +42,16 @@ _Avoid_: card, record, item
 The one idea at the top of a meta dump about what makes the subject interesting ("colors appear to exist inside materials rather than on their surfaces"). An insight, never a recipe for the deliverable. Recorded in the essence.
 _Avoid_: summary, tagline, headline, rule
 
+**Quick dump**:
+A meta dump written in one pass by the model that is about to do the task, with no agents: the request, a thesis, the job, the disciplines with their principles, steps, tricks and tests, the thing and its kinds, the specifics with tiered keywords and value ranges, anti-keywords and checks. About two to four thousand tokens, with no manifest, routes or index, so it is read whole. The lightest depth, below `lite`, and only on request (`references/quick.md`, ADR 0021).
+_Avoid_: lite dump, mini dump, roots dump
+
+**Kind**:
+A version of the thing that people make. A quick dump lists a few under `the_thing.kinds`, the classic one first, and records the ones built under `built`; a full dump's angles are kinds too.
+_Avoid_: variant, flavour, treatment
+
 **Angle**:
-One of 2 to 5 contrasting ways into the task listed in the head, each a move and the entries it draws on. None is the default, so consumers start from different places instead of one road.
+One of 4 to 6 kinds of the thing listed in the head: a version people make, which varies what the request leaves open (the subject, the style, the era, the palette) and keeps what makes the thing itself, with the entries it draws on. The first is the **home angle**, the kind a stranger pictures on hearing the request. A way of showing the thing (a camera position, a lighting effect, a moment caught) is a shot, not an angle. None is a recommendation. The deal hands each session one, the home angle first, and goes through them in order, so sessions sharing a dump start from different places.
 _Avoid_: approach, strategy, direction (as a recommendation)
 
 **Deep cut**:
@@ -55,11 +63,11 @@ A value offered with a range and what turning it does ("hover-in 300 to 700 ms: 
 _Avoid_: setting, default, parameter (as a fixed value)
 
 **Deal**:
-Giving one session a hand of the dump, chosen by real randomness outside the model (`deal.py`). The **hand** is the part of the deck that session works from: the user's words and don'ts, every tier-1 entry and the review questions, plus a random half of everything else (the dump's own worn paths included), in a fresh order, with a random angle to start from and a few deep cuts on top. The **dealt copy** is the file that holds the hand; the **deck** is the whole dump, which never changes. Sessions dealt from the same deck work from different mixes of it.
+Giving one session a hand of the dump, chosen outside the model (`deal.py`). The **hand** is the part of the deck that session works from: the user's words and don'ts, every tier-1 entry and the review questions, plus half of everything else (the dump's own worn paths included), in a fresh order, with an angle to start from and a few deep cuts on top. The **dealt copy** is the file that holds the hand; the **deck** is the whole dump, which never changes. Deals **rotate**: the **ledger** (`.deals/<slug>.deals.json` beside the dump) counts what earlier hands held, and each deal takes what has been dealt least (angles in the dump's own order, the home angle first), so sessions sharing a deck start from different angles and hold different halves (ADR 0019).
 _Avoid_: shuffle (as a step the model does itself), sample, recommendation, subset (it suggests a filter rather than a deal)
 
 **Look**:
-Rendering what a session built in the local headless browser and reading the screenshots before finishing: desktop and phone widths, the main control hovered, the main toggle opened, with a short list of what a reviewer would see (clipping, overlap, overflow, tiny targets, a hover that changes nothing) as things to look at, not rules (`look.py`, ADR 0018). The question asked of every screenshot is whether it reads as the user's words at full strength.
+Rendering what a session built in the local headless browser, playing it, and reading the result before finishing (`look.py`, ADRs 0018 and 0020). It screenshots desktop and phone widths and lists what a reviewer would see at rest (clipping, overlap, overflow, tiny targets, a hover that changes nothing). Then the **walk** acts on everything a person could, once, and tabs through the page, checking after each action what holds for any page (no script error, matching siblings stay matched, nothing newly clipped, focus shows). A **play** is a scripted run of steps with `expect`s, for a state the walk can't reach or a review question that gives steps. The **account** is the walk told in words; the **sheet** is every state on one image. Findings are things to look at, not rules. The questions asked of the sheet are whether a stranger would name what the user asked for, and whether it reads as the user's words at full strength.
 _Avoid_: lint, gate, QA pass, visual regression
 
 **Spread**:

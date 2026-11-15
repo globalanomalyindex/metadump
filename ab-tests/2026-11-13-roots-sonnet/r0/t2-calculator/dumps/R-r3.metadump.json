@@ -1,0 +1,31 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A calculator is a tiny state machine wearing a keypad; the pleasure is in trustworthy arithmetic and keys that feel like hardware.",
+  "job": ["open it and see a display and keypad", "enter digits and a decimal point", "pick an operator", "enter second number", "press equals and read result", "chain operations without pressing equals", "repeat equals to repeat last operation", "correct a mistake (backspace, clear entry, all clear)", "negate and percent", "use keyboard instead of mouse", "see divide-by-zero error and recover", "read long numbers without overflow"],
+  "disciplines": {
+    "interaction design": {"principles": ["every press gives instant visible feedback", "display always shows what was just typed or computed", "active operator is visibly marked", "big hit targets"], "steps": ["map state transitions first", "then bind keys", "then style"], "tricks": ["highlight pending operator", "equals repeats last op", "typing after result starts fresh", "operator pressed twice replaces the first"], "tests": ["2+3*4 chained behaviour consistent", "0.1+0.2 shows 0.3", "5/0 shows error then recovers"]},
+    "visual design": {"principles": ["display dominates", "operators distinct from digits, equals the accent", "grid alignment, consistent gutters"], "steps": ["palette", "type scale", "key states"], "tricks": ["tabular numerals", "shrink font on long numbers", "pressed key shifts down 1-2px"], "tests": ["squint test: display, then accent equals"]},
+    "front-end code": {"principles": ["state in one object, render from state", "no eval", "event delegation"], "steps": ["state object", "reducer-like functions", "render()", "keyboard map"], "tricks": ["round to 12 significant digits to kill float noise", "aria-live on display", "data-attributes on buttons"], "tests": ["click and keyboard give same result"]},
+    "accessibility": {"principles": ["real buttons, labels, focus ring, live region, contrast 4.5+"], "steps": [], "tricks": ["aria-label for symbols like divide, backspace"], "tests": ["tab through all keys"]}
+  },
+  "the_thing": {
+    "parts": ["display (current + small expression history line)", "digits 0-9", "decimal", "+ - x /", "equals", "AC/C", "backspace", "plus-minus", "percent"],
+    "expectations": ["standard 4x5 grid", "zero is wide", "operator highlighting", "keyboard support", "no page scroll"],
+    "kinds": [{"name": "immediate-execution pocket calculator", "what": "classic 4x5 keypad, chains left to right"}, {"name": "expression-line calculator", "what": "types full expression then evaluates"}, {"name": "tape calculator", "what": "adding-machine paper history"}]
+  },
+  "specifics": {
+    "shape": {"keywords": {"1": ["calculator", "keypad", "display"], "2": ["4 column grid", "rounded keys", "wide zero"], "3": ["tactile", "bezel", "recessed LCD"]}, "descriptions": ["body width 300 to 360px", "keys gap 8 to 12px"], "behaviors": ["keys depress on press"], "tokens": {"key radius": "12 to 20px", "gap": "8 to 12px", "display font": "36 to 56px"}},
+    "colour": {"keywords": {"1": ["dark", "accent equals"], "2": ["warm orange equals", "grey operators"], "3": ["two-tone keycaps"]}, "descriptions": ["dark body, lighter digit keys, amber operator keys"], "behaviors": [], "tokens": {"accent": "amber/orange hue 25-40", "contrast": ">=4.5"}},
+    "state": {"keywords": {"1": ["current", "previous", "operator"], "2": ["overwrite flag", "last operation"], "3": ["error state"]}, "descriptions": ["after equals, digit starts new number; operator continues with result"], "behaviors": ["divide by zero -> Error, any key clears"], "tokens": {"max digits": "12 to 15"}},
+    "copy": {"keywords": {"1": ["AC", "C", "="], "2": ["Error"], "3": []}, "descriptions": ["use true multiply and divide glyphs"], "behaviors": [], "tokens": {}}
+  },
+  "anti_keywords": [
+    {"not": "eval() on strings", "instead": "explicit operator functions with number state"},
+    {"not": "raw float output 0.30000000000000004", "instead": "round to 12 significant digits and trim zeros"},
+    {"not": "flat identical grey buttons", "instead": "three key families with clear hierarchy and pressed feedback"},
+    {"not": "mouse-only", "instead": "full keyboard map incl. Enter, Backspace, Escape"},
+    {"not": "overflowing display", "instead": "auto-shrink font and exponent fallback"}
+  ],
+  "checks": ["Does 0.1+0.2 show 0.3?", "Does 5/0 show Error and recover?", "Does = repeat?", "Does keyboard work?", "Is the active operator highlighted?", "Does a long number fit?"],
+  "built": ["immediate-execution pocket calculator"]
+}

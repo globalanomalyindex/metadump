@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snow Globe</title>
+<style>
+  :root{--bg1:#1b2140;--bg2:#0b0e1f;--ink:#e9eefc;--mute:#9aa6cf;--accent:#ffcf7a;--panel:#ffffff14}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:radial-gradient(ellipse at 50% 30%,var(--bg1),var(--bg2));color:var(--ink);font-family:Georgia,"Times New Roman",serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:12px;user-select:none;-webkit-user-select:none}
+  h1{font-weight:400;font-size:1.3rem;letter-spacing:.2em;text-transform:uppercase;margin:0 0 4px;color:var(--accent)}
+  .sub{font-size:.85rem;color:var(--mute);margin-bottom:6px;font-style:italic;text-align:center}
+  #wrap{width:min(92vw,560px);aspect-ratio:600/660;touch-action:none}
+  canvas{width:100%;height:100%;display:block;cursor:grab}
+  canvas:active{cursor:grabbing}
+  .controls{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;align-items:center;margin-top:8px;width:min(96vw,640px)}
+  button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid #ffffff30;border-radius:999px;padding:7px 14px;cursor:pointer}
+  button:hover{background:#ffffff26}
+  button[aria-pressed="true"]{background:var(--accent);color:#2a1b00;border-color:var(--accent)}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  label{font-size:.85rem;color:var(--mute);display:flex;align-items:center;gap:6px}
+  input[type=range]{accent-color:var(--accent);width:110px}
+  .group{display:flex;gap:6px}
+  #stat{font-size:.8rem;color:var(--mute);font-variant-numeric:tabular-nums;min-width:170px;text-align:center}
+</style>
+</head>
+<body>
+<h1>Winter Hollow</h1>
+<div class="sub">Drag the globe, or press Space, to shake it.</div>
+<div id="wrap"><canvas id="c" width="600" height="660" aria-label="Snow globe. Drag to shake."></canvas></div>
+<div class="controls">
+  <button id="shake">Shake</button>
+  <div class="group" role="group" aria-label="Scene">
+    <button data-scene="cottage" aria-pressed="true">Cottage</button>
+    <button data-scene="forest" aria-pressed="false">Forest</button>
+    <button data-scene="snowman" aria-pressed="false">Snowman</button>
+  </div>
+  <button id="night" aria-pressed="true">Night</button>
+  <button id="music" aria-pressed="false">Music box</button>
+  <label>Snow <input id="amt" type="range" min="40" max="600" value="260"></label>
+  <label>Wind <input id="wind" type="range" min="-10" max="10" value="0"></label>
+  <div id="stat"></div>
+</div>
+<script>
+(() => {
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const W = 600, H = 660, CX = 300, CY = 280, R = 210;
+const state = { scene:'cottage', night:true, music:false, amount:260, wind:0, shakes:0 };
+const flakes = [];
+const COLS = 150, X0 = 80, STEP = 3;
+const drift = new Float32Array(COLS);
+const rnd = (a,b)=>a+Math.random()*(b-a);
+
+function ground(x){ return 408 - 20*Math.exp(-Math.pow((x-300)/130,2)) + 4*Math.sin(x/37); }
+function colOf(x){ return Math.max(0,Math.min(COLS-1,Math.floor((x-X0)/STEP))); }
+
+function spawn(n, x, y, burst){
+  for(let i=0;i<n;i++){
+    let px=x, py=y;
+    if(px===undefined){ const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*(R-10); px=CX+Math.cos(a)*d; py=CY+Math.sin(a)*d*0.9-30; }
+    flakes.push({x:px,y:py,vx:burst?rnd(-120,120):rnd(-8,8),vy:burst?rnd(-260,-20):rnd(0,20),r:rnd(1,3.2),ph:rnd(0,6.28),sp:rnd(.6,1.6)});
+  }
+}
+spawn(state.amount);
+
+function releaseDrift(fraction){
+  for(let i=0;i<COLS;i++){
+    const take = drift[i]*fraction;
+    if(take<=0) continue;
+    drift[i]-=take;
+    const n = Math.round(take/0.35 + (Math.random()<(take/0.35)%1?1:0));
+    const x = X0+i*STEP;
+    for(let k=0;k<n;k++) if(flakes.length<1200) spawn(1,x+rnd(-2,2),ground(x)-drift[i]-2,true);
+  }
+}
+function shake(power){
+  state.shakes++;
+  for(const f of flakes){ f.vx+=rnd(-1,1)*220*power; f.vy+=rnd(-1,.2)*260*power; }
+  releaseDrift(Math.min(1,.5*power+.2));
+  wob.v += rnd(-1,1)*6*power;
+  wobY.v += rnd(-1,1)*4*power;
+}
+// globe wobble spring
+const wob={x:0,v:0}, wobY={x:0,v:0};
+function spring(s,dt){ s.v += (-60*s.x - 5*s.v)*dt; s.x += s.v*dt; }
+
+// ---------- scene drawing ----------
+function snowCap(x,y,w,h){ ctx.fillStyle='#f4f8ff'; ctx.beginPath(); ctx.moveTo(x-w/2,y+h); ctx.quadraticCurveTo(x-w*.15,y-h*.3,x,y); ctx.quadraticCurveTo(x+w*.15,y-h*.3,x+w/2,y+h); ctx.quadraticCurveTo(x,y+h*.6,x-w/2,y+h); ctx.fill(); }
+function tree(x,base,h){
+  const night=state.night;
+  ctx.fillStyle='#4a3022'; ctx.fillRect(x-3,base-h*.12,6,h*.14);
+  for(let i=0;i<3;i++){
+    const t=i/3, w=h*(.5-t*.14), yb=base-h*.1-i*h*.27, yt=yb-h*.38;
+    ctx.fillStyle=night?['#14452f','#175237','#1b5d3f'][i]:['#2d7a4f','#348a58','#3d9a62'][i];
+    ctx.beginPath(); ctx.moveTo(x-w/2,yb); ctx.lineTo(x,yt); ctx.lineTo(x+w/2,yb); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#eef4ff'; ctx.beginPath(); ctx.moveTo(x-w*.32,yb-h*.1); ctx.lineTo(x,yt); ctx.lineTo(x+w*.32,yb-h*.1); ctx.quadraticCurveTo(x+w*.1,yb-h*.05,x,yb-h*.09); ctx.quadraticCurveTo(x-w*.1,yb-h*.03,x-w*.32,yb-h*.1); ctx.fill();
+  }
+  if(night){ const cols=['#ff6b6b','#ffd166','#6bd1ff','#b28cff'];
+    for(let i=0;i<6;i++){ const a=(i*53)%7; ctx.fillStyle=cols[i%4]; ctx.globalAlpha=.6+.4*Math.sin(time*3+i*1.7); ctx.beginPath(); ctx.arc(x+(a-3)*h*.045, base-h*.2-i*h*.1, 1.8,0,7); ctx.fill(); } ctx.globalAlpha=1; }
+}
+function cottage(){
+  const x=300, g=ground(x)+4, night=state.night;
+  ctx.fillStyle=night?'#6b4a3a':'#a8785a'; ctx.fillRect(x-48,g-52,96,52);
+  const glow=.75+.25*Math.sin(time*7)*Math.sin(time*2.3);
+  // window
+  ctx.fillStyle=night?`rgba(255,196,90,${glow})`:'#bfe2ff'; ctx.fillRect(x-36,g-38,24,20);
+  ctx.strokeStyle='#3b2619'; ctx.lineWidth=2; ctx.strokeRect(x-36,g-38,24,20); ctx.beginPath(); ctx.moveTo(x-24,g-38); ctx.lineTo(x-24,g-18); ctx.moveTo(x-36,g-28); ctx.lineTo(x-12,g-28); ctx.stroke();
+  ctx.fillStyle='#3b2619'; ctx.fillRect(x+10,g-34,20,34);
+  ctx.fillStyle='#ffd166'; ctx.beginPath(); ctx.arc(x+26,g-17,1.6,0,7); ctx.fill();
+  // chimney
+  ctx.fillStyle='#7a4f3d'; ctx.fillRect(x+20,g-86,14,28);
+  // roof
+  ctx.fillStyle=night?'#8b2f35':'#b33a40'; ctx.beginPath(); ctx.moveTo(x-62,g-48); ctx.lineTo(x,g-92); ctx.lineTo(x+62,g-48); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#f4f8ff'; ctx.beginPath(); ctx.moveTo(x-62,g-48); ctx.lineTo(x,g-92); ctx.lineTo(x+62,g-48); ctx.lineTo(x+52,g-48); ctx.quadraticCurveTo(x+30,g-58,x+14,g-60); ctx.quadraticCurveTo(x-10,g-66,x-26,g-58); ctx.quadraticCurveTo(x-42,g-54,x-52,g-48); ctx.closePath(); ctx.fill();
+  ctx.fillRect(x+19,g-90,16,5);
+  // chimney smoke
+  for(let i=0;i<5;i++){ const t=((time*.35+i/5)%1); ctx.fillStyle=`rgba(220,226,245,${.35*(1-t)})`; ctx.beginPath(); ctx.arc(x+27+Math.sin(t*6+i)*6+state.wind*t*6,g-92-t*50,4+t*8,0,7); ctx.fill(); }
+  tree(x-105,ground(x-105)+2,90); tree(x+110,ground(x+110)+2,70); tree(x+150,ground(x+150)+2,100);
+}
+function forest(){
+  const spots=[[150,95],[195,120],[245,80],[300,135],[350,90],[405,115],[455,100],[225,60],[375,65]];
+  spots.sort((a,b)=>a[1]-b[1]);
+  for(const s of spots) tree(s[0],ground(s[0])+2-(s[1]<80?18:0),s[1]+40);
+  // lantern post
+  const x=300,g=ground(x)+8; ctx.fillStyle='#2b2b36'; ctx.fillRect(x-2,g-70,4,70);
+  const glow=state.night?1:.3; const gr=ctx.createRadialGradient(x,g-76,2,x,g-76,46); gr.addColorStop(0,`rgba(255,214,120,${.7*glow})`); gr.addColorStop(1,'rgba(255,214,120,0)'); ctx.fillStyle=gr; ctx.fillRect(x-50,g-124,100,100);
+  ctx.fillStyle=state.night?'#ffe29a':'#d8cfae'; ctx.fillRect(x-6,g-84,12,14);
+}
+function snowman(){
+  const x=300,g=ground(x)+6;
+  ctx.fillStyle='#f6f9ff'; ctx.strokeStyle='#c4d0ea'; ctx.lineWidth=1.5;
+  [[g-22,26],[g-62,19],[g-92,14]].forEach(([y,r])=>{ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.stroke();});
+  ctx.fillStyle='#222'; ctx.beginPath(); ctx.arc(x-5,g-95,1.8,0,7); ctx.arc(x+5,g-95,1.8,0,7); ctx.arc(x,g-64,2,0,7); ctx.arc(x,g-52,2,0,7); ctx.fill();
+  ctx.fillStyle='#ff8c2a'; ctx.beginPath(); ctx.moveTo(x,g-92); ctx.lineTo(x+16,g-89); ctx.lineTo(x,g-87); ctx.fill();
+  ctx.fillStyle='#c0392b'; ctx.fillRect(x-15,g-80,30,7);
+  const sw=Math.sin(time*2+state.wind)*3; ctx.beginPath(); ctx.moveTo(x+8,g-76); ctx.lineTo(x+14+sw,g-56); ctx.lineTo(x+20+sw,g-58); ctx.lineTo(x+14,g-76); ctx.fill();
+  ctx.fillStyle='#1d1d27'; ctx.fillRect(x-13,g-104,26,4); ctx.fillRect(x-9,g-122,18,19);
+  ctx.fillStyle='#8b2f35'; ctx.fillRect(x-9,g-108,18,4);
+  ctx.strokeStyle='#4a3022'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x-18,g-66); ctx.lineTo(x-46,g-84); ctx.moveTo(x-34,g-77); ctx.lineTo(x-40,g-92); ctx.moveTo(x+18,g-66); ctx.lineTo(x+44,g-78); ctx.stroke();
+  tree(x-120,ground(x-120)+2,95); tree(x+125,ground(x+125)+2,85);
+}
+
+// ---------- audio ----------
+let ac=null, tick=null, noteI=0;
+const melody=[659.3,783.99,659.3,587.33,523.25,587.33,659.3,0,587.33,659.3,587.33,523.25,493.88,523.25,587.33,0,392,440,493.88,523.25,587.33,523.25,493.88,440,392,0,0,0];
+function playNote(f){
+  if(!ac||!f) return; const t=ac.currentTime;
+  const o=ac.createOscillator(), g=ac.createGain(); o.type='triangle'; o.frequency.value=f;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.12,t+.01); g.gain.exponentialRampToValueAtTime(.0005,t+.9);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t+1);
+}
+function setMusic(on){
+  state.music=on;
+  if(on){ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume(); }catch(e){ ac=null; }
+    tick=setInterval(()=>{ playNote(melody[noteI%melody.length]); noteI++; },380);
+  } else { clearInterval(tick); tick=null; }
+}
+
+// ---------- loop ----------
+let time=0, last=performance.now();
+function step(dt){
+  time+=dt;
+  spring(wob,dt); spring(wobY,dt);
+  const wind=state.wind*9;
+  for(let i=flakes.length-1;i>=0;i--){
+    const f=flakes[i];
+    f.vy += 70*dt; // gravity
+    f.vx += (wind + Math.sin(time*f.sp+f.ph)*14 - f.vx*1.6)*dt;
+    f.vy -= f.vy*1.4*dt*(f.r<2?1.2:.8);
+    f.x+=f.vx*dt; f.y+=f.vy*dt;
+    const dx=f.x-CX, dy=f.y-CY, d=Math.hypot(dx,dy);
+    if(d>R-6){ const nx=dx/d, ny=dy/d, vn=f.vx*nx+f.vy*ny; if(vn>0){ f.vx-=1.5*vn*nx; f.vy-=1.5*vn*ny; } f.x=CX+nx*(R-6); f.y=CY+ny*(R-6); }
+    const c=colOf(f.x), gy=ground(f.x)-drift[c];
+    if(f.y>=gy-1 && Math.abs(f.vy)<400){
+      drift[c]=Math.min(46,drift[c]+f.r*0.12);
+      flakes.splice(i,1);
+    }
+  }
+  // relax drift
+  for(let k=0;k<2;k++) for(let i=1;i<COLS-1;i++){ const h=drift[i]; if(h-drift[i-1]>1.2){ const m=(h-drift[i-1])*.15; drift[i]-=m; drift[i-1]+=m; } if(h-drift[i+1]>1.2){ const m=(h-drift[i+1])*.15; drift[i]-=m; drift[i+1]+=m; } }
+  // keep flake count near target while snow is "in the air"
+  const settledFlakes=drift.reduce((a,b)=>a+b,0)/0.35;
+  const total=flakes.length+settledFlakes;
+  if(total<state.amount*0.98){ // slowly replenish with gentle fall from the top
+    if(Math.random()<dt*30) spawn(1, CX+rnd(-150,150), CY-R+30+rnd(0,40));
+  } else if(total>state.amount*1.05 && flakes.length>0 && Math.random()<dt*20){ flakes.pop(); }
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const night=state.night;
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(CX,632,200,16,0,0,7); ctx.fill();
+  // base
+  const bg=ctx.createLinearGradient(0,470,0,625); bg.addColorStop(0,'#7a4a2a'); bg.addColorStop(.5,'#5a3319'); bg.addColorStop(1,'#3a200e');
+  ctx.fillStyle=bg; ctx.beginPath(); ctx.moveTo(CX-150,472); ctx.lineTo(CX+150,472); ctx.lineTo(CX+205,625); ctx.lineTo(CX-205,625); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#c9a24b'; ctx.fillRect(CX-165,470,330,10);
+  ctx.fillStyle='#2a1608'; ctx.fillRect(CX-95,525,190,50);
+  ctx.fillStyle='#e6c675'; ctx.font='italic 20px Georgia'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText({cottage:'The Cottage',forest:'The Pines',snowman:'Frosty'}[state.scene],CX,550);
+  ctx.font='12px Georgia'; ctx.fillStyle='#b99a55'; ctx.fillText('shakes: '+state.shakes,CX,567);
+  // globe
+  ctx.save();
+  ctx.translate(wob.x,wobY.x);
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,7); ctx.clip();
+  const sky=ctx.createLinearGradient(0,CY-R,0,CY+R);
+  if(night){ sky.addColorStop(0,'#0b1236'); sky.addColorStop(.6,'#25306b'); sky.addColorStop(1,'#46508f'); }
+  else { sky.addColorStop(0,'#7db8ee'); sky.addColorStop(.7,'#c4e2f7'); sky.addColorStop(1,'#eaf5fc'); }
+  ctx.fillStyle=sky; ctx.fillRect(CX-R,CY-R,2*R,2*R);
+  if(night){ ctx.fillStyle='#fff'; for(let i=0;i<28;i++){ const x=CX-R+((i*97)%420), y=CY-R+((i*53)%210); ctx.globalAlpha=.4+.5*Math.abs(Math.sin(time*1.5+i)); ctx.fillRect(x,y,1.6,1.6);} ctx.globalAlpha=1;
+    ctx.fillStyle='#fdf6d8'; ctx.beginPath(); ctx.arc(420,130,20,0,7); ctx.fill(); ctx.fillStyle='#25306b'; ctx.beginPath(); ctx.arc(429,125,18,0,7); ctx.fill(); }
+  else { ctx.fillStyle='#fff7c2'; ctx.beginPath(); ctx.arc(420,130,22,0,7); ctx.fill(); }
+  // ground
+  ctx.beginPath(); ctx.moveTo(CX-R-5,ground(CX-R-5)); for(let x=CX-R-5;x<=CX+R+5;x+=4) ctx.lineTo(x,ground(x)); ctx.lineTo(CX+R+5,CY+R+5); ctx.lineTo(CX-R-5,CY+R+5); ctx.closePath();
+  ctx.fillStyle=night?'#cfd9f2':'#f3f8ff'; ctx.fill();
+  ({cottage,forest,snowman})[state.scene]();
+  // drift
+  ctx.beginPath(); ctx.moveTo(X0,ground(X0)); for(let i=0;i<COLS;i++){ const x=X0+i*STEP; ctx.lineTo(x,ground(x)-drift[i]); } ctx.lineTo(X0+COLS*STEP,ground(X0+COLS*STEP)); ctx.closePath();
+  ctx.fillStyle='#f7faff'; ctx.fill();
+  // flakes
+  ctx.fillStyle='#fff';
+  for(const f of flakes){ ctx.globalAlpha=.55+f.r/8; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,7); ctx.fill(); }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  // glass
+  ctx.save(); ctx.translate(wob.x,wobY.x);
+  const gl=ctx.createRadialGradient(CX-80,CY-100,10,CX,CY,R); gl.addColorStop(0,'rgba(255,255,255,.28)'); gl.addColorStop(.5,'rgba(255,255,255,.02)'); gl.addColorStop(1,'rgba(180,210,255,.22)');
+  ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(CX,CY,R,0,7); ctx.fill();
+  ctx.strokeStyle='rgba(220,235,255,.55)'; ctx.lineWidth=3; ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=6; ctx.lineCap='round'; ctx.beginPath(); ctx.arc(CX,CY,R-16,Math.PI*1.12,Math.PI*1.38); ctx.stroke();
+  ctx.restore();
+  // collar
+  ctx.fillStyle='#c9a24b'; ctx.beginPath(); ctx.ellipse(CX,CY+R-6,138,20,0,0,7); ctx.fill();
+  ctx.fillStyle='#8c6b25'; ctx.beginPath(); ctx.ellipse(CX,CY+R-2,138,14,0,0,Math.PI); ctx.fill();
+  document.getElementById('stat').textContent='In the air: '+flakes.length+'  ·  On the ground: '+Math.round(drift.reduce((a,b)=>a+b,0)/0.35);
+}
+function frame(now){
+  const dt=Math.min(.033,(now-last)/1000); last=now;
+  step(dt); draw(); requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---------- input ----------
+let drag=null;
+function pos(e){ const r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height}; }
+cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); drag={...pos(e),t:performance.now(),acc:0}; });
+cv.addEventListener('pointermove',e=>{
+  if(!drag) return; const p=pos(e), dx=p.x-drag.x, dy=p.y-drag.y; drag.x=p.x; drag.y=p.y;
+  wob.x=Math.max(-24,Math.min(24,wob.x+dx*.6)); wobY.x=Math.max(-16,Math.min(16,wobY.x+dy*.4));
+  const mag=Math.hypot(dx,dy); drag.acc+=mag;
+  for(const f of flakes){ f.vx-=dx*rnd(2,6); f.vy-=dy*rnd(2,6); }
+  if(mag>3) releaseDrift(Math.min(.25,mag*.01));
+  if(drag.acc>140){ drag.acc=0; state.shakes++; }
+});
+const end=()=>{ drag=null; };
+cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
+document.getElementById('shake').onclick=()=>shake(1);
+addEventListener('keydown',e=>{ if(e.code==='Space'&&e.target.tagName!=='INPUT'){ e.preventDefault(); shake(1); } });
+document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=()=>{
+  state.scene=b.dataset.scene;
+  document.querySelectorAll('[data-scene]').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  shake(.4);
+});
+const nb=document.getElementById('night'); nb.onclick=()=>{ state.night=!state.night; nb.setAttribute('aria-pressed',state.night); nb.textContent=state.night?'Night':'Day'; };
+const mb=document.getElementById('music'); mb.onclick=()=>{ setMusic(!state.music); mb.setAttribute('aria-pressed',state.music); };
+document.getElementById('amt').oninput=e=>{ state.amount=+e.target.value; const air=flakes.length; const want=Math.max(0,state.amount-drift.reduce((a,b)=>a+b,0)/0.35); if(air<want) spawn(Math.round(want-air)); };
+document.getElementById('wind').oninput=e=>{ state.wind=+e.target.value; };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root{--bg:#1c1d22;--body:#26272e;--key:#34353e;--keyh:#3f4150;--op:#e8833a;--oph:#f29a58;--fn:#4a4c5a;--text:#f2f2f5;--dim:#9a9bab}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  .calc{width:min(340px,92vw);background:var(--body);border-radius:24px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .screen{background:#17181c;border-radius:14px;padding:14px 16px;margin-bottom:16px;text-align:right;min-height:96px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+  .expr{color:var(--dim);font-size:15px;min-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .val{font-size:44px;font-weight:300;line-height:1.15;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  button{font:inherit;font-size:22px;color:var(--text);background:var(--key);border:0;border-radius:14px;height:60px;cursor:pointer;transition:background .12s,transform .06s}
+  button:hover{background:var(--keyh)}
+  button:active{transform:scale(.95)}
+  button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .fn{background:var(--fn)}.fn:hover{background:#5a5c6c}
+  .op{background:var(--op)}.op:hover{background:var(--oph)}
+  .op.active{background:#fff;color:var(--op)}
+  .zero{grid-column:span 2}
+</style>
+</head>
+<body>
+<div class="calc" role="application" aria-label="Calculator">
+  <div class="screen" aria-live="polite"><div class="expr" id="expr"></div><div class="val" id="val">0</div></div>
+  <div class="grid" id="keys">
+    <button class="fn" data-a="clear" id="clr">AC</button>
+    <button class="fn" data-a="sign">+/-</button>
+    <button class="fn" data-a="pct">%</button>
+    <button class="op" data-a="op" data-v="/">÷</button>
+    <button data-a="d" data-v="7">7</button><button data-a="d" data-v="8">8</button><button data-a="d" data-v="9">9</button>
+    <button class="op" data-a="op" data-v="*">×</button>
+    <button data-a="d" data-v="4">4</button><button data-a="d" data-v="5">5</button><button data-a="d" data-v="6">6</button>
+    <button class="op" data-a="op" data-v="-">−</button>
+    <button data-a="d" data-v="1">1</button><button data-a="d" data-v="2">2</button><button data-a="d" data-v="3">3</button>
+    <button class="op" data-a="op" data-v="+">+</button>
+    <button class="zero" data-a="d" data-v="0">0</button>
+    <button data-a="dot">.</button>
+    <button class="op" data-a="eq">=</button>
+  </div>
+</div>
+<script>
+(function(){
+  var S={cur:"0",prev:null,op:null,fresh:true,err:false,expr:""};
+  var sym={"+":"+","-":"−","*":"×","/":"÷"};
+  var valEl=document.getElementById("val"),exprEl=document.getElementById("expr"),clr=document.getElementById("clr");
+
+  function calc(a,op,b){
+    switch(op){case"+":return a+b;case"-":return a-b;case"*":return a*b;case"/":return b===0?NaN:a/b;}
+    return b;
+  }
+  function fmt(s){
+    if(S.err)return "Error";
+    if(/[.]$|[.]\d*0$/.test(s)&&s.indexOf("e")<0)return commas(s);
+    return commas(s);
+  }
+  function commas(s){
+    if(s.indexOf("e")>=0)return s;
+    var neg=s[0]==="-";if(neg)s=s.slice(1);
+    var p=s.split("."),i=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,",");
+    return (neg?"-":"")+i+(p.length>1?"."+p[1]:"");
+  }
+  function num(n){
+    if(!isFinite(n))return null;
+    n=parseFloat(n.toPrecision(12));
+    var s=String(n);
+    if(s.length>14)s=n.toExponential(6).replace(/\.?0+e/,"e");
+    return s;
+  }
+  function render(){
+    var t=fmt(S.cur);
+    valEl.textContent=t;
+    valEl.style.fontSize=t.length>12?"26px":t.length>9?"34px":"44px";
+    exprEl.textContent=S.expr;
+    clr.textContent=(S.cur!=="0"||S.prev!==null)&&!S.fresh?"C":"AC";
+    var btns=document.querySelectorAll(".op[data-v]");
+    for(var i=0;i<btns.length;i++)btns[i].classList.toggle("active",S.op===btns[i].dataset.v&&S.fresh&&S.prev!==null);
+  }
+  function setErr(){S={cur:"0",prev:null,op:null,fresh:true,err:true,expr:""};}
+  function digit(d){
+    if(S.err)S={cur:"0",prev:null,op:null,fresh:true,err:false,expr:""};
+    if(S.fresh){S.cur=d;S.fresh=false;}
+    else if(S.cur.replace(/[-.]/g,"").length<12)S.cur=S.cur==="0"?d:S.cur==="-0"?"-"+d:S.cur+d;
+  }
+  function dot(){
+    if(S.err)S={cur:"0",prev:null,op:null,fresh:true,err:false,expr:""};
+    if(S.fresh){S.cur="0.";S.fresh=false;}
+    else if(S.cur.indexOf(".")<0)S.cur+=".";
+  }
+  function operator(o){
+    if(S.err)return;
+    if(S.op&&!S.fresh){
+      var r=num(calc(parseFloat(S.prev),S.op,parseFloat(S.cur)));
+      if(r===null){setErr();return;}
+      S.prev=r;S.cur=r;
+    }else if(S.prev===null||!S.op){S.prev=S.cur;}
+    S.op=o;S.fresh=true;
+    S.expr=commas(S.prev)+" "+sym[o];
+  }
+  function equals(){
+    if(S.err||!S.op)return;
+    var b=S.fresh&&S.lastB!==undefined&&false?0:parseFloat(S.cur);
+    var a=parseFloat(S.prev);
+    var r=num(calc(a,S.op,b));
+    if(r===null){setErr();return;}
+    S.expr=commas(S.prev)+" "+sym[S.op]+" "+commas(S.cur)+" =";
+    S.cur=r;S.prev=null;S.op=null;S.fresh=true;
+  }
+  function clear(){
+    if(S.cur!=="0"&&!S.fresh&&!S.err){S.cur="0";S.fresh=true;return;}
+    S={cur:"0",prev:null,op:null,fresh:true,err:false,expr:""};
+  }
+  function sign(){
+    if(S.err)return;
+    if(S.cur==="0")return;
+    S.cur=S.cur[0]==="-"?S.cur.slice(1):"-"+S.cur;
+  }
+  function pct(){
+    if(S.err)return;
+    var r=num(parseFloat(S.cur)/100);
+    if(r===null)return;
+    S.cur=r;S.fresh=true;
+  }
+  function back(){
+    if(S.err||S.fresh)return;
+    S.cur=S.cur.length>1&&!(S.cur.length===2&&S.cur[0]==="-")?S.cur.slice(0,-1):"0";
+  }
+  function act(a,v){
+    if(a==="d")digit(v);else if(a==="dot")dot();else if(a==="op")operator(v);
+    else if(a==="eq")equals();else if(a==="clear")clear();else if(a==="sign")sign();else if(a==="pct")pct();
+    else if(a==="back")back();
+    render();
+  }
+  document.getElementById("keys").addEventListener("click",function(e){
+    var b=e.target.closest("button");if(!b)return;
+    act(b.dataset.a,b.dataset.v);
+  });
+  document.addEventListener("keydown",function(e){
+    var k=e.key;
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    if(/^\d$/.test(k))act("d",k);
+    else if(k==="."||k===",")act("dot");
+    else if("+-*/".indexOf(k)>=0&&k.length===1){e.preventDefault();act("op",k);}
+    else if(k==="Enter"||k==="="){e.preventDefault();act("eq");}
+    else if(k==="Backspace")act("back");
+    else if(k==="Escape"||k==="Delete"||k==="c"||k==="C"){S={cur:"0",prev:null,op:null,fresh:true,err:false,expr:""};render();}
+    else if(k==="%")act("pct");
+  });
+  render();
+})();
+</script>
+</body>
+</html>

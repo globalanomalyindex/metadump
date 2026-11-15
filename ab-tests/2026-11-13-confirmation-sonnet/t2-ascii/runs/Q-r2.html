@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASCII Color Mixer</title>
+<style>
+:root{--bg:#0c0d10;--panel:#14161b;--line:#262a33;--fg:#e8e6df;--dim:#8a8f9c;--acc:#ffd166}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+main{max-width:860px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:18px;margin:0 0 2px;letter-spacing:.04em}
+.sub{color:var(--dim);margin:0 0 16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px}
+#bowlwrap{overflow:hidden;display:flex;justify-content:center}
+#bowl{margin:0;font:14px/1.1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:min(14px,calc((100vw - 72px)/30));white-space:pre;letter-spacing:0;user-select:none}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pig{display:flex;flex-direction:column;gap:4px;flex:1 1 105px;min-width:105px}
+.pig .add{font:inherit;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 6px;background:#0f1115;color:var(--fg);text-align:left}
+.pig .add:hover{border-color:var(--c)}
+.pig .add:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.pig .add b{color:var(--c);font-size:18px}
+.pig .meta{display:flex;justify-content:space-between;align-items:center;color:var(--dim);font-size:12px}
+.pig .bar{color:var(--c);letter-spacing:-1px}
+.pig .sub1{font:inherit;cursor:pointer;background:none;border:1px solid var(--line);color:var(--fg);border-radius:6px;width:28px;height:24px}
+.pig .sub1:disabled{opacity:.3;cursor:default}
+button.ctl{font:inherit;cursor:pointer;background:#0f1115;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:7px 12px}
+button.ctl:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#111;border-color:var(--acc)}
+#hex{font-size:28px;font-weight:700;letter-spacing:.05em}
+#chip{width:44px;height:44px;border-radius:8px;border:1px solid var(--line)}
+.dim{color:var(--dim)}
+#keeps{display:flex;gap:8px;flex-wrap:wrap;min-height:34px}
+.keep{cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:inherit;background:#0f1115;color:var(--fg)}
+.keep i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hint{color:var(--dim);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>ASCII COLOR MIXER</h1>
+<p class="sub">Add drops of pigment. Watch the glyphs blend. Read the hex.</p>
+
+<div class="panel" id="bowlwrap"><pre id="bowl" aria-label="Mixing bowl" role="img"></pre></div>
+
+<div class="panel">
+  <div class="row" id="pigs"></div>
+  <div class="hint">Click a pigment to add a part, minus to remove. Keys 1-7 add, Shift+1-7 remove, R resets.</div>
+</div>
+
+<div class="panel">
+  <div class="row" style="justify-content:space-between">
+    <div class="row">
+      <div id="chip"></div>
+      <div><div id="hex">&mdash;</div><div class="dim" id="rgb">bowl is empty</div></div>
+    </div>
+    <div class="row">
+      <button class="ctl on" id="mPaint" aria-pressed="true">Paint (subtractive)</button>
+      <button class="ctl" id="mLight" aria-pressed="false">Light (additive)</button>
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="ctl" id="copy">Copy hex</button>
+    <button class="ctl" id="keep">Keep mix</button>
+    <button class="ctl" id="reset">Reset</button>
+    <span class="dim" id="status" role="status"></span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="dim" style="margin-bottom:8px">Kept mixes (click to restore)</div>
+  <div id="keeps"></div>
+</div>
+</main>
+
+<script>
+(function(){
+var PIGS=[
+ {n:'Red',g:'R',c:[214,40,40]},
+ {n:'Yellow',g:'Y',c:[250,204,21]},
+ {n:'Blue',g:'B',c:[30,64,200]},
+ {n:'White',g:'W',c:[244,244,240]},
+ {n:'Black',g:'K',c:[20,20,24]},
+ {n:'Green',g:'G',c:[30,150,70]},
+ {n:'Magenta',g:'M',c:[220,40,150]}
+];
+var COLS=48,ROWS=15,RAMP=' .:-=+*#%@',MAXP=12;
+var state={parts:PIGS.map(function(){return 0}),model:'paint',keeps:[]};
+var $=function(i){return document.getElementById(i)};
+
+function mix(parts,model){
+  var T=0,i,k;parts.forEach(function(p){T+=p});
+  if(!T)return null;
+  var out=[0,0,0];
+  if(model==='paint'){
+    for(k=0;k<3;k++){var s=0;for(i=0;i<parts.length;i++){if(parts[i])s+=parts[i]/T*Math.log(PIGS[i].c[k]/255+0.02)}out[k]=(Math.exp(s)-0.02)*255}
+  }else{
+    for(k=0;k<3;k++){var s2=0;for(i=0;i<parts.length;i++){if(parts[i])s2+=parts[i]/T*Math.pow(PIGS[i].c[k]/255,2.2)}out[k]=Math.pow(s2,1/2.2)*255}
+  }
+  return out.map(function(v){return Math.max(0,Math.min(255,Math.round(v)))});
+}
+function hex(c){return '#'+c.map(function(v){return ('0'+v.toString(16)).slice(-2)}).join('').toUpperCase()}
+
+// bowl cells
+var cells=[];
+for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){cells.push({x:x,y:y,j:Math.random()*2-1,col:[40,42,50],tgt:[40,42,50],delay:0,empty:true})}
+var origin={x:COLS/2,y:ROWS/2},t0=0,running=false;
+var inBowl=function(c){var dx=(c.x-COLS/2+.5)/(COLS/2),dy=(c.y-ROWS/2+.5)/(ROWS/2);return dx*dx+dy*dy<=1};
+cells.forEach(function(c){c.in=inBowl(c)});
+
+function setTargets(){
+  var m=mix(state.parts,state.model);
+  cells.forEach(function(c){
+    c.empty=!m;
+    c.tgt=m?m:[46,49,58];
+    var dx=c.x-origin.x,dy=(c.y-origin.y)*2;
+    c.delay=Math.sqrt(dx*dx+dy*dy)*14;
+  });
+  t0=performance.now();
+  if(!running){running=true;requestAnimationFrame(tick)}
+}
+function tick(now){
+  var el=now-t0,moving=false;
+  cells.forEach(function(c){
+    if(!c.in)return;
+    if(el<c.delay){moving=true;return}
+    for(var k=0;k<3;k++){var d=c.tgt[k]-c.col[k];if(Math.abs(d)>0.5){c.col[k]+=d*0.18;moving=true}else c.col[k]=c.tgt[k]}
+  });
+  draw(now);
+  if(moving){requestAnimationFrame(tick)}else{running=false}
+}
+function esc(ch){return ch==='<'?'&lt;':ch==='&'?'&amp;':ch}
+function draw(){
+  var html='',i=0;
+  for(var y=0;y<ROWS;y++){
+    for(var x=0;x<COLS;x++,i++){
+      var c=cells[i];
+      if(!c.in){html+=' ';continue}
+      var r=c.col[0],g=c.col[1],b=c.col[2];
+      var L=(0.2126*r+0.7152*g+0.0722*b)/255;
+      var jl=c.empty?0.12+0.1*Math.abs(c.j):Math.max(0,Math.min(1,L*0.85+0.15+c.j*0.12));
+      var gl=RAMP.charAt(Math.max(1,Math.min(RAMP.length-1,Math.round(jl*(RAMP.length-1)))));
+      var sh=c.empty?1:1+c.j*0.08;
+      var col='rgb('+Math.min(255,Math.round(r*sh))+','+Math.min(255,Math.round(g*sh))+','+Math.min(255,Math.round(b*sh))+')';
+      html+='<span style="color:'+col+'">'+esc(gl)+'</span>';
+    }
+    html+='\n';
+  }
+  $('bowl').innerHTML=html;
+}
+
+// pigments UI
+function buildPigs(){
+  var h='';
+  PIGS.forEach(function(p,i){
+    var c='rgb('+p.c.join(',')+')';
+    h+='<div class="pig" style="--c:'+c+'"><button class="add" data-add="'+i+'" aria-label="Add '+p.n+'"><b>['+p.g+']</b> '+p.n+' <span class="dim">'+(i+1)+'</span></button>'+
+       '<div class="meta"><span class="bar" id="bar'+i+'"></span><button class="sub1" data-sub="'+i+'" aria-label="Remove '+p.n+'">-</button></div></div>';
+  });
+  $('pigs').innerHTML=h;
+}
+function bar(n){var s='';for(var i=0;i<MAXP;i++)s+=i<n?'█':'░';return s}
+function updateUI(){
+  PIGS.forEach(function(p,i){
+    $('bar'+i).textContent=bar(state.parts[i]);
+    document.querySelector('[data-sub="'+i+'"]').disabled=state.parts[i]===0;
+  });
+  var m=mix(state.parts,state.model);
+  if(m){var h=hex(m);$('hex').textContent=h;$('hex').style.color=h;$('rgb').textContent='rgb('+m.join(', ')+')  parts: '+state.parts.reduce(function(a,b){return a+b},0);$('chip').style.background=h}
+  else{$('hex').textContent='—';$('hex').style.color='';$('rgb').textContent='bowl is empty - add a pigment';$('chip').style.background='transparent'}
+  $('mPaint').classList.toggle('on',state.model==='paint');$('mPaint').setAttribute('aria-pressed',state.model==='paint');
+  $('mLight').classList.toggle('on',state.model==='light');$('mLight').setAttribute('aria-pressed',state.model==='light');
+  var k='';
+  state.keeps.forEach(function(s,i){k+='<button class="keep" data-keep="'+i+'"><i style="background:'+s.hex+'"></i>'+s.hex+' '+(s.model==='paint'?'paint':'light')+'</button>'});
+  $('keeps').innerHTML=k||'<span class="dim">nothing kept yet</span>';
+}
+function say(t){$('status').textContent=t}
+function change(i,d){
+  var v=state.parts[i]+d;if(v<0||v>MAXP)return;
+  state.parts[i]=v;
+  origin={x:Math.random()*COLS,y:Math.random()*ROWS};
+  setTargets();updateUI();say('');
+}
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.dataset.add!==undefined)change(+t.dataset.add,1);
+  else if(t.dataset.sub!==undefined)change(+t.dataset.sub,-1);
+  else if(t.dataset.keep!==undefined){var s=state.keeps[+t.dataset.keep];state.parts=s.parts.slice();state.model=s.model;origin={x:COLS/2,y:ROWS/2};setTargets();updateUI();say('restored '+s.hex)}
+});
+$('mPaint').onclick=function(){state.model='paint';origin={x:COLS/2,y:ROWS/2};setTargets();updateUI()};
+$('mLight').onclick=function(){state.model='light';origin={x:COLS/2,y:ROWS/2};setTargets();updateUI()};
+$('reset').onclick=function(){state.parts=PIGS.map(function(){return 0});origin={x:COLS/2,y:ROWS/2};setTargets();updateUI();say('cleared')};
+$('keep').onclick=function(){
+  var m=mix(state.parts,state.model);if(!m){say('nothing to keep');return}
+  if(state.keeps.length>=8)state.keeps.shift();
+  state.keeps.push({parts:state.parts.slice(),model:state.model,hex:hex(m)});updateUI();say('kept '+hex(m));
+};
+$('copy').onclick=function(){
+  var m=mix(state.parts,state.model);if(!m){say('nothing to copy');return}
+  var h=hex(m);
+  function ok(){say('copied '+h)}
+  function fb(){var ta=document.createElement('textarea');ta.value=h;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(e){say(h)}document.body.removeChild(ta)}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(h).then(ok,fb)}else fb();
+};
+document.addEventListener('keydown',function(e){
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  var m=/^Digit([1-9])$/.exec(e.code);
+  if(m&&+m[1]<=PIGS.length){change(+m[1]-1,e.shiftKey?-1:1);e.preventDefault()}
+  else if(e.key==='r'||e.key==='R'){$('reset').click()}
+});
+
+buildPigs();setTargets();updateUI();draw();
+})();
+</script>
+</body>
+</html>

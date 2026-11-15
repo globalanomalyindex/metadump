@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"likeness": 7, "visuals": 6, "motion": 7, "presentation": 6, "overall": 6, "note": "Clear lava lamp with metal cap and base and blobs that rise, merge and sink, but the glass is flat and the wax is a uniform pink-orange."},
+"V": {"likeness": 8, "visuals": 9, "motion": 3, "presentation": 8, "overall": 6, "note": "Most beautiful drawing with chrome hourglass base and a gradient fluid, but the wax cluster hangs at the top and barely moves across the frames."},
+"W": {"likeness": 8, "visuals": 7, "motion": 6, "presentation": 8, "overall": 7, "note": "Elegant purple lamp with a soft glow and a tidy bottom control bar, though the blobs read as fuzzy pink dots rather than stretchy wax."},
+"X": {"likeness": 6, "visuals": 7, "motion": 4, "presentation": 6, "overall": 5, "note": "Warm amber glow is atmospheric, but the bulbous vessel is unusual and the wax sits as a slab at the top and a pool below with little motion."},
+"Y": {"likeness": 5, "visuals": 3, "motion": 3, "presentation": 5, "overall": 3, "note": "Pixelated blocky wax edges, a dark flat glass and a single blob stuck near the top make it the weakest."},
+"Z": {"likeness": 9, "visuals": 8, "motion": 8, "presentation": 7, "overall": 8, "note": "Convincing glass with a violet gradient, a bright hot base pool and organic blobs that stretch, merge and drip, with responsive stir and off states."}
+}, "ranking": ["Z", "W", "U", "V", "X", "Y"]}

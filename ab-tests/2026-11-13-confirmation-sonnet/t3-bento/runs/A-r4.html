@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember &amp; Oak Coffee Roasters</title>
+<style>
+:root{
+  --bg:#f4ece0; --ink:#2a1a12; --muted:#7a6454; --card:#fffaf2; --line:#e3d4c0;
+  --espresso:#2b1810; --crema:#e9c9a0; --ember:#d9622b; --ember-d:#a8431a; --moss:#5d6b3f; --sky:#cfdde0;
+  --r:22px; --shadow:0 1px 0 #fff8 inset,0 10px 30px -14px #2b181055;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1a100b;--ink:#f5e9d8;--muted:#b49c86;--card:#271811;--line:#3d2a1f;--sky:#27373a;--shadow:0 12px 30px -16px #000a}
+}
+*{box-sizing:border-box;margin:0}
+body{font:16px/1.45 Georgia,"Iowan Old Style","Palatino Linotype",serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ember);outline-offset:2px}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:980px;margin:0 auto}
+header.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--espresso);color:#f5e9d8;border-radius:999px;padding:8px 8px 8px 22px;position:relative;z-index:5}
+.logo{font-size:1.2rem;letter-spacing:.02em;display:flex;align-items:center;gap:10px}
+.logo i{width:22px;height:22px;border-radius:50% 50% 50% 8px;background:var(--ember);display:inline-block;transform:rotate(-20deg)}
+.bar-right{display:flex;gap:8px;align-items:center}
+.cartbtn{background:transparent;border:1px solid #f5e9d855;border-radius:999px;padding:9px 16px;font-size:.88rem}
+.cartbtn b{display:inline-block;min-width:1.4em;text-align:center;background:var(--ember-d);color:#fff;border-radius:999px;margin-left:6px;padding:0 6px}
+.toggle{display:flex;align-items:center;gap:10px;background:var(--crema);color:var(--espresso);border:0;border-radius:999px;padding:10px 18px 10px 16px;font-weight:600;font-size:.9rem}
+.burger{width:18px;height:12px;position:relative}
+.burger span{position:absolute;left:0;height:2px;width:100%;background:currentColor;border-radius:2px;transition:transform .3s,top .3s,opacity .2s}
+.burger span:nth-child(1){top:0}.burger span:nth-child(2){top:5px}.burger span:nth-child(3){top:10px}
+.toggle[aria-expanded=true] .burger span:nth-child(1){top:5px;transform:rotate(45deg)}
+.toggle[aria-expanded=true] .burger span:nth-child(2){opacity:0}
+.toggle[aria-expanded=true] .burger span:nth-child(3){top:5px;transform:rotate(-45deg)}
+
+.drawer{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1);margin-top:12px}
+.drawer.open{grid-template-rows:1fr}
+.drawer>.inner{overflow:hidden;min-height:0}
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:2px 2px 6px;opacity:0;transform:translateY(-8px);transition:opacity .3s,transform .4s}
+.drawer.open .bento{opacity:1;transform:none;transition-delay:.08s}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden;opacity:0;transform:translateY(10px) scale(.98);transition:opacity .35s,transform .45s cubic-bezier(.2,.8,.2,1)}
+.drawer.open .tile{opacity:1;transform:none}
+.drawer.open .tile:nth-child(1){transition-delay:.08s}.drawer.open .tile:nth-child(2){transition-delay:.14s}
+.drawer.open .tile:nth-child(3){transition-delay:.2s}.drawer.open .tile:nth-child(4){transition-delay:.26s}
+.drawer.open .tile:nth-child(5){transition-delay:.32s}.drawer.open .tile:nth-child(6){transition-delay:.38s}
+.eyebrow{font:600 .7rem/1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+h2{font-size:1.35rem;font-weight:600;line-height:1.15}
+.shop{grid-column:span 4;grid-row:span 2;background:var(--espresso);color:#f5e9d8;border-color:transparent}
+.shop .eyebrow{color:var(--crema)}
+.subs{grid-column:span 2}
+.cafes{grid-column:span 2}
+.brew{grid-column:span 3}
+.journal{grid-column:span 3;background:var(--sky)}
+.journal .eyebrow,.journal p{color:var(--ink)}
+@media (prefers-color-scheme:dark){.journal{color:var(--ink)}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.chip{border:1px solid #f5e9d84d;background:transparent;border-radius:999px;padding:7px 14px;font:500 .85rem system-ui,sans-serif;transition:background .2s,color .2s}
+.chip[aria-pressed=true]{background:var(--crema);color:var(--espresso);border-color:var(--crema)}
+.roast-name{font-size:2rem;margin-top:4px;transition:opacity .2s}
+.notes{color:#e5d2b8;max-width:46ch;min-height:3em;margin-top:6px}
+.meter{display:flex;gap:5px;margin:14px 0 18px}
+.meter i{width:100%;max-width:38px;height:8px;border-radius:4px;background:#f5e9d825;transition:background .3s}
+.meter i.on{background:var(--ember)}
+.buyrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.price{font:600 1.5rem system-ui,sans-serif}
+.price small{font-size:.8rem;font-weight:400;opacity:.7}
+.qty{display:inline-flex;align-items:center;border:1px solid #f5e9d84d;border-radius:999px}
+.qty button{background:none;border:0;width:36px;height:36px;font-size:1.2rem;border-radius:50%}
+.qty output{min-width:1.6em;text-align:center;font-family:system-ui,sans-serif}
+.add{background:var(--ember-d);color:#fff;border:0;border-radius:999px;padding:11px 20px;font:600 .9rem system-ui,sans-serif;transition:transform .15s}
+.add:active{transform:scale(.95)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:999px;padding:4px;margin:12px 0;position:relative}
+.seg button{background:none;border:0;padding:8px;border-radius:999px;font:500 .85rem system-ui,sans-serif;position:relative;z-index:1;transition:color .25s}
+.seg::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--ember-d);border-radius:999px;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.seg[data-v="monthly"]::before{transform:translateX(100%)}
+.seg button[aria-checked=true]{color:#fff}
+.big{font:700 2rem/1 system-ui,sans-serif}
+.big small{font-size:.8rem;font-weight:400;color:var(--muted)}
+.link{background:none;border:0;border-bottom:1px solid currentColor;padding:0;font:600 .85rem system-ui,sans-serif;margin-top:10px}
+.cafe-list{list-style:none;padding:0;margin-top:10px;display:grid;gap:6px}
+.cafe-list button{width:100%;text-align:left;background:var(--bg);border:1px solid transparent;border-radius:12px;padding:9px 12px;font:.88rem system-ui,sans-serif;display:flex;justify-content:space-between;gap:8px}
+.cafe-list button[aria-pressed=true]{border-color:var(--ember)}
+.cafe-list em{font-style:normal;color:var(--muted)}
+.cafe-detail{font:.85rem system-ui,sans-serif;color:var(--muted);margin-top:10px;min-height:2.6em}
+.acc{margin-top:8px;border-top:1px solid var(--line)}
+.acc details{border-bottom:1px solid var(--line)}
+.acc summary{list-style:none;cursor:pointer;padding:11px 0;display:flex;justify-content:space-between;font:600 .92rem system-ui,sans-serif}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";transition:transform .25s}
+.acc details[open] summary::after{transform:rotate(45deg)}
+.acc p{font:.85rem system-ui,sans-serif;color:var(--muted);padding:0 0 12px}
+.journal p{font-size:.95rem;margin:8px 0 10px}
+.tag{display:inline-block;font:600 .72rem system-ui,sans-serif;background:#fff8;border-radius:999px;padding:4px 10px;margin:0 4px 4px 0}
+.status{position:fixed;left:50%;bottom:20px;transform:translate(-50%,30px);background:var(--espresso);color:#f5e9d8;font:.9rem system-ui,sans-serif;padding:12px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:.3s;z-index:9}
+.status.show{opacity:1;transform:translate(-50%,0)}
+.hero{padding:56px 8px;max-width:620px}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.05;font-weight:600}
+.hero p{margin-top:14px;color:var(--muted)}
+.state{margin-top:22px;font:.8rem ui-monospace,Menlo,monospace;color:var(--muted)}
+@media (max-width:720px){
+  .bento{grid-template-columns:repeat(2,1fr)}
+  .shop,.brew,.journal{grid-column:span 2}.shop{grid-row:auto}
+  .subs,.cafes{grid-column:span 2}
+  .logo span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;transition-delay:0s!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <div class="logo"><i></i><span>Ember &amp; Oak</span></div>
+    <div class="bar-right sans">
+      <button class="cartbtn" id="cartbtn" type="button" aria-label="Bag">Bag<b id="cartcount">0</b></button>
+      <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="drawer">
+        <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span id="togglelabel">Menu</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="drawer" id="drawer" aria-label="Main menu">
+    <div class="inner" id="inner">
+      <div class="bento">
+
+        <section class="tile shop" aria-labelledby="shop-h">
+          <div class="eyebrow">Shop beans</div>
+          <h2 id="shop-h">Roasted Tuesday, at your door by Friday</h2>
+          <div class="chips" role="group" aria-label="Roast level" id="chips"></div>
+          <div class="roast-name" id="rname"></div>
+          <p class="notes" id="rnotes"></p>
+          <div class="meter" id="meter" aria-label="Roast intensity"></div>
+          <div class="buyrow">
+            <div class="price" id="rprice"></div>
+            <div class="qty" role="group" aria-label="Quantity">
+              <button type="button" id="minus" aria-label="Fewer bags">&minus;</button>
+              <output id="qty" aria-live="polite">1</output>
+              <button type="button" id="plus" aria-label="More bags">+</button>
+            </div>
+            <button class="add" id="add" type="button">Add to bag</button>
+          </div>
+        </section>
+
+        <section class="tile subs" aria-labelledby="sub-h">
+          <div class="eyebrow">Subscribe</div>
+          <h2 id="sub-h">Never run dry</h2>
+          <div class="seg" id="seg" data-v="weekly" role="radiogroup" aria-label="Delivery frequency">
+            <button type="button" role="radio" aria-checked="true" data-v="weekly">Weekly</button>
+            <button type="button" role="radio" aria-checked="false" data-v="monthly">Monthly</button>
+          </div>
+          <div class="big" id="subprice">$16</div>
+          <div class="sans" style="font-size:.8rem;color:var(--muted)" id="subnote">per bag, save 15%</div>
+        </section>
+
+        <section class="tile cafes" aria-labelledby="cafe-h">
+          <div class="eyebrow">Visit</div>
+          <h2 id="cafe-h">Our cafes</h2>
+          <ul class="cafe-list" id="cafes"></ul>
+          <div class="cafe-detail" id="cafedetail" aria-live="polite">Pick a cafe for hours.</div>
+        </section>
+
+        <section class="tile brew" aria-labelledby="brew-h">
+          <div class="eyebrow">Learn</div>
+          <h2 id="brew-h">Brew guides</h2>
+          <div class="acc" id="acc">
+            <details><summary>Pour over</summary><p>1:16 ratio, 94&deg;C water, bloom 40 seconds, finish by 3:00.</p></details>
+            <details><summary>French press</summary><p>Coarse grind, 4 minutes, plunge slowly and pour right away.</p></details>
+            <details><summary>Espresso</summary><p>18 g in, 36 g out, 28 seconds. Adjust the grind, not the dose.</p></details>
+          </div>
+        </section>
+
+        <section class="tile journal" aria-labelledby="j-h">
+          <div class="eyebrow">Journal</div>
+          <h2 id="j-h">Meet the farmers of Huila</h2>
+          <p>Three generations, one hillside, and the washed lot that became our Sunrise blend.</p>
+          <div id="tags"></div>
+          <button class="link" type="button" id="readbtn">Save for later</button>
+        </section>
+
+      </div>
+    </div>
+  </nav>
+
+  <main class="hero">
+    <h1>Small batches. Slow mornings.</h1>
+    <p>Open the menu to browse our beans, subscriptions, cafes and guides. Everything inside it responds.</p>
+    <div class="state" id="state" aria-live="polite"></div>
+  </main>
+</div>
+<div class="status sans" id="status" role="status"></div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var roasts=[
+    {n:"Light",name:"Sunrise Light",p:19,i:2,t:"Jasmine, apricot and a honeyed finish. Bright and tea-like."},
+    {n:"Medium",name:"Hearth Medium",p:17,i:3,t:"Milk chocolate, toasted almond and caramel. Our everyday cup."},
+    {n:"Dark",name:"Midnight Dark",p:18,i:5,t:"Cocoa nibs, molasses and smoked cedar. Heavy body, no bitterness."}
+  ];
+  var cafes=[
+    {n:"Old Mill",d:"Mon-Sat 7am-6pm",h:"Mill St 12",free:true},
+    {n:"Harbor Row",d:"Daily 6:30am-8pm",h:"Pier 4"},
+    {n:"Campus",d:"Weekdays 7am-4pm",h:"Library Plaza"}
+  ];
+  var S={open:false,roast:1,qty:1,bag:0,freq:"weekly",cafe:null,saved:false};
+  var toggle=$("toggle"),drawer=$("drawer"),inner=$("inner"),statusEl=$("status"),tmr;
+
+  function say(m){statusEl.textContent=m;statusEl.classList.add("show");clearTimeout(tmr);tmr=setTimeout(function(){statusEl.classList.remove("show")},1800)}
+
+  function setOpen(v){
+    S.open=v;
+    drawer.classList.toggle("open",v);
+    toggle.setAttribute("aria-expanded",v);
+    $("togglelabel").textContent=v?"Close":"Menu";
+    if("inert" in inner){inner.inert=!v}
+    renderState();
+  }
+  toggle.addEventListener("click",function(){setOpen(!S.open)});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.open){setOpen(false);toggle.focus()}});
+  document.addEventListener("click",function(e){
+    if(S.open&&!e.target.closest(".bar")&&!e.target.closest(".drawer")&&!e.target.closest(".status"))setOpen(false);
+  });
+
+  /* roast chips */
+  var chips=$("chips");
+  roasts.forEach(function(r,i){
+    var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=r.n;
+    b.addEventListener("click",function(){S.roast=i;renderRoast()});
+    chips.appendChild(b);
+  });
+  var meter=$("meter");for(var k=0;k<5;k++)meter.appendChild(document.createElement("i"));
+  function renderRoast(){
+    var r=roasts[S.roast];
+    Array.prototype.forEach.call(chips.children,function(c,i){c.setAttribute("aria-pressed",i===S.roast)});
+    $("rname").textContent=r.name;$("rnotes").textContent=r.t;
+    Array.prototype.forEach.call(meter.children,function(m,i){m.classList.toggle("on",i<r.i)});
+    $("rprice").innerHTML="$"+(r.p*S.qty)+" <small>"+S.qty+" x 12 oz</small>";
+    $("qty").textContent=S.qty;
+    renderSub();renderState();
+  }
+  $("minus").addEventListener("click",function(){S.qty=Math.max(1,S.qty-1);renderRoast()});
+  $("plus").addEventListener("click",function(){S.qty=Math.min(9,S.qty+1);renderRoast()});
+  $("add").addEventListener("click",function(){
+    S.bag+=S.qty;$("cartcount").textContent=S.bag;
+    say("Added "+S.qty+" x "+roasts[S.roast].name+" to your bag");
+    S.qty=1;renderRoast();
+  });
+
+  /* subscription */
+  function renderSub(){
+    var r=roasts[S.roast],m=S.freq==="monthly";
+    var p=Math.round(r.p*(m?.9:.85));
+    $("subprice").innerHTML="$"+p+" <small>/ bag</small>";
+    $("subnote").textContent=(m?"Delivered monthly, save 10%":"Delivered weekly, save 15%")+" on "+r.name;
+    Array.prototype.forEach.call($("seg").children,function(b){b.setAttribute("aria-checked",b.dataset.v===S.freq)});
+    $("seg").dataset.v=S.freq;
+  }
+  Array.prototype.forEach.call($("seg").children,function(b){
+    b.addEventListener("click",function(){S.freq=b.dataset.v;renderSub();renderState()});
+  });
+
+  /* cafes */
+  var cl=$("cafes");
+  cafes.forEach(function(c,i){
+    var li=document.createElement("li"),b=document.createElement("button");
+    b.type="button";b.setAttribute("aria-pressed","false");
+    b.innerHTML="<span>"+c.n+"</span><em>"+c.h+"</em>";
+    b.addEventListener("click",function(){
+      S.cafe=S.cafe===i?null:i;
+      Array.prototype.forEach.call(cl.querySelectorAll("button"),function(x,j){x.setAttribute("aria-pressed",j===S.cafe)});
+      $("cafedetail").textContent=S.cafe===null?"Pick a cafe for hours.":c.n+": "+c.d;
+      renderState();
+    });
+    li.appendChild(b);cl.appendChild(li);
+  });
+
+  /* accordion: only one open */
+  var ds=$("acc").querySelectorAll("details");
+  Array.prototype.forEach.call(ds,function(d){
+    d.addEventListener("toggle",function(){
+      if(d.open)Array.prototype.forEach.call(ds,function(o){if(o!==d)o.open=false});
+      renderState();
+    });
+  });
+
+  /* journal */
+  ["Origin","Colombia","Washed"].forEach(function(t){var s=document.createElement("span");s.className="tag";s.textContent=t;$("tags").appendChild(s)});
+  $("readbtn").addEventListener("click",function(){
+    S.saved=!S.saved;this.textContent=S.saved?"Saved. Tap to undo":"Save for later";
+    say(S.saved?"Story saved":"Removed from saved");renderState();
+  });
+
+  function renderState(){
+    var g=Array.prototype.filter.call(ds,function(d){return d.open})[0];
+    $("state").textContent="menu: "+(S.open?"open":"closed")+" | roast: "+roasts[S.roast].n+" | bag: "+S.bag+" | plan: "+S.freq+
+      " | cafe: "+(S.cafe===null?"none":cafes[S.cafe].n)+" | guide: "+(g?g.querySelector("summary").textContent:"none")+" | saved: "+(S.saved?"yes":"no");
+  }
+
+  if("inert" in inner)inner.inert=true;
+  renderRoast();
+})();
+</script>
+</body>
+</html>

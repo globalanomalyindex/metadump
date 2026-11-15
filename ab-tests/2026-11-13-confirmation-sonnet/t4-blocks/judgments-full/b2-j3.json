@@ -1,0 +1,8 @@
+{"block":"b2","judge":"j3","scores":{
+"U":{"fidelity":6,"correctness":7,"craft":5,"usability":6,"overall":6,"note":"Working flat top-down painter with 8 colors, undo, save PNG, but blank and plain, and the mobile canvas grid renders with uneven moire lines."},
+"V":{"fidelity":6,"correctness":8,"craft":7,"usability":8,"overall":7,"note":"Polished flat 32x32 painter with counts, disabled states, two-step clear and good a11y, but only 4 kinds and starts empty with little sense of building."},
+"W":{"fidelity":9,"correctness":8,"craft":9,"usability":8,"overall":9,"note":"Isometric 3D voxel world with stacking, terrain, pond and tree, picking, hotbar, undo, erase and persistence; clearly feels like a block-building sandbox and is responsive."},
+"X":{"fidelity":6,"correctness":7,"craft":6,"usability":7,"overall":6,"note":"Top-down grid with stackable columns up to 6 and a fake-height look, clear controls and keyboard shortcuts, but only 3 block types and a dull empty start."},
+"Y":{"fidelity":5,"correctness":7,"craft":4,"usability":5,"overall":5,"note":"Plain dark DOM grid with a side palette; works and autosaves but is visually bland, empty at rest, and the mobile palette pushes controls below the fold."},
+"Z":{"fidelity":8,"correctness":8,"craft":8,"usability":7,"overall":8,"note":"Side-view Minecraft-like world with textured blocks, prefilled terrain and tree, 9 block types, undo/clear/reset and persistence; charming and works well though canvas runs slightly below fold on desktop."}
+},"ranking":["W","Z","V","X","U","Y"]}

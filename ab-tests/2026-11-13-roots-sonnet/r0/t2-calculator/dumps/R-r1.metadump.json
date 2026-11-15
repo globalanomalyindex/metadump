@@ -1,0 +1,31 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A calculator is a tool people trust with numbers: it must never lie, and should feel like a physical object with satisfying keys.",
+  "job": ["see the display empty at 0", "enter digits and decimal point", "pick an operator", "enter second number", "press equals and read result", "chain operations (result feeds next)", "correct a mistake (backspace, clear entry, all clear)", "flip sign, percent", "repeat equals", "use keyboard instead of mouse", "handle divide by zero and long numbers", "see what was just computed (history line)"],
+  "disciplines": {
+    "interaction design": {"principles": ["immediate feedback on every press", "state always visible", "forgiving of mistakes", "keyboard parity"], "steps": ["define state machine", "map keys", "show pending operator"], "tricks": ["highlight active operator", "expression line above result", "repeat-equals reuses last operand"], "tests": ["2+3*4 behaves per immediate-execution rules", "0.1+0.2 shows 0.3", "5/0 shows error and recovers"]},
+    "visual design": {"principles": ["clear hierarchy: display dominates", "operators distinct from digits", "equals is the primary action", "generous touch targets"], "steps": ["palette", "type scale", "key grid 4x5"], "tricks": ["tabular numerals", "auto-shrink long numbers", "subtle key depth"], "tests": ["can you read result from arm's length"]},
+    "accessibility": {"principles": ["real buttons", "aria-live result", "focus rings", "contrast 4.5+"], "tricks": ["aria-labels for symbols like divide, minus"], "tests": ["tab through all keys", "screen reader announces result"]},
+    "front-end code": {"principles": ["single state object", "render from state", "decimal-safe arithmetic"], "tricks": ["round to 12 significant digits to kill float noise", "key event map"], "tests": ["no console errors"]}
+  },
+  "the_thing": {
+    "parts": ["display", "expression/history line", "digit keys 0-9", "decimal", "operators + - x /", "equals", "AC/C", "backspace", "+/-", "%"],
+    "expectations": ["display starts 0", "typing replaces 0", "operator then operator replaces operator", "equals repeats", "keyboard works", "no leading zeros"],
+    "kinds": [{"name": "classic four-function grid", "what": "display on top, 4-column key grid"}, {"name": "tape calculator", "what": "scrolling printed history"}, {"name": "scientific", "what": "extra function rows"}]
+  },
+  "specifics": {
+    "shape": {"keywords": {"1": ["calculator", "keys", "display"], "2": ["4-column grid", "rounded keys", "equals spans emphasis"], "3": ["tactile bevel", "pill operator column"]}, "descriptions": ["body width 320 to 380 px", "key gap 10 to 14 px", "key radius 14 to 22 px"], "behaviors": ["keys press down 1-2px on active"], "tokens": {"radius": "14-22px", "gap": "10-14px", "display height": "110-160px"}},
+    "colour": {"keywords": {"1": ["dark body", "orange or accent operators"], "2": ["neutral digit keys", "muted function keys"], "3": ["warm accent on cool graphite"]}, "descriptions": ["accent only for operators and equals"], "behaviors": ["active operator inverts colours"], "tokens": {"body": "#1c1d22 to #24252b", "accent": "#ff9f43 or #f5a524", "digit key": "#33353d to #3b3d46"}},
+    "type": {"keywords": {"1": ["numbers"], "2": ["tabular-nums", "large light weight display"], "3": ["system-ui rounded"]}, "descriptions": ["display 44 to 64px, shrinks for long input"], "behaviors": ["right aligned"], "tokens": {"key font": "22-26px", "display": "44-64px"}},
+    "motion": {"keywords": {"1": ["press feedback"], "2": ["quick scale"], "3": ["result flash"]}, "descriptions": ["transform only"], "behaviors": ["scale .96 on press"], "tokens": {"press": "80-140ms", "result settle": "150-250ms"}},
+    "errors and edge cases": {"keywords": {"1": ["divide by zero"], "2": ["overflow", "float noise"], "3": ["negative zero"]}, "descriptions": ["show Error, next digit clears it"], "behaviors": ["max 12 digits input"], "tokens": {"max digits": "10-14"}}
+  },
+  "anti_keywords": [
+    {"not": "eval() of a typed string", "instead": "explicit state machine with accumulator, operator, entry"},
+    {"not": "raw floats 0.30000000000000004", "instead": "round to 12 significant digits"},
+    {"not": "decorative buttons that do nothing", "instead": "every key wired, including keyboard"},
+    {"not": "tiny low-contrast keys", "instead": "large targets, strong contrast, visible focus"}
+  ],
+  "checks": ["Does 2+3= show 5?", "Does 0.1+0.2 show 0.3?", "Does 5/0 show Error and recover?", "Does repeat equals work?", "Do keyboard digits, Enter, Backspace, Escape work?", "Is the active operator visible?", "Does it fit a phone width?"],
+  "built": ["classic four-function grid"]
+}

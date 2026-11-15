@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j1", "scores": {
+"U": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 6, "overall": 6.5, "note": "Top-down 32x32 with real column stacking (height cap 6), remove mode, undo, keyboard shortcuts, but only three block types, an empty start, and the mobile toolbar overflows."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Side-view 32x32 world with a textured starter landscape, ten block types, drag painting with interpolation, undo, reset, autosave and a tidy mobile layout."},
+"W": {"fidelity": 6, "correctness": 7, "craft": 4, "usability": 6, "overall": 5, "note": "Plain flat-color DOM grid on a dark empty board with 8 types, undo and autosave; functional but bare and the board reads as dark and lifeless."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 7, "overall": 8.7, "note": "Isometric 32x32 voxel world with stackable blocks, shaded faces, translucent water and glass, starter terrain, place/erase modes, picking and undo; the strongest block-building feel, though redraws are heavy and the mobile view is small."},
+"Y": {"fidelity": 6, "correctness": 6, "craft": 5, "usability": 6, "overall": 5.5, "note": "Flat top-down painter with 8 types, undo, PNG save and autosave; the grid lines render unevenly on mobile and there is no height."},
+"Z": {"fidelity": 6, "correctness": 8, "craft": 7, "usability": 7, "overall": 6.8, "note": "Polished and accessible flat grid with counts, status messages, a two-step clear and focus states, but only four block types, an empty start, and the status and help text fall below the fold on desktop."}
+},
+"ranking": ["X", "V", "U", "Z", "Y", "W"]}

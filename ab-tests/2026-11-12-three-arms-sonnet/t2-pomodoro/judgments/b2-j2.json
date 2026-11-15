@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"simple": 5, "correctness": 8, "usability": 6, "craft": 7, "code": 5, "overall": 6, "note": "Robust (persistence, live region, drift-free) but overbuilt, and the giant '0' pomodoro count outweighs the timer in the hierarchy."},
+"V": {"simple": 8, "correctness": 7, "usability": 6, "craft": 6, "code": 8, "overall": 6, "note": "Compact and correct, but the thick ring that barely depletes looks off, and there is no live region for screen readers."},
+"W": {"simple": 4, "correctness": 7, "usability": 6, "craft": 6, "code": 5, "overall": 5, "note": "Large monospace timer is clear, but it is padded with two reset buttons, confirm steps (paused reset did not reset in the scripted use) and long status prose."},
+"X": {"simple": 8, "correctness": 8, "usability": 7, "craft": 7, "code": 8, "overall": 7, "note": "Clean dark card with thin ring, tabs and settings; tidy, minimal code, though it has no aria-live and a weaker phone hierarchy than the best."},
+"Y": {"simple": 8, "correctness": 8, "usability": 8, "craft": 8, "code": 7, "overall": 8, "note": "Full-bleed red with a huge timer, a clear mode label, a live region and a sensible reset; strong at-a-glance read and a good phone layout."},
+"Z": {"simple": 7, "correctness": 9, "usability": 9, "craft": 8, "code": 7, "overall": 9, "note": "Polished navy design with a big timer, progress bar, cycle pips, keyboard shortcuts, live region and a clean pause state; slightly more than minimal but well judged."}
+}, "ranking": ["Z", "Y", "X", "V", "U", "W"]}

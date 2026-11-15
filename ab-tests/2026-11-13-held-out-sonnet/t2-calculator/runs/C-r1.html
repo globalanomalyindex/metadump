@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root {
+    --bg: #07090d;
+    --panel: #0d1118;
+    --edge: rgba(190, 215, 255, 0.22);
+    --key: rgba(255, 255, 255, 0.06);
+    --key-hover: rgba(255, 255, 255, 0.11);
+    --key-down: rgba(120, 190, 255, 0.28);
+    --digit: #e6f1ff;
+    --dim: #8da2bd;
+    --accent: #5cc8ff;
+    --accent-ink: #04141f;
+    --warn: #ff8a8a;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(ellipse at 50% 20%, #101826 0%, var(--bg) 65%);
+    color: var(--digit);
+    font-family: ui-sans-serif, -apple-system, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 16px;
+  }
+  .calc {
+    width: min(100%, 340px);
+    background: linear-gradient(180deg, #121823, var(--panel));
+    border: 1px solid var(--edge);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 50px rgba(0,0,0,0.6);
+  }
+  .display {
+    height: 112px;
+    padding: 10px 12px 8px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    background: #05070a;
+    border: 1px solid rgba(190, 215, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .expr {
+    min-height: 20px;
+    font-size: 15px;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .value {
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    max-width: 100%;
+    color: #f2f8ff;
+  }
+  .value.small { font-size: 36px; }
+  .value.smaller { font-size: 28px; }
+  .value.error { color: var(--warn); font-size: 34px; }
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    font: inherit;
+    font-size: 22px;
+    height: 58px;
+    border-radius: 14px;
+    border: 1px solid var(--edge);
+    background: var(--key);
+    color: var(--digit);
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: background 90ms ease, transform 90ms ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button:hover { background: var(--key-hover); }
+  button:active, button.down {
+    background: var(--key-down);
+    transform: translateY(1px) scale(0.98);
+  }
+  button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button.fn { color: var(--dim); font-size: 20px; }
+  button.op { color: var(--accent); font-size: 26px; }
+  button.op[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+  button.eq {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  button.eq:hover { background: #82d6ff; }
+  button.eq:active, button.eq.down { background: #3aa8e0; }
+  button.zero { grid-column: span 2; }
+  @media (prefers-reduced-motion: reduce) {
+    button { transition: none; }
+    button:active, button.down { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="display">
+    <div class="expr" id="expr" aria-hidden="true"></div>
+    <div class="value" id="value" role="status" aria-live="polite" aria-atomic="true">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="C" aria-label="Clear all">C</button>
+    <button class="fn" data-k="neg" aria-label="Change sign">±</button>
+    <button class="fn" data-k="bs" aria-label="Backspace">⌫</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+
+    <button data-k="7">7</button>
+    <button data-k="8">8</button>
+    <button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+
+    <button data-k="4">4</button>
+    <button data-k="5">5</button>
+    <button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+
+    <button data-k="1">1</button>
+    <button data-k="2">2</button>
+    <button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  var MAX_DIGITS = 12;
+  var SYM = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+  var s; // state
+  function reset() {
+    s = { cur: '0', acc: null, op: null, fresh: true, err: false, lastExpr: '' };
+  }
+  reset();
+
+  var elValue = document.getElementById('value');
+  var elExpr = document.getElementById('expr');
+  var opKeys = document.querySelectorAll('button.op');
+
+  function fmt(n) {
+    if (!isFinite(n)) return 'Error';
+    var r = Number(n.toPrecision(MAX_DIGITS));
+    var t = String(r);
+    if (t.indexOf('e') !== -1 || t.replace('-', '').replace('.', '').length > MAX_DIGITS) {
+      t = r.toExponential(6).replace(/\.?0+e/, 'e').replace('e+', 'e');
+    }
+    return t;
+  }
+
+  function compute(a, op, b) {
+    switch (op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0 ? NaN : a / b;
+    }
+    return b;
+  }
+
+  function pretty(t) {
+    return t.replace('-', '−');
+  }
+
+  function render() {
+    var v = s.err ? 'Error' : pretty(s.cur);
+    elValue.textContent = v;
+    var len = v.length;
+    elValue.className = 'value' + (s.err ? ' error' : len > 11 ? ' smaller' : len > 8 ? ' small' : '');
+    if (s.err) elExpr.textContent = s.lastExpr || 'Cannot divide by zero';
+    else if (s.op) elExpr.textContent = pretty(fmt(s.acc)) + ' ' + SYM[s.op];
+    else elExpr.textContent = s.lastExpr;
+    for (var i = 0; i < opKeys.length; i++) {
+      var k = opKeys[i];
+      k.setAttribute('aria-pressed', (!s.err && s.op === k.dataset.k && s.fresh) ? 'true' : 'false');
+    }
+    // the C key says what it clears
+  }
+
+  function fail(msg) {
+    s = { cur: '0', acc: null, op: null, fresh: true, err: true, lastExpr: msg };
+  }
+
+  function digit(d) {
+    if (s.err) reset();
+    if (s.fresh) {
+      s.cur = d;
+      s.fresh = false;
+      if (!s.op) s.lastExpr = '';
+    } else if (s.cur === '0') {
+      s.cur = d;
+    } else if (s.cur === '-0') {
+      s.cur = '-' + d;
+    } else if (s.cur.replace('-', '').replace('.', '').length < MAX_DIGITS) {
+      s.cur += d;
+    }
+  }
+
+  function dot() {
+    if (s.err) reset();
+    if (s.fresh) {
+      s.cur = '0.';
+      s.fresh = false;
+      if (!s.op) s.lastExpr = '';
+    } else if (s.cur.indexOf('.') === -1) {
+      s.cur += '.';
+    }
+  }
+
+  function operator(o) {
+    if (s.err) return;
+    if (s.op && !s.fresh) {
+      var res = compute(s.acc, s.op, parseFloat(s.cur));
+      if (isNaN(res)) { fail(pretty(fmt(s.acc)) + ' ' + SYM[s.op] + ' ' + pretty(s.cur) + ' ='); return; }
+      s.acc = parseFloat(fmt(res));
+      s.cur = fmt(s.acc);
+    } else if (!s.op) {
+      s.acc = parseFloat(s.cur);
+    }
+    s.op = o;
+    s.fresh = true;
+    s.lastExpr = '';
+  }
+
+  function equals() {
+    if (s.err || !s.op) return;
+    var b = s.fresh ? s.acc : parseFloat(s.cur);
+    var bTxt = s.fresh ? fmt(s.acc) : s.cur;
+    var res = compute(s.acc, s.op, b);
+    var expr = pretty(fmt(s.acc)) + ' ' + SYM[s.op] + ' ' + pretty(bTxt) + ' =';
+    if (isNaN(res)) { fail(expr); return; }
+    s.cur = fmt(res);
+    s.acc = null;
+    s.op = null;
+    s.fresh = true;
+    s.lastExpr = expr;
+  }
+
+  function negate() {
+    if (s.err) return;
+    if (s.fresh) {
+      if (s.op) { s.cur = '-0'; s.fresh = false; }
+      else { // negate a shown result
+        if (s.cur !== '0') s.cur = s.cur.charAt(0) === '-' ? s.cur.slice(1) : '-' + s.cur;
+      }
+      return;
+    }
+    if (s.cur === '0') { s.cur = '-0'; return; }
+    s.cur = s.cur.charAt(0) === '-' ? s.cur.slice(1) : '-' + s.cur;
+  }
+
+  function backspace() {
+    if (s.err || s.fresh) return;
+    s.cur = s.cur.slice(0, -1);
+    if (s.cur === '' || s.cur === '-') s.cur = '0';
+  }
+
+  function clearEntry() {
+    if (s.err) { reset(); return; }
+    s.cur = '0';
+    s.fresh = !s.op ? true : false;
+  }
+
+  function press(k) {
+    if (k >= '0' && k <= '9' && k.length === 1) digit(k);
+    else if (k === '.') dot();
+    else if (k === '+' || k === '-' || k === '*' || k === '/') operator(k);
+    else if (k === '=') equals();
+    else if (k === 'C') reset();
+    else if (k === 'CE') clearEntry();
+    else if (k === 'neg') negate();
+    else if (k === 'bs') backspace();
+    render();
+  }
+
+  document.getElementById('keys').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b) press(b.dataset.k);
+  });
+
+  var map = { Enter: '=', '=': '=', Escape: 'C', Delete: 'CE', Backspace: 'bs', ',': '.' };
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    var code = null;
+    if (/^[0-9]$/.test(k) || k === '.' || k === '+' || k === '-' || k === '*' || k === '/') code = k;
+    else if (map[k]) code = map[k];
+    if (!code) return; // Tab, Space etc. keep their normal behaviour
+    e.preventDefault(); // stops Enter re-clicking a focused key and / opening quick find
+    press(code);
+    var sel = code === 'CE' ? null : document.querySelector('button[data-k="' + code + '"]');
+    if (sel) {
+      sel.classList.add('down');
+      setTimeout(function () { sel.classList.remove('down'); }, 120);
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

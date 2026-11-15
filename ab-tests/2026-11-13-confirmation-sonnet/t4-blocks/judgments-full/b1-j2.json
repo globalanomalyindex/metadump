@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j2", "scores": {
+"U": {"fidelity": 9, "correctness": 9, "craft": 8, "usability": 8, "overall": 8, "note": "Seeded 32x32 world with house, tree and pond, beveled blocks, ten-block palette, undo and saved state; sky is plain dark and swatches carry no names."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 6, "usability": 7, "overall": 6, "note": "Works with erase, grid and generate buttons, but opens to a blank dark grid with flat tiles, an unlabeled toolbar and a hint that does not mention the Grid and Generate buttons."},
+"W": {"fidelity": 8, "correctness": 9, "craft": 8, "usability": 9, "overall": 8, "note": "Clean, accessible Block Box with counts, flash feedback, status messages and an 8-cell guide grid, though it has only four block kinds and starts empty."},
+"X": {"fidelity": 8, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "Starts with a ground layer and adds pick and fill tools with ten blocks, but the swatches are unfocusable divs with no names, the status line is cluttered, and undo records empty actions."},
+"Y": {"fidelity": 10, "correctness": 9, "craft": 10, "usability": 9, "overall": 10, "note": "Most game-like: textured blocks over a sky with clouds, generated terrain with trees and water, line-interpolated drags, new-world and undo, and it fits desktop and phone well."},
+"Z": {"fidelity": 8, "correctness": 9, "craft": 9, "usability": 9, "overall": 8, "note": "Polished and responsive with hi-DPI canvas, a two-step clear, pop animation and well-labeled kinds, but it opens empty with only four kinds."}
+},
+"ranking": ["Y", "U", "Z", "W", "X", "V"]}

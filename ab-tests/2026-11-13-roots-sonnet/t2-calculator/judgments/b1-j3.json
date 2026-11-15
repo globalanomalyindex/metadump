@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"basic": 9, "correctness": 8, "usability": 8, "craft": 7, "code": 9, "overall": 8, "note": "Clean dark iOS-style calculator, correct results, friendly divide-by-zero message, grouped long numbers; the dim operator keys are a little low in contrast and only two aria attributes."},
+"V": {"basic": 9, "correctness": 8, "usability": 8, "craft": 10, "code": 6, "overall": 9, "note": "Distinctive seven-segment LCD pocket calculator with tactile keys and a good phone layout; caps at 9 digits and the SVG digit code is longer, but the ERR state, 0.3 and clear all work."},
+"W": {"basic": 9, "correctness": 8, "usability": 8, "craft": 8, "code": 9, "overall": 8, "note": "Warm light iOS-like calculator with a good active-operator state and aria labels; correct, compact, and nothing extra."},
+"X": {"basic": 10, "correctness": 9, "usability": 9, "craft": 8, "code": 7, "overall": 9, "note": "Dark panel with a clear blue equals key, a backspace key, a red Error state and a showing expression line; handles every test correctly, with strong accessibility and keyboard support."},
+"Y": {"basic": 9, "correctness": 8, "usability": 8, "craft": 7, "code": 8, "overall": 8, "note": "Solid dark calculator with orange operators, but the 0 key's left-aligned label looks off and the long-number line is tiny."},
+"Z": {"basic": 5, "correctness": 8, "usability": 7, "craft": 8, "code": 5, "overall": 6, "note": "Charming retro LCD design, but the history panel is padded scope for a basic calculator and pushes the layout off centre."}
+}, "ranking": ["V", "X", "W", "U", "Y", "Z"]}

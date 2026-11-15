@@ -1,0 +1,440 @@
+{
+ "A-r1": {
+  "bytes": 17972,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Cart",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.68
+   },
+   {
+    "control": "Menu",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 49.87
+   },
+   {
+    "control": "Hearth",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 2.05
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#menuBtn",
+   "focusable": true,
+   "grid_children": 6,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r2": {
+  "bytes": 15074,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Menu",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 42.81
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#toggle",
+   "focusable": true,
+   "grid_children": 5,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r3": {
+  "bytes": 13233,
+  "change_0_to_2s_pct": 0.02,
+  "change_20_to_22s_pct": 0.02,
+  "controls_used": [
+   {
+    "control": "Open menu",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 47.6
+   },
+   {
+    "control": "Small",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 1.84
+   },
+   {
+    "control": "Medium",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.49
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#toggle",
+   "focusable": true,
+   "grid_children": 8,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "A-r4": {
+  "bytes": 17292,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Bag",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.0
+   },
+   {
+    "control": "Menu",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 61.94
+   },
+   {
+    "control": "Light",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 3.97
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#toggle",
+   "focusable": true,
+   "grid_children": 5,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r1": {
+  "bytes": 11211,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Menu",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 25.48
+   },
+   {
+    "control": "Remove one",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 3.51
+   },
+   {
+    "control": "Add one",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.04
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#lid",
+   "focusable": true,
+   "grid_children": 7,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r2": {
+  "bytes": 9438,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Menu \u00b7 1 \u00d7 medium, whole",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 20.26
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#trigger",
+   "focusable": true,
+   "grid_children": 8,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r3": {
+  "bytes": 18586,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Menu 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 40.13
+   },
+   {
+    "control": "Light",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 7.85
+   },
+   {
+    "control": "Medium",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 2.91
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#trigger",
+   "focusable": true,
+   "grid_children": 7,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "Q-r4": {
+  "bytes": 12791,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "Menu",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 30.8
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#trigger",
+   "focusable": true,
+   "grid_children": 7,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r1": {
+  "bytes": 14595,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "BAG 0",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 0.21
+   },
+   {
+    "control": "MENU",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 21.25
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#trigger",
+   "focusable": true,
+   "grid_children": 7,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r2": {
+  "bytes": 17216,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "OPEN MENU",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 51.87
+   },
+   {
+    "control": "Today's roast",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 2.09
+   },
+   {
+    "control": "Whole beans",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 7.43
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#trigger",
+   "focusable": true,
+   "grid_children": 6,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r3": {
+  "bytes": 11498,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "MENU",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 15.79
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#trigger",
+   "focusable": true,
+   "grid_children": 8,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ },
+ "F-r4": {
+  "bytes": 15250,
+  "change_0_to_2s_pct": 0.0,
+  "change_20_to_22s_pct": 0.0,
+  "controls_used": [
+   {
+    "control": "MENU",
+    "kind": "click",
+    "verb": "clicked",
+    "change_pct": 36.88
+   }
+  ],
+  "js_errors": 0,
+  "js_error_text": [],
+  "bento": {
+   "toggle": "button#handle",
+   "focusable": true,
+   "grid_children": 7,
+   "brands_named": []
+  },
+  "checks": {
+   "collapses": true,
+   "keyboard": true,
+   "grid": true,
+   "fictional": true
+  },
+  "passed": 4,
+  "failed": 0,
+  "not_run": 0
+ }
+}

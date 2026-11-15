@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+:root{
+  --page:#e9e4da; --card:#f7f4ee; --ink:#23211d; --muted:#5f594e;
+  --key:#ece7dc; --key-hi:#e0d9ca; --op:#d9e3dc; --op-ink:#1f4d38;
+  --accent:#b04512; --accent-ink:#fff; --line:#d8d1c2; --disp:#fbf9f4;
+}
+@media (prefers-color-scheme:dark){
+  :root{--page:#1a1916;--card:#25231f;--ink:#f1ede4;--muted:#9a9487;--key:#33302a;--key-hi:#403c34;--op:#2d3a33;--op-ink:#a9dcbf;--accent:#e0743a;--accent-ink:#1a1916;--line:#3a362f;--disp:#1d1b18}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;align-items:center;justify-content:center;padding:16px}
+.calc{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 1px 0 #fff8 inset,0 18px 40px -18px #0004}
+.display{background:var(--disp);border:1px solid var(--line);border-radius:14px;padding:10px 14px 12px;height:104px;display:flex;flex-direction:column;justify-content:space-between;text-align:right;overflow:hidden;margin-bottom:14px}
+.pending{min-height:1.3em;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.entry{font-size:52px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em}
+.entry.err{color:var(--accent)}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+button{font:inherit;font-size:22px;font-weight:500;height:58px;border:0;border-radius:14px;background:var(--key);color:var(--ink);cursor:pointer;box-shadow:0 2px 0 var(--line);transition:transform .06s,background .12s,box-shadow .06s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:hover{background:var(--key-hi)}
+button:active,button.press{transform:translateY(2px);box-shadow:0 0 0 var(--line)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.op{background:var(--op);color:var(--op-ink);font-size:26px}
+button.op:hover{filter:brightness(.96)}
+button.op.active{background:var(--op-ink);color:var(--card)}
+button.eq{background:var(--accent);color:var(--accent-ink);font-size:28px;box-shadow:0 2px 0 #0003}
+button.eq:hover{filter:brightness(1.07);background:var(--accent)}
+button.fn{font-size:19px;color:var(--muted)}
+button.zero{grid-column:span 2}
+@media (max-width:360px){.calc{padding:12px}button{height:54px}.keys{gap:6px}}
+@media (prefers-reduced-motion:reduce){button{transition:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="display" role="group" aria-label="Display">
+    <div class="pending" id="pending"></div>
+    <div class="entry" id="entry" aria-live="polite">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="fn" data-k="clear" id="clr" aria-label="Clear all">AC</button>
+    <button class="fn" data-k="sign" aria-label="Toggle sign">±</button>
+    <button class="fn" data-k="back" aria-label="Backspace">⌫</button>
+    <button class="op" data-k="/" aria-label="Divide">÷</button>
+
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="op" data-k="*" aria-label="Multiply">×</button>
+
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button class="op" data-k="-" aria-label="Subtract">−</button>
+
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button class="op" data-k="+" aria-label="Add">+</button>
+
+    <button class="zero" data-k="0">0</button>
+    <button data-k=".">.</button>
+    <button class="eq" data-k="=" aria-label="Equals">=</button>
+  </div>
+</main>
+<script>
+(function(){
+  var SYM={'+':'+','-':'−','*':'×','/':'÷'};
+  var MAXD=12;
+  var s;
+  function reset(){s={cur:'0',acc:null,op:null,fresh:true,err:false,done:false,expr:''}}
+  reset();
+  var entryEl=document.getElementById('entry'),pendEl=document.getElementById('pending'),clr=document.getElementById('clr');
+
+  function fmt(n){
+    if(!isFinite(n))return null;
+    var r=parseFloat(n.toPrecision(MAXD));
+    var t=String(r);
+    if(t.indexOf('e')>-1||t.replace(/[-.]/g,'').length>MAXD){t=r.toExponential(6).replace(/\.?0+e/,'e').replace('e+','e')}
+    return t;
+  }
+  function compute(a,op,b){
+    switch(op){case'+':return a+b;case'-':return a-b;case'*':return a*b;case'/':return b===0?NaN:a/b}
+  }
+  function setErr(){reset();s.err=true;s.cur='Error'}
+  function digit(d){
+    if(s.err||s.done){var keepOp=false;if(s.err||s.done){s.cur='0';s.fresh=true;if(s.done){s.expr='';s.acc=null;s.op=null}s.err=false;s.done=false}}
+    if(s.fresh){s.cur=d;s.fresh=false}
+    else{
+      var len=s.cur.replace(/[-.]/g,'').length;
+      if(len>=MAXD)return;
+      s.cur=(s.cur==='0')?d:(s.cur==='-0'?'-'+d:s.cur+d);
+    }
+  }
+  function dot(){
+    if(s.err||s.done){s.cur='0';s.fresh=true;if(s.done){s.expr='';s.acc=null;s.op=null}s.err=false;s.done=false}
+    if(s.fresh){s.cur='0.';s.fresh=false;return}
+    if(s.cur.indexOf('.')>-1)return;
+    s.cur+='.';
+  }
+  function operator(o){
+    if(s.err)return;
+    if(s.op&&s.fresh&&!s.done){s.op=o;return}   // replace pending operator
+    var v=parseFloat(s.cur);
+    if(s.op&&!s.done){
+      var r=compute(s.acc,s.op,v);
+      if(isNaN(r)||!isFinite(r)){setErr();return}
+      s.acc=parseFloat(fmt(r));s.cur=fmt(r);
+    }else s.acc=v;
+    s.op=o;s.fresh=true;s.done=false;
+  }
+  function equals(){
+    if(s.err||!s.op||s.done)return;
+    var v=parseFloat(s.cur),r=compute(s.acc,s.op,v);
+    if(isNaN(r)||!isFinite(r)){setErr();return}
+    s.expr=fmt(s.acc)+' '+SYM[s.op]+' '+fmt(v)+' =';
+    s.cur=fmt(r);s.acc=null;s.op=null;s.fresh=true;s.done=true;
+  }
+  function sign(){
+    if(s.err)return;
+    if(s.fresh&&s.op&&!s.done){s.cur='-0';s.fresh=false;return}
+    if(s.cur==='0'&&s.fresh&&!s.done){return}
+    s.cur=s.cur.charAt(0)==='-'?s.cur.slice(1):'-'+s.cur;
+    if(s.done){s.acc=null}
+  }
+  function back(){
+    if(s.err){reset();return}
+    if(s.fresh||s.done)return;
+    s.cur=s.cur.slice(0,-1);
+    if(s.cur===''||s.cur==='-')s.cur='0';
+  }
+  function press(k){
+    if(k>='0'&&k<='9'&&k.length===1)digit(k);
+    else if(k==='.')dot();
+    else if(SYM[k])operator(k);
+    else if(k==='=')equals();
+    else if(k==='sign')sign();
+    else if(k==='back')back();
+    else if(k==='clear')reset();
+    else if(k==='ce'){if(s.err)reset();else{s.cur='0';s.fresh=!s.op?true:false;if(s.op)s.fresh=true;}}
+    render();
+  }
+  function render(){
+    entryEl.textContent=s.cur;
+    entryEl.classList.toggle('err',s.err);
+    var p='';
+    if(s.err)p='Cannot divide by zero';
+    else if(s.done)p=s.expr;
+    else if(s.op)p=fmt(s.acc)+' '+SYM[s.op];
+    pendEl.textContent=p;
+    // step font down as entry grows
+    var sz=52;entryEl.style.fontSize=sz+'px';
+    var box=entryEl.parentNode,avail=box.clientWidth-28;
+    entryEl.style.display='inline-block';entryEl.style.alignSelf='flex-end';
+    while(entryEl.scrollWidth>avail&&sz>20){sz-=2;entryEl.style.fontSize=sz+'px'}
+    var ops=document.querySelectorAll('button.op');
+    for(var i=0;i<ops.length;i++)ops[i].classList.toggle('active',!!s.op&&!s.done&&s.fresh&&ops[i].dataset.k===s.op);
+    clr.textContent=(!s.err&&s.cur!=='0'&&!s.done&&!s.fresh)?'C':'AC';
+    clr.setAttribute('aria-label',clr.textContent==='C'?'Clear entry':'Clear all');
+  }
+  document.getElementById('keys').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    var k=b.dataset.k;
+    if(k==='clear'&&b.textContent==='C'){press('ce');return}
+    press(k);
+  });
+  var map={'Enter':'=','=':'=','Escape':'clear','Backspace':'back','Delete':'ce',',':'.'};
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,a=null;
+    if(/^[0-9]$/.test(k)||k==='.'||k===','||k==='+'||k==='-'||k==='*'||k==='/')a=(k===',')?'.':k;
+    else if(map[k])a=map[k];
+    else if(k==='x'||k==='X')return;
+    if(a===null)return;
+    e.preventDefault();
+    if(e.target.tagName==='BUTTON'&&(k==='Enter'))e.target.blur();
+    press(a);
+    var sel=a==='back'?'[data-k="back"]':a==='clear'||a==='ce'?'#clr':'[data-k="'+a+'"]';
+    var b=document.querySelector(sel);
+    if(b){b.classList.add('press');setTimeout(function(){b.classList.remove('press')},110)}
+  });
+  window.addEventListener('resize',render);
+  render();
+})();
+</script>
+</body>
+</html>

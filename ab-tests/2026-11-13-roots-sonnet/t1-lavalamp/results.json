@@ -1,0 +1,290 @@
+{
+ "scores": {
+  "A": {
+   "likeness": 6.08,
+   "visuals": 5.0,
+   "motion": 5.08,
+   "presentation": 5.83,
+   "overall": 5.25,
+   "mean_rank": 5.25,
+   "per_run_overall": {
+    "A-r1": 6.0,
+    "A-r2": 5.0,
+    "A-r3": 4.0,
+    "A-r4": 6.0
+   }
+  },
+  "C": {
+   "likeness": 8.08,
+   "visuals": 8.0,
+   "motion": 6.83,
+   "presentation": 7.92,
+   "overall": 7.58,
+   "mean_rank": 2.25,
+   "per_run_overall": {
+    "C-r1": 7.67,
+    "C-r2": 7.33,
+    "C-r3": 8.33,
+    "C-r4": 7.0
+   }
+  },
+  "R": {
+   "likeness": 7.92,
+   "visuals": 7.58,
+   "motion": 5.92,
+   "presentation": 7.33,
+   "overall": 7.25,
+   "mean_rank": 3,
+   "per_run_overall": {
+    "R-r1": 9.0,
+    "R-r2": 5.67,
+    "R-r3": 6.33,
+    "R-r4": 8.0
+   }
+  }
+ },
+ "pairwise": {
+  "R_vs_C": {
+   "wins": 9,
+   "losses": 11,
+   "ties": 4,
+   "win_rate": 0.46,
+   "p": 0.771
+  },
+  "R_vs_A": {
+   "wins": 19,
+   "losses": 2,
+   "ties": 3,
+   "win_rate": 0.85,
+   "p": 0.114
+  },
+  "C_vs_A": {
+   "wins": 24,
+   "losses": 0,
+   "ties": 0,
+   "win_rate": 1.0,
+   "p": 0.029
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 10544,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp: ON",
+   "untouched_change_pct": 2.06,
+   "click_change_pct": 1.52,
+   "control_change_pct": 13.49,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "bytes": 9624,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp: on",
+   "untouched_change_pct": 3.97,
+   "click_change_pct": 2.83,
+   "control_change_pct": 14.66,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "bytes": 8895,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Ember",
+   "untouched_change_pct": 3.33,
+   "click_change_pct": 1.41,
+   "control_change_pct": 0.67,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "bytes": 9588,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Magma",
+   "untouched_change_pct": 2.23,
+   "click_change_pct": 1.17,
+   "control_change_pct": 0.9,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r1": {
+   "bytes": 17577,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp on",
+   "untouched_change_pct": 1.77,
+   "click_change_pct": 1.68,
+   "control_change_pct": 4.6,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r2": {
+   "bytes": 19439,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp On",
+   "untouched_change_pct": 1.98,
+   "click_change_pct": 2.87,
+   "control_change_pct": 21.18,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r3": {
+   "bytes": 18012,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp on",
+   "untouched_change_pct": 1.66,
+   "click_change_pct": 4.3,
+   "control_change_pct": 4.88,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r4": {
+   "bytes": 16470,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Bulb on",
+   "untouched_change_pct": 1.13,
+   "click_change_pct": 4.08,
+   "control_change_pct": 9.39,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r1": {
+   "bytes": 22356,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Power",
+   "untouched_change_pct": 2.58,
+   "click_change_pct": 2.47,
+   "control_change_pct": 7.97,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r2": {
+   "bytes": 15607,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp on",
+   "untouched_change_pct": 2.06,
+   "click_change_pct": 2.25,
+   "control_change_pct": 1.92,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r3": {
+   "bytes": 22907,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp on",
+   "untouched_change_pct": 0.95,
+   "click_change_pct": 0.27,
+   "control_change_pct": 13.83,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "R-r4": {
+   "bytes": 19054,
+   "renderer": "canvas2d",
+   "main_visual": "canvas",
+   "first_control": "Lamp power",
+   "untouched_change_pct": 1.48,
+   "click_change_pct": 1.43,
+   "control_change_pct": 4.19,
+   "moves_untouched": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 75246,
+   "mean_seconds": 40.9
+  },
+  "C": {
+   "runs": 4,
+   "mean_tokens": 126001,
+   "mean_seconds": 192.6
+  },
+  "R": {
+   "runs": 4,
+   "mean_tokens": 98444,
+   "mean_seconds": 199.1
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 196987,
+   "ms": 1484171,
+   "tool_uses": 34,
+   "agents_spawned": 21
+  }
+ },
+ "agreement_r": 0.93,
+ "notes": {
+  "b1/j1/C-r1": "Elegant tall classic lamp with rocket cap, glowing pool and soft merging wax, minimal controls below; wax is a bit murky and low contrast.",
+  "b1/j1/R-r1": "Convincing classic lamp with purple liquid, glowing hot wax that stretches and splits, chrome base with indicator and floor glow, tidy control bar.",
+  "b1/j1/A-r1": "Brass lamp with discrete flat pink blobs that merge a bit, but the glass is dark and flat, the wax is sparse and the panel dominates.",
+  "b1/j1/R-r2": "Good rosy glass and copper base, but the wax is mostly one lumpy mass with a single orbiting ball, so the motion is less organic.",
+  "b1/j1/A-r2": "Wax reads as a big flat orange mass filling the lower glass and the tiny cap is odd; switching off blacks out the whole lamp, breaking the illusion.",
+  "b1/j1/C-r2": "Pretty bulbous glass with highlights and warm ambient glow and believable column of wax, though the shape is less iconic and the wax is monotone.",
+  "b1/j2/R-r2": "Clear lamp with cap, base and glow, but the wax is a single fuzzy lump with a small dot, little merging or splitting, and the panel is generic.",
+  "b1/j2/A-r2": "Wax reads as a soft orange fill with hard-edged flat-cut glass and a cap that looks inverted, though the stretching and splitting is organic; the lamp goes dark when turned off.",
+  "b1/j2/C-r2": "Bulbous glass vessel with highlights, believable stretching wax column and a thoughtful panel; the shape is less classic but richly crafted.",
+  "b1/j2/A-r1": "Crisp metaballs that merge and split read nicely, but flat vector fill, a dark void in the glass and a tiny pooled puddle make it less luminous.",
+  "b1/j2/R-r1": "Classic silhouette with chrome cap and base, glowing hot-core wax that stretches and merges slowly, and a clean toolbar, though the wax edges are slightly pixelated.",
+  "b1/j2/C-r1": "Most atmospheric glass, glow and base with warm light from below, but the wax is murky and low-contrast and tends to fuse into one glowing mass.",
+  "b1/j3/A-r2": "Tapered lamp with a base and cap, but the wax is one big flat orange mass with a hard edge that rises and falls like a tide rather than separate blobs.",
+  "b1/j3/C-r2": "Pretty glass bulb with warm glow and a believable stretching, merging wax column, but the bulb silhouette reads more as a genie bottle than a classic lava lamp.",
+  "b1/j3/R-r2": "Recognizable tapered lamp with a copper base, but the wax mostly sits as a lump at the bottom with one lone small ball and barely evolves.",
+  "b1/j3/C-r1": "Elegant glass, bullet cap and glowing base with a restrained layout, but the wax is hazy and muddy inside the glass and the controls are small.",
+  "b1/j3/A-r1": "Crisp, vivid blobs that stretch and merge nicely, but the glass interior is flat dark, the brass base is plain and wax mostly pools at the bottom.",
+  "b1/j3/R-r1": "Classic lava lamp with chrome cap and base, purple liquid, hot glowing wax column that stretches, pinches and merges organically, with a clean control bar.",
+  "b2/j1/C-r3": "Classic tapered glass with chrome cap and hourglass base, wax stretches and merges convincingly and the heat/cooling interaction works.",
+  "b2/j1/R-r3": "Gorgeous warm glow and glass, but the wax quickly collapses into a pool and a cap-clump with very few blobs travelling.",
+  "b2/j1/A-r3": "Pixelated blocky wax edges, murky dark glass and one big lump that barely moves make it the weakest.",
+  "b2/j1/R-r4": "Amber liquid with red wax blobs, brass base with a switch and good glow, blobs drift and merge organically.",
+  "b2/j1/A-r4": "Readable lava lamp with glowing magma blobs, but the vessel is plain and the base flat.",
+  "b2/j1/C-r4": "Elegant purple lamp with fluted base and strong lighting, though the pink blobs are uniformly soft circles and the controls are tiny.",
+  "b2/j2/R-r4": "Brass lamp with warm amber glow and soft red wax that stretches and merges, with a tasteful switch on the base.",
+  "b2/j2/A-r4": "Clean chrome and purple lamp with a nice pink glow, but wax is flat pink blobs and the vessel is a bit plain.",
+  "b2/j2/C-r4": "Elegant purple lamp with a bottom glow and neat control bar, but the pink wax is soft fuzzy balls that cluster at the top.",
+  "b2/j2/A-r3": "Pixelated jagged wax edges, dark empty glass and a lone big blob that stalls at the top make it look unfinished.",
+  "b2/j2/R-r3": "Most beautiful glowing glass and bubbling molten pool, but the wax collapses into one stuck mass at the top and blobs run out.",
+  "b2/j2/C-r3": "Most convincing lava lamp: violet liquid, glowing amber blobs that rise, merge, split and pool, on a polished chrome base.",
+  "b2/j3/A-r4": "Clear lamp with silver cap and base and a soft magenta glow, but the glass is flat, the wax is a plain pink-orange and the blobs mostly clump.",
+  "b2/j3/C-r4": "Beautiful violet glass, glow and hourglass base with a tidy control bar, though the blobs are small, fuzzy and bunch at the top.",
+  "b2/j3/R-r4": "Warm amber liquid, brass base with a switch and a cohesive staging; the red wax blobs drift and merge organically and cooling works.",
+  "b2/j3/C-r3": "Strong silver-capped lamp with glowing wax puddle, wax that rises, merges and sinks in convincing gooey shapes, and responsive stir and cool-down.",
+  "b2/j3/A-r3": "Pixelated metaball edges, a dark glass with no real glow, and the wax settles into one static blob that barely moves.",
+  "b2/j3/R-r3": "Gorgeous glowing bell-cap lamp with a hot pool, but the wax all migrates to the top and stays there, leaving one blob and little life."
+ }
+}

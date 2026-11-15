@@ -1,0 +1,8 @@
+{"block": "b2", "judge": "j2", "scores": {
+"U": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "True isometric 3D voxel world on a 32x32 grid with stacked heights, nine block types, place/erase, undo, hover ghost, starter terrain and saving; reads as a real block game, though the canvas is small on phones."},
+"V": {"fidelity": 6, "correctness": 7, "craft": 5, "usability": 6, "overall": 5, "note": "Flat 2D painter with eight colours and PNG save, but it starts empty, has no stacking, and its mobile grid lines are uneven."},
+"W": {"fidelity": 6, "correctness": 8, "craft": 6, "usability": 7, "overall": 6, "note": "Clean and well labelled with a counter, undo and keyboard picks, but it is just four block types painted flat on a blank grid with no depth, and the first screen shows nothing built."},
+"X": {"fidelity": 5, "correctness": 7, "craft": 6, "usability": 6, "overall": 5, "note": "Flat div grid with nine types and a side panel, but it is dark and empty with faint cells, and the mobile layout pushes the palette below the board."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "Minecraft-like side-view 32x32 world with textured blocks, sky, a tree and water, plus erase, undo and reset; it works well, though it is a 2D slice rather than a full world."},
+"Z": {"fidelity": 6, "correctness": 8, "craft": 7, "usability": 7, "overall": 6, "note": "Top-down grid with stackable columns up to height 6, a clear-armed flow and good keyboard support, but only three block types and a subtle pseudo-height look; the mobile toolbar clips."}
+}, "ranking": ["U", "Y", "Z", "W", "X", "V"]}

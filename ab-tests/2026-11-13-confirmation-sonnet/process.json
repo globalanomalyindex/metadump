@@ -1,0 +1,1220 @@
+{
+ "t1-pelican": {
+  "A-r1": {
+   "agent": "ab1e18fafddf93197",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": null,
+   "edits": 0,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "a790f27494b1014f3",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a82a8fef7be5736ea",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 5,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "a9bc4f015b00d3376",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r1": {
+   "agent": "a63fc2882876ca2c2",
+   "angle": "seated on the saddle",
+   "deal_no": 1,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [],
+    [
+     "focus-static",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "uneven",
+     "uneven",
+     "uneven"
+    ],
+    []
+   ],
+   "looks": 3,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r2": {
+   "agent": "a4f8a8fb3d73f6719",
+   "angle": "cargo bike",
+   "deal_no": 4,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "no-keyboard",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow"
+    ]
+   ],
+   "looks": 2,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r3": {
+   "agent": "ae58d7c39c9906fbc",
+   "angle": "slim racer",
+   "deal_no": 3,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "hover-static",
+     "no-keyboard",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow"
+    ],
+    [
+     "overflow"
+    ]
+   ],
+   "looks": 2,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r4": {
+   "agent": "aeb00927b81e5ae33",
+   "angle": "bird on the bars",
+   "deal_no": 2,
+   "dealt": true,
+   "dump_written_before_page": null,
+   "edits": 0,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    [],
+    [
+     "no-keyboard",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 3,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r1": {
+   "agent": "a3af4a9c7447ff9f2",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 3,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "hover-static",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "small-target"
+    ]
+   ],
+   "looks": 1,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r2": {
+   "agent": "a36d164c33cc34695",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 8,
+   "edits_after_first_look": 6,
+   "images_read": 3,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "expect",
+     "small-target",
+     "washed-out"
+    ],
+    [
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow"
+    ]
+   ],
+   "looks": 2,
+   "plays": 2,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r3": {
+   "agent": "a577b9d340d639269",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 3,
+   "edits_after_first_look": 1,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "no-keyboard",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 3,
+   "plays": 3,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r4": {
+   "agent": "a210602981e2e229c",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "small-target",
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 2,
+   "refused": 0,
+   "sheet_read": 0
+  }
+ },
+ "t2-ascii": {
+  "A-r1": {
+   "agent": "a1e69d3edfefeea0c",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "a435ec28d9c2d1083",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a0f016267e1effa8d",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "a33c97025df259b12",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r1": {
+   "agent": "aa4ea670337474e64",
+   "angle": "ratio dial",
+   "deal_no": 1,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 3,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "small-target",
+     "small-target"
+    ],
+    [],
+    [],
+    [],
+    []
+   ],
+   "looks": 6,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r2": {
+   "agent": "a1b72c4cefb8cc80a",
+   "angle": "command-line mixer",
+   "deal_no": 4,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "clipped",
+     "hover-static",
+     "overflow",
+     "small-target",
+     "small-target"
+    ],
+    [
+     "hover-static"
+    ]
+   ],
+   "looks": 2,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r3": {
+   "agent": "a8daf5e9f6c204642",
+   "angle": "model comparer",
+   "deal_no": 3,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 4,
+   "edits_after_first_look": 2,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "hover-static",
+     "overflow",
+     "overflow",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    [
+     "clipped",
+     "hover-static",
+     "overflow",
+     "overflow",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    [
+     "clipped",
+     "hover-static",
+     "overflow",
+     "overflow",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    [
+     "small-target",
+     "small-target"
+    ]
+   ],
+   "looks": 5,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r4": {
+   "agent": "a11669d92e66425a8",
+   "angle": "shaded picture",
+   "deal_no": 2,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 3,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "hover-static"
+    ],
+    [
+     "hover-static"
+    ],
+    [
+     "hover-static"
+    ]
+   ],
+   "looks": 3,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r1": {
+   "agent": "a3a8ecd3d66077186",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 6,
+   "edits_after_first_look": 4,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "expect",
+     "small-target"
+    ],
+    [
+     "small-target"
+    ]
+   ],
+   "looks": 2,
+   "plays": 2,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r2": {
+   "agent": "afea896668a2b5796",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 5,
+   "edits_after_first_look": 3,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "overflow",
+     "play"
+    ],
+    []
+   ],
+   "looks": 4,
+   "plays": 4,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r3": {
+   "agent": "a33273a283aab15ff",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 3,
+   "edits_after_first_look": 1,
+   "images_read": 3,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    [
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    [
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    [],
+    [],
+    []
+   ],
+   "looks": 7,
+   "plays": 3,
+   "refused": 0,
+   "sheet_read": 2
+  },
+  "Q-r4": {
+   "agent": "a807b3d75665bbd7a",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 3,
+   "edits_after_first_look": 0,
+   "images_read": 4,
+   "let_it_run": 0,
+   "look_findings": [
+    [],
+    [],
+    [],
+    [
+     "small-target"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target"
+    ],
+    []
+   ],
+   "looks": 11,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  }
+ },
+ "t3-bento": {
+  "A-r1": {
+   "agent": "a4f2cc0562d8e4edd",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "ad798c7f3477d139c",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 5,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "afece5cd996bce36a",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": null,
+   "edits": 0,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "af6f70461d8e726cd",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r1": {
+   "agent": "a9756941cb6ee5879",
+   "angle": "tin stack that lifts into a grid",
+   "deal_no": null,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 6,
+   "edits_after_first_look": 5,
+   "images_read": 8,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "clipped",
+     "hover-static",
+     "overlap"
+    ],
+    []
+   ],
+   "looks": 4,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r2": {
+   "agent": "a9610229ce3e7e2de",
+   "angle": "row of tiles that spreads",
+   "deal_no": 2,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "clipped",
+     "overflow",
+     "overflow",
+     "uneven"
+    ],
+    [],
+    [
+     "clipped",
+     "clipped",
+     "overflow",
+     "overflow",
+     "uneven"
+    ],
+    [
+     "clipped",
+     "clipped",
+     "overflow",
+     "overflow",
+     "uneven"
+    ],
+    [],
+    []
+   ],
+   "looks": 7,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r3": {
+   "agent": "a154bec495d785f2b",
+   "angle": "tin stack that lifts into a grid",
+   "deal_no": 3,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 2,
+   "edits_after_first_look": 1,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "clipped",
+     "clipped",
+     "clipped",
+     "clipped",
+     "hover-static",
+     "overlap",
+     "overlap"
+    ],
+    [
+     "clipped",
+     "clipped",
+     "overlap",
+     "overlap"
+    ],
+    [
+     "clipped",
+     "clipped",
+     "overlap",
+     "overlap",
+     "overlap",
+     "overlap"
+    ]
+   ],
+   "looks": 4,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r4": {
+   "agent": "a71ef9e57a725e85d",
+   "angle": "grid panel from a corner handle",
+   "deal_no": 1,
+   "dealt": true,
+   "dump_written_before_page": null,
+   "edits": 0,
+   "edits_after_first_look": 0,
+   "images_read": 5,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "clipped",
+     "cut-off",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "small-target",
+     "uneven"
+    ],
+    [
+     "clipped",
+     "clipped",
+     "cut-off",
+     "uneven"
+    ]
+   ],
+   "looks": 2,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r1": {
+   "agent": "ac2ae46b78cb22a3f",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 4,
+   "edits_after_first_look": 2,
+   "images_read": 5,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "hover-static"
+    ],
+    [
+     "hover-static"
+    ],
+    [],
+    [
+     "hover-static"
+    ]
+   ],
+   "looks": 4,
+   "plays": 4,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r2": {
+   "agent": "aa9fab48c9f89482d",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 4,
+   "edits_after_first_look": 0,
+   "images_read": 5,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "hover-static",
+     "play"
+    ],
+    [],
+    [],
+    [],
+    []
+   ],
+   "looks": 5,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r3": {
+   "agent": "a2c4b1168fc9a70ce",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 4,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "hover-static",
+     "overlap",
+     "overlap",
+     "uneven"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r4": {
+   "agent": "a10fa6582b7abc2d1",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 8,
+   "edits_after_first_look": 6,
+   "images_read": 4,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "play",
+     "uneven"
+    ],
+    [
+     "clipped",
+     "uneven"
+    ]
+   ],
+   "looks": 2,
+   "plays": 2,
+   "refused": 0,
+   "sheet_read": 0
+  }
+ },
+ "t4-blocks": {
+  "A-r1": {
+   "agent": "a93f1227ec34b3600",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r2": {
+   "agent": "a59d673fe8e58b67c",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r3": {
+   "agent": "a3a972ab20ee8d7aa",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "A-r4": {
+   "agent": "afda2b73fd56d013e",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [],
+   "looks": 0,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r1": {
+   "agent": "a76bf228bdee9082f",
+   "angle": "flat block grid",
+   "deal_no": 1,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    [],
+    []
+   ],
+   "looks": 2,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r2": {
+   "agent": "a4d4830cbc5342545",
+   "angle": "toy box with a palette",
+   "deal_no": null,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "hover-static"
+    ],
+    []
+   ],
+   "looks": 2,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r3": {
+   "agent": "a99f9cd265ca857ad",
+   "angle": "stacked columns",
+   "deal_no": 3,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 1,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "F-r4": {
+   "agent": "a8623b872ac1b4798",
+   "angle": "toy box with a palette",
+   "deal_no": 2,
+   "dealt": true,
+   "dump_written_before_page": false,
+   "edits": 3,
+   "edits_after_first_look": 1,
+   "images_read": 0,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "hover-static"
+    ]
+   ],
+   "looks": 1,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r1": {
+   "agent": "ab3960f8c8127fbf7",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 1,
+   "plays": 0,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r2": {
+   "agent": "a38d53908c8bd8e8d",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 4,
+   "edits_after_first_look": 1,
+   "images_read": 1,
+   "let_it_run": 0,
+   "look_findings": [
+    []
+   ],
+   "looks": 2,
+   "plays": 2,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r3": {
+   "agent": "a2bc095d93ca7fac6",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 4,
+   "edits_after_first_look": 2,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "play"
+    ],
+    []
+   ],
+   "looks": 3,
+   "plays": 1,
+   "refused": 0,
+   "sheet_read": 0
+  },
+  "Q-r4": {
+   "agent": "af143d2287784a897",
+   "angle": null,
+   "deal_no": null,
+   "dealt": false,
+   "dump_written_before_page": true,
+   "edits": 2,
+   "edits_after_first_look": 0,
+   "images_read": 2,
+   "let_it_run": 0,
+   "look_findings": [
+    [
+     "clipped",
+     "hover-static"
+    ],
+    [],
+    [],
+    []
+   ],
+   "looks": 4,
+   "plays": 2,
+   "refused": 0,
+   "sheet_read": 0
+  }
+ }
+}

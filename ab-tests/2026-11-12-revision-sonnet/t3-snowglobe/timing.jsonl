@@ -1,0 +1,12 @@
+{"run": "A-r4", "tokens": 82331, "ms": 62116, "tool_uses": 2}
+{"run": "A-r3", "tokens": 83668, "ms": 69367, "tool_uses": 2}
+{"run": "A-r2", "tokens": 84770, "ms": 81089, "tool_uses": 2}
+{"run": "A-r1", "tokens": 91336, "ms": 122342, "tool_uses": 2}
+{"run": "B-r1", "tokens": 117045, "ms": 165979, "tool_uses": 10}
+{"run": "B-r3", "tokens": 125458, "ms": 174870, "tool_uses": 12}
+{"run": "B-r4", "tokens": 126451, "ms": 205999, "tool_uses": 11}
+{"run": "B-r2", "tokens": 139506, "ms": 287203, "tool_uses": 18}
+{"run": "D-r4", "tokens": 116939, "ms": 122662, "tool_uses": 11}
+{"run": "D-r1", "tokens": 120838, "ms": 171127, "tool_uses": 17}
+{"run": "D-r3", "tokens": 123365, "ms": 172761, "tool_uses": 13}
+{"run": "D-r2", "tokens": 120613, "ms": 195217, "tool_uses": 13}

@@ -1,0 +1,32 @@
+{
+  "request": "a basic calculator",
+  "thesis": "A basic calculator is the most-used tool on any device; the interesting part is that it feels instantly trustworthy: every press answers visibly, and it never lies about arithmetic.",
+  "job": ["see a blank display reading 0", "press digits to build a number", "press a decimal point once", "press an operator", "enter a second number", "press equals and read the result", "chain operations without pressing equals", "change the operator mid-entry", "clear entry / clear all / backspace", "flip sign, percent", "recover from divide by zero", "use keyboard instead of mouse", "see what was just computed (expression line / history)", "reuse a result as the next first operand", "repeat equals"],
+  "disciplines": {
+    "interaction design": {"principles": ["every press gives immediate visible feedback", "forgiving: never dead-end the user", "predictable state machine", "big targets"], "steps": ["map key to action", "update state", "render display"], "tricks": ["pressed-state on keys", "keyboard parity with on-screen keys", "highlight the pending operator"], "tests": ["press 2 + 3 = and see 5", "press 0.1 + 0.2 and see 0.3 not 0.30000000000000004"]},
+    "visual design": {"principles": ["hierarchy: display dominates, operators distinct, equals most prominent", "grouping by colour: digits neutral, operators accent, utilities muted", "tabular figures"], "steps": ["pick palette", "size the grid", "style display"], "tricks": ["shrink font as digits grow", "thin expression line above big result"], "tests": ["squint: can you find equals instantly", "does 12 digits fit"]},
+    "motion": {"principles": ["short, tactile, never blocking"], "steps": [], "tricks": ["scale 0.96 on press, 80 to 120ms", "result fade/tick 150 to 250ms"], "tests": ["rapid typing never queues animation"]},
+    "accessibility": {"principles": ["real buttons, labels, focus ring, live region for result"], "steps": [], "tricks": ["aria-live polite on display", "aria-label 'divide', 'multiply', 'minus'"], "tests": ["tab through all keys", "contrast 4.5:1+"]},
+    "front-end code": {"principles": ["state object, pure render, one dispatch function", "no eval"], "steps": [], "tricks": ["round to 12 significant digits to kill float noise", "event delegation on grid"], "tests": ["division by zero doesn't crash", "long numbers don't overflow"]}
+  },
+  "the_thing": {
+    "parts": ["display (result)", "expression/history line", "digit keys 0-9", "decimal", "operators + - x /", "equals", "AC/C", "backspace", "+/-", "%"],
+    "expectations": ["4-function arithmetic correct", "chain: 2+3+4 shows 5 after second +", "immediate-execution (pocket calc), not precedence", "0 key wide", "tap feedback", "keyboard works", "error message on /0 and recoverable"],
+    "kinds": [{"name": "pocket 4-function", "what": "classic grid, display on top, operators right column"}, {"name": "tape calculator", "what": "running history paper roll"}, {"name": "retro LCD", "what": "segment-style display, chunky keys"}]
+  },
+  "specifics": {
+    "state logic": {"keywords": {"1": ["digits", "operators", "equals", "clear", "decimal", "display"], "2": ["chaining", "backspace", "percent", "sign toggle", "divide by zero", "repeat equals", "keyboard"], "3": ["pending operator", "overwrite flag", "float rounding", "precision 12 digits"]}, "descriptions": ["state: current string, previous number, operator, justEvaluated flag", "operator after operator replaces it", "digit after equals starts a new number", "percent: current/100 (or of previous for + -)"], "behaviors": ["= with no operator is no-op", "repeat = reapplies last op and operand", "/0 shows 'Cannot divide by zero' then next key resets"], "tokens": {"max digits": "12 to 15", "round": "toPrecision(12) then Number"}},
+    "layout": {"keywords": {"1": ["keys", "grid", "display"], "2": ["4 columns", "5 rows", "wide zero"], "3": ["thumb zone", "tabular-nums"]}, "descriptions": ["width 300 to 380 px", "gap 8 to 12 px", "key height 56 to 72 px", "radius 14 to 24 px", "display font 40 to 64 px, shrinks to 24"], "behaviors": ["fits phone width 360", "centered on desktop"], "tokens": {"display min-height": "96 to 120 px"}},
+    "colour and material": {"keywords": {"1": ["calculator"], "2": ["accent operators", "dark or light body"], "3": ["warm orange equals", "soft inner shadow", "braun ET66 influence"]}, "descriptions": ["warm off-white body, charcoal digits, one orange accent for operators, deeper for equals", "or dark graphite with amber"], "behaviors": ["pending operator inverts"], "tokens": {"accent": "#e8590c to #ff7a1a", "body": "#1c1c1e to #f2efe9"}}
+  },
+  "anti_keywords": [
+    {"not": "eval() of the expression string", "instead": "explicit state machine with numbers"},
+    {"not": "0.30000000000000004 on screen", "instead": "round to 12 significant digits"},
+    {"not": "NaN / Infinity shown", "instead": "friendly 'Cannot divide by zero', recoverable"},
+    {"not": "mouse-only", "instead": "full keyboard: digits, + - * /, Enter, Backspace, Escape, ."},
+    {"not": "generic purple gradient and tiny keys", "instead": "one confident accent, large tactile keys"},
+    {"not": "display overflow", "instead": "auto-shrink font and cap digits"}
+  ],
+  "checks": ["does 2+3= give 5", "0.1+0.2 gives 0.3", "chain 2+3+4= gives 9", "7/0 recovers", "backspace works", "keyboard works", "pressed operator visible", "phone width fits", "display never overflows"],
+  "built": ["pocket 4-function"]
+}

@@ -1,0 +1,45 @@
+{
+  "request": "an SVG animation of a pelican riding a bike",
+  "thesis": "A pelican's huge pouched bill, stubby legs and wide body are absurdly wrong for a bicycle, and the animation is funny and readable because the pedalling, wheel spin and bill bob all obey real mechanics.",
+  "job": ["open the page and see a pelican on a bike at once", "watch it ride in a seamless loop", "see wheels, pedals, legs, bill, scenery all moving in sync", "use a control (pause/play, speed) and see state change", "tell at a glance it is a pelican and a bicycle"],
+  "disciplines": {
+    "svg animation": {
+      "principles": ["transform-origin on the pivot", "loop must be seamless: end state equals start state", "one master clock drives all parts"],
+      "steps": ["build static scene in groups", "set pivots", "drive pedal angle from one time value", "derive leg angles by two-bone IK from pedal position"],
+      "tricks": ["compute legs with IK in JS so feet stay on pedals", "wheel spokes rotate by distance/radius", "scroll background by wheel speed so wheels do not slip", "counter-rotate pedals to keep them level"],
+      "tests": ["feet stay on pedals every frame", "wheel spoke rotation matches ground scroll", "loop point has no jump"]
+    },
+    "character animation": {
+      "principles": ["secondary motion", "squash and follow-through", "overlap"],
+      "steps": [],
+      "tricks": ["bill bobs a beat behind body", "pouch wobbles", "feather crest trails"],
+      "tests": ["read silhouette as pelican alone"]
+    },
+    "bicycle mechanics": {
+      "principles": ["diamond frame", "chain drive", "crank 170mm"],
+      "steps": [],
+      "tricks": ["pedals opposite phase 180 deg"],
+      "tests": ["frame triangle closes"]
+    }
+  },
+  "the_thing": {
+    "parts": ["pelican body white/cream", "long bill with orange-yellow pouch", "neck S-curve", "eye", "wing as arm to handlebars", "orange legs and webbed feet", "bicycle: two wheels, spokes, frame, fork, saddle, handlebar, chain ring, cranks, pedals", "ground, scenery"],
+    "expectations": ["bill is the dominant feature", "bike wheels circular and spinning", "continuous motion"],
+    "kinds": [{"name": "side-view scrolling road ride", "what": "classic side profile, scenery scrolls past"}, {"name": "stationary trainer", "what": "bike stays, background fixed"}, {"name": "downhill coast", "what": "legs up, pouch flapping"}]
+  },
+  "specifics": {
+    "pelican": {"keywords": {"1": ["pelican", "bill", "pouch"], "2": ["white plumage", "crest", "webbed feet", "long neck"], "3": ["gular pouch", "primaries", "nail tip hook"]}, "descriptions": ["bill about 1/3 body length with hooked tip", "neck folds into S shape"], "behaviors": ["pedal turn drives bobbing of body", "wind pushes crest back"], "tokens": {"body": ["#fdfcf6", "#f3efe2"], "bill": ["#f2a93b", "#f6c15a"], "bill_length": "90 to 130 px at 800 wide scene"}},
+    "bike": {"keywords": {"1": ["bicycle", "wheel", "pedal"], "2": ["spokes", "chain", "frame"], "3": ["chainring", "fork rake", "tyre"]}, "descriptions": [], "behaviors": ["wheel rotation = distance / radius"], "tokens": {"wheel_radius": "55 to 70 px", "cadence": "1 to 1.5 rev/s", "stroke": "4 to 6 px"}},
+    "scene": {"keywords": {"1": ["road", "sky"], "2": ["parallax hills", "clouds", "sun"], "3": ["dashes streaming", "dust puffs"]}, "descriptions": [], "behaviors": ["far layers scroll slower"], "tokens": {"parallax_speeds": "0.1, 0.3, 1.0"}},
+    "controls": {"keywords": {"1": ["pause", "speed"], "2": ["slider"], "3": []}, "descriptions": [], "behaviors": ["pause button toggles label and freezes clock", "speed slider scales cadence and scroll"], "tokens": {}}
+  },
+  "anti_keywords": [
+    {"not": "generic duck or seagull shape", "instead": "enormous bill with drooping pouch"},
+    {"not": "legs rigidly sliding", "instead": "IK legs reaching pedals"},
+    {"not": "wheels spinning independent of scroll", "instead": "tie to ground speed"},
+    {"not": "static sticker slid along", "instead": "bobbing, secondary motion"},
+    {"not": "external assets, fonts", "instead": "all inline"}
+  ],
+  "checks": ["feet on pedals at 0, 90, 180, 270 deg", "pause button changes label and freezes motion", "no console errors", "readable at phone width"],
+  "built": ["side-view scrolling road ride"]
+}

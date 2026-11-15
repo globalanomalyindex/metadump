@@ -1,0 +1,34 @@
+{
+  "angles": [
+    {
+      "angle": "close-up dome",
+      "passes": false,
+      "drops": "the shake and the settle (job step 4): a still close-up with glitter hanging, no shake described; the base is cut to a rim at the bottom edge and the scene is not in frame",
+      "kind": "scope"
+    },
+    {
+      "angle": "shelf in a room",
+      "passes": false,
+      "drops": "the globe as the main thing (signature p-snow-globe; job step 1): it is a small dome among other objects seen across a room, so the shelf and room lead; the settle shrinks to a few flakes still hanging after a shake, and the scene is read only as a detail",
+      "kind": "scope"
+    },
+    {
+      "angle": "hard shake, long settle",
+      "passes": true,
+      "drops": "",
+      "kind": ""
+    },
+    {
+      "angle": "clear water, one colour family",
+      "passes": false,
+      "drops": "the shake and the settle (job step 4): a still dome with fine white flakes and no shake or particle motion described",
+      "kind": "scope"
+    },
+    {
+      "angle": "still upright frame",
+      "passes": false,
+      "drops": "the shake and the watched settle (job step 4): no motion, so the settle is shown only as frozen haze and flake heights",
+      "kind": "scope"
+    }
+  ]
+}

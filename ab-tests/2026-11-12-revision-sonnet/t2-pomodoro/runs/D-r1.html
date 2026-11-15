@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<style>
+:root{--bg:#2f4f6f;--fg:#fff;--soft:rgba(255,255,255,.78)}
+body[data-phase="short"]{--bg:#8f5400}
+body[data-phase="long"]{--bg:#5b3fa8}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;transition:background .6s;display:flex;align-items:center;justify-content:center}
+main{width:100%;max-width:900px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:clamp(12px,3vh,28px);text-align:center}
+.phase{font-size:clamp(1.1rem,3.5vw,1.8rem);letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin:0}
+.clock{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-weight:700;font-size:clamp(4.5rem,26vw,16rem);line-height:1;margin:0;letter-spacing:-.03em}
+.status{min-height:1.5em;margin:0;color:var(--soft);font-size:clamp(1rem,2.6vw,1.25rem)}
+.marks{display:flex;gap:14px;margin:0;padding:0;list-style:none}
+.marks li{width:16px;height:16px;border-radius:50%;border:2px solid var(--fg)}
+.marks li.on{background:var(--fg)}
+.row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+button{font:inherit;color:var(--fg);cursor:pointer;border-radius:999px;border:2px solid var(--fg);background:transparent;min-height:44px;padding:0 22px}
+button:hover{background:rgba(255,255,255,.16)}
+button:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+button.primary{background:var(--fg);color:var(--bg);font-weight:700;font-size:clamp(1.3rem,4vw,1.8rem);min-width:200px;min-height:64px;transition:color .6s}
+button.primary:hover{background:rgba(255,255,255,.88)}
+.hint{font-size:.85rem;color:var(--soft);margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){body,button.primary{transition:none}}
+</style>
+</head>
+<body data-phase="work">
+<main>
+  <p class="phase" id="phase">Focus</p>
+  <p class="clock" id="clock" role="timer" aria-label="Time remaining">25:00</p>
+  <p class="status" id="status">Press Start to begin</p>
+  <ul class="marks" id="marks" aria-label="Finished focus sessions in this cycle"><li></li><li></li><li></li><li></li></ul>
+  <div class="row"><button class="primary" id="go">Start</button></div>
+  <div class="row">
+    <button id="reset">Reset</button>
+    <button id="skip">Skip</button>
+  </div>
+  <p class="hint">Space starts and pauses</p>
+  <div class="sr" aria-live="polite" id="live"></div>
+</main>
+<script>
+(function(){
+  var LEN={work:25*60,short:5*60,long:15*60};
+  var NAME={work:"Focus",short:"Short break",long:"Long break"};
+  var phase="work", done=0, remaining=LEN.work, running=false, endAt=0, handle=null, ctx=null;
+  var $=function(i){return document.getElementById(i)};
+  var clock=$("clock"),go=$("go"),statusEl=$("status"),marks=$("marks").children;
+
+  function fmt(s){s=Math.max(0,Math.ceil(s));var m=Math.floor(s/60),r=s%60;return (m<10?"0":"")+m+":"+(r<10?"0":"")+r}
+  function say(t){var l=$("live");l.textContent="";setTimeout(function(){l.textContent=t},30)}
+  function paint(){
+    document.body.setAttribute("data-phase",phase);
+    $("phase").textContent=NAME[phase];
+    var t=fmt(remaining);
+    clock.textContent=t;
+    document.title=(running||remaining!==LEN[phase]?t+" · ":"")+NAME[phase];
+    for(var i=0;i<4;i++)marks[i].className=i<done?"on":"";
+    go.textContent=running?"Pause":(remaining<LEN[phase]?"Resume":"Start");
+    go.setAttribute("aria-label",go.textContent+" "+NAME[phase].toLowerCase());
+  }
+  function setStatus(t){statusEl.textContent=t}
+  function nextHint(){
+    if(phase==="work")return done===3?"Long break after this one":"Short break after this one";
+    return "Next: focus session "+(done%4+1)+" of 4";
+  }
+  function tick(){
+    remaining=(endAt-Date.now())/1000;
+    if(remaining<=0){finish();return}
+    clock.textContent=fmt(remaining);
+    document.title=fmt(remaining)+" · "+NAME[phase];
+  }
+  function start(){
+    if(running)return;
+    unlock();
+    endAt=Date.now()+remaining*1000;
+    running=true;
+    clearInterval(handle);
+    handle=setInterval(tick,250);
+    setStatus(phase==="work"?"Stay with one thing":"Rest, step away");
+    paint();
+  }
+  function pause(){
+    if(!running)return;
+    tick();
+    clearInterval(handle);running=false;
+    setStatus("Paused. "+NAME[phase]+" is held at "+fmt(remaining));
+    paint();
+  }
+  function enter(p,autostart){
+    phase=p;remaining=LEN[p];running=false;clearInterval(handle);
+    setStatus(nextHint());
+    paint();
+    if(autostart)start();
+  }
+  function finish(){
+    clearInterval(handle);running=false;
+    var ended=phase;
+    beep();
+    if(ended==="work"){
+      done=Math.min(done+1,4);
+      var long=done>=4;
+      enter(long?"long":"short",false);
+      setStatus("Focus session done. "+(long?"Long":"Short")+" break is ready.");
+      say("Focus session finished. "+NAME[phase]+" ready.");
+    }else{
+      if(ended==="long")done=0;
+      enter("work",false);
+      setStatus("Break over. Ready for the next focus session.");
+      say("Break finished. Focus ready.");
+    }
+  }
+  function skip(){
+    var wasWork=phase==="work";
+    if(wasWork){ /* skipping work does not count as finished */
+      enter(done>=4?"long":"short",false);
+    }else{
+      if(phase==="long")done=0;
+      enter("work",false);
+    }
+    say(NAME[phase]+" ready.");
+  }
+  function reset(){
+    // back to the current interval's full length; the finished count stays
+    enter(phase,false);
+    setStatus("Reset. "+NAME[phase]+" back to "+fmt(LEN[phase]));
+  }
+  function unlock(){
+    try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==="suspended")ctx.resume()}catch(e){}
+  }
+  function beep(){
+    try{
+      if(!ctx)return;
+      [0,.25,.5].forEach(function(d){
+        var o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+d;
+        o.frequency.value=880;g.gain.setValueAtTime(.0001,t);
+        g.gain.exponentialRampToValueAtTime(.25,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.2);
+        o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.22);
+      });
+    }catch(e){}
+  }
+  go.addEventListener("click",function(){running?pause():start()});
+  $("reset").addEventListener("click",reset);
+  $("skip").addEventListener("click",skip);
+  document.addEventListener("keydown",function(e){
+    if(e.code==="Space"&&!(e.target&&e.target.tagName==="BUTTON")){e.preventDefault();running?pause():start()}
+  });
+  document.addEventListener("visibilitychange",function(){if(running)tick()});
+  paint();
+})();
+</script>
+</body>
+</html>

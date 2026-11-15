@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+  :root{--wax:#ff4d6d;--wax2:#ff9e3d;--liquid1:#2a0a3a;--liquid2:#0d0418;--glow:rgba(255,77,109,.55)}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:radial-gradient(ellipse at 50% 70%,#1b1226 0%,#0a0710 70%);color:#e9e2f2;
+    font-family:ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-wrap:wrap;
+    align-items:center;justify-content:center;gap:40px;padding:24px;min-height:100vh}
+  .lamp{position:relative;width:240px;height:620px;filter:drop-shadow(0 0 60px var(--glow));transition:filter .6s}
+  .lamp.off{filter:drop-shadow(0 0 0 transparent)}
+  .cap{position:absolute;left:50%;top:0;width:110px;height:56px;transform:translateX(-50%);
+    background:linear-gradient(90deg,#6b5a3a,#d9c28a 35%,#8a7448 70%,#4a3d26);border-radius:55px 55px 8px 8px/50px 50px 8px 8px;z-index:3}
+  .base{position:absolute;left:50%;bottom:0;width:190px;height:120px;transform:translateX(-50%);
+    background:linear-gradient(90deg,#4a3d26,#d9c28a 30%,#8a7448 65%,#3a2f1d);
+    clip-path:polygon(22% 0,78% 0,100% 100%,0 100%);border-radius:0 0 18px 18px;z-index:3}
+  .glass{position:absolute;left:50%;top:50px;width:150px;height:460px;transform:translateX(-50%);
+    clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);overflow:hidden;
+    background:linear-gradient(180deg,var(--liquid1),var(--liquid2));cursor:crosshair;transition:background .5s}
+  .glass canvas{position:absolute;inset:0;width:100%;height:100%;filter:url(#goo)}
+  .glass .bulb{position:absolute;left:0;right:0;bottom:0;height:90px;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 100%,var(--glow),transparent 70%);opacity:var(--bulb,1);transition:opacity .6s}
+  .glass .shine{position:absolute;left:14%;top:0;width:12%;height:100%;pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(255,255,255,0))}
+  .panel{width:300px;background:#ffffff0d;border:1px solid #ffffff1f;border-radius:18px;padding:22px;backdrop-filter:blur(6px)}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:.02em}
+  p.sub{margin:0 0 18px;font-size:13px;opacity:.65}
+  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin:16px 0 8px}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .btn{background:#ffffff14;border:1px solid #ffffff30;border-radius:10px;padding:9px 12px;font-size:14px;transition:background .15s,transform .1s}
+  .btn:hover{background:#ffffff26}.btn:active{transform:scale(.96)}
+  .btn:focus-visible,.sw:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  #power{width:100%;font-weight:600;padding:12px}
+  #power[aria-pressed="true"]{background:var(--wax);border-color:transparent;color:#1a0a10}
+  .row{display:flex;gap:8px}
+  .row .btn{flex:1}
+  .swatches{display:flex;gap:10px}
+  .sw{width:36px;height:36px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
+  .sw[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 12px currentColor}
+  input[type=range]{width:100%;accent-color:var(--wax)}
+  .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:18px;text-align:center}
+  .stats div{background:#0000004d;border-radius:10px;padding:8px 4px}
+  .stats b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+  .stats span{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.6}
+  .hint{font-size:12px;opacity:.55;margin-top:14px}
+  @media (prefers-reduced-motion:reduce){.lamp{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="goo" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b"/>
+      <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="lamp" id="lamp">
+  <div class="cap"></div>
+  <div class="glass" id="glass" title="Click to add a blob of wax">
+    <canvas id="cv" width="150" height="460"></canvas>
+    <div class="bulb"></div>
+    <div class="shine"></div>
+  </div>
+  <div class="base"></div>
+</div>
+
+<div class="panel">
+  <h1>Lava Lamp</h1>
+  <p class="sub">Heat the base and the wax rises, cools, and sinks.</p>
+  <button class="btn" id="power" aria-pressed="true">Lamp: ON</button>
+
+  <label for="heat">Heat <span id="heatV">60</span>%</label>
+  <input type="range" id="heat" min="0" max="100" value="60">
+
+  <label>Wax color</label>
+  <div class="swatches" id="sws" role="group" aria-label="Wax color"></div>
+
+  <label>Blobs</label>
+  <div class="row">
+    <button class="btn" id="add">+ Add</button>
+    <button class="btn" id="rem">- Remove</button>
+    <button class="btn" id="shake">Shake</button>
+  </div>
+
+  <div class="stats">
+    <div><b id="nBlobs">0</b><span>Blobs</span></div>
+    <div><b id="nRising">0</b><span>Rising</span></div>
+    <div><b id="temp">0</b><span>Temp °C</span></div>
+  </div>
+  <div class="hint">Click inside the glass to drop in a blob.</div>
+</div>
+
+<script>
+(function(){
+  var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+  var W=cv.width,H=cv.height;
+  var state={on:true,heat:0.6,max:14,palette:0,temp:22,blobs:[]};
+  var palettes=[
+    {name:'Rose',a:'#ff4d6d',b:'#ff9e3d',l1:'#2a0a3a',l2:'#0d0418',glow:'rgba(255,77,109,.55)'},
+    {name:'Lime',a:'#b6ff3d',b:'#3dffb0',l1:'#06303a',l2:'#02100f',glow:'rgba(150,255,60,.5)'},
+    {name:'Amber',a:'#ffb627',b:'#ff5a1f',l1:'#3a1206',l2:'#140502',glow:'rgba(255,150,30,.55)'},
+    {name:'Aqua',a:'#4df0ff',b:'#9d6bff',l1:'#0a1a4a',l2:'#03071a',glow:'rgba(77,200,255,.5)'}
+  ];
+  var sws=document.getElementById('sws');
+  palettes.forEach(function(p,i){
+    var b=document.createElement('button');
+    b.className='sw';b.type='button';b.title=p.name;b.setAttribute('aria-label',p.name);
+    b.style.background='linear-gradient(135deg,'+p.a+','+p.b+')';b.style.color=p.a;
+    b.addEventListener('click',function(){setPalette(i)});
+    sws.appendChild(b);
+  });
+  function setPalette(i){
+    state.palette=i;var p=palettes[i],r=document.documentElement.style;
+    r.setProperty('--wax',p.a);r.setProperty('--wax2',p.b);r.setProperty('--liquid1',p.l1);
+    r.setProperty('--liquid2',p.l2);r.setProperty('--glow',p.glow);
+    Array.prototype.forEach.call(sws.children,function(s,j){s.setAttribute('aria-pressed',j===i)});
+  }
+  function mk(x,y){
+    var r=14+Math.random()*16;
+    return {x:x==null?30+Math.random()*(W-60):x,y:y==null?H-r-Math.random()*60:y,
+      vx:(Math.random()-.5)*.3,vy:0,r:r,t:Math.random()*.4,ph:Math.random()*9};
+  }
+  function addBlob(x,y){if(state.blobs.length<state.max)state.blobs.push(mk(x,y))}
+  for(var i=0;i<8;i++)addBlob(null,H-40-Math.random()*H*.7);
+
+  var power=document.getElementById('power'),lamp=document.getElementById('lamp'),
+      heat=document.getElementById('heat'),heatV=document.getElementById('heatV');
+  function syncPower(){
+    power.setAttribute('aria-pressed',state.on);power.textContent='Lamp: '+(state.on?'ON':'OFF');
+    lamp.classList.toggle('off',!state.on);
+    document.querySelector('.bulb').style.setProperty('--bulb',state.on?state.heat*.8+.2:0);
+  }
+  power.addEventListener('click',function(){state.on=!state.on;syncPower()});
+  heat.addEventListener('input',function(){state.heat=heat.value/100;heatV.textContent=heat.value;syncPower()});
+  document.getElementById('add').addEventListener('click',function(){addBlob()});
+  document.getElementById('rem').addEventListener('click',function(){if(state.blobs.length>1)state.blobs.pop()});
+  document.getElementById('shake').addEventListener('click',function(){
+    state.blobs.forEach(function(b){b.vx+=(Math.random()-.5)*4;b.vy+=(Math.random()-.5)*5});
+  });
+  document.getElementById('glass').addEventListener('click',function(e){
+    var r=this.getBoundingClientRect();
+    addBlob((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H);
+  });
+  setPalette(0);syncPower();
+
+  var nB=document.getElementById('nBlobs'),nR=document.getElementById('nRising'),nT=document.getElementById('temp');
+  var last=performance.now();
+  function step(now){
+    var dt=Math.min(2,(now-last)/16.67);last=now;
+    var target=state.on?22+state.heat*55:22;
+    state.temp+=(target-state.temp)*.004*dt;
+    var warm=(state.temp-22)/55; // 0..1 lamp warmth
+    var rising=0,bs=state.blobs,i,j;
+    for(i=0;i<bs.length;i++){
+      var b=bs[i];
+      var depth=b.y/H; // 0 top, 1 bottom
+      // heated near the bottom, cooled near the top
+      if(depth>.8)b.t+=.006*warm*dt*(state.on?1:0.2)+.0005*dt*warm;
+      if(depth<.35)b.t-=.007*dt;
+      b.t-=.0006*dt;
+      b.t=Math.max(0,Math.min(1,b.t));
+      var buoy=(b.t-.45)*.05*(0.4+warm);
+      b.vy-=buoy*dt;
+      b.vy+=(Math.sin(now/1400+b.ph)*.004)*dt;
+      b.vx+=(Math.sin(now/1900+b.ph*2)*.006)*dt;
+      b.vx*=Math.pow(.985,dt);b.vy*=Math.pow(.975,dt);
+      b.x+=b.vx*dt;b.y+=b.vy*dt;
+      // taper walls: glass narrows toward top
+      var half=(W/2)*(0.64+0.36*depth)-b.r*.7;
+      var cx=W/2;
+      if(b.x<cx-half){b.x=cx-half;b.vx=Math.abs(b.vx)*.5}
+      if(b.x>cx+half){b.x=cx+half;b.vx=-Math.abs(b.vx)*.5}
+      if(b.y<b.r+4){b.y=b.r+4;b.vy=Math.abs(b.vy)*.3}
+      if(b.y>H-b.r-2){b.y=H-b.r-2;b.vy=-Math.abs(b.vy)*.2}
+      if(b.vy<-.15)rising++;
+    }
+    // soft repulsion so they merge/stretch rather than stack
+    for(i=0;i<bs.length;i++)for(j=i+1;j<bs.length;j++){
+      var a=bs[i],c=bs[j],dx=c.x-a.x,dy=c.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1,m=(a.r+c.r)*.55;
+      if(d<m){var f=(m-d)*.004*dt;a.vx-=dx/d*f;a.vy-=dy/d*f;c.vx+=dx/d*f;c.vy+=dy/d*f}
+    }
+    draw();
+    nB.textContent=bs.length;nR.textContent=rising;nT.textContent=Math.round(state.temp);
+    requestAnimationFrame(step);
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var p=palettes[state.palette];
+    var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,p.b);g.addColorStop(1,p.a);
+    ctx.fillStyle=g;
+    state.blobs.forEach(function(b){
+      ctx.beginPath();ctx.ellipse(b.x,b.y,b.r*(1-Math.min(.2,Math.abs(b.vy)*.1)),b.r*(1+Math.min(.35,Math.abs(b.vy)*.25)),0,0,6.2832);ctx.fill();
+    });
+    // wax pool at the bottom
+    ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,H-14);
+    for(var x=0;x<=W;x+=10)ctx.lineTo(x,H-16-Math.sin(x*.07+performance.now()/900)*4);
+    ctx.lineTo(W,H);ctx.fill();
+  }
+  requestAnimationFrame(function(t){last=t;step(t)});
+})();
+</script>
+</body>
+</html>

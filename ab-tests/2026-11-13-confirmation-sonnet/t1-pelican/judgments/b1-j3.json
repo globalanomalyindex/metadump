@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"fidelity": 7, "correctness": 6, "craft": 6, "usability": 7, "overall": 6, "note": "Cheerful scene and helmet, but the bulky body sits awkwardly on the frame and the wing floats like a flat slab."},
+"V": {"fidelity": 7, "correctness": 7, "craft": 8, "usability": 8, "overall": 8, "note": "Polished cargo-bike scene with detailed chain, crate and fish, though the cargo bike is an embellishment and the pelican's long thin neck is a bit odd."},
+"W": {"fidelity": 9, "correctness": 8, "craft": 7, "usability": 8, "overall": 8, "note": "Clear pelican with big pouch on a proper bike, pedalling legs reach the pedals and controls work."},
+"X": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Most convincing pelican with an expressive pouch, seated on a detailed bike with chain and gears and a well-drawn scene."},
+"Y": {"fidelity": 7, "correctness": 5, "craft": 6, "usability": 7, "overall": 6, "note": "Pelican reads well but the legs look stiff and straight and the wheels are bare, and the pelican sits oddly high."},
+"Z": {"fidelity": 8, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clean, simple pelican and bike with working pause and speed, but the pelican floats a bit above the bike and the wheels are small."}
+}, "ranking": ["X", "W", "V", "Z", "U", "Y"]}

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lava Lamp</title>
+<style>
+  :root{
+    --bg:#07040f; --ink:#e9dcff; --muted:#a995d0; --line:#2b1d4d; --panel:#120a24;
+    --glow:168,90,255; --g:.8;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:radial-gradient(120% 80% at 50% 100%, #12081f 0%, var(--bg) 60%);
+    color:var(--ink);
+    font:15px/1.4 ui-rounded,"Avenir Next",system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  }
+  .room{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;width:100%;padding:12px 16px 16px;gap:10px}
+  .halo{position:absolute;left:50%;bottom:6%;width:min(160vw,1100px);height:80%;transform:translateX(-50%);
+    background:radial-gradient(ellipse 50% 55% at 50% 78%, rgba(var(--glow),calc(var(--g)*.55)) 0%, rgba(var(--glow),calc(var(--g)*.2)) 38%, transparent 70%);
+    pointer-events:none;filter:blur(6px)}
+  .stage{position:relative;height:min(74vh,780px);height:min(74dvh,780px);aspect-ratio:420/780;max-width:100%}
+  canvas{width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation;border-radius:8px}
+  canvas:focus-visible{outline:2px solid #c9a6ff;outline-offset:4px}
+  .bar{position:relative;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;
+    background:rgba(18,10,36,.82);border:1px solid var(--line);border-radius:14px;padding:10px 14px;max-width:560px;width:100%}
+  button{font:inherit;color:var(--ink);background:#1e1240;border:1px solid #3b2a73;border-radius:999px;padding:8px 16px;min-height:40px;cursor:pointer}
+  button:hover{background:#2a1a5c}
+  button:focus-visible,input:focus-visible{outline:2px solid #c9a6ff;outline-offset:2px}
+  button[aria-pressed="true"].pw{background:#d9b6ff;color:#1a0b3a;border-color:#d9b6ff;font-weight:600}
+  .sw{display:flex;gap:6px}
+  .sw button{width:40px;height:40px;padding:0;border-radius:50%;border:2px solid #3b2a73}
+  .sw button[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+  label.heat{display:flex;align-items:center;gap:8px;color:var(--muted)}
+  input[type=range]{width:110px;accent-color:#b98cff;min-height:32px}
+  .status{width:100%;text-align:center;color:var(--muted);font-size:13px;min-height:1.3em}
+  @media (max-width:520px){
+    .stage{height:min(60vh,780px);height:min(60dvh,780px)}
+    .bar{padding:8px 10px}
+  }
+</style>
+</head>
+<body>
+<main class="room">
+  <div class="halo" id="halo" aria-hidden="true"></div>
+  <div class="stage">
+    <canvas id="lamp" width="420" height="780" tabindex="0" role="img"
+      aria-label="A tall tapered lava lamp. Click or press Enter to heat and stir the wax."></canvas>
+  </div>
+  <div class="bar" role="group" aria-label="Lamp controls">
+    <button class="pw" id="power" aria-pressed="true">Bulb on</button>
+    <label class="heat">Heat <input type="range" id="heat" min="30" max="100" value="75" aria-label="Heat"></label>
+    <button id="stir">Stir</button>
+    <div class="sw" role="group" aria-label="Colour">
+      <button data-p="violet" aria-pressed="true" aria-label="Violet" style="background:linear-gradient(135deg,#ffb8ec,#5b2ac4)"></button>
+      <button data-p="amber" aria-pressed="false" aria-label="Amber" style="background:linear-gradient(135deg,#ffe58a,#a13408)"></button>
+      <button data-p="teal" aria-pressed="false" aria-label="Teal" style="background:linear-gradient(135deg,#c8fff0,#0a5d78)"></button>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+</main>
+<script>
+(function(){
+  'use strict';
+  var W=420,H=780,CX=210;
+  var VT=92,VB=532;            // vessel top / bottom
+  var cvs=document.getElementById('lamp'),ctx=cvs.getContext('2d');
+  var halo=document.getElementById('halo'),statusEl=document.getElementById('status');
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- palettes (liquid top, liquid bottom, wax edge, wax core, wax hot, glow rgb) ----
+  var PAL={
+    violet:{lt:[34,14,92],lb:[96,48,210],we:[222,98,222],wc:[255,214,246],wh:[255,150,205],gl:[168,90,255]},
+    amber: {lt:[58,16,4], lb:[190,72,10],we:[255,140,30],wc:[255,236,150],wh:[255,196,70],gl:[255,140,40]},
+    teal:  {lt:[2,28,50], lb:[10,120,150],we:[40,210,170],wc:[214,255,240],wh:[120,255,215],gl:[60,210,230]}
+  };
+  var cur=JSON.parse(JSON.stringify(PAL.violet)),target=PAL.violet;
+  function lerpPal(k){for(var n in cur)for(var i=0;i<3;i++)cur[n][i]+=(target[n][i]-cur[n][i])*k;}
+  function rgb(c,a){return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+(a===undefined?1:a)+')';}
+  function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+
+  // ---- geometry ----
+  function hw(y){var t=Math.min(1,Math.max(0,(y-VT)/(VB-VT)));return 44+56*Math.pow(t,0.85);}
+  function vesselPath(c,inset){
+    c.beginPath();
+    c.moveTo(CX-hw(VT)+inset,VT);
+    for(var y=VT;y<=VB;y+=8)c.lineTo(CX-hw(y)+inset,y);
+    c.lineTo(CX-hw(VB)+inset,VB);
+    c.lineTo(CX+hw(VB)-inset,VB);
+    for(var y2=VB;y2>=VT;y2-=8)c.lineTo(CX+hw(y2)-inset,y2);
+    c.closePath();
+  }
+
+  // ---- wax simulation ----
+  var rnd=Math.random;
+  var blobs=[];
+  var radii=[30,26,22,19,16,24,14,20];
+  for(var i=0;i<radii.length;i++){
+    var r=radii[i];
+    blobs.push({x:CX+(rnd()-.5)*90,y:VB-r*.8-rnd()*20,vx:0,vy:0,r:r,T:0.15+rnd()*0.5,ph:rnd()*6.28,k:0.8+rnd()*0.5});
+  }
+  blobs[0].y=330;blobs[0].T=0.8;blobs[3].y=260;blobs[3].T=0.7;blobs[5].y=420;blobs[5].T=0.62;
+  var pool=[];for(var j=0;j<7;j++)pool.push({u:(j-3)/3.4,r:20+(j%3)*3,ph:j*1.3});
+
+  var power=true,heat=0.75,bulb=0.55,stirGlow=0,time=0;
+  var GW=76,GH=150,GX0=CX-104,GY0=VT,GCW=208/GW,GCH=(VB-VT)/GH;   // grid over vessel box
+  var off=document.createElement('canvas');off.width=GW;off.height=GH;
+  var octx=off.getContext('2d'),img=octx.createImageData(GW,GH),data=img.data;
+  var balls=[];
+
+  function step(dt){
+    time+=dt;
+    var want=power?(0.3+heat*0.7):0;
+    bulb+=(want-bulb)*Math.min(1,dt*(power?0.35:0.18));
+    stirGlow=Math.max(0,stirGlow-dt*0.5);
+    var H_=VB-VT,n=blobs.length;
+    for(var i=0;i<n;i++){
+      var b=blobs[i];
+      var yb=Math.min(1,Math.max(0,(VB-b.y)/H_));
+      var heating=bulb*0.20*Math.pow(1-yb,1.6)*b.k;
+      var cooling=0.07*(0.15+yb*yb*1.4)*(0.7+b.k*0.4);
+      b.T+= (heating-cooling)*dt; if(b.T>1)b.T=1; if(b.T<0)b.T=0;
+      var a=(b.T-0.46)*80/(b.r/22);
+      // slow lateral sway, a little stronger when rising
+      b.vx+=Math.sin(time*0.35*b.k+b.ph)*3*dt;
+      b.vy+=-a*dt;
+      var drag=1.8;
+      b.vx*=Math.max(0,1-drag*dt);b.vy*=Math.max(0,1-drag*dt);
+      // soft separation so they don't stack
+      for(var j=i+1;j<n;j++){
+        var o=blobs[j],dx=b.x-o.x,dy=b.y-o.y,d=Math.sqrt(dx*dx+dy*dy)+0.01,m=(b.r+o.r)*0.75;
+        if(d<m){var f=(m-d)*0.35*dt;b.vx+=dx/d*f*20;o.vx-=dx/d*f*20;b.vy+=dy/d*f*8;o.vy-=dy/d*f*8;
+          // touching blobs share heat a little
+          var s=(b.T-o.T)*0.15*dt;b.T-=s;o.T+=s;}
+      }
+      b.x+=b.vx*dt;b.y+=b.vy*dt;
+      var lim=hw(b.y)-8-b.r*0.55;
+      if(b.x>CX+lim){b.x=CX+lim;b.vx*=-0.3;}
+      if(b.x<CX-lim){b.x=CX-lim;b.vx*=-0.3;}
+      var floor=VB-b.r*0.55-4,ceil=VT+b.r*0.7+2;
+      if(b.y>floor){b.y=floor;b.vy=0;b.T+=bulb*0.12*dt;}
+      if(b.y<ceil){b.y=ceil;b.vy*=0.2;b.T-=0.05*dt;}
+    }
+  }
+
+  function field(){
+    balls.length=0;
+    for(var i=0;i<blobs.length;i++){var b=blobs[i];balls.push(b.x,b.y,b.r*1.75);}
+    var spread=hw(VB)-22;
+    for(var j=0;j<pool.length;j++){
+      var p=pool[j],pr=p.r*(0.9+0.12*Math.sin(time*0.4+p.ph));
+      balls.push(CX+p.u*spread,VB-pr*0.35+2,pr*1.75);
+    }
+    var cA=cur.we,cC=cur.wc,cH=cur.wh;
+    var k=0;
+    for(var gy=0;gy<GH;gy++){
+      var y=GY0+(gy+0.5)*GCH,low=(y-VT)/(VB-VT);
+      var hotC=mix(cC,cH,Math.pow(low,1.5));
+      var edgeC=mix(cA,cH,Math.pow(low,2)*0.5);
+      for(var gx=0;gx<GW;gx++){
+        var x=GX0+(gx+0.5)*GCW,v=0;
+        for(var q=0;q<balls.length;q+=3){
+          var dx=x-balls[q],dy=y-balls[q+1],R=balls[q+2],d2=(dx*dx+dy*dy)/(R*R);
+          if(d2<1){var t=1-d2;v+=t*t*t;}
+        }
+        var idx=k*4;k++;
+        if(v<0.24){data[idx+3]=0;continue;}
+        var al=(v-0.24)/0.14;al=al>1?1:al;
+        var sh=(v-0.3)/0.9;sh=sh<0?0:sh>1?1:sh;
+        sh=sh*sh*(3-2*sh);
+        data[idx]=edgeC[0]+(hotC[0]-edgeC[0])*sh;
+        data[idx+1]=edgeC[1]+(hotC[1]-edgeC[1])*sh;
+        data[idx+2]=edgeC[2]+(hotC[2]-edgeC[2])*sh;
+        data[idx+3]=al*255;
+      }
+    }
+    octx.putImageData(img,0,0);
+  }
+
+  // ---- drawing ----
+  function drawStatic(){
+    var g;
+    // base
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(CX-112,VB);ctx.lineTo(CX+112,VB);
+    ctx.bezierCurveTo(CX+108,590,CX+58,625,CX+60,650);
+    ctx.bezierCurveTo(CX+62,690,CX+120,715,CX+122,752);
+    ctx.lineTo(CX-122,752);
+    ctx.bezierCurveTo(CX-120,715,CX-62,690,CX-60,650);
+    ctx.bezierCurveTo(CX-58,625,CX-108,590,CX-112,VB);
+    ctx.closePath();
+    g=ctx.createLinearGradient(CX-122,0,CX+122,0);
+    g.addColorStop(0,'#150c26');g.addColorStop(.22,'#4a3a78');g.addColorStop(.35,'#9a86c8');g.addColorStop(.5,'#3a2c63');g.addColorStop(.8,'#1a1030');g.addColorStop(1,'#0c0618');
+    ctx.fillStyle=g;ctx.fill();
+    // bulb light spilling on the base top
+    g=ctx.createLinearGradient(0,VB,0,VB+120);
+    g.addColorStop(0,rgb(cur.gl,0.55*bulb));g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;ctx.fill();
+    ctx.restore();
+    // base shadow line at bottom
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(CX-124,752,248,6);
+    // collar ring
+    g=ctx.createLinearGradient(CX-112,0,CX+112,0);
+    g.addColorStop(0,'#2a1d4a');g.addColorStop(.3,'#c7b8ea');g.addColorStop(.55,'#4a3a78');g.addColorStop(1,'#1a1030');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(CX,VB+4,hw(VB)+8,9,0,0,6.283);ctx.fill();
+    // cap
+    var cg=ctx.createLinearGradient(CX-60,0,CX+60,0);
+    cg.addColorStop(0,'#1a1030');cg.addColorStop(.28,'#bfb0e6');cg.addColorStop(.5,'#5a4a8c');cg.addColorStop(1,'#150c26');
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.moveTo(CX-52,VT+3);
+    ctx.bezierCurveTo(CX-54,60,CX-26,44,CX-12,34);
+    ctx.quadraticCurveTo(CX,22,CX+12,34);
+    ctx.bezierCurveTo(CX+26,44,CX+54,60,CX+52,VT+3);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    ctx.beginPath();ctx.ellipse(CX-20,56,6,16,0.35,0,6.283);ctx.fill();
+    ctx.fillStyle=cg;
+    ctx.beginPath();ctx.ellipse(CX,VT+2,54,6,0,0,6.283);ctx.fill();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var glowK=Math.min(1,bulb+stirGlow*0.4);
+    drawStatic();
+    // liquid
+    ctx.save();
+    vesselPath(ctx,5);
+    ctx.clip();
+    var g=ctx.createLinearGradient(0,VT,0,VB);
+    g.addColorStop(0,rgb(mix(cur.lt,cur.lb,0.1*glowK)));
+    g.addColorStop(1,rgb(mix(cur.lt,cur.lb,0.35+0.65*glowK)));
+    ctx.fillStyle=g;ctx.fillRect(CX-110,VT,220,VB-VT);
+    // bulb glow in the liquid
+    g=ctx.createRadialGradient(CX,VB+20,10,CX,VB+20,330);
+    g.addColorStop(0,rgb(mix(cur.gl,[255,255,255],0.25),0.85*glowK));
+    g.addColorStop(0.35,rgb(cur.gl,0.38*glowK));
+    g.addColorStop(1,rgb(cur.gl,0));
+    ctx.globalCompositeOperation='lighter';
+    ctx.fillStyle=g;ctx.fillRect(CX-110,VT,220,VB-VT);
+    ctx.globalCompositeOperation='source-over';
+    // wax
+    field();
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+    ctx.globalAlpha=0.55+0.45*Math.max(glowK,0.35);
+    ctx.drawImage(off,GX0,GY0,208,VB-VT);
+    ctx.globalAlpha=1;
+    // wax lit from below: add glow back on top of wax near bulb
+    g=ctx.createLinearGradient(0,VB-130,0,VB);
+    g.addColorStop(0,rgb(cur.gl,0));g.addColorStop(1,rgb(cur.gl,0.22*glowK));
+    ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.fillRect(CX-110,VB-130,220,130);
+    ctx.globalCompositeOperation='source-over';
+    // cool top shading
+    g=ctx.createLinearGradient(0,VT,0,VT+90);
+    g.addColorStop(0,'rgba(5,2,15,.35)');g.addColorStop(1,'rgba(5,2,15,0)');
+    ctx.fillStyle=g;ctx.fillRect(CX-110,VT,220,90);
+    ctx.restore();
+
+    // glass: outline, side shading, specular streaks
+    ctx.save();
+    vesselPath(ctx,0);
+    ctx.lineWidth=2.5;ctx.strokeStyle='rgba(225,210,255,.38)';ctx.stroke();
+    ctx.clip();
+    var sg=ctx.createLinearGradient(CX-100,0,CX+100,0);
+    sg.addColorStop(0,'rgba(0,0,0,.38)');sg.addColorStop(.12,'rgba(0,0,0,0)');
+    sg.addColorStop(.86,'rgba(0,0,0,0)');sg.addColorStop(1,'rgba(0,0,0,.45)');
+    ctx.fillStyle=sg;ctx.fillRect(CX-110,VT,220,VB-VT);
+    // left specular streak following the taper
+    ctx.beginPath();
+    ctx.moveTo(CX-hw(VT)+11,VT+16);
+    for(var y=VT+16;y<=VB-70;y+=12)ctx.lineTo(CX-hw(y)+11,y);
+    for(var y2=VB-70;y2>=VT+16;y2-=12)ctx.lineTo(CX-hw(y2)+19,y2);
+    ctx.closePath();
+    var hg=ctx.createLinearGradient(0,VT,0,VB);
+    hg.addColorStop(0,'rgba(255,255,255,.55)');hg.addColorStop(.6,'rgba(255,255,255,.22)');hg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hg;ctx.fill();
+    // faint right rim
+    ctx.beginPath();
+    ctx.moveTo(CX+hw(VT)-10,VT+30);
+    for(var y3=VT+30;y3<=VB-120;y3+=12)ctx.lineTo(CX+hw(y3)-10,y3);
+    ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.14)';ctx.stroke();
+    ctx.restore();
+
+    // halo on the wall
+    halo.style.setProperty('--g',(0.18+0.9*glowK).toFixed(3));
+    halo.style.setProperty('--glow',(cur.gl[0]|0)+','+(cur.gl[1]|0)+','+(cur.gl[2]|0));
+  }
+
+  // ---- status text ----
+  var lastStatus='';
+  function status(){
+    var rising=0;for(var i=0;i<blobs.length;i++)if(blobs[i].vy<-4)rising++;
+    var s;
+    if(!power)s=bulb>0.08?'Bulb off: the wax is cooling and sinking':'Bulb off: wax settled at the base';
+    else if(bulb<want_ready())s='Warming up: wax '+(rising?'starting to lift':'softening');
+    else s=rising?rising+' of '+blobs.length+' blobs rising':'Wax gathering at the base';
+    if(s!==lastStatus){statusEl.textContent=s;lastStatus=s;}
+  }
+  function want_ready(){return (0.3+heat*0.7)*0.9;}
+
+  // ---- controls ----
+  var pw=document.getElementById('power'),hs=document.getElementById('heat');
+  pw.addEventListener('click',function(){
+    power=!power;pw.setAttribute('aria-pressed',String(power));pw.textContent=power?'Bulb on':'Bulb off';
+  });
+  hs.addEventListener('input',function(){heat=hs.value/100;if(!power){power=true;pw.setAttribute('aria-pressed','true');pw.textContent='Bulb on';}});
+  function stir(cx,cy,rad){
+    stirGlow=1;
+    for(var i=0;i<blobs.length;i++){
+      var b=blobs[i],dx=b.x-cx,dy=b.y-cy,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<rad){var k=1-d/rad;b.T=Math.min(1,b.T+0.5*k+0.1);b.vy-=40*k+10;b.vx+=(dx/(d+1))*30*k+(Math.random()-.5)*14;}
+    }
+  }
+  document.getElementById('stir').addEventListener('click',function(){
+    if(!power){power=true;pw.setAttribute('aria-pressed','true');pw.textContent='Bulb on';}
+    stir(CX,VB-40,1000);
+  });
+  cvs.addEventListener('pointerdown',function(e){
+    var r=cvs.getBoundingClientRect();
+    var x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+    if(y>VT-10&&y<VB+10)stir(x,y,120);else stir(CX,VB-40,1000);
+  });
+  cvs.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();stir(CX,VB-40,1000);}});
+  var sws=document.querySelectorAll('.sw button');
+  sws.forEach(function(b){b.addEventListener('click',function(){
+    target=PAL[b.dataset.p];
+    sws.forEach(function(o){o.setAttribute('aria-pressed',String(o===b));});
+  });});
+
+  // ---- sizing ----
+  function fit(){
+    var r=cvs.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+    var w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
+    if(cvs.width!==w||cvs.height!==h){cvs.width=w;cvs.height=h;}
+    ctx.setTransform(cvs.width/W,0,0,cvs.height/H,0,0);
+  }
+  window.addEventListener('resize',fit);fit();
+
+  // ---- loop ----
+  var last=performance.now(),acc=0,sCount=0;
+  function frame(now){
+    var dt=Math.min(0.05,(now-last)/1000);last=now;
+    if(reduce)dt*=0.5;
+    step(dt);lerpPal(Math.min(1,dt*3));
+    draw();
+    if(++sCount%20===0)status();
+    requestAnimationFrame(frame);
+  }
+  // pre-roll a few seconds so the first paint already has life
+  for(var p=0;p<240;p++)step(1/30);
+  draw();status();
+  requestAnimationFrame(function(t){last=t;frame(t);});
+})();
+</script>
+</body>
+</html>

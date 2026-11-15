@@ -1,0 +1,377 @@
+{
+ "scores": {
+  "A": {
+   "simple": 8.25,
+   "correctness": 7.75,
+   "usability": 6.33,
+   "craft": 7.33,
+   "code": 8.17,
+   "overall": 7.08,
+   "mean_rank": 3.83,
+   "per_run_overall": {
+    "A-r1": 6.67,
+    "A-r2": 7.0,
+    "A-r3": 7.33,
+    "A-r4": 7.33
+   }
+  },
+  "B": {
+   "simple": 6.5,
+   "correctness": 8.5,
+   "usability": 8.33,
+   "craft": 7.58,
+   "code": 6.42,
+   "overall": 7.79,
+   "mean_rank": 2.42,
+   "per_run_overall": {
+    "B-r1": 8.83,
+    "B-r2": 8.33,
+    "B-r3": 8.67,
+    "B-r4": 5.33
+   }
+  },
+  "C": {
+   "simple": 5.75,
+   "correctness": 8.08,
+   "usability": 7.0,
+   "craft": 7.42,
+   "code": 5.75,
+   "overall": 6.71,
+   "mean_rank": 4.25,
+   "per_run_overall": {
+    "C-r1": 7.67,
+    "C-r2": 5.83,
+    "C-r3": 7.67,
+    "C-r4": 5.67
+   }
+  }
+ },
+ "pairwise": {
+  "C_vs_B": {
+   "wins": 5,
+   "losses": 17,
+   "ties": 2,
+   "win_rate": 0.25,
+   "p": 0.229
+  },
+  "C_vs_A": {
+   "wins": 7,
+   "losses": 12,
+   "ties": 5,
+   "win_rate": 0.4,
+   "p": 0.543
+  },
+  "B_vs_A": {
+   "wins": 16,
+   "losses": 6,
+   "ties": 2,
+   "win_rate": 0.71,
+   "p": 0.543
+  }
+ },
+ "functional": {
+  "A-r1": {
+   "bytes": 6488,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r2": {
+   "bytes": 6289,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r3": {
+   "bytes": 5714,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "A-r4": {
+   "bytes": 6303,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r1": {
+   "bytes": 8840,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r2": {
+   "bytes": 11717,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r3": {
+   "bytes": 12060,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "B-r4": {
+   "bytes": 12269,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "24:56"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": false,
+   "works": false,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r1": {
+   "bytes": 12574,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r2": {
+   "bytes": 11880,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r3": {
+   "bytes": 10045,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  },
+  "C-r4": {
+   "bytes": 14350,
+   "start_found": true,
+   "pause_found": true,
+   "reset_found": true,
+   "times": {
+    "rest": "25:00",
+    "after_2s": "24:58",
+    "after_4s": "24:56",
+    "paused": "24:56",
+    "paused_later": "24:56",
+    "after_reset": "25:00"
+   },
+   "counts_down": true,
+   "holds_when_paused": true,
+   "reset_restores": true,
+   "works": true,
+   "js_errors": 0,
+   "js_error_text": []
+  }
+ },
+ "cost": {
+  "A": {
+   "runs": 4,
+   "mean_tokens": 74401,
+   "mean_seconds": 25.6
+  },
+  "B": {
+   "runs": 4,
+   "mean_tokens": 106757,
+   "mean_seconds": 72.3
+  },
+  "C": {
+   "runs": 4,
+   "mean_tokens": 111821,
+   "mean_seconds": 94.8
+  },
+  "dump": {
+   "run": "dump",
+   "tokens": 219811,
+   "ms": 1272512,
+   "tool_uses": 42,
+   "agents_spawned": 19
+  }
+ },
+ "agreement_r": 0.78,
+ "notes": {
+  "b1/j1/B-r1": "Huge legible time and mode, drift-free end-time clock, auto phase switch with chime and cue, role=timer and aria-live, keyboard shortcuts; phone layout is a little loose and the confirm() dialog is a minor wart.",
+  "b1/j1/C-r1": "Warm, polished and accessible with a progress road to the long break, but localStorage restore, auto-advance and the road widget overbuild a simple timer and the source is long.",
+  "b1/j1/A-r1": "Attractive ring card with tabs and settings, accurate countdown and auto switching, but no screen-reader semantics, a new AudioContext per beep and only Space/R shortcuts.",
+  "b1/j1/C-r2": "Distinctive terminal look with solid logic, but the ASCII bar, text-only buttons, reset confirmation, auto and sound toggles are overbuilt and the status text is dense on phones.",
+  "b1/j1/A-r2": "Genuinely simple and tidy ring timer with tabs, but it plays a beep and switches silently with no status, has no skip or timer semantics, and lacks keyboard shortcuts beyond Space.",
+  "b1/j1/B-r2": "Bold full-bleed colour per phase, huge time, progress bar, accurate timing, clear status, screen-reader timer text, keyboard shortcuts and good phone layout; slightly many options but cohesive.",
+  "b1/j2/C-r2": "Distinctive terminal-style timer with solid timing and screen-reader support, but the ASCII bar, toggles, durations and two-step reset overbuild it and the small mono text is hard to read at a glance.",
+  "b1/j2/A-r2": "Clean, compact card with ring, mode tabs and tidy code, but no live region or timer role, only Space as a shortcut, and a tiny paused label.",
+  "b1/j2/B-r2": "Big bold time on a red mode-coloured screen with tabs, status line, auto-advance, chime and strong ARIA; slightly feature-heavy but very clear and mobile-friendly.",
+  "b1/j2/A-r1": "Polished dark card with ring and editable durations and compact correct code, but no ARIA or live announcements and the time is smaller than it could be.",
+  "b1/j2/C-r1": "Warm, readable design with large time and a four-pomodoro roadmap; accessible and accurate, though the roadmap card, checkbox and notes add extra and the checkbox looks unstyled.",
+  "b1/j2/B-r1": "Big, calm and focused with phase label, dots, status messages, timer role and good shortcuts; phone layout wraps buttons slightly awkwardly but it is the closest to simple and complete.",
+  "b1/j3/A-r2": "Tidy ring-and-card timer with correct end-time countdown and auto work/break switching, but tiny text, no aria roles or live announcements, and the ring barely visibly moves.",
+  "b1/j3/B-r2": "Huge legible time with phase colour change, solid timer logic, screen-reader timer and status, keyboard shortcuts and a good phone layout, though auto-advance, chime, notifications and persistence add bulk.",
+  "b1/j3/C-r2": "Distinctive monospace terminal look with correct logic and live announcements, but the ASCII bar, reset confirmation, text-only toggles and dense status lines make it overbuilt and harder to scan.",
+  "b1/j3/B-r1": "Focused full-screen timer with giant digits, colour-coded phase, pomodoro dots, timer role, live status and clean end-of-session flow, with only an unused done phase and a confirm dialog as blemishes.",
+  "b1/j3/A-r1": "Compact dark ring timer that works, but no aria or live regions, skip counts as a finished pomodoro, a new AudioContext is made per beep, and small type hurts phone legibility.",
+  "b1/j3/C-r1": "Most polished layout with a four-segment road to the long break, large clock, aria-live announcements and phone-friendly sizing, though restore-from-storage and auto-start features make it larger than a simple timer needs.",
+  "b2/j1/B-r3": "Huge clear clock, drift-free deadline timing, labelled Pause/Resume, live-region and keyboard shortcuts, good phone layout; a bit padded with presets, undo toast and persistence.",
+  "b2/j1/C-r3": "Bold red full-bleed with big mono clock and mode shown, solid timing and live region, but the phase pills are inert li elements and the confirm-reset and odd skip logic add friction.",
+  "b2/j1/A-r3": "Compact dark card with ring, working tabs and settings in very little code and accurate deadline timing; no aria-live or timer role and the pause state is only the button label.",
+  "b2/j1/C-r4": "Warm, polished and accessible with good state messages, but the giant pomodoro count outranks the clock and the page is overbuilt with persistence, settings and a hacked-in inline-styled button.",
+  "b2/j1/A-r4": "Large ring with clear time, mode tabs and settings, correct deadline timing in tiny readable code; no screen-reader announcements, and skip keeps running into the next phase.",
+  "b2/j1/B-r4": "Big readable clock and thorough announcements, but the monospaced text-heavy look is plain, reset needs a confirm press even when merely paused, and two reset buttons plus notifications overbuild it.",
+  "b2/j2/C-r4": "Robust (persistence, live region, drift-free) but overbuilt, and the giant '0' pomodoro count outweighs the timer in the hierarchy.",
+  "b2/j2/A-r4": "Compact and correct, but the thick ring that barely depletes looks off, and there is no live region for screen readers.",
+  "b2/j2/B-r4": "Large monospace timer is clear, but it is padded with two reset buttons, confirm steps (paused reset did not reset in the scripted use) and long status prose.",
+  "b2/j2/A-r3": "Clean dark card with thin ring, tabs and settings; tidy, minimal code, though it has no aria-live and a weaker phone hierarchy than the best.",
+  "b2/j2/C-r3": "Full-bleed red with a huge timer, a clear mode label, a live region and a sensible reset; strong at-a-glance read and a good phone layout.",
+  "b2/j2/B-r3": "Polished navy design with a big timer, progress bar, cycle pips, keyboard shortcuts, live region and a clean pause state; slightly more than minimal but well judged.",
+  "b2/j3/A-r4": "Classic ring timer with tabs, start/reset/skip and editable lengths, accurate end-time countdown and auto phase switch, but tabs lack ARIA and there is no live region or timer role.",
+  "b2/j3/B-r4": "Huge clear clock with good keyboard and screen-reader support, but overbuilt with two reset buttons, two-press confirms, notifications and verbose status text, and plain styling.",
+  "b2/j3/C-r4": "Handsome serif card, but the giant pomodoro-count numeral outranks the actual countdown, which sits small below it, and the persistence, settings panel and pips overbuild a simple timer.",
+  "b2/j3/B-r3": "Full-bleed colour per phase with a huge clock, clear primary Start, progress bar, shortcuts and live announcements; a few extras (presets, undo toast) but still reads as one clear timer.",
+  "b2/j3/A-r3": "Tiny, tidy ring timer that works with tabs, skip and settings, though it has no ARIA or live region, a thin ring and Reset that also reverts to the current mode only.",
+  "b2/j3/C-r3": "Bold full-screen red focus view with a giant clock and phase label, role=timer, live announcements, tabs as non-interactive indicators; solid but with extras like reset confirmation and sessionStorage restore."
+ }
+}

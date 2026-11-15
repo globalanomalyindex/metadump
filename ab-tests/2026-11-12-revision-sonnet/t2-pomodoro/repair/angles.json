@@ -1,0 +1,56 @@
+[
+  {
+    "angle": "bare big number",
+    "text": "The face is the digits alone on a plain field, with the phase as one word above them, so the time reads from across the room.",
+    "draws_on": [
+      "fb-face-number",
+      "sc-timer-face",
+      "scr-face-rest"
+    ]
+  },
+  {
+    "angle": "ring that fills over the session",
+    "text": "The digits sit inside a disc whose ring fills as the interval runs, so the share of time gone reads before the numerals do.",
+    "draws_on": [
+      "rs-face-ring",
+      "sc-ring-face",
+      "fb-progress-motion"
+    ]
+  },
+  {
+    "angle": "quiet text-only status",
+    "text": "The clock is set in monospaced type with no shapes around it, and the phase, the state and the next step come as words beneath it.",
+    "draws_on": [
+      "fb-simple-face",
+      "cc-words",
+      "ix-status"
+    ]
+  },
+  {
+    "angle": "marks for the cycle",
+    "text": "Four small marks sit under the clock and fill as work intervals finish, so the long break shows as the step that follows the fourth mark.",
+    "draws_on": [
+      "pc-cycle",
+      "sc-modes",
+      "cc-count"
+    ]
+  },
+  {
+    "angle": "full-bleed phase colour",
+    "text": "Each phase fills the whole screen in its own colour with the clock as the largest shape on it, so the phase reads from the far side of a room before any word is read.",
+    "draws_on": [
+      "fb-phases",
+      "rs-end-signal",
+      "fb-end-signal"
+    ]
+  },
+  {
+    "angle": "held between phases",
+    "text": "When an interval ends the clock holds at zero on a still face, and the next phase waits for one press, so the person sets the pace of each break.",
+    "draws_on": [
+      "tr-cycle",
+      "cc-control-set",
+      "fb-end-signal"
+    ]
+  }
+]

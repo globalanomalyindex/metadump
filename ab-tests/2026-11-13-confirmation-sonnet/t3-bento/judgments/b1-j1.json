@@ -1,0 +1,8 @@
+{"block": "b1", "judge": "j1", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 8, "usability": 6, "overall": 7, "note": "Bold dark tin-themed design with a tidy bento popover, but the popover overlaps hero text and the closed state shows no bento at all."},
+"V": {"fidelity": 6, "correctness": 6, "craft": 6, "usability": 5, "overall": 6, "note": "Bento panel with quantity stepper works but opens narrow, covers page copy awkwardly, and the 'Nothing selected yet' state is clunky."},
+"W": {"fidelity": 8, "correctness": 7, "craft": 8, "usability": 7, "overall": 8, "note": "Rich bento menu with roast chips, sliders, toggles and accordions, though the tiny type is dense and the toast overlaps the headline."},
+"X": {"fidelity": 6, "correctness": 7, "craft": 5, "usability": 6, "overall": 6, "note": "Functional small bento with roast, grind and quantity controls, but plain, sparse and the bento sits in an unstyled page."},
+"Y": {"fidelity": 7, "correctness": 7, "craft": 7, "usability": 7, "overall": 7, "note": "Clean dark-pill nav opening a well-composed bento with subscription and guides, a bit generic and small in text."},
+"Z": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "Strongest bento: colorful tiles collapse to an icon strip and expand into a rich illustrated grid, with state readout and keyboard hints."}
+}, "ranking": ["Z", "W", "U", "Y", "X", "V"]}

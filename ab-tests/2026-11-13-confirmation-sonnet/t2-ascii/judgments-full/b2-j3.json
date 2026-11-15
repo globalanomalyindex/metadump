@@ -1,0 +1,9 @@
+{"block": "b2", "judge": "j3", "scores": {
+"U": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "A working paint-with-ink canvas with additive, subtractive and average modes, but it opens as an empty black box and carries many controls for a 'simple' tool."},
+"V": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 8, "overall": 8, "note": "A clean two-color mixer that draws the mix as a shaded ASCII sphere with a ramp strip, a live hex readout, keyboard shortcuts, a model toggle and good mobile layout."},
+"W": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "A vivid three-source ASCII color field you drag around, with light, paint and naive models, a probe and good mobile behaviour, so it looks and feels like a mixing engine from the first frame."},
+"X": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 7, "overall": 6, "note": "A correct, simple two-color mixer that compares sRGB mean with linear light, but the ASCII swatches are small and plain and less interactive."},
+"Y": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 6, "overall": 6, "note": "A paintable ASCII canvas with paint, light and average modes, glyph ramps and eyedropper, but it starts blank, the canvas panel has dead white space, and the mobile canvas is narrow."},
+"Z": {"fidelity": 8, "correctness": 7, "craft": 8, "usability": 7, "overall": 7, "note": "A seeded ink-drop field with light (RGB) and paint (CMY) models and a theme change, attractive at rest, though switching mode reinterprets the stored amounts and the paint view looks pale."}
+},
+"ranking": ["W", "V", "Z", "U", "X", "Y"]}

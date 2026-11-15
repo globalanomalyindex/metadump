@@ -1,0 +1,9 @@
+{"block": "b1", "judge": "j3", "scores": {
+"U": {"fidelity": 8, "correctness": 8, "craft": 7, "usability": 8, "overall": 7.5, "note": "Solid pill-bar menu that unfolds an inline bento of working tiles (roast pills, subscription, accordion, cafe hours, save) with inert and Esc handling, but visually conventional and the closed state is plain."},
+"V": {"fidelity": 9, "correctness": 8, "craft": 9, "usability": 8, "overall": 9, "note": "The bento is always visible as a compact tile strip and morphs via FLIP into a rich collapsed-to-expanded grid with illustrated tiles, so the collapse itself is the bento; folded tiles still navigate, though the mobile open label wraps."},
+"W": {"fidelity": 7, "correctness": 8, "craft": 6, "usability": 8, "overall": 6.5, "note": "Tidy collapsible bento with roast, grind and quantity controls and a live summary in the trigger, but sparse tiles with dead space and little visual identity."},
+"X": {"fidelity": 8, "correctness": 7, "craft": 9, "usability": 7, "overall": 8, "note": "Distinctive dark theme with tins flying out of the handle into a floating bento popover and good focus management, but tiles are mere links and the overlay covers page content."},
+"Y": {"fidelity": 8, "correctness": 8, "craft": 8, "usability": 7, "overall": 8, "note": "Richly interactive inline bento (bean chips, roast slider, subscribe, accordions, theme switch) with strong palette, though a toast collides with the hero and the mobile header loses the brand name."},
+"Z": {"fidelity": 7, "correctness": 7, "craft": 6, "usability": 7, "overall": 6.5, "note": "Working overlay tray with keyboard arrow navigation and a cart stepper, but the hero tile is flat, the tray overlaps page text and the tiles feel generic."}
+},
+"ranking": ["V", "Y", "X", "U", "Z", "W"]}

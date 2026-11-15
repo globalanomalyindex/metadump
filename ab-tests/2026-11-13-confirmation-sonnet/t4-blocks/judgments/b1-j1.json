@@ -1,0 +1,8 @@
+{"block":"b1","judge":"j1","scores":{
+"U":{"fidelity":8,"correctness":8,"craft":7,"usability":8,"overall":7,"note":"Clean four-block sandbox with counts, undo, keys and good mobile layout, but opens empty and visually plain."},
+"V":{"fidelity":8,"correctness":8,"craft":9,"usability":8,"overall":9,"note":"Textured pixel blocks, sky, clouds and a pre-built landscape with nine block types make it the most polished and inviting, with a wrapping mobile palette."},
+"W":{"fidelity":8,"correctness":8,"craft":6,"usability":7,"overall":7,"note":"Feature-rich with Place, Erase, Pick and Fill tools, but the block look is flat and the toolbar is cramped."},
+"X":{"fidelity":8,"correctness":8,"craft":8,"usability":8,"overall":8,"note":"Attractive beveled blocks and a starter scene with ten palette slots, undo and a status line, and it works well on mobile."},
+"Y":{"fidelity":7,"correctness":7,"craft":5,"usability":6,"overall":6,"note":"Works with a Generate button but looks dim, with grid artifacts and tiny labels, and starts as an empty dark grid."},
+"Z":{"fidelity":8,"correctness":8,"craft":7,"usability":8,"overall":7,"note":"Tidy counters per block type and a hint line, with the world starting empty and plain."}
+},"ranking":["V","X","U","W","Z","Y"]}
