@@ -1,6 +1,6 @@
 ---
 name: metadump
-description: Build and use meta dumps, one large self-indexing JSON file of structured task knowledge (tiered keywords, anti-keywords, descriptions, palettes, patterns, references, cited research, measurements, timings, transcripts, exports) created from a prompt plus optional images, files, web pages or videos, then consulted like a search index by any skill, tool or subagent. A brain dump that brings material to the surface to play with, not a spec or a rulebook. Create mode can find videos and images online, scrape pages, read video captions and frames, measure animation timing and build moodboards with no installs. Use this skill whenever the user asks for a meta dump, metadump, metadata dump, keyword or semantic taxonomy, style or art-direction metadata, SEO keyword map, or a chest of information to ground design, image generation, coding, TDD, engineering or writing work, even if they never say meta dump. Also use it automatically whenever a *.metadump.json file exists in the project or is mentioned, to pull only the slice the current step needs.
+description: Build and use meta dumps, one large self-indexing JSON file of structured task knowledge (tiered keywords, anti-keywords, palettes, patterns, references, cited research, measurements, timings, transcripts) created from a prompt plus optional images, files, web pages or videos, then consulted like a search index by any skill, tool or subagent. A brain dump that brings material to the surface to play with, not a spec or a rulebook. By default the model writes it itself in about a minute (quick mode); lite and heavy builds send out agents that research, scrape pages, read videos and build moodboards, with no installs. Use this skill whenever the user asks for a meta dump, metadump, metadata dump, keyword or semantic taxonomy, style or art-direction metadata, SEO keyword map, or a chest of information to ground design, image generation, coding, TDD, engineering or writing work, even if they never say meta dump. Also use it automatically whenever a *.metadump.json file exists in the project or is mentioned, to pull only the slice the current step needs.
 ---
 
 # Metadump
@@ -14,8 +14,19 @@ It is a brain dump, not a spec: the model's stream of consciousness about the ta
 ## Pick the mode
 
 - **Use mode**: a `*.metadump.json` already exists or is referenced, and some other work is happening (design, image generation, code, tests, copy). Consult it. This is cheap; do it without being asked.
-- **Create mode**: the user asks for a meta dump, or to expand or rebuild one. This fans out many agents and costs real tokens, so run it only when asked.
-- **Quick mode**: the user asks for a quick, fast or light meta dump, or for one with no agents. You write the dump yourself in one pass and work from it: follow `references/quick.md` and nothing else here. About a minute. It is the lightest depth, below `lite`, and never the default.
+- **Quick mode (the default)**: the user asks for a meta dump, in words or with `/metadump:metadump`, and neither names a size nor asks for the swarm's work (next line). You write the dump yourself in one pass and work from it: follow `references/quick.md` and nothing else here. About a minute, no agents.
+- **Create mode (`lite` or `heavy`)**: the user says lite or heavy, or asks in so many words for what only the swarm does: research across the web, pages scraped, videos watched, a moodboard, an old dump expanded or rebuilt. Asking for that work is asking for the swarm, even with no size named. This fans out many agents and costs real tokens, so run it only when asked, and at `lite` unless they said heavy.
+
+What the user says, and what they get:
+
+| They say | They get |
+|---|---|
+| "make a metadump for …" | `quick`: you write it yourself in about a minute. No agents. |
+| "make a lite metadump for …" | `lite`: a small swarm, about 20 agents and 20 to 40 minutes. |
+| "make a heavy metadump for …" (or `standard` or `deep`, its old names) | `heavy`: the big swarm, about 25 agents and one to two hours. |
+| "make a metadump for …, and research the web / scrape these pages / watch this video" | `lite`: only the swarm does that work. |
+
+Quick is the default because it is the one a confirmation test passed: it beat the prompt alone on tasks named after the skill was frozen, and the swarm's dump was not shown to do better (ADR 0022).
 
 ---
 
@@ -53,7 +64,7 @@ Lean reading works best: head, `routing[0]`, the spread, one route and its expor
 
 ## Create mode
 
-The full procedure is `references/create.md`, read it before starting. The worker instructions are `references/briefs.md`. The format is `references/schema.md`.
+For `lite` and `heavy` builds. The full procedure is `references/create.md`, read it before starting. The worker instructions are `references/briefs.md`. The format is `references/schema.md`.
 
 Create mode runs unattended. It does not interview the user: whatever the prompt leaves open becomes an `open_questions` entry with a sensible default, which the user can answer later through use mode. The only things it states are the cost estimate before fan-out and the result at the end.
 
@@ -63,10 +74,11 @@ The build collects widely, then widens. It collects: the user's words, reference
 Pick a slug. Create `metadumps/.work/<slug>/{tickets,shards,verify}/`. Write `manifest.json` with the prompt **verbatim**: every `user_stated` entry must quote it, and the audit traces the dump back to it. Give each reference an id (`r1`, `r2`…).
 
 ### 2. Choose depth and say the cost
-- `quick`: no agents. You write the dump yourself in one pass (`references/quick.md`). Only when the user asks for quick, fast or light. In test 23 it kept about 70% of the full build's gain.
-- `lite`: about 12–18 Haiku agents with two research tickets, discovery and the digest. The 0.5.x test builds took about 30 minutes each, with 16 to 20 Haiku workers.
-- `standard` (default): 14–18 agents, roughly 2–4M tokens and 40–70 minutes.
-- `deep`: 22–28 agents, used for reference-heavy or multi-consumer jobs, roughly 4–7M tokens.
+Create mode has two depths. (`quick`, the default, is not this procedure: `references/quick.md`.)
+- `lite`: about 20 Haiku agents with two research tickets, discovery and the digest. Test 24's four builds took 19 to 40 minutes each, with 17 to 23 agents.
+- `heavy`: 22–28 agents, with more research, specialists and verify passes and up to three rounds, for reference-heavy or multi-consumer jobs. Roughly 4–7M tokens and one to two hours. That is an estimate: no A/B test has run at this depth.
+
+Use `lite` unless the user said heavy. `standard` and `deep` are old names for `heavy`.
 
 "Tokens processed" includes each agent re-reading its context, so it runs well above what the dump itself holds.
 
@@ -165,8 +177,8 @@ This plugin comes from a third-party marketplace, so Claude Code doesn't auto-up
 
 | Path | What it is / when to read it |
 |---|---|
-| `references/quick.md` | Quick mode on one page: write the dump yourself in one pass, build, look, reuse. The lightest depth; read it instead of the create procedure when the user asks for quick. |
-| `references/create.md` | Full create procedure: map.md and ticket templates, depth table, evidence tickets, Workflow args, stop rule, resume and expand, pages/videos/images. Read before creating. |
+| `references/quick.md` | Quick mode on one page: write the dump yourself in one pass, build, look, reuse. The default; read it instead of the create procedure unless the user asked for lite or heavy. |
+| `references/create.md` | The create procedure for `lite` and `heavy`: map.md and ticket templates, depth table, evidence tickets, Workflow args, stop rule, resume and expand, pages/videos/images. Read before creating. |
 | `references/briefs.md` | Instructions for every ticket type. Workers read their section; you read it to brief Agent-tool workers. |
 | `references/schema.md` | The exact format: spine, entry envelope, provenance and method, tiers, anti-keywords, review prompts, exports, sources, shards, media entries, and what finalize rejects or fixes. |
 | `references/mechanisms.md` | The menu of section mechanisms (lexicon, senses, bindings, invariants, grammar, exemplars, parameters, scraped facts, timeline, transcript, moodboard, engineering set…). Read while charting. |
@@ -177,7 +189,7 @@ This plugin comes from a third-party marketplace, so Claude Code doesn't auto-up
 | `scripts/look.py` | Use mode's last step: `look.py <page.html> [--out DIR] [--play STEPS] [--no-walk] [--hover SEL] [--click SEL]` renders the page in the local headless browser, screenshots it at desktop and phone widths, plays it (clicks, types, slides, drags, tabs), and lists what breaks along the way with the action that caused it, an account of what the page said, and one labelled sheet of every state. `--play` runs scripted steps with `expect`. Skips itself when no browser is installed. Python 3.9+, standard library. |
 | `scripts/play.py` | The playing half of the look: the walk, its invariants, scripted plays. Used through `look.py`. |
 | `scripts/finalize.py` | Build-time only: `build <work dir or dump> [--bump]`, `merge <work dir>`, `check <dump>`. Python 3.9+, standard library. |
-| `scripts/index.workflow.js` | The Workflow fan-out script for create mode. |
+| `scripts/index.workflow.js` | The Workflow fan-out script for create mode (`depth`: `lite` or `heavy`). |
 | `scripts/webpages.py` | Pages for `scrape` tickets: `fetch`, `crawl`, `chunks`, `screenshot`, `tools`. Stdlib; polite (robots.txt, per-host delay, cache). |
 | `scripts/video.py` | Videos for `watch` tickets: `info`, `captions`, `frames`, `timing`, `tools`. Stdlib plus an installed Chromium-family browser; yt-dlp and ffmpeg optional. |
 | `scripts/images.py` | Images for `moodboard` tickets: `collect`, `palette`, `convert`, `moodboard`, `tools`. |

@@ -1,0 +1,7 @@
+---
+type: llm
+focus: trace
+weight: 1
+---
+
+The result matches this description: With no size word in the request, the model uses quick mode: it writes metadumps/<slug>.metadump.json itself in one pass before building (the file opens with `request`, has `the_thing.kinds` and no `manifest`, and `finalize.py check` reports a quick dump), spawns no agents and runs no Workflow, builds the classic kind as one self-contained HTML file, runs look.py on it, and adds the kind it built to the dump's `built` list.

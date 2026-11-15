@@ -43,7 +43,7 @@ const TICKETS = [
   { id: '75-exclusion', type: 'exclusion' },
   { id: '01-prompt', type: 'prompt' },
 ]
-const ARGS = { skill_dir: '/skill', work_dir: '/proj/metadumps/.work/demo', slug: 'demo', depth: 'standard', tickets: TICKETS }
+const ARGS = { skill_dir: '/skill', work_dir: '/proj/metadumps/.work/demo', slug: 'demo', depth: 'heavy', tickets: TICKETS }
 
 function standard({ guessesByRound = { 1: 1, 2: 0 }, gapEntries = 20, synthOk = true } = {}) {
   return (label, prompt) => {
@@ -98,6 +98,37 @@ test('lite depth never runs a gap round even with guesses', async () => {
 test('lite depth verifies at most two jobs', async () => {
   const { labels } = await runWith({ ...ARGS, depth: 'lite' }, standard({ guessesByRound: {} }))
   assert.equal(labels.filter(l => l.startsWith('verify')).length, 2)
+})
+
+test('heavy depth verifies up to eight jobs and runs up to three rounds', async () => {
+  const tenJobs = Array.from({ length: 10 }, (_, i) => `job ${i + 1}`)
+  const behaviour = (label, prompt) => {
+    if (label.startsWith('synthesis')) return { built: true, dump_path: '/proj/metadumps/demo.metadump.json', jobs: tenJobs }
+    return standard({ guessesByRound: { 1: 1, 2: 1, 3: 1 } })(label, prompt)
+  }
+  const { result, calls } = await runWith({ ...ARGS, depth: 'heavy' }, behaviour)
+  assert.equal(calls.filter(c => c.label.startsWith('verify') && /Round 1/.test(c.prompt)).length, 8)
+  assert.equal(result.rounds, 3)
+})
+
+test('the old depth names standard and deep run as heavy', async () => {
+  for (const depth of ['standard', 'deep']) {
+    const { calls } = await runWith({ ...ARGS, depth }, standard({ guessesByRound: {} }))
+    const spec = calls.find(c => c.label === 'specialist:30-composition')
+    assert.match(spec.prompt, /Depth: heavy/, depth)
+    assert.match(spec.prompt, /Entry budget: 10-16 entries in about 3,000 tokens/, depth)
+  }
+})
+
+test('with no depth given, or one it does not know, the swarm runs lite', async () => {
+  for (const depth of [undefined, 'quick', 'enormous']) {
+    const { calls, labels } = await runWith({ ...ARGS, depth }, standard({ guessesByRound: {} }))
+    const spec = calls.find(c => c.label === 'specialist:30-composition')
+    assert.match(spec.prompt, /Depth: lite/, String(depth))
+    assert.match(spec.prompt, /Entry budget: 4-8 entries in about 1,200 tokens/, String(depth))
+    assert.equal(labels.filter(l => l.startsWith('verify')).length, 2, String(depth))
+    assert.ok(!labels.some(l => l.startsWith('audit')), String(depth))
+  }
 })
 
 test('a failed build stops before verify so the main loop can repair it', async () => {
@@ -190,8 +221,7 @@ test('moodboard tickets start after the scrape and watch tickets whose images th
 test('media evidence tickets carry an entry budget for every depth', async () => {
   const want = {
     lite: { scrape: '3-6', watch: '3-8', moodboard: '3-6' },
-    standard: { scrape: '4-8', watch: '4-10', moodboard: '4-8' },
-    deep: { scrape: '6-12', watch: '6-14', moodboard: '6-12' },
+    heavy: { scrape: '6-12', watch: '6-14', moodboard: '6-12' },
   }
   for (const depth of Object.keys(want)) {
     const { calls } = await runWith({ ...ARGS, depth, tickets: MEDIA }, standard({ guessesByRound: {} }))
@@ -294,7 +324,7 @@ test('discovery caps videos, pages and images per depth, states the caps, and re
     pages: Array.from({ length: 12 }, (_, i) => ({ url: `https://p.example/${i}`, slug: `p${i}` })),
     images: Array.from({ length: 40 }, (_, i) => ({ url: `https://i.example/${i}.png` })),
   }
-  const want = { lite: [1, 3, 8], standard: [3, 6, 16], deep: [5, 10, 32] }
+  const want = { lite: [1, 3, 8], heavy: [5, 10, 32] }
   for (const [depth, [videos, pages, images]] of Object.entries(want)) {
     const { labels, calls, result } = await runWith({ ...ARGS, depth, tickets: DISCOVERY }, withDiscover(many))
     assert.equal(labels.filter(l => l.startsWith('watch:')).length, videos, `${depth} videos`)
@@ -456,7 +486,7 @@ const CONSTRAINT_ONLY = { narrowings: [{ entry_id: 'ak-loop-at-rest', kind: 'con
 
 test('a verify result whose narrowings are all constraint findings does not start a widening round', async () => {
   // Test 10: every lite build ran a widening round, mostly for scoped anti-keywords that already had an instead.
-  for (const depth of ['lite', 'standard']) {
+  for (const depth of ['lite', 'heavy']) {
     const { result, labels } = await runWith({ ...ARGS, depth }, verifyFinds(CONSTRAINT_ONLY))
     assert.equal(result.rounds, 1, depth)
     assert.ok(!labels.some(l => l.startsWith('gaps')), `${depth}: ${labels.join(', ')}`)
@@ -482,7 +512,7 @@ test('constraint findings never reach the gap planner, and the other narrowings 
 
 test('every worker prompt states a token budget next to its facet count', async () => {
   // Test 10: lite dumps ran 30K to 47K tokens against a target of 8 to 15K.
-  const want = { lite: '1,200', standard: '2,000', deep: '3,000' }
+  const want = { lite: '1,200', heavy: '3,000' }
   for (const [depth, tokens] of Object.entries(want)) {
     const { calls } = await runWith({ ...ARGS, depth }, standard({ guessesByRound: {} }))
     for (const label of ['research:20-research-lineage', 'specialist:30-composition']) {
@@ -505,7 +535,7 @@ test('a gap ticket in a gap round is spawned with the gap section of briefs.md a
   assert.equal(gap.opts.phase, 'Gaps')
   assert.match(gap.prompt, /"gap" section of \/skill\/references\/briefs\.md/)
   assert.match(gap.prompt, /shards\/60-gap-feel-r2\.json/)
-  assert.match(gap.prompt, /Entry budget: 6-12 entries in about 2,000 tokens/)
+  assert.match(gap.prompt, /Entry budget: 10-16 entries in about 3,000 tokens/)
   assert.ok(labels.indexOf('scrape:61-gap-scrape-r2') < labels.indexOf('gap:60-gap-feel-r2'), 'outside facts first')
   assert.ok(labels.indexOf('gap:60-gap-feel-r2') < labels.indexOf('normalize:r2'))
   assert.ok(result.gap_tickets.includes('60-gap-feel-r2'))

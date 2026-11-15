@@ -1,6 +1,6 @@
 # Create mode: full procedure
 
-Read this when building a meta dump. `<SKILL>` is the skill's base directory; `<WORK>` is `metadumps/.work/<slug>/` under the project root.
+Read this when building a `lite` or `heavy` meta dump (the default, `quick`, is one page of its own: `quick.md`). `<SKILL>` is the skill's base directory; `<WORK>` is `metadumps/.work/<slug>/` under the project root.
 
 The dump is a brain dump, not a spec: the model's stream of consciousness about the task, collected and written down so the work can draw on it. Building it is where the value comes from: it forces structure, pulls in specifics a model would not have at hand, and writes down what the model knows but would not otherwise surface. So the build does two things. It **collects** widely (the user's words, references, researched facts across several facets, screenshots of exemplars, measurements, timings, transcripts, quotes, library facts), and it **widens** (readings of the request, associations, exemplars, patterns, needs, options, decision points). It seeds the consumer with more to work with. It never narrows the request: the build's own derived entries stay at tier 2 or below, and anything that would rule out what the request plausibly includes is a defect the verify pass reports.
 
@@ -17,7 +17,7 @@ Contents: 1. Setup · 2. Depth and cost · 3. Chart (map.md) · 4. Tickets · 5.
 
 ```json
 {"schema": "metadump/1", "slug": "<slug>", "version": 1, "created": "<today>",
- "prompt": "<the user's prompt, verbatim>", "references": [...], "consumers": [...], "depth": "standard",
+ "prompt": "<the user's prompt, verbatim>", "references": [...], "consumers": [...], "depth": "lite",
  "derived_from": [], "built": ""}
 ```
 
@@ -27,33 +27,32 @@ The verbatim prompt matters: it anchors every `user_stated` entry, and the audit
 
 | Depth | When | Roster | Rounds | Typical dump | Run cost (tokens processed, wall time) |
 |---|---|---|---|---|---|
-| `quick` | the user asks for a quick, fast or light dump, or one with no agents | none: the main loop writes the dump itself in one pass and builds from it (`quick.md`; none of the steps below apply) | 1 pass | 2–4K tokens, no manifest, routes or index | a few thousand tokens, about a minute |
-| `lite` | small prompts, single-consumer tasks, or the user asks for a cheap swarm build | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 8–15K tokens | ~1.5–2.5M, 35–50 min (estimate; the measured 8-agent run before facets and discovery took 1.36M, 34 min) |
-| `standard` (default) | most tasks | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 3–4 research (one or two facets each) + 4–8 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 6 verify | up to 2 | 15–30K tokens | ~2–4M, 40–70 min (estimate) |
-| `deep` | reference-heavy jobs (≥3 references), multi-consumer systems, or the user asks for exhaustive | as standard, more specialists (8–12), research and scrape (4–6), a watch per video, up to 8 verify | up to 3 | 30–50K tokens, still routed | ~4–7M, 1–2 h (estimate) |
+| `quick` (default) | the user asks for a meta dump and doesn't say lite or heavy | none: the main loop writes the dump itself in one pass and builds from it (`quick.md`; none of the steps below apply) | 1 pass | 1–4K tokens, no manifest, routes or index | a few thousand tokens, about a minute |
+| `lite` | the user asks for lite, or for what only the swarm does without saying how much | prompt + 2 research tickets (one a primer for the discipline rungs, one for the specific rungs) + discover when the references leave visual or motion questions open (its found pages are screenshotted) + scrape/watch for any URL or video in the prompt + 2–3 specialists + lexicon (associations) + exclusion + synthesis + digest (normalize) + 2 verify (no audit) | 1 (2 when verify finds narrowings) | 8–15K tokens | ~1.5–2.5M (estimate). Measured in test 24: 19 to 40 min, 17 to 23 agents |
+| `heavy` | the user asks for heavy (or the old names, `standard` and `deep`): reference-heavy jobs (≥3 references), multi-consumer systems, exhaustive builds | prompt + observe per 1–2 refs + discover when the references leave visual or motion questions open + scrape per site + watch per video + moodboard for visual work + 4–6 research (one or two facets each) + 8–12 specialists + lexicon + exclusion + normalize + synthesis + audit + up to 8 verify | up to 3 | 30–50K tokens, still routed | ~4–7M, 1–2 h (estimate; no A/B test has run at this depth) |
 
 "Tokens processed" counts every agent re-reading its context across its tool calls. It is far more than the dump's own size.
 
 **Entry budgets per shard** (the Workflow script puts these in each worker's prompt; give them to Agent-tool workers yourself). They count **facets**: one object per area, with a line of text and lists of short phrases, behaviors and a principle, the shape of the hand-made dumps this skill grew out of (`briefs.md`, opener). Atomic entries like anti-keywords, timelines and cues still count one each. Each budget also gives about how many tokens the shard's entries take in all: a facet is about 100 to 200 tokens with 3 to 8 phrases per list, and finalize warns past 300 (`oversized_entry`).
 
-| Type | lite | standard | deep |
-|---|---|---|---|
-| research | 4–8, ~1,200 tokens | 6–10, ~2,000 | 8–14, ~3,000 |
-| specialist, gap | 4–8, ~1,200 | 6–12, ~2,000 | 10–16, ~3,000 |
-| lexicon | 4–8, ~1,200 | 6–10, ~2,000 | 8–14, ~3,000 |
-| exclusion | 6–10, ~1,500 | 8–14, ~2,800 | 10–18, ~3,900 |
-| observe | 4–8, ~1,200 | 6–12, ~2,000 | 8–16, ~3,000 |
-| scrape | 3–6, ~900 | 4–8, ~1,600 | 6–12, ~2,600 |
-| watch | 3–8, ~1,200 | 4–10, ~2,000 | 6–14, ~3,000 |
-| moodboard | 3–6, ~900 | 4–8, ~1,600 | 6–12, ~2,600 |
+| Type | lite | heavy |
+|---|---|---|
+| research | 4–8, ~1,200 tokens | 8–14, ~3,000 |
+| specialist, gap | 4–8, ~1,200 | 10–16, ~3,000 |
+| lexicon | 4–8, ~1,200 | 8–14, ~3,000 |
+| exclusion | 6–10, ~1,500 | 10–18, ~3,900 |
+| observe | 4–8, ~1,200 | 8–16, ~3,000 |
+| scrape | 3–6, ~900 | 6–12, ~2,600 |
+| watch | 3–8, ~1,200 | 6–14, ~3,000 |
+| moodboard | 3–6, ~900 | 6–12, ~2,600 |
 
 Reference descriptors (one per image or reference) come on top of the observe and moodboard budgets; the moodboard describes at most 8 images and lists the rest as skipped (`briefs.md`, moodboard).
 
 Without budgets, workers write everything they can think of: the first lite run produced 212 entries against a plan of about 80. With facet counts alone, test 10's lite dumps still ran 30K to 47K tokens (76 to 135 entries) against the 8–15K target, with `oversized_entry` firing 2 to 23 times per dump; hence the token figures. After a build that writes the dump (and after every `merge`), finalize prints an `oversized_entry by shard` line naming the worker to send back.
 
-**Discovery caps** (videos for watch jobs / pages for scrape jobs / images for the moodboard, per discover ticket): lite 1 / 3 / 8, standard 3 / 6 / 16, deep 5 / 10 / 32. One discover ticket runs per wave (the chart's `07-discover`, and at most one per gap round), so a build fetches at most the caps once plus once per gap round. The Workflow script puts the caps in the discover prompt, keeps the first picks up to each cap, and lists everything it dropped (by URL) in `discovery.dropped`; an extra discover ticket in the same wave is dropped and listed too.
+**Discovery caps** (videos for watch jobs / pages for scrape jobs / images for the moodboard, per discover ticket): lite 1 / 3 / 8, heavy 5 / 10 / 32. One discover ticket runs per wave (the chart's `07-discover`, and at most one per gap round), so a build fetches at most the caps once plus once per gap round. The Workflow script puts the caps in the discover prompt, keeps the first picks up to each cap, and lists everything it dropped (by URL) in `discovery.dropped`; an extra discover ticket in the same wave is dropped and listed too.
 
-Pick the depth from the request. State one line before fan-out, e.g. "Standard depth: ~16 agents, roughly 2–4M tokens processed, about an hour." Then proceed. Don't wait for approval unless the user asked to be consulted. The user can say "lite" or "deep" any time.
+Use `lite` unless the user said heavy (`standard` and `deep` are old names for `heavy`, and the Workflow script reads them that way). State one line before fan-out, e.g. "Lite depth: about 20 agents, roughly 2M tokens processed, about half an hour." Then proceed. Don't wait for approval unless the user asked to be consulted. The user can say "quick", "lite" or "heavy" any time.
 
 ## 3. Chart (write `<WORK>/map.md`)
 
@@ -218,7 +217,7 @@ Calling Workflow is part of this skill's instructions, which counts as the user 
 Workflow({
   scriptPath: "<SKILL>/scripts/index.workflow.js",
   args: {
-    skill_dir: "<SKILL>", work_dir: "<absolute WORK>", slug: "<slug>", depth: "standard", max_rounds: 2,
+    skill_dir: "<SKILL>", work_dir: "<absolute WORK>", slug: "<slug>", depth: "lite", max_rounds: 1,   // or depth: "heavy", max_rounds: 3
     tickets: [ {"id": "10-observe-r1", "type": "observe", "wave": 1}, ..., {"id": "95-synthesis", "type": "synthesis", "wave": 4} ]
   }
 })
@@ -235,10 +234,10 @@ Run the same waves with the Agent tool, at most 8 calls per message. Pass `model
 1. After synthesis: `python3 <SKILL>/scripts/finalize.py build <WORK>`. It merges, validates, fixes what it safely can, builds the index, measures each route and writes `metadumps/<slug>.metadump.json` plus `<WORK>/report.json`. Exit 1 means nothing was written: fix the listed errors (a `97-repair.json` synthesis shard, or edit the offending shard) and rerun.
 2. Read the report's `fixes`. Many demotions from one ticket mean it over-claimed: check it.
 3. Verify: one dry-run consumer per routed job (the `verify` brief) plus the `audit` brief. Their guesses are the dump's real gaps. Their contradictions (a concrete value that pulls against a tier-1 collected entry) and narrowings (each labeled `scope`, `quality`, `job`, `definition` or `copy`) are tier-1 gaps. Constraint mechanisms are not narrowings (ADR 0005, ADR 0011): the user's words, scoped anti-keywords with an `instead`, invariants with their `variable` and forbidden shortcuts may exclude, so verify skips them, and a finding it labels `constraint` is dropped. In test 10 every build ran a widening round, mostly for scoped anti-keywords that already had an `instead`.
-4. A **widening round** runs only when verify reports narrowings, contradictions against tier-1 collected entries, missing job steps, missing prompt clauses or a research gap (a candidate pool short of verified candidates). At lite, which otherwise has one round, narrowings and research gaps earn it; contradictions there go to the main loop (step 5). At standard and deep, tier-1/2 guesses earn a gap round too. **Stop** when any of these holds:
+4. A **widening round** runs only when verify reports narrowings, contradictions against tier-1 collected entries, missing job steps, missing prompt clauses or a research gap (a candidate pool short of verified candidates). At lite, which otherwise has one round, narrowings and research gaps earn it; contradictions there go to the main loop (step 5). At heavy, tier-1/2 guesses earn a gap round too. **Stop** when any of these holds:
    - no tier-1/2 guesses remain and no prompt clause is untraced;
    - a round added fewer than ~10% new entries;
-   - `max_rounds` reached (lite 1, standard 2, deep 3).
+   - `max_rounds` reached (lite 1, heavy 3).
 
    Otherwise write gap tickets (the `gaps` brief): type `gap` for what the dump's own entries must widen or rewrite (a `gap` shard may `_replace` and `_delete`), and `research`, `scrape`, `watch` or `discover` for facts from outside, including a candidate pool short of verified candidates. A contradiction against a tier-1 `user_stated` entry becomes a constraint: the gap round writes a scoped `not_wanted` anti-keyword with an `instead` that keeps the user's words, never an `open_questions` default. In test 10, motion looping at rest against the prompt's "hover state animations" became an open question, and no build acted on it. A contradiction against another collected entry gets its value replaced or moved to the options area. Gap tickets always carry the round they feed (`6N-gap-<section>-rN`), and finalize merges shards in round order (`95-synthesis` and `97-repair` last, schema §12), so the gap round's edits land on round 1's digest and `91-normalize-r2` digests them. Run the tickets as wave 2, then normalize (`91-normalize-r2`), synthesis again (it rewrites `95-synthesis.json`), build, verify.
 5. Remaining gaps go to `open_questions` with defaults, except a contradiction against a tier-1 `user_stated` entry: the main loop writes it as a scoped `not_wanted` anti-keyword with an `instead` (the Workflow script's `next` says so). Nothing is asked of the user during the build.

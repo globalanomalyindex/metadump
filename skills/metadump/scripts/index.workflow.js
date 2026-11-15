@@ -19,9 +19,11 @@ if (!A.skill_dir || !A.work_dir || !Array.isArray(A.tickets)) {
 }
 const SKILL = A.skill_dir
 const WORK = A.work_dir
-const DEPTH = A.depth || 'standard'
-const MAX_ROUNDS = A.max_rounds || (DEPTH === 'lite' ? 1 : DEPTH === 'deep' ? 3 : 2)
-const MAX_VERIFY = DEPTH === 'lite' ? 2 : DEPTH === 'deep' ? 8 : 6
+// Two swarm depths: lite and heavy. `standard` and `deep` are the old names for heavy; anything else runs lite, the
+// smaller one (quick mode never reaches this script: the main loop writes that dump itself).
+const DEPTH = ['heavy', 'standard', 'deep'].includes(A.depth) ? 'heavy' : 'lite'
+const MAX_ROUNDS = A.max_rounds || (DEPTH === 'lite' ? 1 : 3)
+const MAX_VERIFY = DEPTH === 'lite' ? 2 : 8
 const LITE = DEPTH === 'lite' // lite skips the audit (verify still traces); every depth digests (normalize)
 const BRIEFS = `${SKILL}/references/briefs.md`
 // Entries per shard by depth, and about how many tokens those entries take in all. Entries are facets (one object per
@@ -32,12 +34,10 @@ const B = (facets, tokens) => ({ facets, tokens })
 const BUDGETS = {
   lite: { research: B('4-8', 1200), specialist: B('4-8', 1200), gap: B('4-8', 1200), lexicon: B('4-8', 1200), exclusion: B('6-10', 1500),
     observe: B('4-8', 1200), inherit: B('as needed'), scrape: B('3-6', 900), watch: B('3-8', 1200), moodboard: B('3-6', 900) },
-  standard: { research: B('6-10', 2000), specialist: B('6-12', 2000), gap: B('6-12', 2000), lexicon: B('6-10', 2000), exclusion: B('8-14', 2800),
-    observe: B('6-12', 2000), inherit: B('as needed'), scrape: B('4-8', 1600), watch: B('4-10', 2000), moodboard: B('4-8', 1600) },
-  deep: { research: B('8-14', 3000), specialist: B('10-16', 3000), gap: B('10-16', 3000), lexicon: B('8-14', 3000), exclusion: B('10-18', 3900),
+  heavy: { research: B('8-14', 3000), specialist: B('10-16', 3000), gap: B('10-16', 3000), lexicon: B('8-14', 3000), exclusion: B('10-18', 3900),
     observe: B('8-16', 3000), inherit: B('as needed'), scrape: B('6-12', 2600), watch: B('6-14', 3000), moodboard: B('6-12', 2600) },
 }
-const budgetFor = type => (BUDGETS[DEPTH] || BUDGETS.standard)[type]
+const budgetFor = type => BUDGETS[DEPTH][type]
 const thousands = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 const budgetLine = b => `   Entry budget: ${b.facets} entries${b.tokens ? ` in about ${thousands(b.tokens)} tokens` : ''}, written as facets (one object per area: a line of text, lists of short phrases, behaviors and a principle; see the opener in briefs.md)`
 const SCHEMA = `${SKILL}/references/schema.md`
@@ -49,8 +49,8 @@ const COLLECTS_EVIDENCE = new Set(['moodboard'])
 // Discover tickets search the web for videos and pages worth reading and write watch and scrape tickets for them (no shard).
 const FINDS_EVIDENCE = new Set(['discover'])
 // What one discover ticket may hand on, by depth: videos (watch jobs), pages (scrape jobs), images (moodboard). Mirrors create.md.
-const DISCOVERY_CAPS = { lite: { videos: 1, pages: 3, images: 8 }, standard: { videos: 3, pages: 6, images: 16 }, deep: { videos: 5, pages: 10, images: 32 } }
-const DISCOVERY_CAP = DISCOVERY_CAPS[DEPTH] || DISCOVERY_CAPS.standard
+const DISCOVERY_CAPS = { lite: { videos: 1, pages: 3, images: 8 }, heavy: { videos: 5, pages: 10, images: 32 } }
+const DISCOVERY_CAP = DISCOVERY_CAPS[DEPTH]
 // Gap rounds may add evidence (facts from outside, or a discover ticket to find a video or page) as well as the build's
 // own work: `gap` tickets widen or rewrite entries (they may `_replace` and `_delete`), `specialist` ones only add.
 const GAP_EVIDENCE = new Set(['research', 'scrape', 'watch', 'discover'])

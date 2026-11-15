@@ -38,7 +38,7 @@ I A/B tested it: the same task built with and without a dump, then graded blind.
 | a bento box-inspired collapsible UI menu component for a fictional coffee company site | **7.50** | 6.82 | 7.17 |
 | a simple block-building sandbox game with a 32x32 block world | 5.92 | **8.75** | 6.17 |
 
-**Quick mode passed.** It beat the prompt alone in 65 of 96 head-to-heads (25 lost, 6 tied) and scored 1.12 points higher on average, p = 0.012. The bar I set beforehand was 0.025. **The full build didn't pass.** It was ahead too (49 won, 23 lost, 24 tied, +0.58), but p = 0.036 misses that bar, so by my own rules I can't call it confirmed.
+**Quick mode passed.** It beat the prompt alone in 65 of 96 head-to-heads (25 lost, 6 tied) and scored 1.12 points higher on average, p = 0.012. The bar I set beforehand was 0.025. **The full build didn't pass.** It was ahead too (49 won, 23 lost, 24 tied, +0.58), but p = 0.036 misses that bar, so by my own rules I can't call it confirmed. That's why quick mode is the default now.
 
 The honest parts:
 
@@ -67,31 +67,40 @@ Live builds from the round before this one (0.12.0, on a mammoth steak recipe, t
 
 ## What makes it work
 
+There are three sizes. **Quick** is the default: the model writes the dump itself in about a minute, with no agents, and then works from it. **Lite** and **heavy** send out a swarm of small agents that research, scrape, watch and check, and they build a much bigger dump.
+
+Every dump does this, quick ones included:
+
 - **It figures out the task first, then goes from abstract to specific.** If I ask for a shopping component, it starts with the fields that task belongs to (UX, UI design, interaction design, e-commerce, accessibility, front-end) and works down through shopping interfaces and product cards and carts to my component and finally the actual numbers. The top of that ladder gets a primer: what someone who really knows the field would bring, like named principles, laws, standards, common mistakes, and dos and don'ts. That's why it can replace skills with hard-set UI and UX rules: the principles that apply get written down fresh for every task.
 - **It covers the whole job.** It writes down everything the person using the result actually does, end to end (for shopping: find, compare, choose, add, review the bag, check out), and the default way of reading the request has to cover all of it.
+- **It lists the kinds of the thing, the classic one first.** A timer could be a ring timer or a bare-number timer. The first session builds the classic, and the next ones build the others, so four sessions don't all make the same thing.
+- **Ranges, never one answer.** Values come as a range or a few options, and the dump never hands over the finished thing itself (a palette, a set of curves), because a model will just paste it.
+- **It pushes your adjectives further.** It isn't allowed to tame them. When I literally asked for an ethereal button, an older version called glow and glass "worn paths" and steered away from them. Now it has to push them further.
+- **Anti-keywords.** The opposite of a keyword: something that tells the model "this is not what I mean" (like "acrylic" meaning clear plastic here, not acrylic paint), or just stuff we don't want. Every one comes with an `instead`. A lot of image models (FLUX.2, gpt-image, Gemini) don't have negative prompts, so the only way to say no is to say what to do instead.
+- **No template.** The sections get designed for whatever you're making. A REST API dump doesn't get a color palette, and a packaging dump doesn't get an error model.
+- **It looks at what it built.** The last step of using a dump is a script that renders the page headlessly, screenshots it at desktop and phone widths, hovers and clicks it, and lists what's clipped, overlapping or cut off. The model reads the screenshots and fixes it before it finishes.
+
+A lite or heavy dump adds this:
+
 - **It distills, it doesn't copy.** If I say "Apple's UI" or hand it screenshots, it turns them into brand-agnostic numbers, descriptions, patterns and principles. Brand names stay in the sources, not in the stuff another agent reuses.
 - **Every entry says where it came from.** The ranking is `user_stated` > `reference_observed` > `researched` > `inferred` > `proposed`, plus `unknown`. That way the model can tell what I actually asked for from what it made up, and it reaches for the real stuff first. A build script enforces it: a subagent can't claim it researched something it didn't, anything marked `user_stated` has to quote my actual prompt, and anything found online can never pass as my reference.
 - **Tiers mean relevance, not rules.** Tier 1 is what the task is most about (12 max), 2 is supporting, 3 is context, and 4 is exploratory ideas to pull from. Only things that were actually collected (my words, my references, things it researched) can be tier 1. The builder's own takes top out at tier 2, so they can't redefine what I asked for.
 - **Readings and decisions, not answers.** If a request can mean a few things ("shopping component" could be a product card, a mini cart or a product list), it keeps all of them with a default. The choices coming up (which test to write first, how dense to go) get written down with their options and tradeoffs instead of being decided for you. Same for the quality words in the prompt: "sticky" gets every reading it could have, side by side, and the dump never hands over the finished thing itself (a default set of curves, a palette), because a small model will paste it. Numbers come as dials with a range, never single values, because single values get copied.
-- **It pushes your adjectives further.** It isn't allowed to tame them. When I literally asked for an ethereal button, an older version called glow and glass "worn paths" and steered away from them. Now it has to push them further.
-- **Anti-keywords.** The opposite of a keyword: something that tells the model "this is not what I mean" (like "acrylic" meaning clear plastic here, not acrylic paint), or just stuff we don't want. Every one comes with an `instead`. A lot of image models (FLUX.2, gpt-image, Gemini) don't have negative prompts, so the only way to say no is to say what to do instead.
 - **It indexes itself.** A routing table at the top maps each job ("write the image prompt", "pick the next test", "build the landing page") to the exact JSON paths it needs, with token costs. There's a word index like a real search engine has, and every entry sits on one line so grep works. The model never loads the whole thing, because loading a 100K-token file all at once actually makes the output worse. It only pulls the slice for the step it's on.
 - **It reads like the ones I made by hand.** Every entry is a facet: one area of the task with a line of description, lists of short keywords, how it behaves ("thicker transparent material looks darker") and the principle behind it. The dump opens with one central idea, a one-line summary and a formula that says what each part does, then keyword lists from every angle (technical, feel, emotional, cultural, search), influences and what each brings, signals to recognize it, and a description of each reference. It keeps the tiers, sources and `instead` rewrites, because my hand-made files drifted without them.
-- **No template.** The sections get designed for whatever you're making. A REST API dump doesn't get a color palette, and a packaging dump doesn't get an error model.
 - **Checks that keep it honest.** Dry runs look for numbers that fight with what I asked for and for anything that narrows the request, then a widening round fixes those. Every build prints how much of the dump was actually collected and from how many websites. It warns when the dump is mostly its own guesses, when its sources come from only one or two sites, or when nobody looked at an image it collected.
 - **Ticket-driven.** It charts a map of what the dump needs to answer, then hands out tickets to subagents: research, finding videos and images, scraping pages, watching videos, moodboards, specialists, anti-keywords, cleanup, synthesis and dry runs. It runs through the Workflow tool (works with ultracode) or regular subagents, and every subagent runs on Haiku. Before the dump gets written, a digest step breaks everything down into one body, so no page or reference passes through whole. Then a script validates everything, builds the index and writes the final file.
 - **A deal, so four sessions don't build the same thing.** Real randomness picks where each session starts and which half of the material it gets, so four sessions reading the same dump don't all go the same way.
-- **It looks at what it built.** The last step of using a dump is a script that renders the page headlessly, screenshots it at desktop and phone widths, hovers and clicks it, and lists what's clipped, overlapping or cut off. The model reads the screenshots and fixes it before it finishes.
 
 ## Pages, videos and images
 
-When it's making a dump (lol), it can go get the specifics itself, with nothing to install:
+When it's making a lite or heavy dump (lol), the swarm can go get the specifics itself, with nothing to install:
 
 - **Research that actually goes wide.** For each thing in my prompt it looks at how people describe it, the principles behind it, brands and products and people known for it (and what's worth borrowing from them, not copying), common patterns and mistakes, what people actually need, real numbers, and the decisions coming up. Lots of sources, not one page.
 - **Pages.** Give it a link, or let it find some, and it fetches the page, cleans it into text with the headings kept, chops it into chunks, screenshots it if the look matters, and then interprets it: a few quoted facts plus what the page shows and what transfers to my task. It's not a copy of the page. It checks robots.txt and waits between requests so it isn't rude.
 - **Videos.** Give it a video link or file and it grabs the title, length, fps, chapters and caption tracks, and turns the captions into a clean transcript with timecodes. It also pulls frames at whatever times you want and can measure animation timing: how long each move takes, where it holds, whether it's animated on twos, and roughly what easing it uses.
 - **Images.** It collects my reference photos plus images from pages, page screenshots and video frames, samples the actual colors, and makes a moodboard page right next to the dump. It skips logos, icons and blank placeholder images, and the model actually looks at every image that's left and writes down what it sees.
-- **Finding things on its own.** If I don't give it references, or mine don't cover something (like how a thing moves or how long an animation takes), it goes looking for videos, images and pages that would show it, then watches, scrapes and collects the best few. There's a cap so it doesn't go overboard: lite grabs 1 video, 3 pages and 8 images; standard 3, 6 and 16; deep 5, 10 and 32. It tells you what it skipped because of the cap, and anything it found itself is marked as found online. If you only want it to use your stuff, just say so.
+- **Finding things on its own.** If I don't give it references, or mine don't cover something (like how a thing moves or how long an animation takes), it goes looking for videos, images and pages that would show it, then watches, scrapes and collects the best few. There's a cap so it doesn't go overboard: lite grabs 1 video, 3 pages and 8 images, and heavy grabs 5, 10 and 32. It tells you what it skipped because of the cap, and anything it found itself is marked as found online. If you only want it to use your stuff, just say so.
 
 It all runs on plain Python plus the Chrome (or Chromium, Edge or Brave) you already have, driven headless. If you happen to have yt-dlp or ffmpeg it'll use them, but you don't need them. `python3 skills/metadump/scripts/tools.py` shows what it found.
 
@@ -121,11 +130,19 @@ Or just ask your agent to update it for you. `claude plugin list` shows which ve
 
 ## Use
 
-/metadump:metadump in your agent, or just ask for one: "make a metadump for ...", and attach photos or files or paste links to pages or videos if you have them. Say "quick" if you want it in about a minute with no agents (the model just writes out what it knows first, which is where this whole idea started), "lite" if you want a small swarm, or "deep" if you want everything.
+/metadump:metadump in your agent, or just ask for one. There are three sizes, and the word you say picks it:
 
-It saves to `metadumps/<slug>.metadump.json` in your project. Scratch work goes in `metadumps/.work/`, and you can delete that whenever.
+| Say | You get |
+|---|---|
+| "make a metadump for ..." | **quick**, the default. The model writes out what it knows first, in about a minute, with no agents. It's where this whole idea started, and it's the one that passed the test above. |
+| "make a lite metadump for ..." | **lite**. A small swarm of Haiku agents that also researches, scrapes pages, watches videos and makes a moodboard. About 20 agents and 20 to 40 minutes. |
+| "make a heavy metadump for ..." | **heavy**. The big swarm, for when you want everything. About 25 agents and an hour or two. I haven't A/B tested this size yet. |
 
-Once a dump exists, you don't have to do anything. Any skill working in that project writes down its own take first, then reads the top of the dump, pulls the slice for the step it's on, uses what helps, and writes new decisions back into it.
+Attach photos or files or paste links to pages or videos if you have them. If you ask it to go research the web, scrape pages or watch a video, you get lite even without saying so, because only the swarm does that. And if you used an older version: "standard" and "deep" both mean heavy now.
+
+It saves to `metadumps/<slug>.metadump.json` in your project. Scratch work from a lite or heavy build goes in `metadumps/.work/`, and you can delete that whenever.
+
+Once a dump exists, you don't have to do anything. Any skill working in that project writes down its own take first, then reads the dump (a quick one whole, a big one just the top and the slice for the step it's on), uses what helps, and writes what it learned back into it.
 
 ## Example
 
@@ -136,10 +153,10 @@ Once a dump exists, you don't have to do anything. Any skill working in that pro
 ```
 .claude-plugin/              plugin + marketplace manifest
 skills/metadump/
-  SKILL.md                   how the skill works (create mode + use mode)
-  references/                the full procedure, worker briefs, format, mechanisms, export rules, and quick mode on one page
+  SKILL.md                   how the skill works (quick, lite and heavy, and how a dump gets used)
+  references/                quick mode on one page, the swarm's full procedure, worker briefs, format, mechanisms, export rules
   scripts/finalize.py        builds and checks the dump (Python 3.9+, no installs)
-  scripts/index.workflow.js  the subagent fan-out for the Workflow tool
+  scripts/index.workflow.js  the swarm's fan-out for the Workflow tool (lite and heavy)
   scripts/webpages.py        fetches, cleans and screenshots pages
   scripts/video.py           video info, captions, frames and timing
   scripts/images.py          collects images, samples colors, makes the moodboard

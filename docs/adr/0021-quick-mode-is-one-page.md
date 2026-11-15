@@ -1,5 +1,7 @@
 # Quick mode is one page
 
+**Status, 2026-11-15:** the choice below to keep quick mode opt-in, with the swarm as the default, is replaced by ADR 0022: quick mode is the default from 1.1.0. Everything else here stands.
+
 The plugin began as one request to a model before a task: write a structured JSON file of what you know (keywords in tiers, descriptions, tokens, anti-keywords), branching from the broad disciplines down to the specifics, with the steps, tricks and tests practitioners use. The idea behind it is that a model doesn't know what it knows until it writes it out. By 0.13.0, create mode was a swarm of about twenty workers with discovery, scraping, a moodboard, verify passes and a widening round. A lite dump took about 25 minutes, and one main loop reported 2.6 million tokens across its workers. The owner said it had become "a huge thing with steps and verifications" and asked to return to the roots.
 
 No test had compared the swarm with the original idea done by the model that does the task. Test 7 tried a one-agent build with Haiku writing for Haiku, before the look existed, and it was weaker. Test 23 (`ab-tests/2026-11-13-roots-sonnet/writeup.md`) ran the original idea as a one-page skill on two tasks, with the same builder and the same look:

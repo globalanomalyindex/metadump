@@ -113,6 +113,7 @@ From test 20 on there are three arms: the prompt alone, the dump read with the r
   - Quick mode beat the prompt alone 65–25–6 (+1.12, p = 0.012). The full build beat it 49–23–24 (+0.58, p = 0.036), which is short of the threshold. Quick mode's result leans on the block world (24–0–0): on the other three tasks it is +0.55, p = 0.23.
   - Neither dump arm beat the other (the full build −0.54, p = 0.17). Each won two tasks, and on the bento menu both scored below the prompt alone.
   - An audit of the graders' own transcripts, made before any score was read, found they opened 80% of the pictures and read no source. Graders made to open everything put the full build at +1.03 (p = 0.0008) and quick mode at +1.16 (p = 0.0045). By a rule written before unblinding, that second reading is not a confirmation.
+  - After this test the owner made quick mode the default (1.1.0, ADR 0022). The swarm stays as `lite` and `heavy`.
   - The full build's dump for the block world had five angles of one kind (a flat grid seen five ways), and all four of its builds were empty grid editors. Quick mode's builders listed a side view, a top-down grid and an isometric world, and built worlds.
 - **The meta dump beat the hand-made file** in both tests that had one (61% and 54% head to head). Scoped anti-keywords and provenance stopped the drift to cyan, aqua and frosted glass that the hand-made file caused.
 

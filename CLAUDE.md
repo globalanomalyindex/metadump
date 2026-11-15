@@ -35,6 +35,7 @@ Name tests with the glossary's terms (`GLOSSARY.md`).
 - Every Python script in `skills/metadump/scripts/` is Python 3.9+ standard library only; keep it that way so it runs anywhere the skill is installed. Optional tools (a Chromium-family browser, yt-dlp, ffmpeg/ffprobe, sips) are detected at runtime by `tools.py` and never installed. `METADUMP_DISABLE=browser,ffmpeg` hides tools to test the fallbacks.
 - `webpages.py` is a clean-room implementation (`docs/clean-room/`, `docs/adr/0004-clean-room-scraper.md`): change it from the spec and our own requirements, never by reading the original project.
 - Use the glossary's terms (`GLOSSARY.md`) in code, docs and skill text.
+- Three depths: `quick` is the default (`docs/adr/0022-quick-mode-is-the-default.md`), and `lite` and `heavy` run the create-mode swarm. `standard` and `deep` are old names for `heavy`: the Workflow script reads them that way, and a missing or unknown depth runs lite. Keep SKILL.md's "what the user says, and what they get" table and the README's "Use" table saying the same thing.
 - Quick mode (`references/quick.md`) is one page on purpose (`docs/adr/0021-quick-mode-is-one-page.md`). Add a line to it only when a test shows the line earns its place, and number any step that must not be skipped.
 - The create-mode swarm runs on Haiku at its default effort (`index.workflow.js` pins `model: 'haiku'` on every agent; `docs/adr/0008-the-swarm-runs-on-haiku.md`). Don't add effort or model overrides for workers.
 

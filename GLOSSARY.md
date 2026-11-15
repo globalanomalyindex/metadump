@@ -43,8 +43,12 @@ The one idea at the top of a meta dump about what makes the subject interesting 
 _Avoid_: summary, tagline, headline, rule
 
 **Quick dump**:
-A meta dump written in one pass by the model that is about to do the task, with no agents: the request, a thesis, the job, the disciplines with their principles, steps, tricks and tests, the thing and its kinds, the specifics with tiered keywords and value ranges, anti-keywords and checks. About two to four thousand tokens, with no manifest, routes or index, so it is read whole. The lightest depth, below `lite`, and only on request (`references/quick.md`, ADR 0021).
+A meta dump written in one pass by the model that is about to do the task, with no agents: the request, a thesis, the job, the disciplines with their principles, steps, tricks and tests, the thing and its kinds, the specifics with tiered keywords and value ranges, anti-keywords and checks. One to four thousand tokens, with no manifest, routes or index, so it is read whole. What quick mode makes, and quick is the default depth (`references/quick.md`, ADRs 0021 and 0022).
 _Avoid_: lite dump, mini dump, roots dump
+
+**Depth**:
+How much of a build runs. `quick` is the default: one pass, no agents, a quick dump. `lite` and `heavy` run the swarm and make a full dump, heavy with more workers, research and rounds.
+_Avoid_: standard, deep (old names for heavy), size, tier
 
 **Kind**:
 A version of the thing that people make. A quick dump lists a few under `the_thing.kinds`, the classic one first, and records the ones built under `built`; a full dump's angles are kinds too.

@@ -175,6 +175,10 @@ From `design.md`, with what happened.
 - **Each arm narrows in its own way.** Quick mode builds the classic kind every time, so four sessions make the same thing when the classic is obvious (pelican, bento). The full build deals different angles, so it spreads when the dump's angles are different kinds, and it is held to the dump's reading of the task when they are not (the block world as a grid editor).
 - **Grading by Sonnet at medium effort needs numbered steps and an audit.** Without them one task's order changed.
 
+## What the owner decided
+
+2026-11-15, after reading this: quick mode becomes the default (1.1.0, ADR 0022). The swarm stays, asked for by name, as `lite` and `heavy`.
+
 ## Limits
 
 - Graders are models from the same family as the builders. No human graded anything.

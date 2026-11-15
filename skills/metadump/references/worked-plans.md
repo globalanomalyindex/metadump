@@ -6,7 +6,7 @@ Three charted plans across very different tasks, to calibrate how a section plan
 
 ## A. Visual, reference-heavy: "make a meta dump of this frozen-meal packaging" + 4 shelf photos
 
-**Depth:** deep (four references, several consumers).
+**Depth:** heavy (four references, several consumers).
 
 **Task and ladder:** packaging design, graphic design, typography, food photography and retail shelf design → frozen-food packaging → this brand's carton system → one flavor's front → band hexes, type sizes, photo crop. The primer covers shelf legibility at distance, hierarchy on a pack face, and food-photo conventions; the photos are distilled into brand-agnostic bands, proportions and type behavior, not copied.
 
@@ -36,7 +36,7 @@ Three charted plans across very different tasks, to calibrate how a section plan
 
 ## B. Engineering, test-first: "build a CLI that converts Markdown recipes into a shopping list, TDD"
 
-**Depth:** standard. No references.
+**Depth:** lite. No references.
 
 **Task and ladder:** software design, testing practice and CLI design → test-driven development → this tool's test plan and seams → its cases, oracles and exit codes. The primer covers red-green-refactor, test lists, one behavior per test, fakes at boundaries, and CLI conventions (stdout for data, stderr for errors, nonzero exits).
 
@@ -73,7 +73,7 @@ Before any user decision, every example is `inferred`, so the oracle route has n
 
 ## C. Writing, non-visual: "a 2,000-word literary short story about a lighthouse keeper's last night, in the spirit of Raymond Carver"
 
-**Depth:** standard. No references.
+**Depth:** lite. No references.
 
 **Task and ladder:** fiction craft → literary minimalism → this story's arc and scenes → its sentences and dialogue. The primer covers scene and summary, show and tell, omission, and point of view; Carver is distilled into transferable relationships (compression, omission, plain diction), not imitated.
 

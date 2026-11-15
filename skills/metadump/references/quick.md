@@ -1,8 +1,8 @@
 # Quick mode: a meta dump in one pass
 
-The lightest way to make a meta dump, and the idea the skill started from. A model doesn't know what it knows until it writes it out. So before the task, you write it out yourself: one JSON file of what you know that bears on this task, from the broad down to the specific. Then you do the task with that file in front of you.
+The default way to make a meta dump, and the idea the skill started from. A model doesn't know what it knows until it writes it out. So before the task, you write it out yourself: one JSON file of what you know that bears on this task, from the broad down to the specific. Then you do the task with that file in front of you.
 
-No agents and no research: it takes about a minute and a few thousand tokens. Use it when the user asks for a quick, fast or light meta dump. The full build (`create.md`) collects from the web, references and video, and checks itself; in test 23 a quick dump kept about 70% of the full build's gain over the prompt alone (ADR 0021). `<SKILL>` is the folder SKILL.md is in.
+No agents and no research: it takes about a minute and a few thousand tokens. Use it whenever the user asks for a meta dump and doesn't say `lite` or `heavy`. Those two (`create.md`) send out agents that collect from the web, references and video, and check themselves. In the confirmation test a quick dump beat the prompt alone (+1.12 of 10, p = 0.012) and the swarm's dump was not shown to do better (ADRs 0021 and 0022). `<SKILL>` is the folder SKILL.md is in.
 
 ## 1. Write the dump, in one go
 

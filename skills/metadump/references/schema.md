@@ -29,7 +29,7 @@ Spine first because it is what every consumer reads; lookups last because nobody
  "prompt": "<the user's prompt, verbatim, never paraphrased>",
  "references": [{"id": "r1", "kind": "image", "path": "refs/IMG_3200.JPG", "note": "shelf view"}],
  "consumers": ["image generation", "packaging layout", "copy"],
- "depth": "standard",
+ "depth": "lite",
  "derived_from": [],
  "built": "chart → 2 observe, 3 research, 6 specialists, lexicon, exclusion → normalize → synthesis → verify (4 jobs) → 1 gap round",
  "how_to_read": ["... filled by finalize ..."], "head_lines": 0, "stats": {}}
