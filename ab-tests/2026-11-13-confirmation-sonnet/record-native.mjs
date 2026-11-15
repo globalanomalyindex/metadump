@@ -6,12 +6,13 @@
 //
 // Usage:
 //   node record-native.mjs [--showcase DIR] [--tasks LIST] [--out DIR] [--seed N] [--no-cards] [--trace DIR]
-//   LIST is comma-separated slug[:kind][@a/b], kind = steps | hover | click | text | watch | play | turn (default: "steps"
-//   when the scene gives steps for both runs, else from the scene's DATA), a/b = the runs to show (default: run 1 of each
-//   side). Defaults: docs/showcase/round-3, test 24's tasks, ./video. Writes OUT/metadump-ab-linkedin.mp4 (intro, tasks,
+//   LIST is comma-separated slug[:kind][@a/b/c], kind = steps | hover | click | text | watch | play | turn (default: "steps"
+//   when the scene gives steps for every run shown, else from the scene's DATA), a/b/c = the runs to show for the prompt
+//   alone, quick mode and the full build (default: the scene's own choice, each side's best-scoring build). Defaults: docs/showcase/round-3, test 24's tasks, ./video. Writes OUT/metadump-ab-linkedin.mp4 (intro, tasks,
 //   results, outro), OUT/metadump-ab-<slug>.mp4 and OUT/posters/<slug>.jpg.
 // Copied from ab-tests/2026-11-05-recipe-game-lemon-sonnet/ for test 24. Added: the "steps" kind (each build's own
-// clicks, slider drags and paint strokes, listed in the scene), a results card between the tasks and the outro.
+// clicks, taps, slider drags and paint strokes, listed in the scene), three sides per scene (fa, fb, fc), a results card
+// between the tasks and the outro.
 // Ports: CDP 9471, site 8776, frames 8777.
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, readFileSync, mkdtempSync, rmSync, copyFileSync } from 'node:fs'
@@ -25,8 +26,8 @@ const HERE = dirname(fileURLToPath(import.meta.url)), NATIVE = join(HERE, 'nativ
 const argv = process.argv.slice(2), opt = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d }
 const SHOWCASE = resolve(opt('--showcase', join(HERE, '..', '..', 'docs', 'showcase', 'round-3')))
 const TASKS = opt('--tasks', 't1-pelican,t2-ascii,t3-bento,t4-blocks').split(',').filter(Boolean).map(s => {
-  const [head, pair] = s.split('@'), [slug, kind] = head.split(':'), [a, b] = (pair || '').split('/')
-  return { slug, kind, a, b }
+  const [head, pair] = s.split('@'), [slug, kind] = head.split(':'), [a, b, c] = (pair || '').split('/')
+  return { slug, kind, a, b, c }
 })
 const OUT = resolve(opt('--out', join(HERE, 'video'))), POSTERS = join(OUT, 'posters'), SEED = +opt('--seed', 12), CARDS = !argv.includes('--no-cards')
 const TRACE = opt('--trace', null)
@@ -186,7 +187,8 @@ const SCRIPTS = {
   steps: async h => {
     await play(h.rest(h.rand(450, 650), 1))
     const S = await evaluate(`document.getElementById('scene').contentWindow.STEPS`)
-    await stepsSide(h, 'fa', S[CUR_RUNS.a]); await play(h.rest(h.rand(250, 400), 0.8)); await stepsSide(h, 'fb', S[CUR_RUNS.b])
+    await stepsSide(h, 'fa', S[CUR_RUNS.a]); await play(h.rest(h.rand(200, 300), 0.8)); await stepsSide(h, 'fb', S[CUR_RUNS.b])
+    await play(h.rest(h.rand(200, 300), 0.8)); await stepsSide(h, 'fc', S[CUR_RUNS.c])
   },
   watch: async h => { await play(h.rest(1200, 1)); await play(h.moveTo({ x: 540, y: 1180 }, 80)); await play(h.rest(4800, 1)) },
 }
@@ -195,20 +197,25 @@ SCRIPTS.drag = SCRIPTS.watch
 async function stepsSide(h, id, steps) {
   for (const [op, a, b] of steps || []) {
     if (op === 'rest') { await play(h.rest(a, 0.8)); continue }
-    if (op === 'poster') { if (id === 'fb') markPoster(a || 0); continue }
-    const kind = op === 'slide' ? 'range' : op === 'paint' ? 'surface' : 'named'
-    const t = await aim(h, id, kind, op === 'paint' ? null : a)
+    if (op === 'poster') { if (id === 'fc') markPoster(a || 0); continue }
+    const kind = op === 'slide' ? 'range' : op === 'paint' || op === 'tap' ? 'surface' : 'named'
+    const t = await aim(h, id, kind, op === 'paint' || op === 'tap' ? null : a)
     if (!t) { console.log(`  ${id}: nothing for ${op} ${a ?? ''}`); continue }
     if (op === 'click' || op === 'hover') {
       await play(h.moveTo(t, Math.min(t.w, t.h)))
       await play(h.rest(h.rand(180, 320), 0.4))
-      if (op === 'click') { await play(h.click()); await play(h.rest(h.rand(450, 650), 0.6)) }
+      if (op === 'click') { await play(h.click()); await play(h.rest(h.rand(300, 450), 0.6)) }
       else await play(h.rest(h.rand(900, 1200), 0.6))
     } else if (op === 'slide') {
       await play(h.moveTo(t, 16)); await play(h.rest(h.rand(200, 320), 0.3))
       await play([{ dt: 0, type: 'down', x: h.p.x, y: h.p.y }])
       await play(h.moveTo({ x: t.x + b * t.track, y: t.y + h.rand(-2, 2) }, 16, { overshoot: 0, ms: h.rand(800, 1000) }))
       await play(h.rest(h.rand(120, 200), 0.2)); await play([{ dt: 0, type: 'up', x: h.p.x, y: h.p.y }])
+      await play(h.rest(h.rand(300, 450), 0.6))
+    } else if (op === 'tap') {   // click the same spot of the drawing surface b times
+      const p = { x: t.x - t.sw / 2 + a[0] * t.sw, y: t.y - t.sh / 2 + a[1] * t.sh }
+      await play(h.moveTo(p, 30)); await play(h.rest(h.rand(180, 280), 0.3))
+      for (let i = 0; i < (b || 1); i++) { await play(h.click()); await play(h.rest(h.rand(200, 300), 0.2)) }
       await play(h.rest(h.rand(300, 450), 0.6))
     } else if (op === 'paint') {
       const pt = ([fx, fy]) => ({ x: t.x - t.sw / 2 + fx * t.sw, y: t.y - t.sh / 2 + fy * t.sh })
@@ -220,7 +227,7 @@ async function stepsSide(h, id, steps) {
     }
   }
 }
-let CUR_RUNS = { a: 'A-r1', b: 'Q-r1' }
+let CUR_RUNS = {}
 // Play one game on a side: click the next empty cell (the scene picks it) until the page announces an end.
 async function playSide(h, id) {
   for (let move = 0; move < 9; move++) {
@@ -247,17 +254,17 @@ SCRIPTS.play = async h => { await play(h.rest(h.rand(400, 600), 1)); await playS
 SCRIPTS.turn = async h => { await play(h.rest(h.rand(500, 700), 1)); await turnSide(h, 'fa'); await turnSide(h, 'fb') }
 
 // ---- record every scene ----
-const sceneUrl = (slug, a, b) => '/scene.html?task=' + slug + (a ? '&a=' + a : '') + (b ? '&b=' + b : '')
+const sceneUrl = (slug, a, b, c) => '/scene.html?task=' + slug + (a ? '&a=' + a : '') + (b ? '&b=' + b : '') + (c ? '&c=' + c : '')
 const scenes = [...(CARDS ? [{ slug: 'intro', kind: 'intro' }] : []), ...TASKS, ...(CARDS ? [{ slug: 'results', kind: 'results' }, { slug: 'outro', kind: 'outro' }] : [])]
 const manifest = {}
 let pos = { x: 802, y: 1196 }
 for (const sc of scenes) {
-  await send('Page.navigate', { url: `http://127.0.0.1:${SITE}/__native/window.html?scene=${encodeURIComponent(sceneUrl(sc.slug, sc.a, sc.b))}` })
+  await send('Page.navigate', { url: `http://127.0.0.1:${SITE}/__native/window.html?scene=${encodeURIComponent(sceneUrl(sc.slug, sc.a, sc.b, sc.c))}` })
   await sleep(400); await evaluate('ready()'); await sleep(900)
-  CUR_RUNS = { a: sc.a || 'A-r1', b: sc.b || 'Q-r1' }
+  CUR_RUNS = (await evaluate(`document.getElementById('scene').contentWindow.SHOWN || null`)) || {}
   if (!sc.kind) {
     const st = await evaluate(`document.getElementById('scene').contentWindow.STEPS || null`)
-    if (st && st[CUR_RUNS.a] && st[CUR_RUNS.b]) sc.kind = 'steps'
+    if (st && [CUR_RUNS.a, CUR_RUNS.b, CUR_RUNS.c].every(r => r && st[r])) sc.kind = 'steps'
   }
   if (!sc.kind) {
     const data = await evaluate(`document.getElementById('scene').contentWindow.eval('typeof DATA === "undefined" ? null : DATA')`)

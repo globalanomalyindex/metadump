@@ -23,7 +23,7 @@ window.compose = async (scenes) => {
   const parts = []
   for (const s of scenes) {
     const S = man.scenes[s], fr = []
-    for (const f of S.frames) fr.push({ t: f.t, img: await createImageBitmap(await (await fetch(f.src)).blob()) })
+    for (const f of S.frames) fr.push({ t: f.t, blob: await (await fetch(f.src)).blob() })   // kept compressed; decoded one at a time below, so long videos fit in memory
     parts.push({ dur: S.duration, fr, track: S.track })
   }
   const drawCursor = (p, now) => {
@@ -42,13 +42,17 @@ window.compose = async (scenes) => {
   const type = ['video/mp4;codecs=avc1.640028', 'video/mp4;codecs=avc1.42E01E', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t))
   const rec = new MediaRecorder(c.captureStream(60), { mimeType: type, videoBitsPerSecond: 10e6 }), chunks = []
   rec.ondataavailable = e => e.data.size && chunks.push(e.data)
-  g.drawImage(parts[0].fr[0].img, 0, 0); rec.start(250)
+  // Decode a frame when playback reaches it and free the one before; a frame that will not decode keeps the last one on screen.
+  let shown = null
+  const decode = async f => { try { const b = await createImageBitmap(f.blob); if (shown) shown.close(); shown = b } catch (e) { window.__skipped = (window.__skipped || 0) + 1 } }
+  await decode(parts[0].fr[0]); g.drawImage(shown, 0, 0); rec.start(250)
   for (const p of parts) {
-    const t0 = performance.now(); let i = 0
+    const t0 = performance.now(); let i = 0, at_ = -1
     while (performance.now() - t0 < p.dur) {
       const now = performance.now() - t0
       while (i + 1 < p.fr.length && p.fr[i + 1].t <= now) i++
-      if (p.fr[i]) g.drawImage(p.fr[i].img, 0, 0)
+      if (p.fr[i] && i !== at_) { await decode(p.fr[i]); at_ = i }
+      if (shown) g.drawImage(shown, 0, 0)
       drawCursor(at(p.track, now), now)
       await new Promise(r => requestAnimationFrame(r))
     }

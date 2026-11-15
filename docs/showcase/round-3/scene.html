@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=1080">
 <title>MetaDump scene</title>
 <!-- The 1080x1350 frame the recorder films (ab-tests/2026-11-13-confirmation-sonnet/record-native.mjs).
-     ?task=intro | results | outro | <slug> [&a=<run>&b=<run>]. Every number here is from that test's writeup.md and results.md. -->
+     ?task=intro | results | outro | <slug> [&a=<run>&b=<run>&c=<run>] (prompt alone, quick mode, full build). Every number here is from that test's writeup.md and results.md. -->
 <style>
 :root{--bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--muted:#6b6862;--line:#e4e1da;--b:#2d5bd7;--chip:#e9e6df;--f:#9a5b2c}
 *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -13,16 +13,17 @@
 h1{font-size:46px;line-height:1.08;margin:14px 0 12px;letter-spacing:-.015em}
 .prompt{font:27px/1.35 ui-serif,Georgia,serif;margin:0;color:var(--ink);max-height:110px;overflow:hidden}
 .prompt::before{content:"“"}.prompt::after{content:"”"}
-.pair{position:absolute;left:48px;right:48px;top:300px;bottom:150px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.top.tight{padding-top:40px}.top.tight h1{margin:10px 0 8px}
+.pair{position:absolute;left:24px;right:24px;top:262px;bottom:150px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .col{display:flex;flex-direction:column;min-width:0}
-.tag{align-self:flex-start;font:600 22px system-ui;padding:6px 16px;border-radius:999px;background:var(--chip);margin-bottom:12px}
+.tag{align-self:flex-start;font:600 22px system-ui;padding:6px 16px;border-radius:999px;background:var(--chip);margin-bottom:10px}
 .tag small{font:500 18px system-ui;opacity:.8;margin-left:8px}
-.col.b .tag{background:var(--b);color:#fff}
+.col.b .tag{background:var(--b);color:#fff}.col.c .tag{background:var(--f);color:#fff}
 .frame{position:relative;flex:1;border:2px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
-.col.b .frame{border-color:var(--b)}
+.col.b .frame{border-color:var(--b)}.col.c .frame{border-color:var(--f)}
 iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0}
 .foot{position:absolute;left:48px;right:48px;bottom:46px;display:flex;justify-content:space-between;align-items:flex-end;font-size:24px;color:var(--muted)}
-.foot b{color:var(--ink)}.foot .bb{color:var(--b)}
+.foot b{color:var(--ink)}.foot .bb{color:var(--b)}.foot .ff{color:var(--f)}
 .card{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:90px 80px}
 .card h1{font-size:76px;line-height:1.02;margin:0 0 30px}.card p{font-size:34px;line-height:1.35;margin:0 0 22px;color:var(--muted)}.card p b{color:var(--ink)}
 .card .k{display:inline-block;width:24px;height:24px;border-radius:6px;vertical-align:-2px;margin-right:10px}
@@ -41,30 +42,40 @@ th.bb{color:var(--b)}th.ff{color:var(--f)}
 <div id="root"></div>
 <script>
 // Registered grades (results.md): task means of 4 builds x 3 blind graders, per-run means, and head to head against A (wins-losses-ties).
-// steps: what the recorder's hand does in each run 1 build (record-native.mjs, kind "steps"); paint paths are fractions of the drawing surface.
+// show: the build the video shows for each side: its best registered run score, ties broken by the full-evidence pass (results-full.md).
+//   One exception: quick mode on the block world, where runs 1 and 4 tie at 9.33 on both counts of the registered grades; the
+//   tie-break would pick run 1 (9.33 against 8.9), and the owner chose run 4, the isometric world.
+// steps: what the recorder's hand does in each build shown (record-native.mjs, kind "steps"); paint and tap points are fractions of the drawing surface.
 const DATA = [
   { slug: 't1-pelican', title: 'Pelican on a bike', prompt: 'an SVG animation of a pelican riding a bike',
     scores: { A: 7.17, Q: 7.25, F: 8.17 }, qa: [10, 8, 6], fa: [15, 3, 6],
     runs: { A: { 'A-r1': 6.33, 'A-r2': 7.33, 'A-r3': 8.0, 'A-r4': 7.0 }, Q: { 'Q-r1': 6.67, 'Q-r2': 7.33, 'Q-r3': 7.0, 'Q-r4': 8.0 }, F: { 'F-r1': 8.67, 'F-r2': 8.33, 'F-r3': 8.67, 'F-r4': 7.0 } },
-    note: 'Close: the prompt alone and quick mode drew the same picture four times each (quick won 10, lost 8, tied 6). The full build won this task.',
-    steps: { 'A-r1': [['rest', 1300], ['slide', null, 0.4], ['rest', 1500]], 'Q-r1': [['rest', 500], ['slide', null, 0.4], ['poster', 900], ['rest', 1800]] } },
-  { slug: 't2-ascii', title: 'ASCII colour mixer', prompt: 'a simple interactive ascii color mixing engine',
+    show: { A: 'A-r3', Q: 'Q-r4', F: 'F-r3' },
+    note: 'The full build won this one with four different bikes. The prompt alone and quick mode drew the same picture four times each (quick won 10, lost 8, tied 6).',
+    steps: { 'A-r3': [['rest', 900], ['slide', null, 0.3], ['rest', 600]], 'Q-r4': [['slide', null, 0.4], ['rest', 600]], 'F-r3': [['slide', null, 0.4], ['poster', 900], ['rest', 1500]] } },
+  { slug: 't2-ascii', title: 'ASCII color mixer', prompt: 'a simple interactive ascii color mixing engine',
     scores: { A: 5.67, Q: 7.92, F: 7.08 }, qa: [22, 2, 0], fa: [19, 1, 4],
     runs: { A: { 'A-r1': 4.67, 'A-r2': 6.67, 'A-r3': 5.67, 'A-r4': 5.67 }, Q: { 'Q-r1': 8.67, 'Q-r2': 6.33, 'Q-r3': 8.67, 'Q-r4': 8.0 }, F: { 'F-r1': 7.67, 'F-r2': 6.67, 'F-r3': 6.67, 'F-r4': 7.33 } },
-    note: 'The prompt alone made four paint-on-a-grid canvases; quick mode’s four dumps named four different engines. Quick won 22, lost 2.',
-    steps: { 'A-r1': [['click', '^empty bowl$'], ['click', '^Red$'], ['click', '^Yellow$'], ['rest', 500], ['paint', [[0.1, 0.2], [0.45, 0.32], [0.85, 0.22], [0.6, 0.45], [0.15, 0.5]]], ['rest', 600]],
-             'Q-r1': [['click', '^Remove Red$'], ['click', '^Add Blue$'], ['rest', 500], ['paint', [[0.12, 0.35], [0.45, 0.6], [0.85, 0.4], [0.55, 0.75]]], ['poster', 400], ['rest', 900]] } },
+    show: { A: 'A-r2', Q: 'Q-r1', F: 'F-r1' },
+    note: 'Prompt alone: four paint-on-a-grid canvases. Full build: four two-color mixers with a ratio slider. Quick mode: four different engines, and the win (22 to 2 against the prompt alone).',
+    steps: { 'A-r2': [['click', '^brush #00ffff$'], ['paint', [[0.15, 0.3], [0.5, 0.5], [0.85, 0.35]]], ['click', '^brush #ffff00$'], ['paint', [[0.2, 0.65], [0.5, 0.4], [0.8, 0.7]]], ['rest', 400]],
+             'Q-r1': [['click', '^Remove Red$'], ['click', '^Add Blue$'], ['paint', [[0.12, 0.35], [0.5, 0.6], [0.85, 0.4]]], ['rest', 400]],
+             'F-r1': [['slide', '^Mix ratio', -0.3], ['poster', 500], ['rest', 1300]] } },
   { slug: 't3-bento', title: 'Bento menu', prompt: 'a bento box-inspired collapsible UI menu component for a fictional coffee company site',
     scores: { A: 7.5, Q: 6.82, F: 7.17 }, qa: [9, 15, 0], fa: [5, 14, 5],
     runs: { A: { 'A-r1': 8.33, 'A-r2': 7.33, 'A-r3': 6.83, 'A-r4': 7.5 }, Q: { 'Q-r1': 5.67, 'Q-r2': 5.67, 'Q-r3': 8.6, 'Q-r4': 7.33 }, F: { 'F-r1': 7.33, 'F-r2': 8.0, 'F-r3': 6.5, 'F-r4': 6.83 } },
-    note: 'The prompt alone won this one. Quick mode’s builds came out close to it, and two of them (run 1 is one) scored 5.67. Quick won 9, lost 15.',
-    steps: { 'A-r1': [['click', '^Menu$'], ['rest', 1400], ['click', '^Add to cart$'], ['rest', 900]], 'Q-r1': [['click', '^Menu$'], ['rest', 1400], ['click', '^Add one$'], ['poster', 500], ['rest', 1200]] } },
+    show: { A: 'A-r1', Q: 'Q-r3', F: 'F-r2' },
+    note: 'The prompt alone won this task: across all four builds it averaged 7.50, against 6.82 for quick mode and 7.17 for the full build.',
+    steps: { 'A-r1': [['click', '^Menu$'], ['rest', 900], ['click', '^Add to cart$'], ['rest', 400]], 'Q-r3': [['click', '#trigger'], ['rest', 900], ['click', '^Add to bag$'], ['rest', 400]],
+             'F-r2': [['click', '#trigger'], ['poster', 1200], ['rest', 1900]] } },
   { slug: 't4-blocks', title: 'Block world', prompt: 'a simple block-building sandbox game with a 32x32 block world',
     scores: { A: 5.92, Q: 8.75, F: 6.17 }, qa: [24, 0, 0], fa: [10, 5, 9],
     runs: { A: { 'A-r1': 7.0, 'A-r2': 6.0, 'A-r3': 5.67, 'A-r4': 5.0 }, Q: { 'Q-r1': 9.33, 'Q-r2': 8.0, 'Q-r3': 8.33, 'Q-r4': 9.33 }, F: { 'F-r1': 6.67, 'F-r2': 6.33, 'F-r3': 6.0, 'F-r4': 5.67 } },
-    note: 'Quick mode’s builds open on terrain or a built scene with nine or ten kinds of block. Quick won all 24 head-to-heads here.',
-    steps: { 'A-r1': [['click', '^Brick'], ['paint', [[0.36, 0.66], [0.36, 0.42], [0.62, 0.42], [0.62, 0.66]]], ['rest', 700]],
-             'Q-r1': [['click', '^Brick$'], ['paint', [[0.52, 0.62], [0.52, 0.4], [0.74, 0.4], [0.74, 0.62]]], ['poster', 400], ['rest', 1000]] } },
+    show: { A: 'A-r1', Q: 'Q-r4', F: 'F-r1' },
+    note: 'Quick mode won all 24 head-to-heads here. Its builds open on terrain or a built scene with nine or ten kinds of block; every full build opened on an empty flat grid.',
+    steps: { 'A-r1': [['click', '^Brick'], ['paint', [[0.35, 0.78], [0.35, 0.5], [0.65, 0.5], [0.65, 0.78]]], ['click', '^Erase$'], ['paint', [[0.5, 0.4], [0.5, 0.62]]], ['rest', 300]],
+             'Q-r4': [['click', '^Brick'], ['paint', [[0.28, 0.55], [0.5, 0.42], [0.72, 0.55]]], ['paint', [[0.28, 0.55], [0.5, 0.42], [0.72, 0.55]]], ['click', '^Erase$'], ['paint', [[0.42, 0.47], [0.58, 0.47]]], ['rest', 300]],
+             'F-r1': [['click', '^Wood'], ['paint', [[0.3, 0.8], [0.3, 0.45], [0.7, 0.45], [0.7, 0.8]]], ['click', '^Erase'], ['paint', [[0.5, 0.35], [0.5, 0.58]]], ['poster', 300], ['rest', 900]] } },
 ];
 // Pooled over the four tasks (writeup.md, "Pooled over tasks"; pooled.json).
 const POOLED = { Q: { diff: '+1.12', w: 65, l: 25, t: 6, p: '0.012' }, F: { diff: '+0.58', w: 49, l: 23, t: 24, p: '0.036' }, bar: '0.025', qNo4: { diff: '+0.55', p: '0.23' } };
@@ -72,11 +83,12 @@ const q = new URLSearchParams(location.search), which = q.get('task') || 'intro'
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const f2 = v => v.toFixed(2);
 const root = document.getElementById('root');
-const INNER_W = 560;
+const INNER_W = ({ 't2-ascii': 520 })[which] || 375;   // phone-width builds, so three columns stay readable
 if (which === 'intro') {
   root.innerHTML = `<div class="card"><div class="brand"><b>MetaDump</b> · the confirmation test</div><h1 style="margin-top:28px">Same model.<br>Same prompt.</h1>
-    <p><span class="k" style="background:#bdb8ae"></span>Left: <b>just the prompt</b></p><p><span class="k" style="background:var(--b)"></span>Right: <b>quick mode</b>, the model writes its own small meta dump first</p>
-    <p style="margin-top:30px">4 tasks picked after the skill was frozen · built by Sonnet 5.5, graded blind by Sonnet 5.5 · rules set before the tasks were known</p></div>`;
+    <p><span class="k" style="background:#bdb8ae"></span>Left: <b>just the prompt</b></p><p><span class="k" style="background:var(--b)"></span>Middle: <b>quick mode</b>, the model writes its own small meta dump first</p>
+    <p><span class="k" style="background:var(--f)"></span>Right: <b>the full build</b>, a swarm of Haiku agents writes a big one first</p>
+    <p style="margin-top:30px;font-size:30px">4 tasks picked after the skill was frozen · built by Sonnet 5.5, graded blind by Sonnet 5.5 · rules set before the tasks were known</p></div>`;
 } else if (which === 'results') {
   const best = s => Math.max(s.A, s.Q, s.F);
   const rows = DATA.map(t => { const s = t.scores, b = best(s); return `<tr><td>${esc(t.title)}</td><td class="n${s.A === b ? ' win' : ''}">${f2(s.A)}</td><td class="n bb${s.Q === b ? ' win' : ''}">${f2(s.Q)}</td><td class="n ff${s.F === b ? ' win' : ''}">${f2(s.F)}</td></tr>` }).join('');
@@ -92,13 +104,15 @@ if (which === 'intro') {
     <p class="modes"><b>quick</b> default &nbsp;·&nbsp; <b>lite</b> a small swarm &nbsp;·&nbsp; <b>heavy</b> the big swarm</p>
     <p style="font-size:26px;margin-top:22px">4 builds per side per task, AI graders. A direction, not proof.<br>Every build, grade and script is public.</p><p class="url">github.com/globalanomalyindex/metadump</p></div>`;
 } else {
-  const t = DATA.find(x => x.slug === which), s = t.scores;
-  const a = q.get('a') || 'A-r1', b = q.get('b') || 'Q-r1';
-  const run = r => 'run ' + r.split('-r')[1];
-  root.innerHTML = `<div class="top"><div class="brand"><b>MetaDump</b> · same model, same prompt</div><h1>${esc(t.title)}</h1><p class="prompt">${esc(t.prompt)}</p></div>
-    <div class="pair" style="bottom:200px"><div class="col a"><span class="tag">Prompt alone</span><div class="frame"><iframe id="fa" src="${t.slug}/${a}.html"></iframe></div></div>
-    <div class="col b"><span class="tag">Quick mode</span><div class="frame"><iframe id="fb" src="${t.slug}/${b}.html"></iframe></div></div></div>
-    <p class="note">${esc(t.note)}</p><div class="foot"><span>Sonnet 5.5 · ${a[0] === 'A' && a === 'A-r1' && b === 'Q-r1' ? 'run 1 of 4 per side' : run(a) + ' vs ' + run(b)}</span><span>Score <b>${f2(s.A)}</b> vs <b class="bb">${f2(s.Q)}</b> · full build ${f2(s.F)}</span></div>`;
+  const t = DATA.find(x => x.slug === which), s = t.scores, d = t.show;
+  const a = q.get('a') || d.A, b = q.get('b') || d.Q, c = q.get('c') || d.F;
+  const sc = (arm, r) => f2(t.runs[arm][r]);
+  window.SHOWN = { a, b, c };
+  root.innerHTML = `<div class="top tight"><div class="brand"><b>MetaDump</b> · same model, same prompt</div><h1>${esc(t.title)}</h1><p class="prompt">${esc(t.prompt)}</p></div>
+    <div class="pair" style="bottom:200px"><div class="col a"><span class="tag">Prompt alone<small>${sc('A', a)}</small></span><div class="frame"><iframe id="fa" src="${t.slug}/${a}.html"></iframe></div></div>
+    <div class="col b"><span class="tag">Quick mode<small>${sc('Q', b)}</small></span><div class="frame"><iframe id="fb" src="${t.slug}/${b}.html"></iframe></div></div>
+    <div class="col c"><span class="tag">Full build<small>${sc('F', c)}</small></span><div class="frame"><iframe id="fc" src="${t.slug}/${c}.html"></iframe></div></div></div>
+    <p class="note">${esc(t.note)}</p><div class="foot"><span>Sonnet 5.5 builds · score of the build shown</span><span>Task mean of all 4: <b>${f2(s.A)}</b> · <b class="bb">${f2(s.Q)}</b> · <b class="ff">${f2(s.F)}</b></span></div>`;
   for (const f of document.querySelectorAll('.frame')) {
     const fr = f.querySelector('iframe'), r = f.getBoundingClientRect(), k = r.width / INNER_W;
     fr.style.width = INNER_W + 'px'; fr.style.height = (r.height / k) + 'px'; fr.style.transform = `scale(${k})`; fr.dataset.k = k
@@ -117,7 +131,7 @@ window.targetIn = (id, kind, arg) => {
   let el
   if (kind === 'named') {
     const re = new RegExp(arg, 'i')
-    el = [...d.querySelectorAll('button, [role=button], a, summary, input, select, [title], label')].filter(vis).find(e => label(e).some(s => re.test(s.trim())))
+    el = /^[#.]/.test(arg) ? [...d.querySelectorAll(arg)].find(vis) : [...d.querySelectorAll('button, [role=button], a, summary, input, select, [title], label')].filter(vis).find(e => label(e).some(s => re.test(s.trim())))
   } else if (kind === 'range') {
     const re = arg ? new RegExp(arg, 'i') : null
     el = [...d.querySelectorAll('input[type=range]')].filter(vis).find(e => !re || label(e).some(s => re.test(s)) || (e.labels && [...e.labels].some(l => re.test(l.innerText))))

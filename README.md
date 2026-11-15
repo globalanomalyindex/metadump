@@ -59,9 +59,9 @@ It's still small (4 builds per side per task, AI graders, four little web tasks,
 
 ### See it side by side
 
-Live builds from this test, left from the prompt alone and right with quick mode. The preview is a short video of run 1 of each side, filmed in a browser (no sound). Click it to open the page, where the full video plays and you can try all 48 builds, full build included.
+Live builds from this test, side by side: the prompt alone, quick mode and the full build. The preview is a short video of each side's best build, filmed in a browser (no sound). Click it to open the page, where the full video plays and you can try all 48 builds.
 
-[![The pelican, the ASCII color mixer, the bento menu and the block world, prompt alone vs quick mode](docs/showcase/round-3/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/round-3/)
+[![The pelican, the ASCII color mixer, the bento menu and the block world: prompt alone, quick mode and full build](docs/showcase/round-3/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/round-3/)
 
 **[Live page](https://globalanomalyindex.github.io/metadump/showcase/round-3/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/round-3/metadump-ab-round-3.mp4) · the round before this one is [here](https://globalanomalyindex.github.io/metadump/showcase/round-2/)
 
