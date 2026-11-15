@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t4-blocks/F-r3"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Sandbox</title>
+<style>
+  :root { --bg:#1d2127; --panel:#272c34; --ink:#e8e6df; --dim:#9aa0a8; --line:#3a414b; --accent:#f2c14e; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  body { min-height:100vh; display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px 12px; }
+  #bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; }
+  button { font:inherit; color:var(--ink); background:var(--panel); border:2px solid var(--line); border-radius:6px; padding:6px 12px; min-height:36px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  button:hover { border-color:#5b6572; }
+  button:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  button[aria-pressed="true"] { border-color:var(--accent); background:#343a44; }
+  .sw { width:16px; height:16px; border-radius:3px; border:1px solid rgba(0,0,0,.5); display:inline-block; }
+  kbd { color:var(--dim); font-size:12px; }
+  #wrap { background:var(--panel); padding:8px; border-radius:8px; border:2px solid var(--line); line-height:0; }
+  canvas { display:block; touch-action:none; cursor:crosshair; }
+  #status { color:var(--dim); min-height:20px; text-align:center; font-variant-numeric: tabular-nums; }
+  #status b { color:var(--ink); font-weight:600; }
+  .sep { width:1px; height:24px; background:var(--line); }
+</style>
+</head>
+<body>
+<div id="bar" role="toolbar" aria-label="Block tools">
+  <button id="k0" data-k="0" aria-pressed="true"><span class="sw" style="background:#5a9e46"></span>Grass <kbd>1</kbd></button>
+  <button id="k1" data-k="1" aria-pressed="false"><span class="sw" style="background:#8d9199"></span>Stone <kbd>2</kbd></button>
+  <button id="k2" data-k="2" aria-pressed="false"><span class="sw" style="background:#b9803f"></span>Wood <kbd>3</kbd></button>
+  <span class="sep"></span>
+  <button id="rm" aria-pressed="false" title="Touch: tap to remove instead of add">Remove <kbd>X</kbd></button>
+  <button id="undo" title="Undo (Z)">Undo <kbd>Z</kbd></button>
+  <button id="clear" title="Clear (C)">Clear <kbd>C</kbd></button>
+</div>
+<div id="wrap"><canvas id="c" aria-label="32 by 32 block world"></canvas></div>
+<div id="status" aria-live="polite"></div>
+<div id="hint" style="color:var(--dim);font-size:12px;text-align:center">Click adds a block to the column. Right-click removes the top one. Drag to paint. Esc cancels a stroke. Max height 6.</div>
+
+<script>
+(function () {
+  var N = 32, CAP = 6;
+  var COLORS = ['#5a9e46', '#8d9199', '#b9803f'];
+  var NAMES = ['Grass', 'Stone', 'Wood'];
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var statusEl = document.getElementById('status');
+  // each cell is a column: array of kind indexes, bottom first
+  function empty() { var w = []; for (var i = 0; i < N * N; i++) w.push([]); return w; }
+  var world = empty();
+  var kind = 0, removeMode = false, cell = 20;
+  var hover = null, stroke = null, strokeBefore = null, history = [];
+
+  function snap() { return JSON.stringify(world); }
+  function restore(s) { world = JSON.parse(s); }
+  function pushHistory(s) { history.push(s); if (history.length > 50) history.shift(); }
+
+  function size() {
+    var avail = Math.min(window.innerWidth - 40, window.innerHeight - 190);
+    cell = Math.max(10, Math.min(20, Math.floor(avail / N)));
+    var px = cell * N, dpr = window.devicePixelRatio || 1;
+    cv.width = px * dpr; cv.height = px * dpr;
+    cv.style.width = px + 'px'; cv.style.height = px + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  function shade(hex, f) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    function c(v) { return Math.max(0, Math.min(255, Math.round(v * f))); }
+    return 'rgb(' + c(r) + ',' + c(g) + ',' + c(b) + ')';
+  }
+
+  function draw() {
+    var px = cell * N;
+    ctx.fillStyle = '#c9ccb8'; ctx.fillRect(0, 0, px, px);
+    ctx.strokeStyle = '#a9ad9a'; ctx.lineWidth = 1; ctx.beginPath();
+    for (var i = 0; i <= N; i++) {
+      ctx.moveTo(i * cell + .5, 0); ctx.lineTo(i * cell + .5, px);
+      ctx.moveTo(0, i * cell + .5); ctx.lineTo(px, i * cell + .5);
+    }
+    ctx.stroke();
+    var lift = Math.max(1, Math.round(cell / 10)); // px of lift per level
+    for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) {
+      var col = world[r * N + c], h = col.length;
+      if (!h) continue;
+      var x = c * cell, y = r * cell, ins = 1;
+      // darker side edge shows stacked height
+      var topKind = COLORS[col[h - 1]];
+      var off = (h - 1) * lift;
+      ctx.fillStyle = shade(topKind, .55);
+      ctx.fillRect(x + ins, y + ins, cell - 2 * ins, cell - 2 * ins);
+      for (var l = 1; l < h; l++) {
+        ctx.fillStyle = shade(COLORS[col[l - 1]], .65 + l * .05);
+        ctx.fillRect(x + ins - 0, y + ins - l * lift, cell - 2 * ins, cell - 2 * ins);
+      }
+      ctx.fillStyle = shade(topKind, 1 + (h - 1) * .05);
+      ctx.fillRect(x + ins, y + ins - off, cell - 2 * ins, cell - 2 * ins);
+      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1;
+      ctx.strokeRect(x + ins + .5, y + ins - off + .5, cell - 2 * ins - 1, cell - 2 * ins - 1);
+      if (h > 1 && cell >= 14) {
+        ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.font = 'bold ' + Math.floor(cell * .5) + 'px system-ui';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(h, x + cell / 2, y + cell / 2 - off);
+      }
+    }
+    if (hover) {
+      var hh = world[hover.r * N + hover.c].length;
+      var full = hh >= CAP, willRemove = removeMode || (stroke && stroke.remove);
+      var hx = hover.c * cell, hy = hover.r * cell - (hh ? (hh - 1) * lift : 0);
+      var col2 = willRemove ? '255,90,80' : (full ? '255,200,60' : '255,255,255');
+      ctx.fillStyle = 'rgba(' + col2 + ',.28)'; ctx.fillRect(hx, hy, cell, cell);
+      ctx.strokeStyle = 'rgba(' + col2 + ',.95)'; ctx.lineWidth = 2;
+      ctx.strokeRect(hx + 1, hy + 1, cell - 2, cell - 2);
+    }
+  }
+
+  function total() { var t = 0; for (var i = 0; i < world.length; i++) t += world[i].length; return t; }
+
+  function say(extra) {
+    var s = 'Blocks: <b>' + total() + '</b>';
+    if (hover) {
+      var h = world[hover.r * N + hover.c].length;
+      s += ' &nbsp;|&nbsp; Column <b>' + (hover.c + 1) + '</b>, row <b>' + (hover.r + 1) + '</b>, height <b>' + h + '</b>/' + CAP;
+    }
+    s += ' &nbsp;|&nbsp; Placing <b>' + NAMES[kind] + '</b>' + (removeMode ? ' (remove mode)' : '');
+    if (extra) s += ' &nbsp;|&nbsp; ' + extra;
+    statusEl.innerHTML = s;
+  }
+
+  function cellAt(e) {
+    var rect = cv.getBoundingClientRect();
+    var x = e.clientX - rect.left, y = e.clientY - rect.top;
+    if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) return null;
+    var s = rect.width / (cell * N); // CSS scaling safe
+    return { c: Math.min(N - 1, Math.floor(x / s / cell)), r: Math.min(N - 1, Math.floor(y / s / cell)) };
+  }
+
+  var lastKey = '';
+  function apply(pos, remove) {
+    if (!pos) return;
+    var col = world[pos.r * N + pos.c];
+    var key = pos.c + ',' + pos.r;
+    if (stroke && key === lastKey) return; // one change per cell per stroke
+    lastKey = key;
+    if (remove) { if (col.length) col.pop(); else return; }
+    else { if (col.length < CAP) col.push(kind); else { say('column is at max height'); return; } }
+  }
+
+  cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  cv.addEventListener('pointerdown', function (e) {
+    var pos = cellAt(e); if (!pos) return;
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    strokeBefore = snap();
+    stroke = { remove: e.button === 2 || removeMode };
+    lastKey = '';
+    hover = pos;
+    apply(pos, stroke.remove);
+    draw(); say();
+  });
+  cv.addEventListener('pointermove', function (e) {
+    var pos = cellAt(e);
+    hover = pos;
+    if (stroke && pos) apply(pos, stroke.remove);
+    draw(); say();
+  });
+  function endStroke() {
+    if (!stroke) return;
+    if (snap() !== strokeBefore) pushHistory(strokeBefore);
+    stroke = null; strokeBefore = null; lastKey = '';
+    draw(); say();
+  }
+  cv.addEventListener('pointerup', endStroke);
+  cv.addEventListener('pointercancel', endStroke);
+  cv.addEventListener('pointerleave', function () { if (!stroke) { hover = null; draw(); say(); } });
+
+  function setKind(k) {
+    kind = k;
+    for (var i = 0; i < 3; i++) document.getElementById('k' + i).setAttribute('aria-pressed', i === k ? 'true' : 'false');
+    say();
+  }
+  function setRemove(v) { removeMode = v; document.getElementById('rm').setAttribute('aria-pressed', v ? 'true' : 'false'); draw(); say(); }
+  function undo() { if (!history.length) { say('nothing to undo'); return; } restore(history.pop()); draw(); say('undone'); }
+  function clearAll() {
+    if (!total()) { say('already empty'); return; }
+    pushHistory(snap()); world = empty(); draw(); say('cleared (Z brings it back)');
+  }
+
+  [0, 1, 2].forEach(function (i) { document.getElementById('k' + i).addEventListener('click', function () { setKind(i); setRemove(false); }); });
+  document.getElementById('rm').addEventListener('click', function () { setRemove(!removeMode); });
+  document.getElementById('undo').addEventListener('click', undo);
+  document.getElementById('clear').addEventListener('click', clearAll);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); } return; }
+    var k = e.key.toLowerCase();
+    if (k === '1' || k === '2' || k === '3') { setKind(+k - 1); setRemove(false); }
+    else if (k === 'x') setRemove(!removeMode);
+    else if (k === 'c') clearAll();
+    else if (k === 'z') undo();
+    else if (k === 'escape' && stroke) { restore(strokeBefore); stroke = null; strokeBefore = null; draw(); say('stroke cancelled'); }
+  });
+
+  window.addEventListener('resize', size);
+  size(); say();
+})();
+</script>
+</body>
+</html>

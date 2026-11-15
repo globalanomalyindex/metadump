@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t1-pelican/A-r3"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pelican on a Bike</title>
+<style>
+:root{--ink:#1d2b3a;--panel:#fffaf0;--accent:#e8743b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#16212e;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);padding:12px}
+.stage{width:min(100%,960px);border-radius:14px;overflow:hidden;box-shadow:0 10px 40px #0008;background:#fff}
+svg{display:block;width:100%;height:auto}
+.ui{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;padding:12px 16px;background:var(--panel)}
+button{font:inherit;font-weight:600;border:2px solid var(--ink);background:#fff;color:var(--ink);padding:6px 14px;border-radius:8px;cursor:pointer}
+button:hover{background:#ffd9c2;color:var(--ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:3px solid #2a7fff;outline-offset:2px}
+label{display:flex;align-items:center;gap:8px;font-size:14px}
+input[type=range]{width:160px;accent-color:var(--accent)}
+.state{margin-left:auto;font:13px ui-monospace,Menlo,monospace;display:flex;gap:14px;flex-wrap:wrap}
+#honk{opacity:0;font:800 34px system-ui,sans-serif;fill:#e8743b;stroke:#fff;stroke-width:4;paint-order:stroke}
+@media (prefers-reduced-motion:reduce){}
+</style>
+</head>
+<body>
+<div class="stage">
+<svg id="scene" viewBox="0 0 800 450" role="img" aria-label="A pelican riding a bicycle along a road">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6ec1ee"/><stop offset="1" stop-color="#d9f1fb"/>
+    </linearGradient>
+    <linearGradient id="beak" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6b43a"/><stop offset="1" stop-color="#e8873a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#sky)"/>
+  <circle cx="680" cy="70" r="34" fill="#fff3b0"/>
+  <circle cx="680" cy="70" r="50" fill="#fff3b0" opacity=".35"/>
+  <g id="clouds" fill="#fff" opacity=".9"></g>
+  <g id="hills"></g>
+  <rect y="372" width="800" height="78" fill="#6b7078"/>
+  <rect y="362" width="800" height="12" fill="#7bbf5a"/>
+  <g id="dashes" fill="#f5e9b8"></g>
+
+  <ellipse id="shadow" cx="385" cy="392" rx="190" ry="9" fill="#000" opacity=".22"/>
+
+  <g id="rig">
+    <!-- far leg -->
+    <g id="legFar" fill="none" stroke="#c9692f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <polyline id="lfPath" points="0,0 0,0 0,0"/>
+    </g>
+    <polygon id="footFar" fill="#d9793a" points="0,0"/>
+
+    <!-- wheels -->
+    <g id="wheelR"></g>
+    <g id="wheelF"></g>
+
+    <!-- chain ring & crank -->
+    <circle cx="370" cy="330" r="17" fill="none" stroke="#333" stroke-width="3"/>
+    <line id="crank1" stroke="#333" stroke-width="6" stroke-linecap="round"/>
+    <line id="crank2" stroke="#555" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- frame -->
+    <g fill="none" stroke="#d63a3a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="250,330 370,330 335,238 250,330"/>
+      <polyline points="335,238 485,240 370,330"/>
+      <polyline points="485,240 520,330"/>
+    </g>
+    <line x1="485" y1="240" x2="476" y2="212" stroke="#222" stroke-width="7" stroke-linecap="round"/>
+    <path d="M476 212 L506 206" stroke="#222" stroke-width="7" stroke-linecap="round"/>
+    <path d="M506 206 q10 2 12 12" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+    <line x1="335" y1="238" x2="332" y2="226" stroke="#222" stroke-width="5"/>
+    <path d="M316 224 q20 -8 40 0 q-4 7 -20 6 q-16 0 -20 -6z" fill="#222"/>
+    <circle cx="370" cy="330" r="8" fill="#888"/>
+
+    <!-- pelican body group (bobs) -->
+    <g id="bird">
+      <!-- tail -->
+      <path d="M296 205 q-40 -2 -52 22 q30 4 62 -8z" fill="#e9eef2" stroke="#9aa6b0" stroke-width="2"/>
+      <!-- body -->
+      <ellipse cx="338" cy="190" rx="62" ry="42" transform="rotate(-8 338 190)" fill="#fbfdff" stroke="#9aa6b0" stroke-width="2.5"/>
+      <!-- neck -->
+      <path id="neck" d="M362 168 C392 150 402 120 410 98 L440 108 C430 140 420 170 392 192 Z" fill="#fbfdff" stroke="#9aa6b0" stroke-width="2.5"/>
+      <!-- near leg -->
+      <g fill="none" stroke="#f08a3a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+        <polyline id="lnPath" points="0,0 0,0 0,0"/>
+      </g>
+      <!-- head -->
+      <ellipse cx="428" cy="96" rx="28" ry="23" fill="#fbfdff" stroke="#9aa6b0" stroke-width="2.5"/>
+      <path d="M410 80 q14 -16 34 -6 q-12 -2 -20 8z" fill="#f2e3a0" opacity=".9"/>
+      <!-- beak upper -->
+      <g id="beakG">
+        <path d="M444 92 L562 108 Q566 112 560 114 L446 108 Z" fill="url(#beak)" stroke="#b9661f" stroke-width="2"/>
+        <path d="M562 106 q9 2 6 10 q-4 3 -8 -2z" fill="#c9561f"/>
+        <!-- pouch -->
+        <path id="pouch" d="M446 108 L558 114 Q510 156 452 120 Z" fill="#f7c76a" stroke="#b9661f" stroke-width="2"/>
+      </g>
+      <circle cx="436" cy="90" r="6.5" fill="#fff" stroke="#333" stroke-width="1.5"/>
+      <circle id="pupil" cx="438" cy="90" r="3.2" fill="#111"/>
+      <circle cx="439" cy="88.5" r="1.1" fill="#fff"/>
+      <!-- wing reaching handlebar -->
+      <g id="wing">
+        <path d="M352 168 C400 170 450 190 482 208 C470 218 440 214 410 208 C380 204 350 196 336 184 Z" fill="#dfe6ec" stroke="#8793a0" stroke-width="2.5"/>
+        <path d="M400 188 q30 8 60 18 M390 196 q30 6 56 14" stroke="#aeb9c3" stroke-width="2" fill="none"/>
+        <path d="M468 206 l16 2 l-2 8 z" fill="#2c3a48"/>
+      </g>
+      <!-- helmet -->
+      <path d="M404 86 q8 -26 36 -20 q10 4 10 18 q-22 -8 -46 2z" fill="#2a7fff" stroke="#1a56b8" stroke-width="2"/>
+    </g>
+    <polygon id="footNear" fill="#f08a3a" points="0,0"/>
+    <circle id="pedalN" r="5" fill="#222"/>
+    <circle id="pedalF" r="5" fill="#222"/>
+  </g>
+  <text id="honk" x="470" y="70" text-anchor="middle">HONK!</text>
+</svg>
+<div class="ui">
+  <button id="playBtn" aria-pressed="false">Pause</button>
+  <label>Speed <input id="speed" type="range" min="0" max="10" step="0.1" value="4" aria-label="Speed"></label>
+  <button id="honkBtn">Honk</button>
+  <button id="dirBtn">Reverse</button>
+  <div class="state" aria-live="off">
+    <span>status: <b id="sStatus">riding</b></span>
+    <span>speed: <b id="sSpeed">4.0</b></span>
+    <span>cadence: <b id="sCad">0</b> rpm</span>
+    <span>distance: <b id="sDist">0</b> m</span>
+    <span>honks: <b id="sHonk">0</b></span>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+
+  var state={playing:true,speed:4,dir:1,honks:0,dist:0,wheel:0,crank:0,t:0,honkT:-9};
+
+  // wheels
+  function buildWheel(id,cx,cy){
+    var g=document.getElementById(id);
+    el('circle',{cx:cx,cy:cy,r:60,fill:'none',stroke:'#222','stroke-width':6},g);
+    el('circle',{cx:cx,cy:cy,r:54,fill:'none',stroke:'#bbb','stroke-width':1.5},g);
+    var s=el('g',{},g);
+    for(var i=0;i<12;i++){
+      var a=i*Math.PI/6;
+      el('line',{x1:cx,y1:cy,x2:cx+Math.cos(a)*56,y2:cy+Math.sin(a)*56,stroke:'#999','stroke-width':1.3},s);
+    }
+    el('circle',{cx:cx+44,cy:cy,r:4,fill:'#e8743b'},s);
+    el('circle',{cx:cx,cy:cy,r:7,fill:'#666'},g);
+    return s;
+  }
+  // fix attribute name typo-proof
+  var wR=buildWheel('wheelR',250,330), wF=buildWheel('wheelF',520,330);
+  // set tire stroke width properly
+  [].forEach.call(document.querySelectorAll('#wheelR circle:first-child,#wheelF circle:first-child'),function(c){c.setAttribute('stroke-width',6)});
+
+  // clouds
+  var cloudG=document.getElementById('clouds'),clouds=[];
+  [[80,60,1],[330,40,.7],[560,100,.9],[760,50,.8]].forEach(function(c){
+    var g=el('g',{},cloudG);
+    el('ellipse',{cx:0,cy:0,rx:42*c[2],ry:14*c[2]},g);
+    el('ellipse',{cx:-18*c[2],cy:-8*c[2],rx:22*c[2],ry:14*c[2]},g);
+    el('ellipse',{cx:14*c[2],cy:-12*c[2],rx:26*c[2],ry:16*c[2]},g);
+    clouds.push({g:g,x:c[0],y:c[1],v:4+c[2]*5});
+  });
+  // hills
+  var hillG=document.getElementById('hills');
+  var hills=[];
+  [[0.2,'#a5d6a0',300,60],[0.45,'#7fbf7d',330,48]].forEach(function(h){
+    var g=el('g',{},hillG),p='M0 400';
+    for(var i=0;i<=8;i++){p+=' Q'+(i*200+50)+' '+(h[2]-h[3])+' '+(i*200+100)+' '+(h[2]+10)+' T'+((i+1)*200)+' '+(h[2]+10)}
+    p+=' L1800 400Z';
+    el('path',{d:p,fill:h[1]},g);
+    hills.push({g:g,k:h[0]});
+  });
+  // road dashes
+  var dashG=document.getElementById('dashes'),dashes=[];
+  for(var i=0;i<12;i++)dashes.push(el('rect',{y:412,width:50,height:6,rx:2},dashG));
+
+  var $=function(id){return document.getElementById(id)};
+  var crank1=$('crank1'),crank2=$('crank2'),pedalN=$('pedalN'),pedalF=$('pedalF');
+  var lnPath=$('lnPath'),lfPath=$('lfPath'),footNear=$('footNear'),footFar=$('footFar');
+  var bird=$('bird'),wing=$('wing'),pouch=$('pouch'),pupil=$('pupil'),honk=$('honk'),beakG=$('beakG');
+
+  var BB={x:370,y:330},CR=28,HIP={x:346,y:214},L=82;
+
+  function leg(path,foot,ang,color,pedal){
+    var px=BB.x+Math.cos(ang)*CR,py=BB.y+Math.sin(ang)*CR;
+    var dx=px-HIP.x,dy=py-HIP.y,d=Math.min(Math.hypot(dx,dy),2*L-1);
+    var mx=HIP.x+dx/2,my=HIP.y+dy/2,h=Math.sqrt(L*L-d*d/4);
+    var ux=-dy/Math.hypot(dx,dy),uy=dx/Math.hypot(dx,dy);
+    if(ux<0){ux=-ux;uy=-uy}
+    var kx=mx+ux*h,ky=my+uy*h;
+    path.setAttribute('points',HIP.x+','+HIP.y+' '+kx.toFixed(1)+','+ky.toFixed(1)+' '+px.toFixed(1)+','+py.toFixed(1));
+    foot.setAttribute('points',(px-6)+','+(py-3)+' '+(px+26)+','+(py+2)+' '+(px+22)+','+(py+8)+' '+(px+14)+','+(py+4)+' '+(px+8)+','+(py+8)+' '+(px-6)+','+(py+6));
+    pedal.setAttribute('cx',px);pedal.setAttribute('cy',py);
+    return {x:px,y:py};
+  }
+
+  function render(){
+    var a=state.crank;
+    var p1=leg(lnPath,footNear,a,'',pedalN);
+    var p2=leg(lfPath,footFar,a+Math.PI,'',pedalF);
+    crank1.setAttribute('x1',BB.x);crank1.setAttribute('y1',BB.y);crank1.setAttribute('x2',p1.x);crank1.setAttribute('y2',p1.y);
+    crank2.setAttribute('x1',BB.x);crank2.setAttribute('y1',BB.y);crank2.setAttribute('x2',p2.x);crank2.setAttribute('y2',p2.y);
+    var wd=state.wheel*180/Math.PI;
+    wR.setAttribute('transform','rotate('+wd+' 250 330)');
+    wF.setAttribute('transform','rotate('+wd+' 520 330)');
+    var moving=state.playing?Math.min(1,state.speed/2):0;
+    var bob=Math.sin(a*2)*1.6*moving;
+    bird.setAttribute('transform','translate(0,'+bob.toFixed(2)+')');
+    wing.setAttribute('transform','rotate('+(Math.sin(state.t*3)*1.5*moving)+' 352 168)');
+    pouch.setAttribute('transform','scale(1,'+(1+Math.sin(state.t*2.2)*0.05)+')');
+    // blink
+    var blink=(state.t%4)>3.85;
+    pupil.setAttribute('r',blink?0.6:3.2);
+    // honk
+    var ht=state.t-state.honkT;
+    if(ht>=0&&ht<1.1){
+      honk.style.opacity=ht<0.9?1:(1.1-ht)/0.2;
+      honk.setAttribute('transform','translate(0,'+(-ht*18)+') rotate('+(Math.sin(ht*30)*4)+' 470 70)');
+      beakG.setAttribute('transform','rotate('+(-4*Math.sin(Math.min(ht,.4)/.4*Math.PI))+' 444 100)');
+    }else{honk.style.opacity=0;beakG.removeAttribute('transform')}
+    for(var i=0;i<dashes.length;i++){
+      var x=((i*80-state.dist*20)%960+960)%960-80;
+      dashes[i].setAttribute('x',x.toFixed(1));
+    }
+    hills.forEach(function(h){
+      var x=-(((state.dist*20*h.k)%400)+400)%400;
+      h.g.setAttribute('transform','translate('+x.toFixed(1)+',0)');
+    });
+  }
+
+  function ui(){
+    $('sSpeed').textContent=(state.dir*state.speed).toFixed(1);
+    $('sStatus').textContent=!state.playing?'paused':(state.speed===0?'coasting':(state.dir>0?'riding':'reversing'));
+    $('sCad').textContent=state.playing?Math.round(state.speed*state.dir*2.4*60/ (2*Math.PI)*1):0;
+    $('sDist').textContent=Math.abs(state.dist/2).toFixed(1);
+    $('sHonk').textContent=state.honks;
+    $('playBtn').textContent=state.playing?'Pause':'Play';
+    $('playBtn').setAttribute('aria-pressed',String(!state.playing));
+    $('dirBtn').textContent=state.dir>0?'Reverse':'Forward';
+  }
+
+  var last=performance.now(),uiAcc=0;
+  function frame(now){
+    var dt=Math.min(0.05,(now-last)/1000);last=now;
+    state.t+=dt;
+    if(state.playing){
+      var w=state.speed*state.dir*1.2; // rad/s
+      state.wheel+=w*dt;
+      state.crank+=w*dt;
+      state.dist+=w*60*dt/20*1; // px of ground
+    }
+    clouds.forEach(function(c){
+      if(state.playing)c.x-=c.v*dt*state.dir*(0.3+state.speed*0.15);
+      c.x=((c.x+100)%1000+1000)%1000-100;
+      c.g.setAttribute('transform','translate('+c.x.toFixed(1)+','+c.y+')');
+    });
+    render();
+    uiAcc+=dt;if(uiAcc>0.1){uiAcc=0;ui()}
+    requestAnimationFrame(frame);
+  }
+
+  function doHonk(){state.honks++;state.honkT=state.t;ui()}
+  $('playBtn').addEventListener('click',function(){state.playing=!state.playing;ui()});
+  $('speed').addEventListener('input',function(e){state.speed=parseFloat(e.target.value);ui()});
+  $('honkBtn').addEventListener('click',doHonk);
+  $('dirBtn').addEventListener('click',function(){state.dir*=-1;ui()});
+  bird.style.cursor='pointer';
+  bird.addEventListener('click',doHonk);
+  document.addEventListener('keydown',function(e){
+    if(e.target&&e.target.tagName==='BUTTON')return;
+    if(e.code==='Space'){e.preventDefault();state.playing=!state.playing}
+    else if(e.key==='ArrowUp'||e.key==='ArrowRight'){state.speed=Math.min(10,state.speed+0.5)}
+    else if(e.key==='ArrowDown'||e.key==='ArrowLeft'){state.speed=Math.max(0,state.speed-0.5)}
+    else if(e.key==='h'||e.key==='H'){doHonk()}
+    $('speed').value=state.speed;ui();
+  });
+
+  ui();render();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

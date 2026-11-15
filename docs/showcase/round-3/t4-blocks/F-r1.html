@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t4-blocks/F-r1"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Sandbox 32x32</title>
+<style>
+:root{--bg:#1d2127;--panel:#2a3039;--ink:#e9e4d6;--dim:#9aa1ab;--accent:#f2b84b}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 16px;overflow-x:hidden}
+h1{margin:0;font-size:16px;letter-spacing:.04em;font-weight:600}
+h1 span{color:var(--dim);font-weight:400}
+#bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.sw{display:flex;align-items:center;gap:8px;min-height:44px;padding:4px 12px 4px 6px;background:var(--panel);color:var(--ink);border:2px solid transparent;border-radius:8px;font:inherit;cursor:pointer}
+.sw i{display:block;width:30px;height:30px;border-radius:5px;border:2px solid rgba(0,0,0,.45)}
+.sw b{font-weight:600;color:var(--dim);font-size:12px;border:1px solid var(--dim);border-radius:4px;padding:0 5px}
+.sw[aria-pressed=true]{border-color:var(--accent);background:#38404b}
+.sw[aria-pressed=true] b{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+.sw:hover{background:#343c47}
+.sw.erase i{background:repeating-linear-gradient(45deg,#3a424d 0 5px,#2a3039 5px 10px)}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#clear{min-height:44px;padding:0 16px;background:transparent;color:var(--ink);border:2px solid #7a4a4a;border-radius:8px;font:inherit;cursor:pointer}
+#clear:hover{background:#5a2f2f}
+#clear.arm{background:#a43c3c;border-color:#e57a7a}
+#undo{min-height:44px;padding:0 14px;background:var(--panel);color:var(--ink);border:2px solid transparent;border-radius:8px;font:inherit;cursor:pointer}
+#undo:disabled{opacity:.4;cursor:default}
+#wrap{position:relative;line-height:0;border-radius:4px;box-shadow:0 0 0 3px #0e1114,0 10px 30px rgba(0,0,0,.5)}
+canvas{display:block;touch-action:none;cursor:crosshair;border-radius:2px}
+#status{min-height:20px;color:var(--dim);font-variant-numeric:tabular-nums;text-align:center}
+#status b{color:var(--ink);font-weight:600}
+#hint{color:var(--dim);font-size:12px;text-align:center}
+kbd{font:inherit;border:1px solid var(--dim);border-radius:3px;padding:0 4px}
+</style>
+</head>
+<body>
+<h1>BLOCK SANDBOX <span>32 &times; 32</span></h1>
+<div id="bar" role="toolbar" aria-label="Block kinds">
+  <button class="sw" data-k="1" aria-pressed="true"><i style="background:#6f9f4a"></i>Grass <b>1</b></button>
+  <button class="sw" data-k="2" aria-pressed="false"><i style="background:#8a5a3a"></i>Wood <b>2</b></button>
+  <button class="sw" data-k="3" aria-pressed="false"><i style="background:#8c939c"></i>Stone <b>3</b></button>
+  <button class="sw" data-k="4" aria-pressed="false"><i style="background:#f1e6c2"></i>Sand <b>4</b></button>
+  <button class="sw erase" data-k="0" aria-pressed="false"><i></i>Erase <b>0</b></button>
+  <button id="undo" disabled title="Ctrl/Cmd+Z">Undo</button>
+  <button id="clear" title="Clear the world (press twice)">Clear</button>
+</div>
+<div id="wrap"><canvas id="c" aria-label="32 by 32 block world"></canvas></div>
+<div id="status" aria-live="polite"></div>
+<div id="hint"><kbd>Click</kbd> place &middot; <kbd>Right-click</kbd> remove &middot; drag to paint &middot; <kbd>1</kbd>-<kbd>4</kbd> pick &middot; <kbd>0</kbd> erase</div>
+<script>
+(function(){
+  var N=32, CELL=20;
+  var KINDS={
+    1:{name:'Grass',c:'#6f9f4a',hi:'#8cc062',lo:'#4f7a33'},
+    2:{name:'Wood', c:'#8a5a3a',hi:'#a8734d',lo:'#623e25'},
+    3:{name:'Stone',c:'#8c939c',hi:'#b0b7bf',lo:'#5f656d'},
+    4:{name:'Sand', c:'#f1e6c2',hi:'#fff7dc',lo:'#cbbd90'}
+  };
+  var world=new Uint8Array(N*N);      // 0 empty, 1..4 kinds
+  var sel=1, hov=-1, painting=0, strokeStart=null, history=[], pops={};
+  var cv=document.getElementById('c'), ctx=cv.getContext('2d');
+  var statusEl=document.getElementById('status'), undoBtn=document.getElementById('undo'), clearBtn=document.getElementById('clear');
+  var clearTimer=0, dpr=1;
+
+  function fit(){
+    var w=Math.min(window.innerWidth-32, 800);
+    var h=window.innerHeight-210;
+    CELL=Math.max(10,Math.min(24,Math.floor(Math.min(w,Math.max(h,320))/N)));
+    dpr=window.devicePixelRatio||1;
+    var px=N*CELL;
+    cv.width=px*dpr; cv.height=px*dpr;
+    cv.style.width=px+'px'; cv.style.height=px+'px';
+    draw();
+  }
+
+  function counts(){
+    var c=[0,0,0,0,0],t=0;
+    for(var i=0;i<world.length;i++){c[world[i]]++; if(world[i])t++;}
+    return {c:c,t:t};
+  }
+  function say(extra){
+    var k=counts(), s='<b>'+k.t+'</b> / 1024 blocks';
+    if(k.t){
+      var parts=[];
+      for(var i=1;i<=4;i++) if(k.c[i]) parts.push(KINDS[i].name+' '+k.c[i]);
+      s+=' &middot; '+parts.join(', ');
+    } else s+=' &middot; empty world';
+    if(hov>=0){
+      var x=hov%N,y=(hov/N)|0, v=world[hov];
+      s+=' &middot; cell '+(x+1)+','+(y+1)+(v?' ('+KINDS[v].name+')':' (empty)');
+    }
+    if(extra) s=extra+' &middot; '+s;
+    statusEl.innerHTML=s;
+    undoBtn.disabled=!history.length;
+  }
+
+  function draw(){
+    var S=CELL*dpr;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,cv.width,cv.height);
+    // ground
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      ctx.fillStyle=((x+y)&1)?'#262b32':'#2b3138';
+      ctx.fillRect(x*S,y*S,S,S);
+    }
+    // blocks
+    var now=performance.now(), animating=false;
+    for(var i=0;i<N*N;i++){
+      var v=world[i]; if(!v) continue;
+      var x=i%N,y=(i/N)|0,k=KINDS[v],inset=0;
+      var p=pops[i];
+      if(p){var t=(now-p)/140; if(t<1){inset=(1-t)*CELL*0.35*dpr; animating=true;} else delete pops[i];}
+      var X=x*S+inset,Y=y*S+inset,W=S-inset*2;
+      ctx.fillStyle=k.c; ctx.fillRect(X,Y,W,W);
+      var b=Math.max(1,Math.round(S*0.12));
+      ctx.fillStyle=k.hi; ctx.fillRect(X,Y,W,b); ctx.fillRect(X,Y,b,W);
+      ctx.fillStyle=k.lo; ctx.fillRect(X,Y+W-b,W,b); ctx.fillRect(X+W-b,Y,b,W);
+      ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.lineWidth=1;
+      ctx.strokeRect(X+.5,Y+.5,W-1,W-1);
+    }
+    // grid lines
+    ctx.lineWidth=1;
+    for(var g=0;g<=N;g++){
+      ctx.strokeStyle=(g%8===0)?'rgba(255,255,255,.22)':'rgba(255,255,255,.07)';
+      ctx.beginPath(); ctx.moveTo(Math.round(g*S)+.5,0); ctx.lineTo(Math.round(g*S)+.5,N*S); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,Math.round(g*S)+.5); ctx.lineTo(N*S,Math.round(g*S)+.5); ctx.stroke();
+    }
+    // hover: ghost on empty cell, outline always; red outline when it will remove
+    if(hov>=0){
+      var hx=(hov%N)*S, hy=((hov/N)|0)*S, occ=world[hov]!==0;
+      var removing=(sel===0)||(painting===2);
+      if(!removing && !occ && sel){
+        ctx.globalAlpha=.55; ctx.fillStyle=KINDS[sel].c; ctx.fillRect(hx,hy,S,S); ctx.globalAlpha=1;
+      }
+      var willRemove=occ&&(removing);
+      ctx.lineWidth=Math.max(2,dpr*2);
+      ctx.strokeStyle=willRemove?'#ff6b5e':(painting===2?'#ff6b5e':'#f2b84b');
+      ctx.strokeRect(hx+ctx.lineWidth/2,hy+ctx.lineWidth/2,S-ctx.lineWidth,S-ctx.lineWidth);
+      if(willRemove){
+        ctx.beginPath();ctx.moveTo(hx+S*.3,hy+S*.3);ctx.lineTo(hx+S*.7,hy+S*.7);ctx.moveTo(hx+S*.7,hy+S*.3);ctx.lineTo(hx+S*.3,hy+S*.7);ctx.stroke();
+      }
+    }
+    if(animating) requestAnimationFrame(draw);
+  }
+
+  function cellAt(e){
+    var r=cv.getBoundingClientRect();
+    var x=Math.floor((e.clientX-r.left)/r.width*N), y=Math.floor((e.clientY-r.top)/r.height*N);
+    if(x<0||y<0||x>=N||y>=N) return -1;
+    return y*N+x;
+  }
+
+  function setCell(i,v){
+    if(i<0||world[i]===v) return false;
+    strokeStart.push([i,world[i]]);
+    world[i]=v;
+    if(v) pops[i]=performance.now();
+    return true;
+  }
+  function apply(i){
+    // painting: 1 = place selected (or erase if Erase picked), 2 = remove
+    if(painting===2||sel===0) return setCell(i,0);
+    return setCell(i,sel);
+  }
+
+  cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+  cv.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    cv.setPointerCapture(e.pointerId);
+    painting=(e.button===2)?2:1;
+    strokeStart=[];
+    hov=cellAt(e);
+    apply(hov); draw(); say();
+  });
+  cv.addEventListener('pointermove',function(e){
+    var i=cellAt(e);
+    if(i!==hov){
+      hov=i;
+      if(painting) apply(i);
+      draw(); say();
+    }
+  });
+  function endStroke(){
+    if(!painting) return;
+    painting=0;
+    if(strokeStart&&strokeStart.length) history.push(strokeStart);
+    if(history.length>200) history.shift();
+    strokeStart=null; draw(); say();
+  }
+  cv.addEventListener('pointerup',endStroke);
+  cv.addEventListener('pointercancel',endStroke);
+  cv.addEventListener('pointerleave',function(){ if(!painting){hov=-1;draw();say();} });
+
+  function pick(k){
+    sel=k;
+    var b=document.querySelectorAll('.sw');
+    for(var i=0;i<b.length;i++) b[i].setAttribute('aria-pressed', +b[i].dataset.k===k?'true':'false');
+    draw(); say(k?'Selected '+KINDS[k].name:'Eraser');
+  }
+  document.querySelectorAll('.sw').forEach(function(b){
+    b.addEventListener('click',function(){pick(+b.dataset.k);});
+  });
+
+  function undo(){
+    var s=history.pop(); if(!s) return;
+    for(var j=s.length-1;j>=0;j--) world[s[j][0]]=s[j][1];
+    draw(); say('Undid a stroke');
+  }
+  undoBtn.addEventListener('click',undo);
+
+  function disarm(){clearBtn.classList.remove('arm');clearBtn.textContent='Clear';clearTimeout(clearTimer);}
+  clearBtn.addEventListener('click',function(){
+    if(!clearBtn.classList.contains('arm')){
+      if(!counts().t){say('Already empty');return;}
+      clearBtn.classList.add('arm'); clearBtn.textContent='Sure? Click again';
+      clearTimer=setTimeout(disarm,2500); return;
+    }
+    disarm();
+    var s=[];
+    for(var i=0;i<world.length;i++) if(world[i]){s.push([i,world[i]]);world[i]=0;}
+    history.push(s); draw(); say('World cleared (Undo brings it back)');
+  });
+
+  window.addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    if(e.key>='0'&&e.key<='4'){pick(+e.key);}
+    else if(e.key==='e'||e.key==='E'){pick(0);}
+  });
+  window.addEventListener('resize',fit);
+  fit(); say();
+})();
+</script>
+</body>
+</html>

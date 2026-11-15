@@ -1,0 +1,73 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>compose</title>
+<body style="margin:0">
+<canvas id="c" width="1080" height="1350"></canvas>
+<script>
+// Replays each scene's screencast frames on their own timing, draws the macOS cursor at the recorded pointer
+// position (interpolated between pointer events) with the system's shadow, and records the canvas to MP4.
+const load = src => new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = src })
+function at(track, t) {
+  let lo = 0, hi = track.length - 1
+  if (t <= track[0].t) return track[0]
+  if (t >= track[hi].t) return track[hi]
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (track[m].t <= t) lo = m; else hi = m }
+  const a = track[lo], b = track[hi], k = (t - a.t) / Math.max(1, b.t - a.t)
+  return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, shape: a.shape, down: a.down, downAt: a.t }
+}
+window.compose = async (scenes) => {
+  const man = await (await fetch('manifest.json')).json(), c = document.getElementById('c'), g = c.getContext('2d')
+  const cs = man.cs, cur = {}
+  for (const k of Object.keys(man.cursors)) cur[k] = { img: await load(k + '.svg'), m: man.cursors[k] }
+  const shapeKey = { arrow: 'arrow', hand: 'pointinghand', ibeam: 'ibeam' }
+  const parts = []
+  for (const s of scenes) {
+    const S = man.scenes[s], fr = []
+    for (const f of S.frames) fr.push({ t: f.t, img: await createImageBitmap(await (await fetch(f.src)).blob()) })
+    parts.push({ dur: S.duration, fr, track: S.track })
+  }
+  const drawCursor = (p, now) => {
+    const { img, m } = cur[shapeKey[p.shape] || 'arrow']
+    let k = 1
+    if (p.down) k = 1 - 0.1 * Math.min(1, (now - p.downAt) / 30)   // a small press while the button is held
+    g.save()
+    g.translate(p.x, p.y); g.scale(k, k); g.translate(-m.hotx * cs, -m.hoty * cs)
+    if (m.shadow && m.shadow[3] > 0) {
+      g.shadowColor = `rgba(${m.shadow[0] * 255},${m.shadow[1] * 255},${m.shadow[2] * 255},${m.shadow[3]})`
+      g.shadowBlur = m.blur * cs * 1.5; g.shadowOffsetY = -m.shadowy * cs
+    }
+    g.drawImage(img, 0, 0, m.w * cs, m.h * cs)
+    g.restore()
+  }
+  const type = ['video/mp4;codecs=avc1.640028', 'video/mp4;codecs=avc1.42E01E', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t))
+  const rec = new MediaRecorder(c.captureStream(60), { mimeType: type, videoBitsPerSecond: 10e6 }), chunks = []
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data)
+  g.drawImage(parts[0].fr[0].img, 0, 0); rec.start(250)
+  for (const p of parts) {
+    const t0 = performance.now(); let i = 0
+    while (performance.now() - t0 < p.dur) {
+      const now = performance.now() - t0
+      while (i + 1 < p.fr.length && p.fr[i + 1].t <= now) i++
+      if (p.fr[i]) g.drawImage(p.fr[i].img, 0, 0)
+      drawCursor(at(p.track, now), now)
+      await new Promise(r => requestAnimationFrame(r))
+    }
+  }
+  rec.stop(); await new Promise(r => rec.onstop = r)
+  window.__buf = new Uint8Array(await new Blob(chunks, { type }).arrayBuffer())
+  return window.__buf.length
+}
+// One still of a scene at its poster moment: the screencast frame plus the cursor, as a JPEG data URL.
+window.still = async (scene) => {
+  const man = await (await fetch('manifest.json')).json(), S = man.scenes[scene], g = document.getElementById('c').getContext('2d'), cs = man.cs
+  const t = S.posterAt, f = S.frames.filter(f => f.t <= t).pop() || S.frames[0]
+  g.drawImage(await createImageBitmap(await (await fetch(f.src)).blob()), 0, 0)
+  const p = at(S.track, t), key = { arrow: 'arrow', hand: 'pointinghand', ibeam: 'ibeam' }[p.shape] || 'arrow', m = man.cursors[key], img = await load(key + '.svg')
+  g.save(); g.translate(p.x - m.hotx * cs, p.y - m.hoty * cs)
+  if (m.shadow && m.shadow[3] > 0) { g.shadowColor = `rgba(0,0,0,${m.shadow[3]})`; g.shadowBlur = m.blur * cs * 1.5; g.shadowOffsetY = -m.shadowy * cs }
+  g.drawImage(img, 0, 0, m.w * cs, m.h * cs); g.restore()
+  return document.getElementById('c').toDataURL('image/jpeg', 0.92)
+}
+window.chunk = (i, n) => { let s = ''; const a = window.__buf.subarray(i, i + n); for (let k = 0; k < a.length; k += 0x8000) s += String.fromCharCode.apply(null, a.subarray(k, k + 0x8000)); return btoa(s) }
+</script>
+</body>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t3-bento/A-r3"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ember &amp; Oak Coffee Menu</title>
+<style>
+:root{
+  --bg:#f3ece1;--ink:#2a1d15;--muted:#7a6656;--card:#fffaf2;--line:#e4d8c6;
+  --accent:#b4501f;--accent2:#2f4a3a;--cream:#f0dfc2;--dark:#2a1d15;
+  --r:22px;--shadow:0 1px 0 #fff inset,0 8px 24px -12px rgba(60,35,15,.25);
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1a120d;--ink:#f5ead9;--muted:#b3a08c;--card:#261a13;--line:#3a2a20;--cream:#3a2a1c;--dark:#0f0a07;--accent:#e07a3f;--accent2:#7fb08f;--shadow:0 8px 24px -12px rgba(0,0,0,.6)}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Iowan Old Style',serif;line-height:1.4;padding:24px 16px 64px}
+.wrap{max-width:980px;margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.brand{font-size:1.4rem;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:10px}
+.brand svg{width:30px;height:30px}
+button{font:inherit;color:inherit;cursor:pointer}
+.toggle{background:var(--dark);color:var(--cream);border:0;border-radius:999px;padding:11px 18px;display:flex;align-items:center;gap:10px;font-family:system-ui,sans-serif;font-weight:600;font-size:.9rem}
+.toggle:focus-visible,.tile:focus-visible,.chip:focus-visible,.opt:focus-visible,.add:focus-visible,.qty button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.burger{width:16px;height:12px;position:relative}
+.burger i{position:absolute;left:0;right:0;height:2px;background:currentColor;border-radius:2px;transition:.3s}
+.burger i:nth-child(1){top:0}.burger i:nth-child(2){top:5px}.burger i:nth-child(3){top:10px}
+.open .burger i:nth-child(1){top:5px;transform:rotate(45deg)}
+.open .burger i:nth-child(2){opacity:0}
+.open .burger i:nth-child(3){top:5px;transform:rotate(-45deg)}
+.menu{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1)}
+.open .menu{grid-template-rows:1fr}
+.menu>.inner{overflow:hidden;min-height:0}
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(130px,auto);gap:12px;padding:4px 0 8px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden;text-align:left;
+  opacity:0;transform:translateY(12px) scale(.97);transition:opacity .4s,transform .4s,box-shadow .2s,grid-column .3s}
+.open .tile{opacity:1;transform:none}
+.open .tile:nth-child(2){transition-delay:.05s}.open .tile:nth-child(3){transition-delay:.1s}.open .tile:nth-child(4){transition-delay:.15s}.open .tile:nth-child(5){transition-delay:.2s}.open .tile:nth-child(6){transition-delay:.25s}
+.tile h3{margin:0 0 4px;font-size:1.1rem}
+.tile small,.tile p{font-family:system-ui,sans-serif;color:var(--muted);font-size:.82rem;margin:0}
+.t-hero{grid-column:span 2;grid-row:span 2;background:var(--dark);color:var(--cream);border:0;display:flex;flex-direction:column;justify-content:space-between}
+.t-hero p{color:#cdb99d}
+.t-hero h2{font-size:2rem;margin:6px 0;line-height:1.05}
+.cat{cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+.cat:hover{transform:translateY(-3px)}
+.cat[aria-pressed=true]{background:var(--accent);color:#fff;border-color:transparent}
+.cat[aria-pressed=true] small{color:#ffe6d3}
+.cat svg{width:34px;height:34px}
+.t-wide{grid-column:span 2}
+.t-cart{background:var(--accent2);color:#fff;border:0;display:flex;flex-direction:column;justify-content:space-between}
+.t-cart small{color:#d8eadd}
+.big{font-size:2.2rem;font-weight:700}
+.eyebrow{font-family:system-ui,sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:.68rem;opacity:.75}
+.list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.item{display:flex;align-items:center;gap:10px;justify-content:space-between;background:color-mix(in srgb,var(--cream) 55%,transparent);border-radius:14px;padding:8px 12px;font-family:system-ui,sans-serif;font-size:.88rem}
+.item b{font-family:Georgia,serif;font-weight:600;display:block;font-size:.98rem}
+.add{background:var(--dark);color:var(--cream);border:0;border-radius:999px;width:32px;height:32px;font-size:1.1rem;flex:none}
+.add:active{transform:scale(.9)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip,.opt{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-family:system-ui,sans-serif;font-size:.8rem}
+.chip[aria-pressed=true],.opt[aria-checked=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.opts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.qty{display:flex;align-items:center;gap:8px;margin-top:8px}
+.qty button{width:30px;height:30px;border-radius:50%;border:1px solid currentColor;background:transparent}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,40px);background:var(--dark);color:var(--cream);padding:10px 18px;border-radius:999px;font-family:system-ui,sans-serif;font-size:.88rem;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.steam path{stroke-dasharray:4 4;animation:st 3s linear infinite}
+@keyframes st{to{stroke-dashoffset:-32}}
+@media(max-width:760px){.bento{grid-template-columns:repeat(2,1fr)}.t-hero{grid-row:span 1}}
+@media(max-width:420px){.t-wide,.t-hero{grid-column:span 2}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="steam" aria-hidden="true"><path d="M6 14h16v6a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6z"/><path d="M22 16h2a3 3 0 0 1 0 6h-2"/><path d="M11 5c-2 2 2 3 0 5M16 5c-2 2 2 3 0 5"/></svg>
+      Ember &amp; Oak
+    </div>
+    <button class="toggle" id="toggle" aria-expanded="false" aria-controls="menu"><span class="burger"><i></i><i></i><i></i></span><span id="toggleLabel">Open menu</span></button>
+  </header>
+
+  <nav class="menu" id="menu" aria-label="Coffee menu">
+   <div class="inner">
+    <div class="bento">
+      <section class="tile t-hero" aria-label="Featured">
+        <div>
+          <span class="eyebrow">Today's pour</span>
+          <h2 id="heroName">Ember House Blend</h2>
+          <p id="heroNote">Dark cocoa, toasted oak, a little orange peel.</p>
+        </div>
+        <div>
+          <div class="chips" role="group" aria-label="Size">
+            <button class="chip" data-size="S" aria-pressed="false">Small</button>
+            <button class="chip" data-size="M" aria-pressed="true">Medium</button>
+            <button class="chip" data-size="L" aria-pressed="false">Large</button>
+          </div>
+          <div class="qty"><button id="minus" aria-label="Fewer">&minus;</button><b id="qty" aria-live="polite">1</b><button id="plus" aria-label="More">+</button>
+            <button class="add" id="addHero" style="width:auto;padding:0 16px;margin-left:auto;font-family:system-ui;font-size:.85rem;background:var(--accent);color:#fff">Add &middot; <span id="heroPrice">$4.00</span></button></div>
+        </div>
+      </section>
+
+      <button class="tile cat" data-cat="espresso" aria-pressed="true">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 12h14v6a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5z"/><path d="M22 14h2a2.5 2.5 0 0 1 0 5h-2"/></svg>
+        <span><h3>Espresso</h3><small>4 drinks</small></span>
+      </button>
+      <button class="tile cat" data-cat="filter" aria-pressed="false">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 8h18l-5 8v8h-8v-8z"/></svg>
+        <span><h3>Filter</h3><small>3 drinks</small></span>
+      </button>
+      <button class="tile cat" data-cat="cold" aria-pressed="false">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 8h14l-2 18H11z"/><path d="M12 15h8"/></svg>
+        <span><h3>Cold</h3><small>3 drinks</small></span>
+      </button>
+      <button class="tile cat" data-cat="beans" aria-pressed="false">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="16" cy="16" rx="8" ry="11" transform="rotate(30 16 16)"/><path d="M11 24c6-4 4-12 10-16"/></svg>
+        <span><h3>Beans</h3><small>Take-home bags</small></span>
+      </button>
+
+      <section class="tile t-wide" aria-label="Drinks">
+        <span class="eyebrow" id="catTitle">Espresso</span>
+        <ul class="list" id="list"></ul>
+      </section>
+
+      <section class="tile" aria-label="Milk">
+        <h3>Milk</h3><small>Applies to milk drinks</small>
+        <div class="opts" role="radiogroup" aria-label="Milk">
+          <button class="opt" role="radio" aria-checked="true" data-milk="Whole">Whole</button>
+          <button class="opt" role="radio" aria-checked="false" data-milk="Oat">Oat</button>
+          <button class="opt" role="radio" aria-checked="false" data-milk="Almond">Almond</button>
+        </div>
+      </section>
+
+      <section class="tile t-cart" aria-label="Order">
+        <div><span class="eyebrow">Your order</span><div class="big" id="total">$0.00</div></div>
+        <div><small id="cartInfo">Nothing yet</small>
+          <div class="opts"><button class="opt" id="clear" style="color:var(--ink)">Clear</button></div></div>
+      </section>
+    </div>
+   </div>
+  </nav>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var DATA={
+    espresso:[["Espresso",3.0],["Cortado",3.75],["Flat White",4.5],["Mocha",5.0]],
+    filter:[["Pour-over",4.25],["Batch Brew",3.0],["Aeropress",4.5]],
+    cold:[["Cold Brew",4.5],["Iced Latte",5.0],["Nitro",5.5]],
+    beans:[["House Blend 12oz",16],["Ethiopia Guji 12oz",19],["Decaf Swiss Water",17]]
+  };
+  var NAMES={espresso:"Espresso",filter:"Filter",cold:"Cold",beans:"Beans"};
+  var MILKY={"Cortado":1,"Flat White":1,"Mocha":1,"Iced Latte":1};
+  var SIZE={S:-0.5,M:0,L:0.75};
+  var S={open:false,cat:"espresso",size:"M",qty:1,milk:"Whole",cart:[]};
+  var $=function(s,r){return (r||document).querySelector(s)},$$=function(s){return [].slice.call(document.querySelectorAll(s))};
+  var app=$("#app"),toastEl=$("#toast"),tt;
+  function toast(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){toastEl.classList.remove("show")},1800)}
+  function money(n){return "$"+n.toFixed(2)}
+  function heroPrice(){return (4+SIZE[S.size])*S.qty}
+  function render(){
+    app.classList.toggle("open",S.open);
+    $("#toggle").setAttribute("aria-expanded",S.open);
+    $("#toggleLabel").textContent=S.open?"Close menu":"Open menu";
+    $("#menu").inert=!S.open;
+    $$(".cat").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.cat===S.cat)});
+    $("#catTitle").textContent=NAMES[S.cat];
+    var ul=$("#list");ul.innerHTML="";
+    DATA[S.cat].forEach(function(d,i){
+      var li=document.createElement("li");li.className="item";
+      var milk=MILKY[d[0]]?" &middot; "+S.milk+" milk":"";
+      li.innerHTML="<span><b>"+d[0]+"</b>"+money(d[1])+milk+"</span>";
+      var a=document.createElement("button");a.className="add";a.textContent="+";a.setAttribute("aria-label","Add "+d[0]);
+      a.onclick=function(){addItem(d[0]+(MILKY[d[0]]?" ("+S.milk+")":""),d[1])};
+      li.appendChild(a);ul.appendChild(li);
+    });
+    $$(".chip").forEach(function(c){c.setAttribute("aria-pressed",c.dataset.size===S.size)});
+    $$(".opt[data-milk]").forEach(function(c){c.setAttribute("aria-checked",c.dataset.milk===S.milk)});
+    $("#qty").textContent=S.qty;
+    $("#heroPrice").textContent=money(heroPrice());
+    var n=0,t=0;S.cart.forEach(function(c){n+=c.q;t+=c.p*c.q});
+    $("#total").textContent=money(t);
+    $("#cartInfo").textContent=n?n+" item"+(n>1?"s":"")+" in your order":"Nothing yet";
+  }
+  function addItem(name,price,q){
+    q=q||1;
+    var f=S.cart.filter(function(c){return c.n===name&&c.p===price})[0];
+    if(f)f.q+=q;else S.cart.push({n:name,p:price,q:q});
+    toast("Added "+name);render();
+  }
+  $("#toggle").onclick=function(){S.open=!S.open;render()};
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.open){S.open=false;render();$("#toggle").focus()}});
+  $$(".cat").forEach(function(b){b.onclick=function(){S.cat=b.dataset.cat;render()}});
+  $$(".chip").forEach(function(c){c.onclick=function(){S.size=c.dataset.size;render()}});
+  $$(".opt[data-milk]").forEach(function(c){c.onclick=function(){S.milk=c.dataset.milk;render()}});
+  $("#minus").onclick=function(){S.qty=Math.max(1,S.qty-1);render()};
+  $("#plus").onclick=function(){S.qty=Math.min(9,S.qty+1);render()};
+  $("#addHero").onclick=function(){addItem("Ember House Blend ("+S.size+")",4+SIZE[S.size],S.qty);S.qty=1;render()};
+  $("#clear").onclick=function(){S.cart=[];toast("Order cleared");render()};
+  render();
+})();
+</script>
+</body>
+</html>

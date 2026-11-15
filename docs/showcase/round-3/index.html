@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>MetaDump confirmation test</title>
+<meta name="description" content="Same model, same prompt, three ways: the prompt alone, MetaDump's quick mode, and the full build. Live builds from the MetaDump confirmation test.">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--muted:#6b6862;--line:#e4e1da;--b:#2d5bd7;--f:#9a5b2c;--chip:#efede7;--on:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141413;--card:#1d1d1b;--ink:#ecebe7;--muted:#a19d95;--line:#2e2d2a;--b:#7d9cff;--f:#d99a6c;--chip:#272724;--on:#141413}}
+:root[data-theme="dark"]{--bg:#141413;--card:#1d1d1b;--ink:#ecebe7;--muted:#a19d95;--line:#2e2d2a;--b:#7d9cff;--f:#d99a6c;--chip:#272724;--on:#141413}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1320px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:clamp(26px,4vw,40px);line-height:1.15;margin:0 0 10px;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:800px;margin:0 0 8px}.lede a,.meta a{color:inherit}
+.meta{font-size:13px;color:var(--muted);margin:0 0 14px;max-width:800px}
+.verdicts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:18px 0 30px}
+.verdict{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15px}
+.verdict h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.pill{font:600 12px system-ui;padding:2px 9px;border-radius:999px}.pill.yes{background:var(--b);color:var(--on)}.pill.no{background:var(--chip);color:var(--ink)}
+.verdict p{margin:0;color:var(--muted)}.verdict b{color:var(--ink)}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:0 0 28px}
+.head{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+h2.t{font-size:20px;margin:0}.prompt{font:15px/1.5 ui-serif,Georgia,serif;margin:0 0 14px;color:var(--ink)}
+.prompt::before{content:"Prompt: ";font:600 12px system-ui,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.score{font-size:14px;color:var(--muted)}.score b{color:var(--ink);font-variant-numeric:tabular-nums}.score .bb{color:var(--b)}.score .ff{color:var(--f)}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:1000px){.trio{grid-template-columns:1fr 1fr}.side.f{grid-column:1/-1;max-width:calc(50% - 8px)}}
+@media (max-width:640px){.trio{grid-template-columns:1fr}.side.f{max-width:none}}
+.side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.tag{font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip)}
+.side.q .tag{color:var(--on);background:var(--b)}.side.f .tag{color:var(--on);background:var(--f)}
+.runs{display:flex;gap:4px;margin-left:auto}
+.runs button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:2px 8px;cursor:pointer;min-height:28px}
+.runs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.runs button:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+.runscore{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* a stage gives each build a fixed 600x820 viewport and scales it to the column, so all three keep the same layout */
+.stage{position:relative;width:100%;aspect-ratio:600/820;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff}
+.side.q .stage{border-color:var(--b)}
+.stage iframe{position:absolute;top:0;left:0;width:600px;height:820px;border:0;transform-origin:0 0;transform:scale(var(--s,.5))}
+.open{font-size:12px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}.finding{font-size:14px;margin:12px 0 0;max-width:900px}
+footer{font-size:13px;color:var(--muted);max-width:800px}footer a{color:inherit}
+.film{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;margin:0 0 30px}.film video{width:min(100%,340px);aspect-ratio:4/5;border-radius:12px;border:1px solid var(--line);background:#111}.film figcaption{flex:1 1 260px;font-size:15px;color:var(--muted);margin:0}.film figcaption b{color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+<h1>Same model, same prompt, three ways.</h1>
+<p class="meta">MetaDump’s confirmation test: four tasks picked by the owner after the skill was frozen, with the rules and the pass mark written down before any task was known.</p>
+<p class="lede">Every build below was made by Sonnet 5.5 at medium effort from the exact prompt shown. <b>Prompt alone</b> got just the prompt. <b>Quick mode</b> first wrote its own small meta dump in one pass, no agents. <b>Full build</b> first got a meta dump made by a swarm of Haiku agents (<a href="https://github.com/globalanomalyindex/metadump">MetaDump</a>’s <code>lite</code> depth). Blind Sonnet graders scored all twelve builds of each task without knowing which was which.</p>
+<div class="verdicts">
+  <div class="verdict"><h2><span class="pill yes">passed</span> Quick mode vs the prompt alone</h2><p>Won <b>65</b>, lost 25, tied 6 head to head. <b>+1.12</b> points of 10, p = 0.012, under the 0.025 set in advance.</p></div>
+  <div class="verdict"><h2><span class="pill no">did not pass</span> Full build vs the prompt alone</h2><p>Won 49, lost 23, tied 24. <b>+0.58</b> points, p = 0.036: the right direction, short of the bar.</p></div>
+  <div class="verdict"><h2>Read it with this</h2><p>Quick mode’s win leans on the block world (24–0–0); without it, +0.55 (p = 0.23). The prompt alone won the bento menu. 4 builds per side per task, AI graders.</p></div>
+</div>
+<p class="meta">Because of this test, quick mode is now MetaDump’s default (1.1.0): say “make a metadump for …” and you get quick. <code>lite</code> and <code>heavy</code> run the swarm.</p>
+<figure class="film"><video src="metadump-ab-round-3.mp4" controls muted playsinline loop preload="metadata"></video><figcaption><b>The video.</b> Run 1 of the prompt alone against run 1 of quick mode on every task, filmed in a browser and used as a visitor would: the speed slider dragged, colors mixed and painted, the menu opened, a brick arch built. Then the scores, full build included. No sound.</figcaption></figure>
+<p class="meta">Run 1 of each side is shown by default, on every task; run numbers were fixed before grading. Switch runs to see all four. Scores are the registered blind grades (mean of three graders per build). Full method, grades and every file: <a href="https://github.com/globalanomalyindex/metadump/tree/main/ab-tests/2026-11-13-confirmation-sonnet">ab-tests/2026-11-13-confirmation-sonnet</a>. These pages are copies of the builds with one line added at the top, which keeps each build’s saved state apart from the others on this site; the originals are in the test folder.</p>
+<div id="tasks"></div>
+<footer>MetaDump is free and open source: <a href="https://github.com/globalanomalyindex/metadump">github.com/globalanomalyindex/metadump</a>. Small samples (4 builds per side per task) and AI graders from the same model family, so read these as a direction, not proof.</footer>
+</main>
+<script>
+// Registered grades from results.md: task means, per-run means, head to head against the prompt alone (wins, losses, ties).
+const DATA = [
+  { slug: 't1-pelican', title: 'Pelican on a bike', prompt: 'an SVG animation of a pelican riding a bike', scores: { A: 7.17, Q: 7.25, F: 8.17 }, qa: [10, 8, 6], fa: [15, 3, 6],
+    runs: { A: { 'A-r1': 6.33, 'A-r2': 7.33, 'A-r3': 8.0, 'A-r4': 7.0 }, Q: { 'Q-r1': 6.67, 'Q-r2': 7.33, 'Q-r3': 7.0, 'Q-r4': 8.0 }, F: { 'F-r1': 8.67, 'F-r2': 8.33, 'F-r3': 8.67, 'F-r4': 7.0 } },
+    note: 'The full build won this task: its four sessions built four different bikes. The prompt alone and quick mode each drew the same side view four times, and scored about the same.', hint: 'They animate on their own; most have a speed control.' },
+  { slug: 't2-ascii', title: 'ASCII color mixer', prompt: 'a simple interactive ascii color mixing engine', scores: { A: 5.67, Q: 7.92, F: 7.08 }, qa: [22, 2, 0], fa: [19, 1, 4],
+    runs: { A: { 'A-r1': 4.67, 'A-r2': 6.67, 'A-r3': 5.67, 'A-r4': 5.67 }, Q: { 'Q-r1': 8.67, 'Q-r2': 6.33, 'Q-r3': 8.67, 'Q-r4': 8.0 }, F: { 'F-r1': 7.67, 'F-r2': 6.67, 'F-r3': 6.67, 'F-r4': 7.33 } },
+    note: 'Quick mode won. The prompt alone made four paint-on-a-grid canvases; the full build made four two-color mixers with a ratio slider; quick mode’s four dumps named four different engines and built them.', hint: 'Add colors, then drag on the grid to paint.' },
+  { slug: 't3-bento', title: 'Bento menu', prompt: 'a bento box-inspired collapsible UI menu component for a fictional coffee company site', scores: { A: 7.5, Q: 6.82, F: 7.17 }, qa: [9, 15, 0], fa: [5, 14, 5],
+    runs: { A: { 'A-r1': 8.33, 'A-r2': 7.33, 'A-r3': 6.83, 'A-r4': 7.5 }, Q: { 'Q-r1': 5.67, 'Q-r2': 5.67, 'Q-r3': 8.6, 'Q-r4': 7.33 }, F: { 'F-r1': 7.33, 'F-r2': 8.0, 'F-r3': 6.5, 'F-r4': 6.83 } },
+    note: 'The prompt alone won this one. Quick mode’s builds came out close to the prompt-alone builds, and two of them scored 5.67. The full build’s four are four brands and four ways of collapsing.', hint: 'Each menu starts closed: open it from its handle.' },
+  { slug: 't4-blocks', title: 'Block world', prompt: 'a simple block-building sandbox game with a 32x32 block world', scores: { A: 5.92, Q: 8.75, F: 6.17 }, qa: [24, 0, 0], fa: [10, 5, 9],
+    runs: { A: { 'A-r1': 7.0, 'A-r2': 6.0, 'A-r3': 5.67, 'A-r4': 5.0 }, Q: { 'Q-r1': 9.33, 'Q-r2': 8.0, 'Q-r3': 8.33, 'Q-r4': 9.33 }, F: { 'F-r1': 6.67, 'F-r2': 6.33, 'F-r3': 6.0, 'F-r4': 5.67 } },
+    note: 'Quick mode won all 24 head-to-heads. Its builds open on terrain or a built scene with nine or ten kinds of block; every full build opened on an empty flat grid with three or four. This task carries most of quick mode’s overall win.', hint: 'Pick a block, then click or drag in the world to build.' },
+];
+const ARMS = [['A', 'a', 'Prompt alone'], ['Q', 'q', 'Quick mode'], ['F', 'f', 'Full build']];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f2 = v => v.toFixed(2);
+const root = document.getElementById('tasks');
+const fit = new ResizeObserver(es => es.forEach(e => e.target.style.setProperty('--s', e.target.clientWidth / 600)));
+for (const t of DATA) {
+  const s = t.scores;
+  const score = `<span class="score">Mean score <b>${f2(s.A)}</b> · <b class="bb">${f2(s.Q)}</b> · <b class="ff">${f2(s.F)}</b> &nbsp;·&nbsp; quick vs prompt alone ${t.qa.join('–')}, full build ${t.fa.join('–')}</span>`;
+  const side = ([arm, cls, label]) => {
+    const runs = Object.keys(t.runs[arm]);
+    return `<div class="side ${cls}" data-arm="${arm}">
+      <div class="bar"><span class="tag">${label}</span><span class="runscore"></span>
+        <span class="runs" role="group" aria-label="${label} runs">${runs.map((r, i) => `<button type="button" data-run="${r}" aria-pressed="${i === 0}">run ${i + 1}</button>`).join('')}</span></div>
+      <div class="stage"><iframe title="${esc(t.title)}, ${label}, run 1" src="${t.slug}/${runs[0]}.html" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe></div>
+      <a class="open" href="${t.slug}/${runs[0]}.html" target="_blank" rel="noopener">open on its own ↗</a></div>`;
+  };
+  const sec = document.createElement('section');
+  sec.innerHTML = `<div class="head"><h2 class="t">${esc(t.title)}</h2>${score}</div><p class="prompt">${esc(t.prompt)}</p>
+    <div class="trio">${ARMS.map(side).join('')}</div><p class="finding">${esc(t.note)}</p><p class="hint">${esc(t.hint)}</p>`;
+  root.appendChild(sec);
+  sec.querySelectorAll('.stage').forEach(st => fit.observe(st));
+  sec.querySelectorAll('.side').forEach(el => {
+    const arm = el.dataset.arm, label = ARMS.find(a => a[0] === arm)[2], frame = el.querySelector('iframe'), open = el.querySelector('.open'), rs = el.querySelector('.runscore');
+    const show = (run, load) => {
+      if (load) frame.src = `${t.slug}/${run}.html`;
+      open.href = `${t.slug}/${run}.html`; frame.title = `${t.title}, ${label}, ${run}`;
+      el.querySelectorAll('.runs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.run === run)));
+      rs.textContent = `score ${f2(t.runs[arm][run])}`;
+    };
+    el.querySelectorAll('.runs button').forEach(b => b.addEventListener('click', () => show(b.dataset.run, true)));
+    show(Object.keys(t.runs[arm])[0], false);
+  });
+}
+</script>
+</body>
+</html>

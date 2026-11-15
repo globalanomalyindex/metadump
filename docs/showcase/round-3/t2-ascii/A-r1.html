@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t2-ascii/A-r1"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASCII Color Mixer</title>
+<style>
+:root{--bg:#0e0f12;--panel:#17191e;--line:#2a2d35;--fg:#d8dbe2;--dim:#7d8390;--acc:#ffcf5a}
+@media (prefers-color-scheme: light){:root{--bg:#f2f0ea;--panel:#fff;--line:#d6d2c6;--fg:#23252b;--dim:#6b6f7a;--acc:#b8650a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:16px}
+h1{font-size:16px;margin:0 0 12px;letter-spacing:.08em;text-transform:uppercase}
+h1 span{color:var(--acc)}
+.wrap{display:grid;grid-template-columns:300px 1fr;gap:16px;max-width:1100px;margin:0 auto}
+@media(max-width:760px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}
+.panel h2{font-size:12px;margin:0 0 8px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.side>.panel+.panel{margin-top:12px}
+.paints{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.paints button{border:1px solid var(--line);border-radius:4px;padding:8px 0;font:inherit;font-size:12px;cursor:pointer;color:#fff;text-shadow:0 0 3px #000}
+.paints button:hover{outline:2px solid var(--acc)}
+.bowl{height:64px;border-radius:4px;border:1px solid var(--line);margin-bottom:6px}
+.bowlascii{white-space:pre;font-size:12px;line-height:1.1;margin:0 0 6px;min-height:14px;overflow:hidden}
+.drops{display:flex;flex-wrap:wrap;gap:4px;min-height:22px;margin-bottom:8px}
+.drop{padding:1px 6px;border-radius:10px;font-size:11px;color:#fff;text-shadow:0 0 3px #000;cursor:pointer;border:1px solid var(--line)}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.btn{background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer}
+.btn:hover{border-color:var(--acc)}
+.btn.on{background:var(--acc);color:#000;border-color:var(--acc)}
+label{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:6px}
+label span{width:70px;color:var(--dim)}
+input[type=range]{flex:1;accent-color:var(--acc)}
+output{width:34px;text-align:right}
+.hex{font-size:12px;color:var(--dim)}
+#stage{background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;touch-action:none;cursor:crosshair;user-select:none}
+#grid{margin:0;white-space:pre;font:12px/12px ui-monospace,Menlo,Consolas,monospace;padding:6px;color:#fff}
+#grid span{display:inline}
+.status{margin-top:8px;font-size:12px;color:var(--dim)}
+</style>
+</head>
+<body>
+<h1>ASCII <span>Color</span> Mixer</h1>
+<div class="wrap">
+  <div class="side">
+    <div class="panel">
+      <h2>1. Add drops to the bowl</h2>
+      <div class="paints" id="paints"></div>
+      <div class="drops" id="drops"></div>
+      <div class="bowl" id="bowl"></div>
+      <pre class="bowlascii" id="bowlascii"></pre>
+      <div class="hex" id="hex"></div>
+      <div class="row">
+        <button class="btn" id="undo">undo drop</button>
+        <button class="btn" id="clearbowl">empty bowl</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Mixing model</h2>
+      <div class="row" id="modes"></div>
+      <div class="hex" id="modedesc" style="margin-top:6px"></div>
+    </div>
+    <div class="panel">
+      <h2>2. Brush</h2>
+      <label><span>size</span><input type="range" id="size" min="1" max="8" value="3"><output id="sizeo">3</output></label>
+      <label><span>strength</span><input type="range" id="str" min="5" max="100" value="45"><output id="stro">45</output></label>
+      <div class="row">
+        <button class="btn on" id="tmix">mix</button>
+        <button class="btn" id="tlay">replace</button>
+        <button class="btn" id="tclear">erase</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="wipe">clear canvas</button>
+        <button class="btn" id="fill">fill bowl</button>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="panel">
+      <h2>Canvas (click / drag to paint)</h2>
+      <div id="stage"><pre id="grid"></pre></div>
+      <div class="status" id="status">Pick paints, then paint. Painting over a cell mixes the colors.</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+var COLS=64, ROWS=30;
+var RAMP=" .:-=+*#%@";
+var PAINTS=[
+ {n:"Red",c:[220,40,40]},{n:"Yellow",c:[245,210,30]},{n:"Blue",c:[30,70,200]},{n:"White",c:[250,250,250]},
+ {n:"Cyan",c:[0,174,239]},{n:"Magenta",c:[236,0,140]},{n:"Green",c:[30,160,70]},{n:"Black",c:[15,15,15]}
+];
+var MODES={
+ paint:{n:"paint",d:"Pigment-like: subtractive, so blue + yellow leans green."},
+ avg:{n:"average",d:"Plain weighted average of RGB values."},
+ light:{n:"light",d:"Additive: red + green glows yellow; colors stack toward white."}
+};
+var mode="paint", tool="mix";
+var drops=[];
+var cells=new Array(COLS*ROWS); // null or [r,g,b,amount]
+var spans=[];
+
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function hex(c){return "#"+c.map(function(v){return ("0"+Math.round(clamp(v,0,255)).toString(16)).slice(-2)}).join("")}
+function css(c){return "rgb("+c.map(Math.round).join(",")+")"}
+function lum(c){return (0.2126*c[0]+0.7152*c[1]+0.0722*c[2])/255}
+
+// mix a list of [color, weight]
+function mix(list){
+  var tw=0,i,k;
+  for(i=0;i<list.length;i++)tw+=list[i][1];
+  if(!tw)return null;
+  var out=[0,0,0];
+  if(mode==="avg"){
+    for(i=0;i<list.length;i++)for(k=0;k<3;k++)out[k]+=list[i][0][k]*list[i][1]/tw;
+  }else if(mode==="light"){
+    for(i=0;i<list.length;i++)for(k=0;k<3;k++)out[k]+=Math.pow(list[i][0][k]/255,2.2)*list[i][1]/tw;
+    // additive: scale toward sum rather than mean so mixes brighten
+    var n=list.length>1?Math.min(list.length,2):1;
+    for(k=0;k<3;k++)out[k]=clamp(Math.pow(clamp(out[k]*(1+0.6*(n-1)),0,1),1/2.2)*255,0,255);
+  }else{
+    // subtractive: weighted geometric mean in linear space
+    for(i=0;i<list.length;i++)for(k=0;k<3;k++)out[k]+=Math.log(Math.max(list[i][0][k],4)/255)*list[i][1]/tw;
+    for(k=0;k<3;k++)out[k]=Math.exp(out[k])*255;
+  }
+  return out;
+}
+
+function bowlColor(){
+  var counts={},list=[];
+  drops.forEach(function(d){counts[d]=(counts[d]||0)+1});
+  Object.keys(counts).forEach(function(i){list.push([PAINTS[i].c,counts[i]])});
+  return mix(list);
+}
+
+/* ---------- UI: paints, drops, bowl ---------- */
+var paintsEl=document.getElementById("paints");
+PAINTS.forEach(function(p,i){
+  var b=document.createElement("button");
+  b.textContent=p.n;b.style.background=css(p.c);
+  if(p.n==="White"){b.style.color="#222";b.style.textShadow="none"}
+  b.onclick=function(){drops.push(i);if(drops.length>24)drops.shift();renderBowl()};
+  paintsEl.appendChild(b);
+});
+function renderBowl(){
+  var de=document.getElementById("drops");de.innerHTML="";
+  drops.forEach(function(i,idx){
+    var s=document.createElement("span");s.className="drop";s.textContent=PAINTS[i].n[0];
+    s.style.background=css(PAINTS[i].c);s.title="remove";
+    s.onclick=function(){drops.splice(idx,1);renderBowl()};
+    de.appendChild(s);
+  });
+  var c=bowlColor();
+  var bowl=document.getElementById("bowl");
+  if(c){
+    bowl.style.background=css(c);
+    var L=lum(c),ch=RAMP[clamp(Math.round(L*9),0,9)];
+    document.getElementById("bowlascii").textContent="";
+    var pre=document.getElementById("bowlascii");pre.innerHTML="";
+    var sp=document.createElement("span");sp.style.color=css(c);
+    sp.textContent=new Array(33).join(ch==" "?"#":ch);pre.appendChild(sp);
+    document.getElementById("hex").textContent=hex(c)+"  ("+drops.length+" drop"+(drops.length===1?"":"s")+", "+MODES[mode].n+")";
+  }else{
+    bowl.style.background="transparent";
+    document.getElementById("bowlascii").textContent="";
+    document.getElementById("hex").textContent="bowl is empty";
+  }
+}
+document.getElementById("undo").onclick=function(){drops.pop();renderBowl()};
+document.getElementById("clearbowl").onclick=function(){drops=[];renderBowl()};
+
+var modesEl=document.getElementById("modes");
+Object.keys(MODES).forEach(function(k){
+  var b=document.createElement("button");b.className="btn"+(k===mode?" on":"");b.textContent=MODES[k].n;b.dataset.k=k;
+  b.onclick=function(){
+    mode=k;Array.prototype.forEach.call(modesEl.children,function(x){x.classList.toggle("on",x.dataset.k===k)});
+    document.getElementById("modedesc").textContent=MODES[k].d;renderBowl();
+  };
+  modesEl.appendChild(b);
+});
+document.getElementById("modedesc").textContent=MODES[mode].d;
+
+var sizeEl=document.getElementById("size"),strEl=document.getElementById("str");
+sizeEl.oninput=function(){document.getElementById("sizeo").textContent=sizeEl.value};
+strEl.oninput=function(){document.getElementById("stro").textContent=strEl.value};
+function setTool(t){
+  tool=t;
+  [["tmix","mix"],["tlay","replace"],["tclear","erase"]].forEach(function(p){
+    document.getElementById(p[0]).classList.toggle("on",p[1]===t);
+  });
+}
+document.getElementById("tmix").onclick=function(){setTool("mix")};
+document.getElementById("tlay").onclick=function(){setTool("replace")};
+document.getElementById("tclear").onclick=function(){setTool("erase")};
+document.getElementById("wipe").onclick=function(){cells=new Array(COLS*ROWS);drawAll();say("Canvas cleared.")};
+document.getElementById("fill").onclick=function(){
+  var c=bowlColor();if(!c){say("Bowl is empty. Add some drops first.");return}
+  for(var i=0;i<cells.length;i++)cells[i]=[c[0],c[1],c[2],1];
+  drawAll();say("Filled canvas with "+hex(c)+".");
+};
+
+/* ---------- canvas ---------- */
+var grid=document.getElementById("grid"),stage=document.getElementById("stage");
+(function build(){
+  var frag=document.createDocumentFragment();
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var s=document.createElement("span");s.textContent=" ";spans.push(s);frag.appendChild(s);
+    }
+    frag.appendChild(document.createTextNode("\n"));
+  }
+  grid.appendChild(frag);
+})();
+function drawCell(i){
+  var cell=cells[i],s=spans[i];
+  if(!cell){s.textContent="·";s.style.color="#2a2d35";return}
+  var L=lum(cell);
+  var idx=clamp(Math.round(Math.pow(L,0.8)*9),1,9);
+  s.textContent=RAMP[idx];
+  s.style.color=css(cell);
+}
+function drawAll(){for(var i=0;i<cells.length;i++)drawCell(i)}
+function say(t){document.getElementById("status").textContent=t}
+
+function paintAt(cx,cy){
+  var bc=bowlColor();
+  if(tool!=="erase"&&!bc){say("Bowl is empty. Click paints on the left to add drops.");return}
+  var rad=+sizeEl.value,st=+strEl.value/100;
+  for(var y=cy-rad;y<=cy+rad;y++)for(var x=cx-rad;x<=cx+rad;x++){
+    if(x<0||y<0||x>=COLS||y>=ROWS)continue;
+    var dx=x-cx,dy=(y-cy)*2; // chars are ~2x taller than wide
+    var d=Math.sqrt(dx*dx+dy*dy);
+    if(d>rad+0.5)continue;
+    var fall=1-d/(rad+1);
+    var i=y*COLS+x,old=cells[i];
+    if(tool==="erase"){
+      if(old){old[3]-=st*fall*1.2;if(old[3]<=0.05)cells[i]=undefined}
+    }else if(tool==="replace"){
+      if(fall>0.35)cells[i]=[bc[0],bc[1],bc[2],1];
+    }else{
+      var w=clamp(st*fall*1.3,0,1);
+      if(!old){cells[i]=[bc[0],bc[1],bc[2],clamp(w*1.6,0.35,1)]}
+      else{
+        var m=mix([[old,1-w],[bc,w]]);
+        cells[i]=[m[0],m[1],m[2],Math.min(1,old[3]+w*0.5)];
+      }
+    }
+    drawCell(i);
+  }
+}
+var down=false,last=null;
+function pos(e){
+  var r=spans[0].getBoundingClientRect(),r2=spans[spans.length-1].getBoundingClientRect();
+  var cw=(r2.right-r.left)/COLS,ch=(r2.bottom-r.top)/ROWS;
+  return [Math.floor((e.clientX-r.left)/cw),Math.floor((e.clientY-r.top)/ch)];
+}
+function stroke(e){
+  var p=pos(e);
+  if(last){ // interpolate to avoid gaps
+    var n=Math.max(Math.abs(p[0]-last[0]),Math.abs(p[1]-last[1]),1);
+    for(var k=1;k<=n;k++)paintAt(Math.round(last[0]+(p[0]-last[0])*k/n),Math.round(last[1]+(p[1]-last[1])*k/n));
+  }else paintAt(p[0],p[1]);
+  last=p;
+  var c=cells[clamp(p[1],0,ROWS-1)*COLS+clamp(p[0],0,COLS-1)];
+  say("cell "+p[0]+","+p[1]+(c?"  "+hex(c):"  empty")+"  | "+MODES[mode].n+" / "+tool);
+}
+stage.addEventListener("pointerdown",function(e){down=true;last=null;stage.setPointerCapture(e.pointerId);stroke(e);e.preventDefault()});
+stage.addEventListener("pointermove",function(e){if(down)stroke(e)});
+function up(){down=false;last=null}
+stage.addEventListener("pointerup",up);stage.addEventListener("pointercancel",up);
+
+// start with a small demo state
+drops=[1,2];renderBowl();drawAll();
+})();
+</script>
+</body>
+</html>

@@ -59,11 +59,11 @@ It's still small (4 builds per side per task, AI graders, four little web tasks,
 
 ### See it side by side
 
-Live builds from the round before this one (0.12.0, on a mammoth steak recipe, tic tac toe and a 3D lemon), left without a dump and right with one. The preview is a short video of run 1 of each side, filmed in a browser (no sound). Click it to open the page, where the full video plays and you can try all eight builds per task.
+Live builds from this test, left from the prompt alone and right with quick mode. The preview is a short video of run 1 of each side, filmed in a browser (no sound). Click it to open the page, where the full video plays and you can try all 48 builds, full build included.
 
-[![The mammoth steak recipe, tic tac toe and the 3D lemon, prompt only vs prompt + MetaDump](docs/showcase/round-2/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/round-2/)
+[![The pelican, the ASCII color mixer, the bento menu and the block world, prompt alone vs quick mode](docs/showcase/round-3/preview.webp)](https://globalanomalyindex.github.io/metadump/showcase/round-3/)
 
-**[Live page](https://globalanomalyindex.github.io/metadump/showcase/round-2/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/round-2/metadump-ab-round-2.mp4) · the round before: the dump side won 54 of 72 head-to-heads
+**[Live page](https://globalanomalyindex.github.io/metadump/showcase/round-3/)** · [video (MP4)](https://globalanomalyindex.github.io/metadump/showcase/round-3/metadump-ab-round-3.mp4) · the round before this one is [here](https://globalanomalyindex.github.io/metadump/showcase/round-2/)
 
 ## What makes it work
 

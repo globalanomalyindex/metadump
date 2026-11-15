@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t4-blocks/F-r4"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block Box</title>
+<style>
+:root{--bg:#1d2127;--panel:#272c34;--ink:#e9e4d8;--dim:#9aa1ab;--accent:#f2b84b;--grid:rgba(255,255,255,.09)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 16px;min-height:100vh}
+h1{margin:0;font-size:18px;letter-spacing:.04em}
+#bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:min(100%,640px)}
+.kind{display:flex;align-items:center;gap:8px;background:var(--panel);color:var(--ink);border:2px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit;min-height:40px}
+.kind .sw{width:22px;height:22px;border-radius:3px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.25)}
+.kind kbd{background:#0006;border-radius:4px;padding:0 6px;font-size:13px;color:var(--dim)}
+.kind .n{color:var(--dim);font-variant-numeric:tabular-nums;min-width:2.2em;text-align:right}
+.kind:hover{border-color:var(--dim)}
+.kind[aria-pressed=true]{border-color:var(--accent);background:#343b46}
+.kind:focus-visible,.btn:focus-visible,#board:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{background:var(--panel);color:var(--ink);border:2px solid transparent;border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit;min-height:40px}
+.btn:hover:not(:disabled){border-color:var(--dim)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn[aria-pressed=true]{border-color:var(--accent)}
+.btn.danger.armed{background:#7a2b2b;border-color:#e57373}
+#wrap{width:min(100%,640px);aspect-ratio:1;border:3px solid #3b434f;border-radius:4px;background:#14171b;touch-action:none}
+#board{display:block;width:100%;height:100%;cursor:crosshair;image-rendering:pixelated;touch-action:none}
+#status{width:min(100%,640px);display:flex;justify-content:space-between;gap:12px;color:var(--dim);font-variant-numeric:tabular-nums;min-height:22px}
+#msg{color:var(--ink)}
+#help{width:min(100%,640px);color:var(--dim);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<h1>BLOCK BOX &middot; 32 &times; 32</h1>
+<div id="bar" role="toolbar" aria-label="Block kinds and tools"></div>
+<div id="wrap"><canvas id="board" width="640" height="640" tabindex="0" aria-label="32 by 32 block world"></canvas></div>
+<div id="status"><span id="cell">Cell: &ndash;</span><span id="msg" aria-live="polite">Empty world. Click a cell.</span><span id="total">0 / 1024</span></div>
+<div id="help">Click places &middot; right-click removes &middot; drag to paint &middot; 1&ndash;4 pick a kind &middot; Z undo &middot; C clear (press twice)</div>
+<script>
+(function(){
+"use strict";
+var N=32, CELL=20, SIZE=N*CELL;
+var KINDS=[
+ {name:"Grass",color:"#5fae45",dark:"#3f8030"},
+ {name:"Stone",color:"#8c929b",dark:"#636973"},
+ {name:"Wood",color:"#b0763d",dark:"#80531f"},
+ {name:"Water",color:"#3f86d6",dark:"#2a5fa0"}
+];
+var cells=new Uint8Array(N*N); // 0 empty, 1..n kind
+var sel=1, hover=-1, tool="place"; // tool: place | erase (touch aid)
+var undoStack=[]; // each: array of [idx, oldVal]
+var stroke=null, strokeMode=null;
+var clearArmed=false, clearTimer=0;
+var cv=document.getElementById("board"), ctx=cv.getContext("2d");
+var bar=document.getElementById("bar");
+var msg=document.getElementById("msg"), cellEl=document.getElementById("cell"), totalEl=document.getElementById("total");
+
+// toolbar
+var kindBtns=[];
+KINDS.forEach(function(k,i){
+  var b=document.createElement("button");b.className="kind";b.type="button";
+  b.innerHTML='<kbd>'+(i+1)+'</kbd><span class="sw" style="background:'+k.color+'"></span><span>'+k.name+'</span><span class="n">0</span>';
+  b.addEventListener("click",function(){select(i+1)});
+  bar.appendChild(b);kindBtns.push(b);
+});
+function mk(label,fn,cls){var b=document.createElement("button");b.type="button";b.className="btn "+(cls||"");b.textContent=label;b.addEventListener("click",fn);bar.appendChild(b);return b}
+var eraseBtn=mk("Erase tool",function(){tool=tool==="erase"?"place":"erase";say(tool==="erase"?"Erase tool on: click or drag removes.":"Place tool on.");sync()});
+var undoBtn=mk("Undo (Z)",undo);
+var clearBtn=mk("Clear (C)",clearAsk,"danger");
+
+function say(t){msg.textContent=t}
+function counts(){var c=[0,0,0,0,0];for(var i=0;i<cells.length;i++)c[cells[i]]++;return c}
+function sync(){
+  var c=counts(),tot=0;
+  kindBtns.forEach(function(b,i){b.setAttribute("aria-pressed",String(sel===i+1));b.querySelector(".n").textContent=c[i+1];tot+=c[i+1]});
+  totalEl.textContent=tot+" / "+(N*N);
+  eraseBtn.setAttribute("aria-pressed",String(tool==="erase"));
+  undoBtn.disabled=undoStack.length===0;
+  clearBtn.disabled=tot===0&&!clearArmed;
+  clearBtn.classList.toggle("armed",clearArmed);
+  clearBtn.textContent=clearArmed?"Really clear? (C)":"Clear (C)";
+  draw();
+}
+function select(k){sel=k;tool="place";say("Selected "+KINDS[k-1].name+".");sync()}
+
+function draw(){
+  ctx.fillStyle="#14171b";ctx.fillRect(0,0,SIZE,SIZE);
+  for(var i=0;i<cells.length;i++){
+    var v=cells[i];if(!v)continue;
+    var x=(i%N)*CELL,y=((i/N)|0)*CELL,k=KINDS[v-1];
+    ctx.fillStyle=k.color;ctx.fillRect(x,y,CELL,CELL);
+    ctx.fillStyle="rgba(255,255,255,.22)";ctx.fillRect(x,y,CELL,2);
+    ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(x,y+CELL-3,CELL,3);
+    ctx.fillStyle=k.dark;ctx.fillRect(x+CELL-2,y,2,CELL);
+  }
+  ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=1;ctx.beginPath();
+  for(var g=0;g<=N;g++){var p=g*CELL+.5;ctx.moveTo(p,0);ctx.lineTo(p,SIZE);ctx.moveTo(0,p);ctx.lineTo(SIZE,p)}
+  ctx.stroke();
+  if(hover>=0){
+    var hx=(hover%N)*CELL,hy=((hover/N)|0)*CELL,filled=cells[hover]>0;
+    if(tool!=="erase"&&!filled){ctx.globalAlpha=.45;ctx.fillStyle=KINDS[sel-1].color;ctx.fillRect(hx,hy,CELL,CELL);ctx.globalAlpha=1}
+    ctx.lineWidth=2;ctx.strokeStyle=tool==="erase"?"#ff6b6b":"#ffffff";ctx.strokeRect(hx+1,hy+1,CELL-2,CELL-2);
+  }
+}
+
+function cellAt(e){
+  var r=cv.getBoundingClientRect();
+  var x=(e.clientX-r.left)/r.width*N, y=(e.clientY-r.top)/r.height*N;
+  if(x<0||y<0||x>=N||y>=N)return -1;
+  return (y|0)*N+(x|0);
+}
+function apply(idx,val){
+  if(idx<0||cells[idx]===val)return;
+  stroke.push([idx,cells[idx]]);cells[idx]=val;
+}
+function cellLabel(i){return i<0?"Cell: –":"Cell: col "+(i%N+1)+", row "+((i/N|0)+1)}
+
+function paintAt(idx){
+  if(idx<0||!stroke)return;
+  apply(idx,strokeMode==="erase"?0:sel);
+}
+cv.addEventListener("contextmenu",function(e){e.preventDefault()});
+cv.addEventListener("pointerdown",function(e){
+  if(e.button!==0&&e.button!==2)return;
+  e.preventDefault();cv.focus({preventScroll:true});
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  strokeMode=(e.button===2||tool==="erase")?"erase":"place";
+  stroke=[];
+  var idx=cellAt(e);hover=idx;
+  // clicking a cell that already holds the selected kind with place: leave it
+  paintAt(idx);
+  cellEl.textContent=cellLabel(idx);sync();
+});
+cv.addEventListener("pointermove",function(e){
+  var idx=cellAt(e);
+  if(idx!==hover){hover=idx;cellEl.textContent=cellLabel(idx);
+    if(stroke)paintAt(idx);sync();}
+});
+function endStroke(){
+  if(!stroke)return;
+  if(stroke.length){undoStack.push(stroke);if(undoStack.length>200)undoStack.shift();
+    var n=stroke.length;say((strokeMode==="erase"?"Removed ":"Placed ")+n+" block"+(n>1?"s":"")+".")}
+  else say(strokeMode==="erase"?"Nothing to remove there.":"Already that block.");
+  stroke=null;sync();
+}
+cv.addEventListener("pointerup",endStroke);
+cv.addEventListener("pointercancel",endStroke);
+cv.addEventListener("pointerleave",function(){if(!stroke){hover=-1;cellEl.textContent=cellLabel(-1);draw()}});
+
+function undo(){
+  var s=undoStack.pop();if(!s){say("Nothing to undo.");return}
+  for(var i=s.length-1;i>=0;i--)cells[s[i][0]]=s[i][1];
+  say("Undid "+s.length+" change"+(s.length>1?"s":"")+".");disarm();sync();
+}
+function disarm(){clearArmed=false;clearTimeout(clearTimer)}
+function clearAsk(){
+  if(!clearArmed){
+    if(!counts().slice(1).some(Boolean)){say("Already empty.");return}
+    clearArmed=true;say("Press Clear or C again within 3 seconds to empty the world. Z undoes it.");
+    clearTimer=setTimeout(function(){clearArmed=false;say("Clear cancelled.");sync()},3000);sync();return;
+  }
+  disarm();
+  var diff=[];for(var i=0;i<cells.length;i++)if(cells[i]){diff.push([i,cells[i]]);cells[i]=0}
+  undoStack.push(diff);say("World cleared ("+diff.length+" blocks). Z brings it back.");sync();
+}
+
+document.addEventListener("keydown",function(e){
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  var k=e.key.toLowerCase();
+  if(k>="1"&&k<=String(KINDS.length)){select(+k);return}
+  if(k==="z"){undo();return}
+  if(k==="c"){clearAsk();return}
+  if(k==="e"){tool=tool==="erase"?"place":"erase";sync();return}
+  if(k==="escape"){if(clearArmed){disarm();say("Clear cancelled.");sync()}}
+});
+
+sync();
+})();
+</script>
+</body>
+</html>

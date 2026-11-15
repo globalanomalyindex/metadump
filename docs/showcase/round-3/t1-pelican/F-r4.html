@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en"><head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t1-pelican/F-r4"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pelican on a bike</title>
+<style>
+:root{--bg:#cfe9f1;--ink:#26323a;--panel:#fff8;--acc:#e8883a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#a9d3e0;font-family:system-ui,sans-serif;color:var(--ink);padding:12px 16px}
+svg{width:100%;max-width:960px;height:auto;border-radius:14px;box-shadow:0 6px 24px #0003;background:var(--bg)}
+.ui{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;background:var(--panel);padding:10px 16px;border-radius:12px}
+button{font:inherit;padding:8px 16px;border:2px solid var(--ink);background:#fff;border-radius:8px;cursor:pointer;min-height:40px}
+button:hover{background:#ffe9c9}
+button:focus-visible,input:focus-visible{outline:3px solid #1b6ee0;outline-offset:2px}
+label{display:flex;gap:8px;align-items:center}
+input[type=range]{width:180px}
+#status{min-width:230px;text-align:center;font-variant-numeric:tabular-nums}
+#bell{cursor:pointer}
+</style></head><body>
+<svg id="scene" viewBox="0 0 800 500" role="img" aria-label="A pelican pedaling a bicycle along a road">
+ <defs><clipPath id="sc"><rect width="800" height="500"/></clipPath></defs>
+ <g clip-path="url(#sc)">
+  <rect width="800" height="500" fill="#cfe9f1"/>
+  <circle cx="660" cy="80" r="34" fill="#fff3b8"/>
+  <g id="clouds" fill="#fff"><g id="cl1"><ellipse cx="120" cy="80" rx="48" ry="16"/><ellipse cx="150" cy="68" rx="30" ry="16"/><ellipse cx="95" cy="70" rx="24" ry="12"/></g>
+   <g id="cl2"><ellipse cx="460" cy="130" rx="40" ry="13"/><ellipse cx="482" cy="120" rx="24" ry="12"/></g></g>
+  <g id="hills"><path id="h1" fill="#9fcfb0" d=""/><path id="h2" fill="#7fb894" d=""/></g>
+  <rect y="430" width="800" height="70" fill="#7a8791"/>
+  <rect y="430" width="800" height="5" fill="#59646c"/>
+  <g id="dashes" stroke="#e9eef1" stroke-width="5" stroke-linecap="round"></g>
+
+  <!-- far side pedal + leg -->
+  <g id="farLeg"><path id="farThigh" fill="none" stroke="#a9805a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path id="farFoot" fill="#c98a45" stroke="#8a5a2a" stroke-width="2" stroke-linejoin="round"/></g>
+  <line id="farCrank" stroke="#4a545b" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- rear wheel -->
+  <g id="rw"></g>
+  <!-- frame -->
+  <g fill="none" stroke="#d6453d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+   <path d="M250 360 L385 372"/><path d="M250 360 L352 272"/><path d="M352 272 L385 372"/>
+   <path d="M352 272 L484 276"/><path d="M385 372 L486 286"/><path d="M484 262 L488 288"/>
+   <path d="M488 284 L530 360"/>
+  </g>
+  <path d="M352 272 L350 262" stroke="#333" stroke-width="6" stroke-linecap="round"/>
+  <!-- chain -->
+  <path d="M385 350 L250 351 M385 394 L250 369" stroke="#333" stroke-width="2.5" fill="none" opacity=".7"/>
+  <!-- chainring -->
+  <g id="ring"><circle cx="385" cy="372" r="22" fill="none" stroke="#333" stroke-width="4"/>
+   <g stroke="#333" stroke-width="3"><line x1="385" y1="350" x2="385" y2="394"/><line x1="363" y1="372" x2="407" y2="372"/></g></g>
+  <circle cx="385" cy="372" r="6" fill="#222"/>
+
+  <!-- pelican (bobbing group) -->
+  <g id="bird">
+   <!-- tail -->
+   <path d="M280 220 L238 232 L244 246 L284 244 Z" fill="#8f9aa3" stroke="#4d5963" stroke-width="3" stroke-linejoin="round"/>
+   <!-- body -->
+   <ellipse cx="335" cy="226" rx="68" ry="38" transform="rotate(-6 335 226)" fill="#f6f2e8" stroke="#4d5963" stroke-width="3.5"/>
+   <!-- neck + head + bill -->
+   <g id="neck">
+    <path d="M360 214 C405 212 382 168 418 146" fill="none" stroke="#4d5963" stroke-width="27" stroke-linecap="round"/>
+    <path d="M360 214 C405 212 382 168 418 146" fill="none" stroke="#f6f2e8" stroke-width="21" stroke-linecap="round"/>
+    <circle cx="428" cy="140" r="18" fill="#f6f2e8" stroke="#4d5963" stroke-width="3.5"/>
+    <path d="M414 128 Q424 112 442 124 Q432 124 422 132Z" fill="#f2d98a" stroke="#4d5963" stroke-width="2"/>
+    <g id="pouch"><path d="M442 152 Q490 208 540 156 L442 150 Z" fill="#f7cd7c" stroke="#9c6a22" stroke-width="3" stroke-linejoin="round"/></g>
+    <path d="M438 132 L538 148 Q548 152 538 156 L438 152 Z" fill="#e9962f" stroke="#9c6a22" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M536 149 q10 2 5 9" fill="none" stroke="#9c6a22" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="434" cy="136" r="4.2" fill="#1d252b"/><circle cx="435.4" cy="134.8" r="1.3" fill="#fff"/>
+   </g>
+   <!-- wing -->
+   <g id="wing"><path d="M368 204 C330 192 290 214 258 254 C300 254 348 248 378 232 Z" fill="#9aa5ae" stroke="#4d5963" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M258 254 C282 252 300 252 318 249 L300 238 C284 242 270 248 258 254Z" fill="#37414a"/></g>
+  </g>
+  <!-- near leg -->
+  <path id="nearThigh" fill="none" stroke="#e08a3a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path id="nearFoot" fill="#f0a14a" stroke="#9c6a22" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- saddle -->
+  <path d="M316 262 Q345 256 378 264 Q380 272 366 272 L330 270 Q314 270 316 262Z" fill="#2b2b2b"/>
+  <line id="nearCrank" stroke="#2f383e" stroke-width="8" stroke-linecap="round"/>
+  <!-- front wheel -->
+  <g id="fw"></g>
+  <!-- bars -->
+  <g fill="none" stroke="#2b2b2b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+   <path d="M486 262 L492 244 Q512 240 522 252"/></g>
+  <g id="bell" tabindex="0" role="button" aria-label="Ring bell"><circle cx="500" cy="236" r="7" fill="#ffd34d" stroke="#9c6a22" stroke-width="2"/></g>
+  <text id="ding" x="500" y="214" font-size="18" font-weight="700" text-anchor="middle" fill="#9c6a22" opacity="0">ding!</text>
+ </g>
+</svg>
+<div class="ui">
+ <button id="pp" aria-pressed="false">Pause</button>
+ <label>Cadence <input id="rpm" type="range" min="10" max="120" value="55"> <span id="rpmv">55</span> rpm</label>
+ <button id="dir">Direction: forward</button>
+ <button id="ring2">Ring bell (0)</button>
+ <div id="status" role="status" aria-live="polite"></div>
+</div>
+<script>
+(function(){
+var NS="http://www.w3.org/2000/svg",$=function(i){return document.getElementById(i)};
+function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+var R=70,BB={x:385,y:372},CR=46,HIP={x:350,y:252},L1=86,L2=90;
+// wheels: tyre, rim, spokes (rotating group), hub fixed
+function wheel(g,cx,cy){
+  el("circle",{cx:cx,cy:cy,r:R,fill:"#ffffff22",stroke:"#2b2b2b","stroke-width":8},g);
+  el("circle",{cx:cx,cy:cy,r:R-6,fill:"none",stroke:"#b9c2c8","stroke-width":2.5},g);
+  var s=el("g",{stroke:"#7b868d","stroke-width":1.6},g);
+  for(var i=0;i<16;i++){var a=i*Math.PI/8;el("line",{x1:cx,y1:cy,x2:cx+Math.cos(a)*(R-6),y2:cy+Math.sin(a)*(R-6)},s)}
+  el("circle",{cx:cx+R-14,cy:cy,r:3.5,fill:"#d6453d"},s);
+  el("circle",{cx:cx,cy:cy,r:7,fill:"#333"},g);
+  return s;
+}
+var rs=wheel($("rw"),250,360),fs=wheel($("fw"),530,360);
+// ground dashes & hills
+var dg=$("dashes"),dashes=[];for(var i=0;i<9;i++)dashes.push(el("line",{y1:462,y2:462,x1:0,x2:50},dg));
+function hill(id,amp,per,base,off){var d="M0 500 L0 "+base,x;for(x=0;x<=800;x+=20)d+=" L"+x+" "+(base-amp*Math.sin((x+off)/per));return d+" L800 500Z"}
+// state
+var S={phase:0,paused:false,rpm:55,dir:1,bells:0,dist:0,last:null,ding:0};
+var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(reduce)S.paused=true;
+function ik(hip,t,flip){
+  var dx=t.x-hip.x,dy=t.y-hip.y,d=Math.min(Math.hypot(dx,dy),L1+L2-1),ux=dx/d,uy=dy/d;
+  var a=(L1*L1-L2*L2+d*d)/(2*d),h=Math.sqrt(Math.max(0,L1*L1-a*a));
+  return {x:hip.x+ux*a-uy*h*flip,y:hip.y+uy*a+ux*h*flip};
+}
+function foot(p,ang){ // webbed foot at pedal
+  var x=p.x,y=p.y;return "M"+(x-8)+" "+(y-4)+" L"+(x+24)+" "+(y+2)+" L"+(x+14)+" "+(y+7)+" L"+(x+26)+" "+(y+10)+" L"+(x-8)+" "+(y+9)+" Z";
+}
+function draw(){
+  var th=S.phase,two=Math.sin(2*th);
+  var bob=2.4*two;
+  $("bird").setAttribute("transform","translate(0 "+bob.toFixed(2)+")");
+  var hip={x:HIP.x,y:HIP.y+bob};
+  var pn={x:BB.x+CR*Math.cos(th),y:BB.y+CR*Math.sin(th)},pf={x:BB.x-CR*Math.cos(th),y:BB.y-CR*Math.sin(th)};
+  var kn=ik(hip,pn,1),kf=ik(hip,pf,1);
+  $("nearThigh").setAttribute("d","M"+hip.x+" "+hip.y+" L"+kn.x.toFixed(1)+" "+kn.y.toFixed(1)+" L"+(pn.x+4).toFixed(1)+" "+(pn.y-2).toFixed(1));
+  $("farThigh").setAttribute("d","M"+(hip.x+8)+" "+(hip.y-2)+" L"+kf.x.toFixed(1)+" "+kf.y.toFixed(1)+" L"+(pf.x+4).toFixed(1)+" "+(pf.y-2).toFixed(1));
+  $("nearFoot").setAttribute("d",foot(pn));$("farFoot").setAttribute("d",foot(pf));
+  var c=function(id,p){var e=$(id);e.setAttribute("x1",BB.x);e.setAttribute("y1",BB.y);e.setAttribute("x2",p.x.toFixed(1));e.setAttribute("y2",p.y.toFixed(1))};
+  c("nearCrank",pn);c("farCrank",pf);
+  var gear=1.7,wa=th*gear*180/Math.PI;
+  rs.setAttribute("transform","rotate("+wa.toFixed(2)+" 250 360)");
+  fs.setAttribute("transform","rotate("+wa.toFixed(2)+" 530 360)");
+  $("ring").setAttribute("transform","rotate("+(th*180/Math.PI).toFixed(2)+" 385 372)");
+  // secondary: neck lag, pouch sway, wing flutter
+  $("neck").setAttribute("transform","rotate("+(4*Math.sin(2*th-0.7)).toFixed(2)+" 362 214)");
+  $("pouch").setAttribute("transform","rotate("+(3*Math.sin(2*th-1.4)).toFixed(2)+" 450 152)");
+  $("wing").setAttribute("transform","rotate("+(-5*Math.sin(2*th-1.1)).toFixed(2)+" 368 210)");
+  // world scroll (ground at rim speed)
+  var dist=th*gear*R,k;
+  for(k=0;k<dashes.length;k++){var x=((k*100-dist)%900+900)%900-60;dashes[k].setAttribute("transform","translate("+x.toFixed(1)+" 0)")}
+  $("h1").setAttribute("d",hill(0,30,90,415,dist*0.12));$("h2").setAttribute("d",hill(0,18,55,430,dist*0.25+40));
+  $("cl1").setAttribute("transform","translate("+(((-dist*0.05)%1000+1000)%1000-100).toFixed(1)+" 0)");
+  $("cl2").setAttribute("transform","translate("+(((-dist*0.03+300)%1000+1000)%1000-400).toFixed(1)+" 0)");
+}
+function status(){
+  $("status").textContent=(S.paused?"Paused":"Pedaling "+(S.dir>0?"forward":"backward")+" at "+S.rpm+" rpm")+" | bells: "+S.bells;
+  $("pp").textContent=S.paused?"Play":"Pause";$("pp").setAttribute("aria-pressed",S.paused);
+  $("dir").textContent="Direction: "+(S.dir>0?"forward":"backward");
+  $("ring2").textContent="Ring bell ("+S.bells+")";$("rpmv").textContent=S.rpm;
+}
+function tick(t){
+  if(S.last==null)S.last=t;var dt=Math.min(0.05,(t-S.last)/1000);S.last=t;
+  if(!S.paused)S.phase+=S.dir*S.rpm/60*2*Math.PI*dt;
+  if(S.ding>0){S.ding=Math.max(0,S.ding-dt);$("ding").setAttribute("opacity",Math.min(1,S.ding*2).toFixed(2));$("ding").setAttribute("y",(214-(1-Math.min(1,S.ding))*14).toFixed(1))}
+  draw();requestAnimationFrame(tick);
+}
+$("pp").onclick=function(){S.paused=!S.paused;status()};
+$("rpm").oninput=function(){S.rpm=+this.value;status()};
+$("dir").onclick=function(){S.dir*=-1;status()};
+function ring(){S.bells++;S.ding=1.2;var b=$("bell");b.animate([{transform:"rotate(-18deg)"},{transform:"rotate(14deg)"},{transform:"rotate(0)"}],{duration:300});status()}
+var bb=$("bell");bb.style.transformBox="fill-box";bb.style.transformOrigin="center";
+$("bell").onclick=ring;$("bell").onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();ring()}};$("ring2").onclick=ring;
+status();draw();requestAnimationFrame(tick);
+})();
+</script></body></html>

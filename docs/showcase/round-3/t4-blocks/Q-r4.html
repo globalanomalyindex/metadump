@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t4-blocks/Q-r4"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block Sandbox 32x32</title>
+<style>
+:root{--bg:#1d2530;--panel:#273241;--ink:#e8eef5;--mut:#8fa1b5;--acc:#ffd166}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.3 system-ui,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px;user-select:none;-webkit-user-select:none}
+h1{margin:0;font-size:18px;letter-spacing:.5px}
+h1 small{color:var(--mut);font-weight:400;font-size:13px;margin-left:8px}
+#bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+button{background:var(--panel);color:var(--ink);border:1px solid #3b4a5e;border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#222;border-color:var(--acc);font-weight:700}
+#wrap{flex-shrink:0;width:100%;max-width:min(1024px,max(320px,calc((100vh - 250px)*1.53)));background:#8fd0f0;background:linear-gradient(#9bd6f5,#d9f0fb);border-radius:10px;overflow:hidden;border:2px solid #3b4a5e}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+#hotbar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.slot{width:64px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px}
+.slot i{width:30px;height:30px;border-radius:5px;border:2px solid rgba(0,0,0,.35);display:block}
+.slot b{font-weight:400;color:var(--mut)}
+.slot.on b{color:#222}
+#status{color:var(--mut);min-height:20px;text-align:center}
+#status strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<h1>Block Sandbox<small>32 x 32 world</small></h1>
+<div id="bar">
+  <button id="tPlace" class="on">Place</button>
+  <button id="tErase">Erase</button>
+  <button id="undo">Undo</button>
+  <button id="reset">New terrain</button>
+  <button id="clear">Clear</button>
+</div>
+<div id="wrap"><canvas id="c" width="1024" height="670"></canvas></div>
+<div id="hotbar"></div>
+<div id="status">Left click / drag: place. Right click or shift: remove. Keys 1-9 pick a block, Ctrl+Z undo.</div>
+
+<script>
+(function(){
+'use strict';
+var N=32, MAXH=12, TW=16, TH=8, BH=12;
+var W=64*TW, OX=W/2, OY=MAXH*BH+6;
+var TYPES=[
+ {n:'Grass',c:[96,170,60]},
+ {n:'Dirt',c:[134,96,60]},
+ {n:'Stone',c:[130,134,140]},
+ {n:'Wood',c:[160,116,64]},
+ {n:'Brick',c:[176,74,60]},
+ {n:'Sand',c:[226,208,140]},
+ {n:'Leaves',c:[48,120,50]},
+ {n:'Glass',c:[170,220,235],a:.55},
+ {n:'Water',c:[50,110,200],a:.8}
+];
+var cv=document.getElementById('c'), ctx=cv.getContext('2d');
+var world=[], undoStack=[], cur=0, tool='place', hover=null, count=0;
+var statusEl=document.getElementById('status');
+
+function hash(x,y,z){var h=(x*374761393+y*668265263+z*2147483647)|0;h=(h^(h>>>13))*1274126177|0;return ((h^(h>>>16))>>>0)/4294967295;}
+
+function terrain(){
+  world=[];
+  for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+    var h=2+Math.round(1.6*Math.sin(x*.35)+1.4*Math.cos(y*.3)+0.8*Math.sin((x+y)*.2));
+    h=Math.max(1,Math.min(5,h));
+    var dx=x-22,dy=y-9,pond=dx*dx+dy*dy<20;
+    var col=[];
+    if(pond){col=[2,2];col.push(8);}
+    else{
+      for(var z=0;z<h-1;z++)col.push(z<h-3?2:1);
+      col.push(Math.sqrt((x-22)*(x-22)+(y-9)*(y-9))<6.2?5:0);
+    }
+    world[y*N+x]=col;
+  }
+  // a tiny tree
+  var tx=8,ty=8,b=world[ty*N+tx].length;
+  for(var i=0;i<3;i++)world[ty*N+tx].push(3);
+  for(var yy=-1;yy<=1;yy++)for(var xx=-1;xx<=1;xx++){
+    var c=world[(ty+yy)*N+tx+xx];
+    if(!(xx===0&&yy===0)){while(c.length<b+3)c.push(0);c.push(6);}
+    else c.push(6);
+  }
+}
+function snapshot(){return JSON.stringify(world);}
+function pushUndo(){undoStack.push(snapshot());if(undoStack.length>100)undoStack.shift();}
+function save(){try{localStorage.setItem('blocks32',snapshot());}catch(e){}}
+function load(){try{var s=localStorage.getItem('blocks32');if(s){var w=JSON.parse(s);if(w.length===N*N){world=w;return true;}}}catch(e){}return false;}
+
+function shade(c,f,a){return 'rgb('+Math.max(0,Math.min(255,Math.round(c[0]*f)))+','+Math.max(0,Math.min(255,Math.round(c[1]*f)))+','+Math.max(0,Math.min(255,Math.round(c[2]*f)))+')';}
+function pt(x,y,z){return [OX+(x-y)*TW, OY+(x+y)*TH-z*BH];}
+function poly(p){ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(var i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1]);ctx.closePath();}
+function cube(x,y,z,t,alpha,jit){
+  var T=TYPES[t],k=1+(jit-0.5)*0.12;
+  var top=[pt(x,y,z+1),pt(x+1,y,z+1),pt(x+1,y+1,z+1),pt(x,y+1,z+1)];
+  var left=[pt(x,y+1,z+1),pt(x+1,y+1,z+1),pt(x+1,y+1,z),pt(x,y+1,z)];
+  var right=[pt(x+1,y,z+1),pt(x+1,y+1,z+1),pt(x+1,y+1,z),pt(x+1,y,z)];
+  var a=alpha!==undefined?alpha:(T.a||1);
+  ctx.globalAlpha=a;
+  poly(left);ctx.fillStyle=shade(T.c,.78*k);ctx.fill();
+  poly(right);ctx.fillStyle=shade(T.c,.62*k);ctx.fill();
+  poly(top);ctx.fillStyle=shade(T.c,1.12*k);ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.22)';ctx.lineWidth=1;
+  poly(left);ctx.stroke();poly(right);ctx.stroke();poly(top);ctx.stroke();
+  ctx.globalAlpha=1;
+}
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  count=0;
+  var s,x,y,z,col;
+  // floor
+  var fl=[pt(0,0,0),pt(N,0,0),pt(N,N,0),pt(0,N,0)];
+  poly(fl);ctx.fillStyle='#3a4658';ctx.fill();
+  for(s=0;s<=2*N-2;s++){
+    for(x=Math.max(0,s-N+1);x<=Math.min(N-1,s);x++){
+      y=s-x;col=world[y*N+x];
+      for(z=0;z<col.length;z++){cube(x,y,z,col[z],undefined,hash(x,y,z));count++;}
+      if(hover&&hover.x===x&&hover.y===y){
+        var hz=col.length;
+        var tp=[pt(x,y,hz),pt(x+1,y,hz),pt(x+1,y+1,hz),pt(x,y+1,hz)];
+        if(tool==='place'&&hz<MAXH){cube(x,y,hz,cur,.45,.5);}
+        else if(tool==='erase'&&hz>0){tp=[pt(x,y,hz),pt(x+1,y,hz),pt(x+1,y+1,hz),pt(x,y+1,hz)];}
+        poly(tp);ctx.strokeStyle=tool==='erase'?'#ff5a5a':'#ffd166';ctx.lineWidth=2.5;ctx.stroke();
+      }
+    }
+  }
+  updateStatus();
+}
+function updateStatus(){
+  var h=hover?'<strong>x '+hover.x+', y '+hover.y+'</strong> height '+world[hover.y*N+hover.x].length+' | ':'';
+  statusEl.innerHTML=h+'Selected: <strong>'+TYPES[cur].n+'</strong> | Mode: <strong>'+(tool==='place'?'Place':'Erase')+'</strong> | Blocks: <strong>'+count+'</strong>';
+}
+// picking: frontmost column whose silhouette contains the point
+function pick(ev){
+  var r=cv.getBoundingClientRect();
+  var px=(ev.clientX-r.left)*cv.width/r.width, py=(ev.clientY-r.top)*cv.height/r.height;
+  for(var s=2*N-2;s>=0;s--){
+    for(var x=Math.min(N-1,s);x>=Math.max(0,s-N+1);x--){
+      var y=s-x,h=world[y*N+x].length;
+      var a=pt(x,y,h),b=pt(x+1,y,h),c=pt(x+1,y+1,h),d=pt(x,y+1,h);
+      var b0=pt(x+1,y,0),c0=pt(x+1,y+1,0),d0=pt(x,y+1,0);
+      var p=new Path2D();
+      p.moveTo(a[0],a[1]);p.lineTo(b[0],b[1]);p.lineTo(b0[0],b0[1]);p.lineTo(c0[0],c0[1]);p.lineTo(d0[0],d0[1]);p.lineTo(d[0],d[1]);p.closePath();
+      if(ctx.isPointInPath(p,px,py))return {x:x,y:y};
+    }
+  }
+  return null;
+}
+function apply(cell,erase){
+  if(!cell)return false;
+  var col=world[cell.y*N+cell.x];
+  if(erase){if(!col.length)return false;col.pop();}
+  else{if(col.length>=MAXH)return false;col.push(cur);}
+  return true;
+}
+var down=false,erasing=false,last=null,changed=false;
+cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+cv.addEventListener('pointerdown',function(e){
+  e.preventDefault();
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  down=true;erasing=(e.button===2||e.shiftKey||tool==='erase');
+  var c=pick(e);hover=c;
+  pushUndo();changed=false;last=c;
+  if(apply(c,erasing))changed=true;
+  draw();
+});
+cv.addEventListener('pointermove',function(e){
+  var c=pick(e);hover=c;
+  if(down&&c&&(!last||c.x!==last.x||c.y!==last.y)){
+    last=c;
+    if(apply(c,erasing))changed=true;
+  }
+  draw();
+});
+function end(){if(down){down=false;if(changed)save();else undoStack.pop();}}
+cv.addEventListener('pointerup',end);
+cv.addEventListener('pointercancel',end);
+cv.addEventListener('pointerleave',function(){hover=null;draw();});
+
+function setTool(t){tool=t;document.getElementById('tPlace').classList.toggle('on',t==='place');document.getElementById('tErase').classList.toggle('on',t==='erase');draw();}
+document.getElementById('tPlace').onclick=function(){setTool('place');};
+document.getElementById('tErase').onclick=function(){setTool('erase');};
+function doUndo(){if(!undoStack.length)return;world=JSON.parse(undoStack.pop());save();draw();}
+document.getElementById('undo').onclick=doUndo;
+document.getElementById('reset').onclick=function(){pushUndo();terrain();save();draw();};
+document.getElementById('clear').onclick=function(){pushUndo();for(var i=0;i<N*N;i++)world[i]=[];save();draw();};
+
+var hb=document.getElementById('hotbar');
+TYPES.forEach(function(t,i){
+  var b=document.createElement('button');b.className='slot'+(i===0?' on':'');
+  b.innerHTML='<i style="background:'+shade(t.c,1)+'"></i>'+t.n+'<b>'+(i+1)+'</b>';
+  b.onclick=function(){select(i);setTool('place');};
+  hb.appendChild(b);
+});
+function select(i){cur=i;Array.prototype.forEach.call(hb.children,function(el,j){el.classList.toggle('on',j===i);});draw();}
+document.addEventListener('keydown',function(e){
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();doUndo();return;}
+  var n=parseInt(e.key,10);
+  if(n>=1&&n<=TYPES.length){select(n-1);setTool('place');}
+  else if(e.key==='e'||e.key==='E')setTool('erase');
+  else if(e.key==='p'||e.key==='P')setTool('place');
+});
+
+if(!load())terrain();
+draw();
+})();
+</script>
+</body>
+</html>

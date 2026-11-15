@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t2-ascii/A-r4"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASCII Mixer</title>
+<style>
+:root{--bg:#14161a;--panel:#1d2026;--ink:#e6e8ec;--dim:#8b92a0;--line:#2c313a;--acc:#7fd1ff}
+@media (prefers-color-scheme: light){:root{--bg:#eef0f3;--panel:#fff;--ink:#1b1e24;--dim:#5d6572;--line:#d3d8df;--acc:#0b6fb8}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:16px}
+h1{font-size:16px;margin:0 0 12px;letter-spacing:.08em;text-transform:uppercase}
+.wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;max-width:1100px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}
+.side{flex:1 1 260px;max-width:340px;display:flex;flex-direction:column;gap:12px}
+.main{flex:1 1 520px;min-width:0}
+#grid{margin:0;font:14px/16px ui-monospace,Menlo,Consolas,monospace;letter-spacing:0;white-space:pre;overflow:hidden;cursor:crosshair;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:4px;border:1px solid var(--line);width:max-content;max-width:100%}
+#grid span{display:inline-block;width:9px;height:16px;text-align:center}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0}
+.row label{width:18px;font-weight:bold}
+.row input[type=range]{flex:1;min-width:0}
+.row output{width:34px;text-align:right;color:var(--dim)}
+.swatch{height:48px;border-radius:4px;border:1px solid var(--line)}
+.hex{display:flex;justify-content:space-between;color:var(--dim);margin-top:6px}
+.prev{margin:8px 0 0;font-size:14px;line-height:1.1;text-align:center;border-radius:4px;padding:6px;white-space:pre}
+button,select{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 9px;cursor:pointer}
+button:hover,select:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#000;border-color:var(--acc)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;min-height:26px}
+.chip{width:26px;height:26px;border-radius:4px;border:1px solid var(--line);cursor:pointer;padding:0}
+.chip:hover{outline:2px solid var(--acc)}
+h2{font-size:12px;margin:0 0 4px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.status{color:var(--dim);margin-top:8px;font-size:12px;min-height:1.4em}
+</style>
+</head>
+<body>
+<h1>ASCII Color Mixer</h1>
+<div class="wrap">
+  <div class="side">
+    <div class="panel">
+      <h2>Ink mixer</h2>
+      <div class="row"><label style="color:#ff5a5a">R</label><input id="r" type="range" min="0" max="255" value="255"><output id="ro">255</output></div>
+      <div class="row"><label style="color:#5aff7a">G</label><input id="g" type="range" min="0" max="255" value="120"><output id="go">120</output></div>
+      <div class="row"><label style="color:#5aa0ff">B</label><input id="b" type="range" min="0" max="255" value="40"><output id="bo">40</output></div>
+      <div class="swatch" id="sw"></div>
+      <div class="hex"><span id="hex"></span><span id="hsl"></span></div>
+      <div class="prev" id="prev"></div>
+      <div class="btns"><button id="save">+ Save ink</button></div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="panel">
+      <h2>Mixing mode</h2>
+      <div class="btns" id="modes">
+        <button data-m="add" class="on" title="Light: inks add toward white on black">Additive</button>
+        <button data-m="mul" title="Paint: inks multiply toward black on white">Subtractive</button>
+        <button data-m="avg" title="Inks blend by averaging on white">Average</button>
+      </div>
+      <div class="row"><span style="width:56px">Brush</span><input id="size" type="range" min="1" max="8" value="3"><output id="so">3</output></div>
+      <div class="row"><span style="width:56px">Flow</span><input id="flow" type="range" min="5" max="100" value="45"><output id="fo">45</output></div>
+      <div class="row"><span style="width:56px">Ramp</span>
+        <select id="ramp" style="flex:1">
+          <option value=" .:-=+*#%@">classic</option>
+          <option value=" .oO0@">round</option>
+          <option value=" ░▒▓█">blocks</option>
+          <option value=" ·+x#">sparse</option>
+        </select></div>
+      <div class="btns">
+        <button id="bleed">Bleed: off</button>
+        <button id="fill">Fill ink</button>
+        <button id="clear">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="main panel">
+    <h2>Canvas &mdash; drag to paint; the cell under the pointer is shown below</h2>
+    <pre id="grid"></pre>
+    <div class="status" id="status">Mode resets the canvas background (black for light, white for paint).</div>
+  </div>
+</div>
+<script>
+(function(){
+  var COLS=56, ROWS=26, CW=9, CH=16;
+  var state={r:255,g:120,b:40,mode:'add',size:3,flow:.45,ramp:" .:-=+*#%@",bleed:false,palette:[],down:false};
+  var cells=new Float32Array(COLS*ROWS*3);
+  var spans=[], grid=document.getElementById('grid');
+  var $=function(id){return document.getElementById(id)};
+
+  function bgVal(){return state.mode==='add'?0:1}
+  function clearCells(){cells.fill(bgVal())}
+  function build(){
+    grid.innerHTML='';spans=[];
+    var frag=document.createDocumentFragment();
+    for(var y=0;y<ROWS;y++){
+      for(var x=0;x<COLS;x++){var s=document.createElement('span');s.textContent=' ';frag.appendChild(s);spans.push(s)}
+      frag.appendChild(document.createTextNode('\n'));
+    }
+    grid.appendChild(frag);
+  }
+  function lum(r,g,b){return .2126*r+.7152*g+.0722*b}
+  function glyph(r,g,b){
+    var l=lum(r,g,b);
+    if(state.mode!=='add')l=1-l;
+    var chars=Array.from(state.ramp);
+    return chars[Math.min(chars.length-1,Math.floor(l*chars.length))];
+  }
+  function css(r,g,b){return 'rgb('+Math.round(r*255)+','+Math.round(g*255)+','+Math.round(b*255)+')'}
+  function paintCell(i){
+    var r=cells[i*3],g=cells[i*3+1],b=cells[i*3+2],s=spans[i];
+    s.textContent=glyph(r,g,b);
+    s.style.color=css(r,g,b);
+  }
+  function render(){
+    grid.style.background=state.mode==='add'?'#000':'#fff';
+    for(var i=0;i<COLS*ROWS;i++)paintCell(i);
+  }
+  function ink(){return [state.r/255,state.g/255,state.b/255]}
+
+  function dab(cx,cy){
+    var c=ink(),R=state.size,f=state.flow;
+    for(var y=Math.max(0,cy-R);y<=Math.min(ROWS-1,cy+R);y++){
+      for(var x=Math.max(0,cx-R);x<=Math.min(COLS-1,cx+R);x++){
+        // cells are about twice as tall as wide: scale dy
+        var dx=x-cx,dy=(y-cy)*1.75,d=Math.sqrt(dx*dx+dy*dy);
+        if(d>R)continue;
+        var k=(1-d/(R+.001))*f+.02, i=(y*COLS+x)*3;
+        for(var j=0;j<3;j++){
+          var v=cells[i+j];
+          if(state.mode==='add')v=Math.min(1,v+c[j]*k);
+          else if(state.mode==='mul')v=v*(1-k)+v*c[j]*k;
+          else v=v+(c[j]-v)*k;
+          cells[i+j]=v;
+        }
+        paintCell(i/3);
+      }
+    }
+  }
+  function cellAt(e){
+    var rc=grid.getBoundingClientRect();
+    var x=Math.floor((e.clientX-rc.left-1)/CW), y=Math.floor((e.clientY-rc.top-1)/CH);
+    if(x<0||y<0||x>=COLS||y>=ROWS)return null;
+    return [x,y];
+  }
+  var last=null;
+  function stroke(e){
+    var p=cellAt(e);if(!p)return;
+    if(last){
+      var n=Math.max(Math.abs(p[0]-last[0]),Math.abs(p[1]-last[1])),steps=Math.max(1,n);
+      for(var s=1;s<=steps;s++)dab(Math.round(last[0]+(p[0]-last[0])*s/steps),Math.round(last[1]+(p[1]-last[1])*s/steps));
+    } else dab(p[0],p[1]);
+    last=p;
+  }
+  grid.addEventListener('pointerdown',function(e){state.down=true;last=null;grid.setPointerCapture(e.pointerId);stroke(e);e.preventDefault()});
+  grid.addEventListener('pointermove',function(e){
+    var p=cellAt(e);
+    if(p){var i=(p[1]*COLS+p[0])*3;
+      $('status').textContent='cell '+p[0]+','+p[1]+'  rgb('+Math.round(cells[i]*255)+','+Math.round(cells[i+1]*255)+','+Math.round(cells[i+2]*255)+')  char "'+glyph(cells[i],cells[i+1],cells[i+2])+'"';}
+    if(state.down)stroke(e);
+  });
+  function up(){state.down=false;last=null}
+  grid.addEventListener('pointerup',up);grid.addEventListener('pointercancel',up);
+
+  // Bleed: diffuse each cell toward neighbour average
+  var tmp=new Float32Array(COLS*ROWS*3);
+  function bleedStep(){
+    tmp.set(cells);
+    for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){
+      var i=(y*COLS+x)*3;
+      for(var j=0;j<3;j++){
+        var s=0,n=0;
+        if(x>0){s+=cells[i-3+j];n++}
+        if(x<COLS-1){s+=cells[i+3+j];n++}
+        if(y>0){s+=cells[i-COLS*3+j];n++}
+        if(y<ROWS-1){s+=cells[i+COLS*3+j];n++}
+        tmp[i+j]=cells[i+j]*.8+(s/n)*.2;
+      }
+    }
+    cells.set(tmp);
+  }
+  var tick=0;
+  function loop(){
+    if(state.bleed&&++tick%3===0){bleedStep();render()}
+    requestAnimationFrame(loop);
+  }
+
+  // Mixer UI
+  function hex2(n){return ('0'+n.toString(16)).slice(-2)}
+  function updateMixer(){
+    var r=state.r,g=state.g,b=state.b;
+    $('ro').textContent=r;$('go').textContent=g;$('bo').textContent=b;
+    $('sw').style.background='rgb('+r+','+g+','+b+')';
+    $('hex').textContent='#'+hex2(r)+hex2(g)+hex2(b);
+    var mx=Math.max(r,g,b)/255,mn=Math.min(r,g,b)/255,d=mx-mn,h=0;
+    if(d){var R=r/255,G=g/255,B=b/255;
+      h=mx===R?((G-B)/d)%6:mx===G?(B-R)/d+2:(R-G)/d+4;h=Math.round(h*60);if(h<0)h+=360}
+    var l=(mx+mn)/2,s=d?d/(1-Math.abs(2*l-1)):0;
+    $('hsl').textContent='h'+h+' s'+Math.round(s*100)+' l'+Math.round(l*100);
+    // ASCII preview of the ink at its density
+    var ch=glyph(r/255,g/255,b/255),lines=[];
+    for(var i=0;i<3;i++)lines.push(new Array(25).join(ch));
+    var pv=$('prev');pv.textContent=lines.join('\n');
+    pv.style.color='rgb('+r+','+g+','+b+')';
+    pv.style.background=state.mode==='add'?'#000':'#fff';
+  }
+  ['r','g','b'].forEach(function(k){
+    $(k).addEventListener('input',function(){state[k]=+this.value;updateMixer()});
+  });
+  $('size').addEventListener('input',function(){state.size=+this.value;$('so').textContent=this.value});
+  $('flow').addEventListener('input',function(){state.flow=this.value/100;$('fo').textContent=this.value});
+  $('ramp').addEventListener('change',function(){state.ramp=this.value;render();updateMixer()});
+  $('modes').addEventListener('click',function(e){
+    var m=e.target.getAttribute('data-m');if(!m)return;
+    state.mode=m;
+    Array.prototype.forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target)});
+    clearCells();render();updateMixer();
+    $('status').textContent='Mode: '+e.target.textContent+' — canvas reset.';
+  });
+  $('bleed').addEventListener('click',function(){
+    state.bleed=!state.bleed;this.textContent='Bleed: '+(state.bleed?'on':'off');this.classList.toggle('on',state.bleed);
+  });
+  $('clear').addEventListener('click',function(){clearCells();render()});
+  $('fill').addEventListener('click',function(){
+    // flood the whole canvas with a single dab pass of the current ink
+    var c=ink();
+    for(var i=0;i<COLS*ROWS;i++){
+      for(var j=0;j<3;j++){
+        var v=cells[i*3+j],k=state.flow;
+        cells[i*3+j]=state.mode==='add'?Math.min(1,v+c[j]*k):state.mode==='mul'?v*(1-k)+v*c[j]*k:v+(c[j]-v)*k;
+      }
+    }
+    render();
+  });
+  function addChip(r,g,b){
+    var el=document.createElement('button');el.className='chip';
+    el.style.background='rgb('+r+','+g+','+b+')';el.title='rgb('+r+','+g+','+b+')';
+    el.addEventListener('click',function(){
+      state.r=r;state.g=g;state.b=b;
+      $('r').value=r;$('g').value=g;$('b').value=b;updateMixer();
+    });
+    $('chips').appendChild(el);
+  }
+  $('save').addEventListener('click',function(){
+    if(state.palette.length>=16)return;
+    state.palette.push([state.r,state.g,state.b]);addChip(state.r,state.g,state.b);
+  });
+  [[255,0,0],[0,255,0],[0,0,255],[255,255,0],[0,255,255],[255,0,255]].forEach(function(c){state.palette.push(c);addChip(c[0],c[1],c[2])});
+
+  build();clearCells();render();updateMixer();loop();
+})();
+</script>
+</body>
+</html>

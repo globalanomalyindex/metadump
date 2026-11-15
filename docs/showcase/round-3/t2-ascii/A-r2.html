@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t2-ascii/A-r2"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASCII Mixer</title>
+<style>
+:root{--bg:#0d0f12;--panel:#161a20;--line:#2a313b;--fg:#d7dde5;--dim:#7d8896;--acc:#ffb347}
+@media (prefers-color-scheme:light){:root{--bg:#f1efe9;--panel:#fff;--line:#d5d0c5;--fg:#1d2127;--dim:#6a7380;--acc:#c2570a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:0 0 2px;letter-spacing:.08em}
+.sub{color:var(--dim);margin:0 0 14px}
+.layout{display:grid;grid-template-columns:1fr 280px;gap:14px}
+@media(max-width:820px){.layout{grid-template-columns:1fr}}
+.stage{background:#08090b;border:1px solid var(--line);border-radius:6px;padding:6px;overflow:hidden}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.panel h2{font-size:12px;margin:0 0 6px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.row{display:flex;align-items:center;gap:8px}
+.row label{width:18px;color:var(--dim)}
+.row output{width:34px;text-align:right}
+input[type=range]{flex:1;min-width:0;accent-color:var(--acc)}
+.swatch{height:34px;border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;letter-spacing:.1em}
+.pal{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:8px}
+.pal button{height:26px;border:1px solid var(--line);border-radius:4px;cursor:pointer;padding:0}
+.pal button:focus-visible,.btns button:focus-visible,.seg button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.seg button,.btns button{font:inherit;background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 4px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--acc);color:#111;border-color:var(--acc);font-weight:700}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btns button:hover,.seg button:hover{border-color:var(--acc)}
+.hint{color:var(--dim);font-size:12px;margin:0}
+.read{font-size:12px;color:var(--dim);margin-top:8px;min-height:1.4em;display:flex;gap:10px;flex-wrap:wrap}
+.read b{color:var(--fg)}
+.mixer{border:1px dashed var(--line);border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:6px}
+#strip{font-size:16px;letter-spacing:0;white-space:pre;overflow:hidden;line-height:1.1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ASCII MIXER</h1>
+  <p class="sub">Drag on the grid to paint. Overlapping paint mixes. Glyph density follows brightness.</p>
+  <div class="layout">
+    <div>
+      <div class="stage"><canvas id="cv" aria-label="ASCII painting grid"></canvas></div>
+      <div class="read"><span>cell <b id="rCell">-</b></span><span>color <b id="rHex">-</b></span><span>glyph <b id="rCh">-</b></span><span>mode <b id="rMode">-</b></span></div>
+    </div>
+    <div class="panel">
+      <div>
+        <h2>Brush color</h2>
+        <div class="swatch" id="sw">@@@@</div>
+        <div class="row"><label style="color:#f55">R</label><input type="range" id="r" min="0" max="255" value="255"><output id="ro">255</output></div>
+        <div class="row"><label style="color:#5d5">G</label><input type="range" id="g" min="0" max="255" value="120"><output id="go">120</output></div>
+        <div class="row"><label style="color:#58f">B</label><input type="range" id="b" min="0" max="255" value="30"><output id="bo">30</output></div>
+        <div class="pal" id="pal"></div>
+      </div>
+      <div>
+        <h2>Mix mode</h2>
+        <div class="seg" id="modes">
+          <button data-m="add" aria-pressed="false" title="Light: colors add up toward white">Light +</button>
+          <button data-m="sub" aria-pressed="false" title="Ink: colors multiply toward black">Ink ×</button>
+          <button data-m="avg" aria-pressed="true" title="Paint: colors blend by strength">Paint ~</button>
+        </div>
+      </div>
+      <div>
+        <h2>Brush</h2>
+        <div class="row"><label>⌀</label><input type="range" id="size" min="1" max="9" value="3"><output id="sizeo">3</output></div>
+        <div class="row"><label>%</label><input type="range" id="str" min="5" max="100" value="45"><output id="stro">45</output></div>
+      </div>
+      <div class="mixer">
+        <h2 style="margin:0">Two-color mixer</h2>
+        <div class="row"><label>A</label><input type="color" id="ca" value="#ff3b30"><label>B</label><input type="color" id="cb" value="#2f7bff"></div>
+        <div class="row"><input type="range" id="ratio" min="0" max="100" value="50"><output id="ratioo" style="width:40px">50%</output></div>
+        <div id="strip" aria-label="mix ramp"></div>
+        <div class="swatch" id="mixsw">MIX</div>
+        <button id="use" class="btns" style="display:block;font:inherit;background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px;cursor:pointer">Use mix as brush</button>
+      </div>
+      <div class="btns">
+        <button id="clear">Clear</button>
+        <button id="rand">Splash</button>
+        <button id="glyph">Glyphs: ramp</button>
+        <button id="eraser">Eraser: off</button>
+      </div>
+      <p class="hint">Keys: 1/2/3 mode, [ ] size, E eraser, C clear.</p>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+var COLS=72,ROWS=32,CW=14,CH=22;
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+cv.width=COLS*CW;cv.height=ROWS*CH;
+var N=COLS*ROWS;
+var R=new Float32Array(N),G=new Float32Array(N),B=new Float32Array(N),A=new Float32Array(N);
+var RAMPS={ramp:' .:-=+*#%@',blocks:' ░▒▓█',dots:' ·•●'};
+var glyphMode='ramp';
+var state={r:255,g:120,b:30,mode:'avg',size:3,str:.45,erase:false,hover:-1};
+var $=function(id){return document.getElementById(id)};
+var clamp=function(v,a,b){return v<a?a:v>b?b:v};
+
+function hex(r,g,b){return '#'+[r,g,b].map(function(v){return Math.round(clamp(v,0,255)).toString(16).padStart(2,'0')}).join('')}
+function parse(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+function lum(r,g,b){return (0.2126*r+0.7152*g+0.0722*b)}
+function glyphFor(i){
+  if(A[i]<=0.01)return ' ';
+  var s=RAMPS[glyphMode];
+  var L=lum(R[i],G[i],B[i]);
+  L=Math.pow(L,0.8)*A[i];
+  var k=Math.min(s.length-1,Math.max(1,Math.round(L*(s.length-1))));
+  return s[k];
+}
+
+/* mixing core: blends brush color (br,bg,bb) into cell i with weight w */
+function mixInto(i,br,bg,bb,w){
+  var m=state.mode;
+  if(A[i]<=0.01){R[i]=br;G[i]=bg;B[i]=bb;A[i]=Math.max(A[i],w);if(m!=='avg'){A[i]=Math.min(1,w+0.35)}return}
+  if(m==='add'){
+    R[i]=Math.min(1,R[i]+br*w);G[i]=Math.min(1,G[i]+bg*w);B[i]=Math.min(1,B[i]+bb*w);
+  }else if(m==='sub'){
+    R[i]=R[i]*(1-w)+R[i]*br*w;G[i]=G[i]*(1-w)+G[i]*bg*w;B[i]=B[i]*(1-w)+B[i]*bb*w;
+  }else{
+    R[i]+=(br-R[i])*w;G[i]+=(bg-G[i])*w;B[i]+=(bb-B[i])*w;
+  }
+  A[i]=Math.min(1,A[i]+w*0.6);
+}
+
+function stamp(cx,cy){
+  var rad=state.size/2,br=state.r/255,bg=state.g/255,bb=state.b/255;
+  var x0=Math.floor(cx-rad-1),x1=Math.ceil(cx+rad+1),y0=Math.floor(cy-rad-1),y1=Math.ceil(cy+rad+1);
+  for(var y=y0;y<=y1;y++){
+    if(y<0||y>=ROWS)continue;
+    for(var x=x0;x<=x1;x++){
+      if(x<0||x>=COLS)continue;
+      /* cells are taller than wide: correct distance */
+      var dx=(x+.5-cx),dy=(y+.5-cy)*(CH/CW);
+      var d=Math.sqrt(dx*dx+dy*dy);
+      if(d>rad+.5)continue;
+      var fall=1-clamp(d/(rad+.5),0,1)*0.6;
+      var i=y*COLS+x;
+      if(state.erase){A[i]=Math.max(0,A[i]-state.str*fall);if(A[i]<=0.01)A[i]=0;continue}
+      mixInto(i,br,bg,bb,state.str*fall);
+    }
+  }
+}
+
+/* rendering */
+var dirty=true;
+function draw(){
+  ctx.fillStyle='#08090b';ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.font='bold '+(CH-4)+'px ui-monospace,Menlo,Consolas,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(var y=0;y<ROWS;y++){
+    for(var x=0;x<COLS;x++){
+      var i=y*COLS+x,ch=glyphFor(i);
+      if(ch===' ')continue;
+      ctx.fillStyle='rgb('+Math.round(R[i]*255)+','+Math.round(G[i]*255)+','+Math.round(B[i]*255)+')';
+      ctx.fillText(ch,x*CW+CW/2,y*CH+CH/2+1);
+    }
+  }
+  if(state.hover>=0){
+    var hx=state.hover%COLS,hy=(state.hover/COLS)|0;
+    ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;
+    var rr=state.size/2;
+    ctx.beginPath();ctx.ellipse((hx+.5)*CW,(hy+.5)*CH,(rr+.5)*CW,(rr+.5)*CW,0,0,Math.PI*2);ctx.stroke();
+  }
+  dirty=false;
+}
+function loop(){if(dirty)draw();requestAnimationFrame(loop)}
+
+/* pointer */
+var painting=false,last=null;
+function cellPos(e){
+  var rc=cv.getBoundingClientRect();
+  return {x:(e.clientX-rc.left)/rc.width*COLS,y:(e.clientY-rc.top)/rc.height*ROWS};
+}
+function line(a,b){
+  var dx=b.x-a.x,dy=b.y-a.y,n=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))*1.5));
+  /* weaker per-stamp strength on dense interpolation keeps drag mixing gradual */
+  for(var k=0;k<=n;k++)stamp(a.x+dx*k/n,a.y+dy*k/n);
+}
+cv.addEventListener('pointerdown',function(e){
+  painting=true;cv.setPointerCapture(e.pointerId);
+  var p=cellPos(e);last=p;stamp(p.x,p.y);updateHover(p);dirty=true;
+});
+cv.addEventListener('pointermove',function(e){
+  var p=cellPos(e);updateHover(p);
+  if(painting){line(last,p);last=p}
+  dirty=true;
+});
+function end(){painting=false;last=null}
+cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+cv.addEventListener('pointerleave',function(){if(!painting){state.hover=-1;dirty=true}});
+function updateHover(p){
+  var x=Math.floor(p.x),y=Math.floor(p.y);
+  if(x<0||y<0||x>=COLS||y>=ROWS){state.hover=-1;return}
+  var i=y*COLS+x;state.hover=i;
+  $('rCell').textContent=x+','+y;
+  if(A[i]>0.01){$('rHex').textContent=hex(R[i]*255,G[i]*255,B[i]*255);$('rCh').textContent='"'+glyphFor(i)+'"'}
+  else{$('rHex').textContent='empty';$('rCh').textContent='-'}
+}
+
+/* UI */
+var MODE_NAMES={add:'additive light',sub:'subtractive ink',avg:'paint blend'};
+function setBrush(r,g,b){
+  state.r=r;state.g=g;state.b=b;
+  $('r').value=r;$('g').value=g;$('b').value=b;syncBrush();
+}
+function syncBrush(){
+  state.r=+$('r').value;state.g=+$('g').value;state.b=+$('b').value;
+  $('ro').textContent=state.r;$('go').textContent=state.g;$('bo').textContent=state.b;
+  var sw=$('sw'),c=hex(state.r,state.g,state.b);
+  sw.style.background=c;sw.style.color=lum(state.r,state.g,state.b)>128?'#000':'#fff';
+  sw.textContent=c.toUpperCase();
+}
+['r','g','b'].forEach(function(k){$(k).addEventListener('input',syncBrush)});
+var PAL=['#ff0000','#00ff00','#0000ff','#00ffff','#ff00ff','#ffff00','#ffffff','#ff7a00'];
+PAL.forEach(function(h){
+  var b=document.createElement('button');b.style.background=h;b.title=h;b.setAttribute('aria-label','brush '+h);
+  b.addEventListener('click',function(){var c=parse(h);setBrush(c[0],c[1],c[2])});
+  $('pal').appendChild(b);
+});
+function setMode(m){
+  state.mode=m;
+  Array.prototype.forEach.call($('modes').children,function(b){b.setAttribute('aria-pressed',b.dataset.m===m)});
+  $('rMode').textContent=MODE_NAMES[m];
+}
+Array.prototype.forEach.call($('modes').children,function(b){b.addEventListener('click',function(){setMode(b.dataset.m)})});
+$('size').addEventListener('input',function(){state.size=+this.value;$('sizeo').textContent=this.value;dirty=true});
+$('str').addEventListener('input',function(){state.str=this.value/100;$('stro').textContent=this.value});
+function clearAll(){A.fill(0);R.fill(0);G.fill(0);B.fill(0);dirty=true}
+$('clear').addEventListener('click',clearAll);
+$('rand').addEventListener('click',function(){
+  var keep=state.r+','+state.g+','+state.b,m=state.mode,sz=state.size,er=state.erase;
+  state.erase=false;state.size=5;
+  var cols=PAL.slice(0,6);
+  for(var k=0;k<14;k++){
+    var c=parse(cols[(Math.random()*cols.length)|0]);
+    state.r=c[0];state.g=c[1];state.b=c[2];
+    stamp(Math.random()*COLS,Math.random()*ROWS);
+  }
+  state.size=sz;state.erase=er;
+  var q=keep.split(',');state.r=+q[0];state.g=+q[1];state.b=+q[2];
+  dirty=true;
+});
+$('glyph').addEventListener('click',function(){
+  var ks=Object.keys(RAMPS);glyphMode=ks[(ks.indexOf(glyphMode)+1)%ks.length];
+  this.textContent='Glyphs: '+glyphMode;dirty=true;drawStrip();
+});
+function setErase(v){state.erase=v;$('eraser').textContent='Eraser: '+(v?'on':'off');$('eraser').style.borderColor=v?'var(--acc)':''}
+$('eraser').addEventListener('click',function(){setErase(!state.erase)});
+
+/* two-colour mixer: mixes A and B in the current mode */
+function mix2(a,b,t){
+  var m=state.mode,o=[0,0,0];
+  for(var k=0;k<3;k++){
+    var x=a[k]/255,y=b[k]/255,v;
+    if(m==='add')v=Math.min(1,x*(1-t)*2+y*t*2>1?1:x*(1-t)*2+y*t*2);
+    else if(m==='sub')v=Math.pow(x,1-t)*Math.pow(y,t);
+    else v=x*(1-t)+y*t;
+    o[k]=v*255;
+  }
+  return o;
+}
+var mixed=[128,128,128];
+function drawStrip(){
+  var a=parse($('ca').value),b=parse($('cb').value),t=$('ratio').value/100;
+  $('ratioo').textContent=Math.round(t*100)+'%';
+  mixed=mix2(a,b,t);
+  var s=RAMPS[glyphMode],html='',n=26;
+  for(var i=0;i<n;i++){
+    var c=mix2(a,b,i/(n-1)),L=lum(c[0]/255,c[1]/255,c[2]/255);
+    var ch=s[Math.min(s.length-1,Math.max(1,Math.round(Math.pow(L,.8)*(s.length-1))))];
+    html+='<span style="color:'+hex(c[0],c[1],c[2])+'">'+ch+'</span>';
+  }
+  $('strip').innerHTML=html;
+  var sw=$('mixsw'),h=hex(mixed[0],mixed[1],mixed[2]);
+  sw.style.background=h;sw.style.color=lum(mixed[0],mixed[1],mixed[2])>128?'#000':'#fff';sw.textContent=h.toUpperCase();
+}
+['ca','cb','ratio'].forEach(function(id){$(id).addEventListener('input',drawStrip)});
+$('use').addEventListener('click',function(){setBrush(Math.round(mixed[0]),Math.round(mixed[1]),Math.round(mixed[2]))});
+$('modes').addEventListener('click',drawStrip);
+
+document.addEventListener('keydown',function(e){
+  if(e.target&&e.target.tagName==='INPUT'&&e.target.type!=='range')return;
+  var k=e.key.toLowerCase();
+  if(k==='1'){setMode('add');drawStrip()}
+  else if(k==='2'){setMode('sub');drawStrip()}
+  else if(k==='3'){setMode('avg');drawStrip()}
+  else if(k==='['||k===']'){
+    var s=clamp(state.size+(k===']'?1:-1),1,9);state.size=s;$('size').value=s;$('sizeo').textContent=s;dirty=true;
+  }
+  else if(k==='e')setErase(!state.erase);
+  else if(k==='c')clearAll();
+});
+
+setMode('avg');syncBrush();drawStrip();
+/* seed demo: red and blue overlapping so mixing is visible at once */
+(function(){
+  var sv=[state.r,state.g,state.b];
+  state.size=7;state.str=.8;
+  state.r=255;state.g=40;state.b=40;stamp(26,16);
+  state.r=40;state.g=90;state.b=255;stamp(38,16);
+  state.size=3;state.str=.45;state.r=sv[0];state.g=sv[1];state.b=sv[2];
+})();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

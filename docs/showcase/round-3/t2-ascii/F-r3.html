@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t2-ascii/F-r3"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASCII Mixer</title>
+<style>
+:root{--bg:#14161a;--panel:#1c1f25;--fg:#d6dae0;--dim:#7d8590;--line:#2c313a;--acc:#e8c36a}
+@media (prefers-color-scheme:light){:root{--bg:#f2f0ea;--panel:#fff;--fg:#22252b;--dim:#6b717b;--line:#d8d4c8;--acc:#a8650c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.35 ui-monospace,"SF Mono",Menlo,Consolas,monospace;padding:16px}
+main{max-width:760px;margin:0 auto}
+h1{font-size:15px;margin:0 0 4px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+p.hint{margin:0 0 14px;color:var(--dim);font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px}
+label{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:13px}
+input[type=color]{width:44px;height:30px;border:1px solid var(--line);background:none;padding:0;cursor:pointer}
+input[type=text]{width:84px;font:inherit;background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:4px 6px}
+input[type=range]{flex:1;min-width:160px;accent-color:var(--acc)}
+button{font:inherit;background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--acc)}
+button[aria-pressed=true]{border-color:var(--acc);color:var(--acc)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{background:var(--panel);border:1px solid var(--line);padding:10px;min-width:0}
+.col h2{margin:0 0 6px;font-size:12px;font-weight:400;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+pre{margin:0;font:inherit;line-height:1;white-space:pre;overflow:hidden}
+#strip{font-size:15px;max-width:100%}.sw{font-size:14px;line-height:1.05;margin-bottom:8px}
+.val{font-size:14px;line-height:1.5;white-space:normal}
+.val button{padding:1px 6px;margin-left:6px;font-size:12px}
+.single .col+.col{display:none}.single .cols{grid-template-columns:1fr}
+.delta{margin-top:10px;color:var(--dim);font-size:13px}
+#msg{min-height:1.4em;color:var(--acc);font-size:13px;margin-top:6px}
+@media (max-width:520px){.cols{grid-template-columns:1fr}.sw{font-size:12px}#strip{font-size:7px}}
+#cmp:hover,#swap:hover,#reset:hover{background:var(--line)}input[type=range]{height:24px}
+</style>
+</head>
+<body>
+<main id="app">
+<h1>ascii color mixer</h1>
+<p class="hint">Pick two colors, move the ratio. Keys: &larr; &rarr; 1% &middot; Shift+&larr;&rarr; 10% &middot; + / - 5% &middot; [ ] swap &middot; m compare models &middot; r reset</p>
+
+<div class="row">
+  <label>A <input type="color" id="ca" value="#e63946" aria-label="Color A"><input type="text" id="ha" value="#e63946" maxlength="7" aria-label="Hex A" spellcheck="false"></label>
+  <label>B <input type="color" id="cb" value="#2a6fdb" aria-label="Color B"><input type="text" id="hb" value="#2a6fdb" maxlength="7" aria-label="Hex B" spellcheck="false"></label>
+  <button id="swap" type="button">swap A/B</button>
+  <button id="cmp" type="button" aria-pressed="true">compare models</button>
+</div>
+
+<div class="row">
+  <label style="flex:1;min-width:240px">A <input type="range" id="ratio" min="0" max="100" value="50" aria-label="Mix ratio, percent of B"> B
+    <span id="pct" aria-live="polite">50%</span></label>
+  <button id="reset" type="button">reset</button>
+</div>
+
+<pre id="strip" class="sw" aria-label="ratio strip"></pre>
+
+<div class="cols" id="cols">
+  <section class="col"><h2>channel mean (sRGB)</h2><pre id="s1" class="sw"></pre><div class="val" id="v1"></div></section>
+  <section class="col"><h2>linear light</h2><pre id="s2" class="sw"></pre><div class="val" id="v2"></div></section>
+</div>
+<div class="delta" id="delta"></div>
+<div id="msg" role="status"></div>
+</main>
+
+<script>
+(function(){
+  var DEF={a:"#e63946",b:"#2a6fdb",t:50};
+  var st={a:DEF.a,b:DEF.b,t:DEF.t,cmp:true};
+  var $=function(i){return document.getElementById(i)};
+  var RAMP=" .:-=+*#%@";
+
+  function parse(h){var m=/^#?([0-9a-f]{6})$/i.exec(h.trim());if(!m)return null;var n=parseInt(m[1],16);return[n>>16&255,n>>8&255,n&255]}
+  function hex(c){return"#"+c.map(function(v){return Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")}).join("")}
+  function lin(v){v/=255;return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)}
+  function unlin(v){v=v<=0.0031308?v*12.92:1.055*Math.pow(v,1/2.4)-0.055;return v*255}
+  function mixMean(a,b,t){return a.map(function(v,i){return v+(b[i]-v)*t})}
+  function mixLinear(a,b,t){return a.map(function(v,i){var x=lin(v),y=lin(b[i]);return unlin(x+(y-x)*t)})}
+  function luma(c){return(0.2126*lin(c[0])+0.7152*lin(c[1])+0.0722*lin(c[2]))}
+
+  function span(ch,c){return'<span style="color:'+hex(c)+'">'+ch+'</span>'}
+
+  // shaded swatch: density follows lightness, color carries hue
+  function swatch(c,w,h){
+    var L=Math.pow(luma(c),0.45);
+    var out=[];
+    for(var y=0;y<h;y++){
+      var row="";
+      for(var x=0;x<w;x++){
+        var edge=(y===0||y===h-1||x===0||x===w-1);
+        var wave=((x+y*2)%5)/5-0.3;
+        var idx=Math.max(1,Math.min(RAMP.length-1,Math.round((L*0.75+0.25+wave*0.12)*(RAMP.length-1))));
+        row+=edge?"#":RAMP[idx];
+      }
+      out.push(span(row,c));
+    }
+    return out.join("\n");
+  }
+
+  function strip(a,b,t,fn){
+    var N=21,s="";
+    for(var i=0;i<N;i++){
+      var tt=i/(N-1),c=fn(a,b,tt);
+      var on=Math.abs(tt*100-t)<=2.5;
+      s+=span(on?"[##]":"████",c).replace(on?"":"\u0000","");
+    }
+    // marker row
+    var pos=Math.round(t/100*(N-1));
+    var mk=new Array(N*3+1).join(" ").split("");
+    var at=Math.min(N*3-1,pos*3+1);
+    mk[at]="^";
+    return s+"\n"+'<span style="color:var(--dim)">'+mk.join("")+"</span>";
+  }
+
+  function render(){
+    var a=parse(st.a),b=parse(st.b),t=st.t/100;
+    var m1=mixMean(a,b,t),m2=mixLinear(a,b,t);
+    var w=window.innerWidth<520?22:26;
+    $("strip").innerHTML=strip(a,b,st.t,st.cmp?mixLinear:mixMean);
+    $("s1").innerHTML=swatch(m1,w,7);
+    $("s2").innerHTML=swatch(m2,w,7);
+    function val(c,id){
+      var h=hex(c);
+      $(id).innerHTML=h+' <button type="button" data-copy="'+h+'" aria-label="Copy '+h+'">copy</button><br>rgb('+c.map(Math.round).join(", ")+")";
+    }
+    val(m1,"v1");val(m2,"v2");
+    document.querySelectorAll("[data-copy]").forEach(function(btn){
+      btn.onclick=function(){
+        var h=btn.getAttribute("data-copy");
+        var done=function(){say("copied "+h)};
+        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(h).then(done,function(){say(h+" (copy blocked; select it by hand)")})}
+        else say(h)
+      };
+    });
+    var d=Math.abs(luma(m2)-luma(m1));
+    $("delta").textContent=st.cmp?"linear light is "+(luma(m2)>=luma(m1)?"brighter":"darker")+" by "+Math.round(d*100)+" points of luminance at "+st.t+"% (strip shows linear light)":"strip shows channel mean";
+    $("pct").textContent=st.t+"%";
+    $("ratio").value=st.t;
+    $("ca").value=hex(a);$("cb").value=hex(b);
+    if(document.activeElement!==$("ha"))$("ha").value=st.a;
+    if(document.activeElement!==$("hb"))$("hb").value=st.b;
+    $("app").classList.toggle("single",!st.cmp);
+    $("cmp").setAttribute("aria-pressed",st.cmp);
+    $("cols").querySelector("section:first-child h2").textContent=st.cmp?"channel mean (sRGB)":"channel mean (sRGB)";
+  }
+  var timer;
+  function say(s){$("msg").textContent=s;clearTimeout(timer);timer=setTimeout(function(){$("msg").textContent=""},2500)}
+  function setT(v){st.t=Math.max(0,Math.min(100,v));render()}
+
+  $("ratio").addEventListener("input",function(e){setT(+e.target.value)});
+  $("ca").addEventListener("input",function(e){st.a=e.target.value;render()});
+  $("cb").addEventListener("input",function(e){st.b=e.target.value;render()});
+  [["ha","a"],["hb","b"]].forEach(function(p){
+    $(p[0]).addEventListener("input",function(e){
+      var v=e.target.value;if(v&&v[0]!=="#")v="#"+v;
+      if(parse(v)){st[p[1]]=v.toLowerCase();render();say("")}
+      else say("need 6 hex digits, e.g. #ff8800");
+    });
+    $(p[0]).addEventListener("blur",function(){$(p[0]).value=st[p[1]]});
+  });
+  $("swap").onclick=function(){var x=st.a;st.a=st.b;st.b=x;st.t=100-st.t;render();say("swapped")};
+  $("cmp").onclick=function(){st.cmp=!st.cmp;render()};
+  $("reset").onclick=function(){st.a=DEF.a;st.b=DEF.b;st.t=DEF.t;render();say("reset")};
+
+  document.addEventListener("keydown",function(e){
+    var tag=(e.target.tagName||"").toLowerCase();
+    if(tag==="input"&&e.target.type==="text")return;
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var k=e.key,handled=true;
+    if(tag==="input"&&e.target.type==="range"&&(k==="ArrowLeft"||k==="ArrowRight"))return;
+    if(k==="ArrowLeft"||k==="h"||k==="a")setT(st.t-(e.shiftKey?10:1));
+    else if(k==="ArrowRight"||k==="l"||k==="d")setT(st.t+(e.shiftKey?10:1));
+    else if(k==="+"||k==="=")setT(st.t+5);
+    else if(k==="-"||k==="_")setT(st.t-5);
+    else if(k==="["||k==="]")$("swap").click();
+    else if(k==="m")$("cmp").click();
+    else if(k==="r")$("reset").click();
+    else handled=false;
+    if(handled)e.preventDefault();
+  });
+  window.addEventListener("resize",render);
+  render();
+})();
+</script>
+</body>
+</html>

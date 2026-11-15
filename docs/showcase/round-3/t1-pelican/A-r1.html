@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en"><head><script>/* showcase copy: storage keys prefixed per build */(function(){var p="t1-pelican/A-r1"+':',S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,p+k)};S.setItem=function(k,v){return s.call(this,p+k,v)};S.removeItem=function(k){return r.call(this,p+k)};})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pelican on a Bike</title>
+<style>
+:root{--ink:#2a2a3a;--bg:#f4efe6;--card:#fff;--acc:#e8832a}
+@media (prefers-color-scheme:dark){:root{--ink:#eee;--bg:#161a24;--card:#232838}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px;min-height:100vh}
+h1{font-size:20px;margin:4px 0 12px}
+svg{width:100%;max-width:860px;height:auto;border-radius:14px;box-shadow:0 4px 18px #0003;background:#bfe6f5}
+.ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin-top:14px;background:var(--card);padding:10px 16px;border-radius:12px}
+button{font:inherit;padding:8px 14px;border:0;border-radius:8px;background:var(--acc);color:#fff;cursor:pointer}
+button:active{transform:scale(.96)}
+output{font-variant-numeric:tabular-nums;min-width:11ch}
+</style></head><body>
+<h1>Pelican on a Bike</h1>
+<svg id="s" viewBox="0 0 800 450" role="img" aria-label="A pelican pedalling a bicycle">
+ <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3f0"/><stop offset="1" stop-color="#f6e9c8"/></linearGradient></defs>
+ <rect width="800" height="450" fill="url(#sky)"/>
+ <circle cx="680" cy="70" r="34" fill="#ffe27a"/>
+ <g id="clouds" fill="#fff" opacity=".9"></g>
+ <g id="hills"></g>
+ <rect y="385" width="800" height="65" fill="#7a6a58"/>
+ <rect y="378" width="800" height="9" fill="#6fb35a"/>
+ <g id="dashes" fill="#f4efe6"></g>
+ <g id="rig">
+  <!-- rear wheel -->
+  <g id="rw"></g><g id="fw"></g>
+  <!-- frame -->
+  <g stroke="#d6403a" stroke-width="7" stroke-linecap="round" fill="none">
+   <path d="M270 320 L365 320 L340 232 Z"/>
+   <path d="M340 232 L478 232 L365 320"/>
+   <path d="M478 225 L530 320"/>
+  </g>
+  <path d="M478 225 L490 205 L520 203" stroke="#333" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M325 228 L358 228" stroke="#222" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="365" cy="320" r="9" fill="#555"/>
+  <!-- far leg & crank -->
+  <g id="legB" stroke="#e8832a" stroke-width="7" stroke-linecap="round" fill="none" opacity=".75"><path/><path/></g>
+  <line id="crB" stroke="#444" stroke-width="5" stroke-linecap="round"/>
+  <!-- pelican -->
+  <g id="pel">
+   <path d="M310 190 q-40 5 -62 30 q30 -8 60 -12 z" fill="#dfe6ee"/>
+   <ellipse cx="352" cy="190" rx="58" ry="38" fill="#fff" stroke="#c9d3de" stroke-width="2" transform="rotate(-12 352 190)"/>
+   <g id="neckhead">
+    <path d="M385 170 C 425 160, 395 120, 440 112" stroke="#fff" stroke-width="22" stroke-linecap="round" fill="none"/>
+    <path d="M385 170 C 425 160, 395 120, 440 112" stroke="#c9d3de" stroke-width="1.5" fill="none" transform="translate(0 -11)"/>
+    <ellipse cx="448" cy="108" rx="24" ry="19" fill="#fff" stroke="#c9d3de" stroke-width="2"/>
+    <!-- bill -->
+    <path d="M462 104 L578 118 L470 120 Z" fill="#f2a43a"/>
+    <path d="M466 118 Q520 168 576 120 L470 118 Z" fill="#f7c35c" stroke="#d98a22" stroke-width="2"/>
+    <path d="M578 118 q6 2 4 8" stroke="#d98a22" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="456" cy="100" r="5" fill="#222"/><circle cx="457.5" cy="98.5" r="1.6" fill="#fff"/>
+    <path d="M440 90 q-14 -8 -22 4 q10 -2 16 6" fill="#fff" stroke="#c9d3de" stroke-width="1.5"/>
+   </g>
+   <!-- wing arm to handlebar -->
+   <path d="M370 180 Q430 205 508 204" stroke="#cfd9e4" stroke-width="16" stroke-linecap="round" fill="none"/>
+   <path d="M370 180 Q430 205 508 204" stroke="#fff" stroke-width="10" stroke-linecap="round" fill="none"/>
+  </g>
+  <!-- near leg & crank -->
+  <line id="crA" stroke="#444" stroke-width="5" stroke-linecap="round"/>
+  <g id="legA" stroke="#e8832a" stroke-width="8" stroke-linecap="round" fill="none"><path/><path/></g>
+  <g id="feet" fill="#e8832a"><ellipse id="fA" rx="14" ry="5"/><ellipse id="fB" rx="14" ry="5" opacity=".75"/></g>
+  <g id="bell" transform="translate(498 188)"><circle r="8" fill="#f5c542" stroke="#b8901c" stroke-width="2"/></g>
+ </g>
+ <g id="ding" opacity="0" font-weight="700" font-size="26" fill="#fff" stroke="#c0392b" stroke-width="1.2" paint-order="stroke"><text x="500" y="150">DING!</text></g>
+</svg>
+<div class="ctl">
+ <button id="pp" aria-pressed="false">Pause</button>
+ <label>Speed <input id="sp" type="range" min="0" max="10" step="0.1" value="4"></label>
+ <button id="bl">Ring bell</button>
+ <output id="st" aria-live="polite"></output>
+</div>
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
+const mk=(p,t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+const R=58,RW={x:270,y:320},FW={x:530,y:320},BB={x:365,y:320},HIP={x:345,y:218};
+const spokes={};
+function wheel(g,c,k){mk(g,'circle',{cx:c.x,cy:c.y,r:R,fill:'none',stroke:'#2b2b2b','stroke-width':7});
+ const sg=mk(g,'g',{});spokes[k]=sg;
+ for(let i=0;i<8;i++){const a=i*Math.PI/4;mk(sg,'line',{x1:c.x,y1:c.y,x2:c.x+Math.cos(a)*(R-3),y2:c.y+Math.sin(a)*(R-3),stroke:'#999','stroke-width':1.5})}
+ mk(g,'circle',{cx:c.x,cy:c.y,r:5,fill:'#555'});}
+wheel($('rw'),RW,'rw');wheel($('fw'),FW,'fw');
+// scenery
+const cl=$('clouds'),clouds=[];
+[[100,70,1],[380,110,.7],[620,50,1.2]].forEach(([x,y,s])=>{const g=mk(cl,'g',{});
+ [[0,0,26],[24,-8,22],[48,0,24],[22,6,24]].forEach(([dx,dy,r])=>mk(g,'circle',{cx:dx*s,cy:dy*s,r:r*s}));clouds.push({g,x,y,s})});
+const hills=$('hills'),hp=[];
+[['#a7cf9a',.15,300,90],['#86b87a',.35,330,60]].forEach(([c,f,y,h])=>{const g=mk(hills,'g',{fill:c});
+ for(let i=0;i<4;i++)mk(g,'ellipse',{cx:i*300,cy:y+h*.6,rx:200,ry:h});hp.push({g,f})});
+const dg=$('dashes'),dd=[];for(let i=0;i<9;i++)dd.push(mk(dg,'rect',{y:414,width:50,height:6,rx:3}));
+const L1=62,L2=64;
+function leg(g,P,foot){const d=Math.hypot(P.x-HIP.x,P.y-HIP.y),dc=Math.min(d,L1+L2-1);
+ const ux=(P.x-HIP.x)/d,uy=(P.y-HIP.y)/d,a=(L1*L1-L2*L2+dc*dc)/(2*dc),h=Math.sqrt(Math.max(0,L1*L1-a*a));
+ const K={x:HIP.x+ux*a+uy*h,y:HIP.y+uy*a-ux*h},ps=g.querySelectorAll('path');
+ ps[0].setAttribute('d',`M${HIP.x} ${HIP.y}L${K.x} ${K.y}`);ps[1].setAttribute('d',`M${K.x} ${K.y}L${P.x} ${P.y}`);
+ foot.setAttribute('cx',P.x+8);foot.setAttribute('cy',P.y+3);}
+const st={paused:false,speed:4,bells:0,dist:0,t:0},ang={w:0,c:0};
+const out=$('st'),pp=$('pp'),sp=$('sp');
+function ui(){out.textContent=(st.paused?'Paused':'Riding')+' · '+(st.speed*5|0)+' km/h · bells '+st.bells+' · '+(st.dist|0)+' m';}
+pp.onclick=()=>{st.paused=!st.paused;pp.textContent=st.paused?'Play':'Pause';pp.setAttribute('aria-pressed',st.paused);ui()};
+sp.oninput=()=>{st.speed=+sp.value;ui()};
+let dingT=0;
+function bell(){st.bells++;dingT=1;ui()}
+$('bl').onclick=bell;$('pel').style.cursor='pointer';$('pel').onclick=bell;
+addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='INPUT'&&e.target.tagName!=='BUTTON'){e.preventDefault();pp.click()}});
+let last=performance.now(),ui_t=0;
+function frame(n){const dt=Math.min(.05,(n-last)/1000);last=n;
+ if(!st.paused){st.t+=dt;const v=st.speed;
+  const wr=v*60*dt/R;ang.w+=wr;ang.c+=wr*.45;st.dist+=v*dt*3;ui_t+=dt;if(ui_t>.25){ui_t=0;ui()}
+  for(const k in spokes)spokes[k].setAttribute('transform',`rotate(${ang.w*180/Math.PI} ${k==='rw'?RW.x:FW.x} ${RW.y})`);
+  dd.forEach((r,i)=>{r.setAttribute('x',(((i*100-st.dist*20)%900)+900)%900-60)});
+  clouds.forEach((c,i)=>{c.x-=v*(3+i)*dt;if(c.x<-120)c.x=920;c.g.setAttribute('transform',`translate(${c.x} ${c.y})`)});
+  hp.forEach(h=>{const o=-((st.dist*20*h.f)%300);h.g.setAttribute('transform',`translate(${o} 0)`)});
+  const A=ang.c,r=40,pA={x:BB.x+Math.cos(A)*r,y:BB.y+Math.sin(A)*r},pB={x:BB.x-Math.cos(A)*r,y:BB.y-Math.sin(A)*r};
+  leg($('legA'),pA,$('fA'));leg($('legB'),pB,$('fB'));
+  $('crA').setAttribute('x1',BB.x);$('crA').setAttribute('y1',BB.y);$('crA').setAttribute('x2',pA.x);$('crA').setAttribute('y2',pA.y);
+  $('crB').setAttribute('x1',BB.x);$('crB').setAttribute('y1',BB.y);$('crB').setAttribute('x2',pB.x);$('crB').setAttribute('y2',pB.y);
+  const bob=Math.sin(A*2)*(v>0?2:0);
+  $('rig').setAttribute('transform',`translate(0 ${bob.toFixed(2)})`);
+  $('neckhead').setAttribute('transform',`rotate(${Math.sin(A*2+1)*(v>0?2.5:0)} 390 170)`);
+ }
+ if(dingT>0){dingT=Math.max(0,dingT-dt*1.2);$('ding').setAttribute('opacity',dingT);$('ding').setAttribute('transform',`translate(0 ${-(1-dingT)*30})`);
+  $('bell').setAttribute('transform',`translate(498 188) rotate(${Math.sin(dingT*30)*20*dingT})`)}
+ requestAnimationFrame(frame)}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches){st.speed=sp.value=1.5;}
+ui();requestAnimationFrame(frame);
+})();
+</script></body></html>
