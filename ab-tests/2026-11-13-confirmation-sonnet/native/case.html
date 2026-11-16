@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>MetaDump case study</title>
+<!-- The block-world case study for LinkedIn, a short-form cut: record-native.mjs --bare --no-cards --scene /__native/case.html
+     --tasks Q:solo,A:solo,F:solo,results:still,outro:still. serve.py puts this folder at /__native/ and the round-3 showcase
+     at /, so the builds load from /t4-blocks/ with the showcase's storage shim. go() starts each scene's captions when filming
+     starts; the steps call cap() and punch() at the moments they belong to.
+     Numbers: results.md, task 4, registered grades (mean of 4 builds x 3 graders; head to head Q vs A 24-0-0, F vs Q 0-24-0).
+     Times on the stickers: t4-blocks/timing.jsonl (A-r1 22 s, Q-r4 145 s, the swarm dump 1286 s + F-r1 80 s = 23 min).
+     The outro: writeup.md (pooled +1.12 on 6.56) and timing.jsonl (tokens and seconds per build, the swarm dump's main loop
+     added to the full build). The run shown per side is the showcase's choice (scene.html, DATA[3].show). -->
+<style>
+:root{--ink:#fff;--y:#ffd23f;--b:#3d7bff;--f:#d0843f;--a:#9b958a}
+*{box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1350px;overflow:hidden;background:#141821;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.cap{position:absolute;left:44px;right:44px;top:118px;text-align:center;font:900 68px/1.1 system-ui;letter-spacing:-.01em;
+  -webkit-text-stroke:14px #000;paint-order:stroke fill;z-index:3}
+.cap .w{display:inline-block;animation:pop .34s cubic-bezier(.2,.9,.3,1.35) both}
+.hl{color:var(--y)}
+@keyframes pop{0%{transform:scale(.4) translateY(20px);opacity:0}100%{transform:none;opacity:1}}
+.tag{position:absolute;left:50%;top:40px;transform:translateX(-50%);font:800 32px system-ui;padding:10px 24px;border-radius:999px;
+  background:#fff;color:#111;white-space:nowrap;z-index:3;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.tag.Q{background:var(--b);color:#fff}.tag.F{background:var(--f);color:#fff}.tag.A{background:#e9e6df}
+.frame{position:absolute;left:0;right:0;top:322px;bottom:0;overflow:hidden;transition:transform .75s cubic-bezier(.2,.8,.2,1)}
+iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0}
+.rows{position:absolute;left:60px;right:60px;top:370px}
+.row{margin-bottom:58px}
+.row .name{font:800 46px system-ui;margin-bottom:14px}
+.track{position:relative;height:84px;border-radius:20px;background:rgba(255,255,255,.08)}
+.fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:20px;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.row.Q .fill{background:var(--b)}.row.F .fill{background:var(--f)}.row.A .fill{background:var(--a)}
+.num{position:absolute;right:22px;top:50%;transform:translateY(-50%);font:900 60px system-ui;font-variant-numeric:tabular-nums}
+.sticker{position:absolute;left:50%;top:1012px;font:900 46px/1.15 system-ui;color:#111;background:var(--y);padding:20px 30px;border-radius:22px;
+  text-align:center;width:900px;margin-left:-450px;transform:rotate(-2.5deg) scale(0);transition:transform .38s cubic-bezier(.2,.9,.3,1.4);box-shadow:0 10px 0 rgba(0,0,0,.4)}
+.sticker.on{transform:rotate(-2.5deg) scale(1)}
+.foot{position:absolute;left:60px;right:60px;bottom:52px;text-align:center;font:500 27px/1.35 system-ui;color:rgba(255,255,255,.62)}
+.big{position:absolute;left:50px;right:50px;top:190px;text-align:center;font:900 112px/1.02 system-ui;letter-spacing:-.02em;-webkit-text-stroke:16px #000;paint-order:stroke fill}
+.subt{position:absolute;left:60px;right:60px;top:470px;text-align:center;font:800 50px/1.2 system-ui;color:var(--y);opacity:0;transition:opacity .3s}
+.chips{position:absolute;left:90px;right:90px;top:590px;display:flex;flex-direction:column;gap:22px}
+.chip{font:800 44px system-ui;background:#fff;color:#111;border-radius:24px;padding:22px 30px;transform:scale(0);transition:transform .34s cubic-bezier(.2,.9,.3,1.4);box-shadow:0 8px 0 rgba(0,0,0,.35)}
+.chip.on{transform:scale(1)}.chip b{color:var(--b)}
+.url{position:absolute;left:0;right:0;bottom:120px;text-align:center;font:700 38px ui-monospace,monospace}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const SIDES = {
+  Q: { run: 'Q-r4', tag: 'MetaDump Quick Mode · 2½ min',
+       caps: ['I asked Claude for a *block-building* game', 'Quick Mode built a whole *3D world*', '…and you can *build in it*'] },
+  A: { run: 'A-r1', tag: 'No MetaDump · 22 sec', caps: ['Same model, no MetaDump: a *flat grid.*'] },
+  F: { run: 'F-r1', tag: 'Old MetaDump swarm · 23 min', caps: ['The old swarm, 23 minutes later: an *empty grid.*'] },
+}
+// What the recorder's hand does in each build (record-native.mjs, kind "solo"); paint points are fractions of the drawing surface.
+const STEPS = {
+  'Q-r4': [['rest', 1500], ['call', 'cap', 1], ['click', '^Brick'], ['paint', [[0.28, 0.55], [0.5, 0.42], [0.72, 0.55]]], ['call', 'cap', 2],
+           ['paint', [[0.36, 0.5], [0.64, 0.5]]], ['call', 'punch'], ['rest', 700]],
+  'A-r1': [['rest', 250], ['paint', [[0.3, 0.6], [0.5, 0.45], [0.7, 0.6]]], ['rest', 200]],
+  'F-r1': [['rest', 250], ['paint', [[0.3, 0.6], [0.5, 0.45], [0.7, 0.6]]], ['rest', 200]],
+}
+// How long each scene lasts at least, in ms.
+window.HOLD = { Q: 7000, A: 3000, F: 3200, results: 5200, outro: 4200 }
+const which = new URLSearchParams(location.search).get('task') || 'Q'
+const root = document.getElementById('root')
+const words = s => s.split(' ').map((w, i) => `<span class="w" style="animation-delay:${i * 70}ms">${w.replace(/\*([^*]+)\*/g, '<span class="hl">$1</span>').replace(/\*/g, '')}</span>`).join(' ')
+// Highlights may span words: mark each word inside *...* on its own.
+const mark = s => s.replace(/\*([^*]+)\*/g, (_, m) => m.split(' ').map(w => `*${w}*`).join(' '))
+window.cap = i => { const c = document.querySelector('.cap'); c.innerHTML = words(mark(SIDES[which].caps[i])) }
+if (which in SIDES) {
+  const s = SIDES[which]
+  window.SHOWN = { b: s.run }
+  root.innerHTML = `<div class="tag ${which}">${s.tag}</div><div class="cap"></div>
+    <div class="frame"><iframe id="fb" src="/t4-blocks/${s.run}.html"></iframe></div>`
+  const f = document.querySelector('.frame'), fr = f.querySelector('iframe'), INNER_W = 900, k = f.clientWidth / INNER_W
+  fr.style.width = INNER_W + 'px'; fr.style.height = (f.clientHeight / k) + 'px'; fr.style.transform = `scale(${k})`; fr.dataset.k = k
+  fr.addEventListener('load', () => { document.body.style.background = getComputedStyle(fr.contentDocument.body).backgroundColor })
+  window.go = () => cap(0)
+  window.punch = () => { f.style.transformOrigin = '540px 400px'; f.style.transform = 'scale(1.22)' }
+} else if (which === 'results') {
+  const R = [['Q', 'Quick Mode', 8.75], ['F', 'Old swarm', 6.17], ['A', 'No MetaDump', 5.92]]
+  root.innerHTML = `<div class="cap"></div>
+    <div class="rows">${R.map(([id, n]) => `<div class="row ${id}"><div class="name">${n}</div><div class="track"><div class="fill"></div><div class="num">0.00</div></div></div>`).join('')}</div>
+    <div class="sticker">Quick Mode won <u>24 of 24</u><br>blind head-to-heads</div>
+    <div class="foot">Average of 4 builds each, out of 10, scored blind by Claude Sonnet 5.5.<br>The block game was Quick Mode's best of the 4 tasks I tested.</div>`
+  window.go = () => {
+    document.querySelector('.cap').innerHTML = words(mark('*Blind graders* scored all 12'))
+    setTimeout(() => {
+      const t0 = performance.now(), rows = [...document.querySelectorAll('.row')]
+      rows.forEach((r, i) => { r.querySelector('.fill').style.width = R[i][2] * 10 + '%' })
+      const tick = () => { const p = Math.min(1, (performance.now() - t0) / 1100), e = 1 - Math.pow(1 - p, 3)
+        rows.forEach((r, i) => { r.querySelector('.num').textContent = (R[i][2] * e).toFixed(2) }); if (p < 1) requestAnimationFrame(tick) }
+      tick()
+    }, 500)
+    setTimeout(() => document.querySelector('.sticker').classList.add('on'), 2000)
+  }
+} else if (which === 'outro') {
+  root.innerHTML = `<div class="big"></div><div class="subt">Quick Mode is the default now.</div>
+    <div class="chips"><div class="chip"><b>11x faster</b> than the old swarm</div><div class="chip"><b>71% fewer</b> tokens</div><div class="chip"><b>+17%</b> blind scores, all 4 tasks</div></div>
+    <div class="foot" style="bottom:200px">Free and open source, for Claude Code</div><div class="url">github.com/globalanomalyindex/metadump</div>`
+  window.go = () => {
+    document.querySelector('.big').innerHTML = words(mark('*MetaDump 1.1* is out'))
+    setTimeout(() => { document.querySelector('.subt').style.opacity = 1 }, 450)
+    document.querySelectorAll('.chip').forEach((c, i) => setTimeout(() => c.classList.add('on'), 800 + i * 280))
+  }
+}
+window.STEPS = which in SIDES ? STEPS : null
+// Page coordinates of a target inside the build frame (same origin when served over http). Copied from the showcase's scene.html.
+//   named: the first visible control whose aria-label, title, text or value matches the regex arg
+//   range: the thumb of the first visible slider (or the one matching arg)
+//   surface: the largest visible canvas, pre or svg, the thing a build draws on
+window.targetIn = (id, kind, arg) => {
+  const fr = document.getElementById(id); if (!fr) return null
+  const d = fr.contentDocument, w = fr.contentWindow, k = +fr.dataset.k, box = fr.getBoundingClientRect()
+  const vis = e => { const r = e.getBoundingClientRect(), cs = w.getComputedStyle(e); return r.width > 6 && r.height > 6 && cs.visibility !== 'hidden' && cs.display !== 'none' }
+  const label = e => [e.getAttribute('aria-label'), e.getAttribute('title'), (e.innerText || '').trim(), e.value].filter(Boolean)
+  let el
+  if (kind === 'named') {
+    const re = new RegExp(arg, 'i')
+    el = /^[#.]/.test(arg) ? [...d.querySelectorAll(arg)].find(vis) : [...d.querySelectorAll('button, [role=button], a, summary, input, select, [title], label')].filter(vis).find(e => label(e).some(s => re.test(s.trim())))
+  } else if (kind === 'range') {
+    const re = arg ? new RegExp(arg, 'i') : null
+    el = [...d.querySelectorAll('input[type=range]')].filter(vis).find(e => !re || label(e).some(s => re.test(s)) || (e.labels && [...e.labels].some(l => re.test(l.innerText))))
+    if (!el) return null
+    el.scrollIntoView({ block: 'center' })
+    const r = el.getBoundingClientRect(), min = +el.min || 0, max = el.max === '' ? 100 : +el.max, v = (+el.value - min) / ((max - min) || 1), thumb = 8
+    return { x: box.left + (r.left + thumb + v * (r.width - 2 * thumb)) * k, y: box.top + (r.top + r.height / 2) * k, track: (r.width - 2 * thumb) * k, v }
+  } else if (kind === 'surface') {
+    el = [...d.querySelectorAll('canvas, pre, svg')].filter(vis).sort((p, q) => { const a = p.getBoundingClientRect(), b = q.getBoundingClientRect(); return b.width * b.height - a.width * a.height })[0]
+    if (!el) return null
+    el.scrollIntoView({ block: 'center' })
+    const r = el.getBoundingClientRect()
+    return { x: box.left + (r.left + r.width / 2) * k, y: box.top + (r.top + r.height / 2) * k, sw: r.width * k, sh: r.height * k }
+  }
+  if (!el) return null
+  el.scrollIntoView({ block: 'center' })
+  const r = el.getBoundingClientRect()
+  return { x: box.left + (r.left + r.width / 2) * k, y: box.top + (r.top + r.height / 2) * k }
+}
+</script>
+</body>
+</html>

@@ -46,6 +46,8 @@ body{background:
 .menu{right:6px;top:5px;width:34px;height:34px}
 .content{position:absolute;left:0;top:147px;right:0;bottom:0;overflow:hidden;background:#f6f5f1}
 #scene{position:absolute;left:0;top:0;border:0;width:1080px;transform-origin:0 0}
+/* ?bare=1: no window, the scene fills the frame (the short-form cut) */
+.bare .win{left:0;top:0;width:1080px;height:1350px;border-radius:0;box-shadow:none}.bare .chrome{display:none}.bare .content{top:0}
 </style>
 </head>
 <body>
@@ -78,7 +80,9 @@ body{background:
   <div class="content"><iframe id="scene"></iframe></div>
 </div>
 <script>
-const WIN = { left: 16, top: 16, width: 1048, height: 1318 }, CHROME_H = 147
+const BARE = new URLSearchParams(location.search).get('bare') === '1'
+if (BARE) document.documentElement.classList.add('bare')
+const WIN = BARE ? { left: 0, top: 0, width: 1080, height: 1350 } : { left: 16, top: 16, width: 1048, height: 1318 }, CHROME_H = BARE ? 0 : 147
 const s = WIN.width / 1080, VH = Math.floor((WIN.height - CHROME_H) / s)
 const frame = document.getElementById('scene')
 frame.style.height = VH + 'px'; frame.style.transform = `scale(${s})`

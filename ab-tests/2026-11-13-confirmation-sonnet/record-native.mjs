@@ -6,13 +6,18 @@
 //
 // Usage:
 //   node record-native.mjs [--showcase DIR] [--tasks LIST] [--out DIR] [--seed N] [--no-cards] [--trace DIR]
-//   LIST is comma-separated slug[:kind][@a/b/c], kind = steps | hover | click | text | watch | play | turn (default: "steps"
+//                          [--scene PATH] [--name FILE] [--bare]
+//   LIST is comma-separated slug[:kind][@a/b/c], kind = steps | solo | still | hover | click | text | watch | play | turn (default: "steps"
 //   when the scene gives steps for every run shown, else from the scene's DATA), a/b/c = the runs to show for the prompt
 //   alone, quick mode and the full build (default: the scene's own choice, each side's best-scoring build). Defaults: docs/showcase/round-3, test 24's tasks, ./video. Writes OUT/metadump-ab-linkedin.mp4 (intro, tasks,
 //   results, outro), OUT/metadump-ab-<slug>.mp4 and OUT/posters/<slug>.jpg.
 // Copied from ab-tests/2026-11-05-recipe-game-lemon-sonnet/ for test 24. Added: the "steps" kind (each build's own
 // clicks, taps, slider drags and paint strokes, listed in the scene), three sides per scene (fa, fb, fc), a results card
-// between the tasks and the outro.
+// between the tasks and the outro. Later, for the block-world case study (native/case.html): --scene, --name, --bare,
+// the "solo" kind (one build filling the frame) and the "still" kind (a card with no pointer), scene-set lengths (HOLD),
+// go() when filming starts and ['call', name, arg] steps. That cut:
+//   node record-native.mjs --bare --no-cards --scene /__native/case.html --tasks Q:solo,A:solo,F:solo,results:still,outro:still \
+//     --out video/case-study --name metadump-1.1-block-case-study.mp4
 // Ports: CDP 9471, site 8776, frames 8777.
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, readFileSync, mkdtempSync, rmSync, copyFileSync } from 'node:fs'
@@ -31,6 +36,13 @@ const TASKS = opt('--tasks', 't1-pelican,t2-ascii,t3-bento,t4-blocks').split(','
 })
 const OUT = resolve(opt('--out', join(HERE, 'video'))), POSTERS = join(OUT, 'posters'), SEED = +opt('--seed', 12), CARDS = !argv.includes('--no-cards')
 const TRACE = opt('--trace', null)
+// --scene: the page that lays out each scene (default the showcase's scene.html; the block-world case study is
+// /__native/case.html). --name: the main video's file name. A scene page may set window.HOLD = { slug: ms } to fix how
+// long a card lasts, or how long a build scene lasts at least.
+const SCENE = opt('--scene', '/scene.html'), NAME = opt('--name', 'metadump-ab-linkedin.mp4')
+// --bare: no Chrome window drawn around the scene; it fills the frame. A scene page may define go(), called the moment
+// filming starts (captions and count-ups begin there), and functions its steps call with ['call', name, arg].
+const BARE = argv.includes('--bare')
 const CDP_PORT = 9471, SITE = 8776, RECPORT = 8777
 const CS = 2   // cursor art scale: px per macOS point (a Retina recording)
 mkdirSync(POSTERS, { recursive: true }); if (TRACE) mkdirSync(TRACE, { recursive: true })
@@ -156,13 +168,13 @@ const SCRIPTS = {
     await play(h.rest(1300, 1))
     const r = await evaluate(`rectOf('.card p:nth-of-type(2) b')`)
     if (r) await play(h.moveTo({ x: r.left + r.width * h.rand(0.25, 0.6), y: r.y + h.rand(-3, 3) }, r.height))
-    await play(h.rest(Math.max(300, 4300 - elapsed()), 1))
+    await play(h.rest(Math.max(300, (HOLD_MS ?? 4300) - elapsed()), 1))
   },
   outro: async h => {
     await play(h.rest(h.rand(500, 700), 1))
     const r = await evaluate(`rectOf('.url')`)
     if (r) { const x0 = r.left + r.width * h.rand(0.05, 0.12); await play(h.read(x0, x0 + h.rand(120, 160), r.y)) }
-    await play(h.rest(Math.max(300, 5500 - elapsed()), 1))
+    await play(h.rest(Math.max(300, (HOLD_MS ?? 5500) - elapsed()), 1))
   },
   hover: async h => {
     await play(h.rest(h.rand(350, 500), 1)); await readPrompt(h)
@@ -182,7 +194,15 @@ const SCRIPTS = {
       const r = await evaluate(`rectOf(${JSON.stringify(sel)})`)
       if (r) { const x0 = r.left + h.rand(150, 190), y = r.top + 20; await play(h.read(x0, x0 + h.rand(260, 340), y)); await play(h.rest(h.rand(700, 900), 0.8)) }
     }
-    await play(h.rest(Math.max(300, 9000 - elapsed()), 1))
+    await play(h.rest(Math.max(300, (HOLD_MS ?? 9000) - elapsed()), 1))
+  },
+  // A card with no pointer on it: the hand leaves the frame and the card plays out (padded to the scene's HOLD).
+  still: async h => { await play(h.moveTo({ x: 1160, y: 1430 }, 80, { overshoot: 0 })) },
+  // One build filling the window: its own listed steps, on the frame with id fb.
+  solo: async h => {
+    await play(h.rest(h.rand(250, 350), 1))
+    const S = await evaluate(`document.getElementById('scene').contentWindow.STEPS`)
+    await stepsSide(h, 'fb', S[CUR_RUNS.b])
   },
   steps: async h => {
     await play(h.rest(h.rand(450, 650), 1))
@@ -198,6 +218,7 @@ async function stepsSide(h, id, steps) {
   for (const [op, a, b] of steps || []) {
     if (op === 'rest') { await play(h.rest(a, 0.8)); continue }
     if (op === 'poster') { if (id === 'fc') markPoster(a || 0); continue }
+    if (op === 'call') { await evaluate(`document.getElementById('scene').contentWindow[${JSON.stringify(a)}](${JSON.stringify(b ?? null)})`); continue }
     const kind = op === 'slide' ? 'range' : op === 'paint' || op === 'tap' ? 'surface' : 'named'
     const t = await aim(h, id, kind, op === 'paint' || op === 'tap' ? null : a)
     if (!t) { console.log(`  ${id}: nothing for ${op} ${a ?? ''}`); continue }
@@ -227,7 +248,7 @@ async function stepsSide(h, id, steps) {
     }
   }
 }
-let CUR_RUNS = {}
+let CUR_RUNS = {}, HOLD_MS = null
 // Play one game on a side: click the next empty cell (the scene picks it) until the page announces an end.
 async function playSide(h, id) {
   for (let move = 0; move < 9; move++) {
@@ -254,14 +275,15 @@ SCRIPTS.play = async h => { await play(h.rest(h.rand(400, 600), 1)); await playS
 SCRIPTS.turn = async h => { await play(h.rest(h.rand(500, 700), 1)); await turnSide(h, 'fa'); await turnSide(h, 'fb') }
 
 // ---- record every scene ----
-const sceneUrl = (slug, a, b, c) => '/scene.html?task=' + slug + (a ? '&a=' + a : '') + (b ? '&b=' + b : '') + (c ? '&c=' + c : '')
+const sceneUrl = (slug, a, b, c) => SCENE + '?task=' + slug + (a ? '&a=' + a : '') + (b ? '&b=' + b : '') + (c ? '&c=' + c : '')
 const scenes = [...(CARDS ? [{ slug: 'intro', kind: 'intro' }] : []), ...TASKS, ...(CARDS ? [{ slug: 'results', kind: 'results' }, { slug: 'outro', kind: 'outro' }] : [])]
 const manifest = {}
 let pos = { x: 802, y: 1196 }
 for (const sc of scenes) {
-  await send('Page.navigate', { url: `http://127.0.0.1:${SITE}/__native/window.html?scene=${encodeURIComponent(sceneUrl(sc.slug, sc.a, sc.b, sc.c))}` })
+  await send('Page.navigate', { url: `http://127.0.0.1:${SITE}/__native/window.html?scene=${encodeURIComponent(sceneUrl(sc.slug, sc.a, sc.b, sc.c))}${BARE ? '&bare=1' : ''}` })
   await sleep(400); await evaluate('ready()'); await sleep(900)
   CUR_RUNS = (await evaluate(`document.getElementById('scene').contentWindow.SHOWN || null`)) || {}
+  HOLD_MS = ((await evaluate(`document.getElementById('scene').contentWindow.HOLD || null`)) || {})[sc.slug] ?? null
   if (!sc.kind) {
     const st = await evaluate(`document.getElementById('scene').contentWindow.STEPS || null`)
     if (st && [CUR_RUNS.a, CUR_RUNS.b, CUR_RUNS.c].every(r => r && st[r])) sc.kind = 'steps'
@@ -276,8 +298,10 @@ for (const sc of scenes) {
   frames = []; track = []; posterAt = null; sceneStart = Date.now()
   track.push({ t: 0, x: pos.x, y: pos.y, down: false }); shapeQuery(track[0], pos.x, pos.y)
   await send('Page.startScreencast', { format: 'jpeg', quality: 92, maxWidth: 1080, maxHeight: 1350, everyNthFrame: 1 })
+  await evaluate(`(w => { if (w.go) w.go() })(document.getElementById('scene').contentWindow)`)
   await SCRIPTS[sc.kind](h)
-  if (!['intro', 'results', 'outro'].includes(sc.kind) && elapsed() < 6500) await play(h.rest(6500 - elapsed(), 1))
+  const least = HOLD_MS ?? 6500
+  if (!['intro', 'results', 'outro'].includes(sc.kind) && elapsed() < least) await play(h.rest(least - elapsed(), 1))
   await play(h.rest(250, 1))
   await send('Page.stopScreencast'); await sleep(150)
   const dur = elapsed(), fs = frames.filter(f => f.t >= sceneStart - 50); frames = null
@@ -299,7 +323,7 @@ async function encode(list, out) {
   writeFileSync(out, Buffer.concat(parts))
   console.log('wrote', out, (size / 1e6).toFixed(1) + ' MB')
 }
-await encode(scenes.map(s => s.slug), join(OUT, 'metadump-ab-linkedin.mp4'))
+await encode(scenes.map(s => s.slug), join(OUT, NAME))
 for (const t of TASKS) await encode([t.slug], join(OUT, `metadump-ab-${t.slug}.mp4`))
 for (const t of TASKS) {   // poster: the window composite with the cursor, at the scene's representative moment
   const url = await evaluate(`still(${JSON.stringify(t.slug)})`)
